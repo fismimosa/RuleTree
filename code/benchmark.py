@@ -198,7 +198,7 @@ methods_params_unsup = {
 }
 
 # all_params = sorted(set([k for m in methods_params_clf for k in methods_params_clf[m]]))
-all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]])
+all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
 
 
 def dataset_preprocessing(df, d, max_nbr_values, max_nbr_values_cat, one_hot_encode_cat, categorical_indices,
