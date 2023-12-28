@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import hashlib
 import datetime
@@ -8,8 +9,6 @@ import numpy as np
 import pandas as pd
 
 import sklearn.metrics as skm
-
-from tqdm import tqdm
 
 from ruletree import RuleTree
 from ruletree import prepare_data
@@ -359,11 +358,12 @@ def evaluate_clu(y_test, y_pred, X, dist):
 
 
 def main():
+    dataset_argv = sys.argv[1]
+    dataset_result_filename = RESULT_FILENAME.replace('.csv', '_%s.csv' % dataset_argv)
     print(datetime.datetime.now(), 'BENCHMARK STARTED')
     print(datetime.datetime.now(), 'Task: %s' % TASK_TYPE)
     path = dataset_path + task_folder[TASK_TYPE]
     datasets_dict = dict()
-    datasets_df = dict()
     for filename in os.listdir(path):
         if os.path.isfile(path + filename) and filename.endswith('.csv'):
             datasets_dict[filename.replace('.csv', '')] = filename
@@ -373,7 +373,7 @@ def main():
     one_hot_encode_cat = ONE_HOT_ENCODE_CAT
     numerical_scaler = StandardScaler()
 
-    for dataset_name in ['iris']: #datasets_dict:
+    for dataset_name in [dataset_argv]:  #datasets_dict:
         print(datetime.datetime.now(), 'Task: %s, Dataset: %s' % (TASK_TYPE, dataset_name))
         filename = datasets_dict[dataset_name]
         df = pd.read_csv(path + filename, skipinitialspace=True)
@@ -417,10 +417,11 @@ def main():
                 print(datetime.datetime.now(), 'Task: %s, Dataset: %s (%s), Method: %s' % (
                     TASK_TYPE, dataset_name, rh, method_name))
 
-                methods_params = None
-                if TASK_TYPE == TASK_CLF:
-                    methods_params = methods_params_clf
-
+                # methods_params = None
+                if TASK_TYPE == TASK_CLF or TASK_TYPE == TASK_REG:
+                    methods_params = methods_params_sup
+                else:
+                    methods_params = methods_params_unsup
 
                 model = task_method[TASK_TYPE][method_name]
                 params_prodcut = itertools.product(*methods_params[method_name].values())
@@ -468,21 +469,15 @@ def main():
                     res['expid3'] = hashlib.md5(str.encode(''.join([str(s) for s in params_dict.values()]))).hexdigest()
 
                     df_res_cache = None
-                    if os.path.isfile(results_path + RESULT_FILENAME):
-                        df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
-                        # df_res_cache = df_res_cache.fillna(value='None')
+                    # if os.path.isfile(results_path + RESULT_FILENAME):
+                    if os.path.isfile(results_path + dataset_result_filename):
+                        df_res_cache = pd.read_csv(results_path + dataset_result_filename)
+                        # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
 
                     if df_res_cache is not None:
                         exp_already_run = res['expid3'] in df_res_cache['expid3'].values
-                        # df_res = pd.DataFrame(data=[res])
-                        # df_res = df_res.fillna(value='None')
-                        # cols = sorted(res.keys())
-                        # cache = df_res_cache[cols].loc[:, df_res_cache[cols].notna().all(0)]
-                        # curr = df_res[cols].loc[:, df_res[cols].notna().all(0)]
-                        # exp_already_run = cache.eq(curr.values).all(1).any()
 
                         if exp_already_run:
-                            # print('ALREADY RUN')
                             continue
 
                     print(datetime.datetime.now(), '\tParams %s' % str(params_vals), end=' ')
@@ -525,10 +520,15 @@ def main():
 
                     df_res = pd.DataFrame(data=[res])
 
-                    if not os.path.isfile(results_path + RESULT_FILENAME):
-                        df_res.to_csv(results_path + RESULT_FILENAME, index=False)
+                    # if not os.path.isfile(results_path + RESULT_FILENAME):
+                    #     df_res.to_csv(results_path + RESULT_FILENAME, index=False)
+                    # else:
+                    #     df_res.to_csv(results_path + RESULT_FILENAME, mode='a', index=False, header=False)
+
+                    if not os.path.isfile(results_path + dataset_result_filename):
+                        df_res.to_csv(results_path + dataset_result_filename, index=False)
                     else:
-                        df_res.to_csv(results_path + RESULT_FILENAME, mode='a', index=False, header=False)
+                        df_res.to_csv(results_path + dataset_result_filename, mode='a', index=False, header=False)
 
         #             break
         #
@@ -539,7 +539,6 @@ def main():
         # break
 
     print(datetime.datetime.now(), 'BENCHMARK ENDED')
-
 
 
 if __name__ == "__main__":
