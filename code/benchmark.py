@@ -374,6 +374,12 @@ def main():
     one_hot_encode_cat = ONE_HOT_ENCODE_CAT
     numerical_scaler = StandardScaler()
 
+    df_res_cache = None
+    # if os.path.isfile(results_path + RESULT_FILENAME):
+    if os.path.isfile(results_path + dataset_result_filename):
+        df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
+        # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
+
     for dataset_name in [dataset_argv]:  #datasets_dict:
         print(datetime.datetime.now(), 'Task: %s, Dataset: %s' % (TASK_TYPE, dataset_name))
         filename = datasets_dict[dataset_name]
@@ -469,11 +475,11 @@ def main():
                     res['expid2'] = hashlib.md5(str.encode(''.join([str(s) for s in params2hash.values()]))).hexdigest()
                     res['expid3'] = hashlib.md5(str.encode(''.join([str(s) for s in params_dict.values()]))).hexdigest()
 
-                    df_res_cache = None
-                    # if os.path.isfile(results_path + RESULT_FILENAME):
-                    if os.path.isfile(results_path + dataset_result_filename):
-                        df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
-                        # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
+                    # df_res_cache = None
+                    # # if os.path.isfile(results_path + RESULT_FILENAME):
+                    # if os.path.isfile(results_path + dataset_result_filename):
+                    #     df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
+                    #     # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
 
                     if df_res_cache is not None:
                         exp_already_run = res['expid3'] in df_res_cache['expid3'].values
