@@ -472,13 +472,14 @@ def main():
                     df_res_cache = None
                     # if os.path.isfile(results_path + RESULT_FILENAME):
                     if os.path.isfile(results_path + dataset_result_filename):
-                        df_res_cache = pd.read_csv(results_path + dataset_result_filename)
+                        df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
                         # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
 
                     if df_res_cache is not None:
                         exp_already_run = res['expid3'] in df_res_cache['expid3'].values
 
                         if exp_already_run:
+                            print('Already run')
                             continue
 
                     print(datetime.datetime.now(), 'Task: %s, Dataset: %s (%s), Method: %s, Params: %s' % (
