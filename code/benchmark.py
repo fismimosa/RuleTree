@@ -43,7 +43,7 @@ task_folder = {
     TASK_CLR: 'regression/',
 }
 
-dataset_target = {
+dataset_target_clf = {
     'adult': 'class',
     'ionosphere': 'class',
     'bank': 'give_credit',
@@ -60,7 +60,24 @@ dataset_target = {
     'diabetes': 'Outcome',
 }
 
-dataset_feat_drop = {
+dataset_target_reg = {
+    'abalone': 'Rings',
+    'auction': 'verification.time',
+    'boston': '',
+    'carprice': '',
+    'drinks': '',
+    'insurance': '',
+    'intrusion': '',
+    'metamaterial': '',
+    'parkinsons_updrs': '',
+    'students': '',
+}
+
+dataset_target_clu = {
+
+}
+
+dataset_feat_drop_clf = {
     'adult': ['fnlwgt', 'education'],
     'ionosphere': [],
     'bank': [],
@@ -84,6 +101,23 @@ dataset_feat_drop = {
     'fico': [],
     'home': [],
     'diabetes': []
+}
+
+dataset_feat_drop_reg = {
+    'abalone': [],
+    'auction': ['verification.result'],
+    'boston': [],
+    'carprice': [],
+    'drinks': [],
+    'insurance': [],
+    'intrusion': [],
+    'metamaterial': [],
+    'parkinsons_updrs': [],
+    'students': [],
+}
+
+dataset_feat_drop_clu = {
+
 }
 
 task_method = {
@@ -212,19 +246,19 @@ def dataset_preprocessing(df, d, max_nbr_values, max_nbr_values_cat, one_hot_enc
     distrib_clusters = None
 
     if TASK_TYPE == TASK_CLF or TASK_TYPE == TASK_CLC:
-        target = dataset_target[d]
+        target = dataset_target_clf[d]
         values, counts = np.unique(df[target], return_counts=True)
         nbr_classes = len(values)
         distrib_classes = counts/len(df)
         distrib_classes = distrib_classes.tolist()
         y = df[target].values
     elif TASK_TYPE == TASK_REG or TASK_TYPE == TASK_CLR:
-        target = dataset_target[d]
+        target = dataset_target_reg[d]
         avg_target = np.mean(df[target])
         std_target = np.std(df[target])
         y = df[target].values
     elif TASK_TYPE == TASK_CLU:
-        target = dataset_target[d]
+        target = dataset_target_clu[d]
         values, counts = np.unique(df[target], return_counts=True)
         nbr_clusters = len(values)
         distrib_clusters = counts/len(df)
@@ -360,6 +394,7 @@ def evaluate_clu(y_test, y_pred, X, dist):
 
 def main():
     dataset_argv = sys.argv[1]
+    # dataset_argv = 'wine'
     dataset_result_filename = RESULT_FILENAME.replace('.csv', '_%s.csv' % dataset_argv)
     print(datetime.datetime.now(), 'BENCHMARK STARTED')
     print(datetime.datetime.now(), 'Task: %s' % TASK_TYPE)
@@ -380,12 +415,20 @@ def main():
         df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
         # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
 
+    if TASK_TYPE == TASK_CLF:
+        dataset_feat_drop = dataset_feat_drop_clf
+    elif TASK_TYPE == TASK_REG:
+        dataset_feat_drop = dataset_feat_drop_reg
+    else:
+        dataset_feat_drop = dataset_feat_drop_clu
+
     for dataset_name in [dataset_argv]:  #datasets_dict:
         print(datetime.datetime.now(), 'Task: %s, Dataset: %s' % (TASK_TYPE, dataset_name))
         filename = datasets_dict[dataset_name]
         df = pd.read_csv(path + filename, skipinitialspace=True)
 
-        df.drop(dataset_feat_drop[dataset_name], axis=1, inplace=True)
+        if dataset_feat_drop is not None and len(dataset_feat_drop) > 0 and len(dataset_feat_drop[dataset_name]) > 0:
+            df.drop(dataset_feat_drop[dataset_name], axis=1, inplace=True)
         df = remove_missing_values(df)
 
         numerical_indices = np.where(np.in1d(df.columns.values, df._get_numeric_data().columns.values))[0]
@@ -421,7 +464,7 @@ def main():
                     dist_train = skm.pairwise_distances(X_train, metric='euclidean')
 
             for method_name in ['RT']:  #task_method[TASK_TYPE]:
-                print(datetime.datetime.now(), 'Task: %s, Dataset: %s (%s), Method: %s' % (
+                print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s' % (
                     TASK_TYPE, dataset_name, rh, method_name))
 
                 # methods_params = None
@@ -471,7 +514,8 @@ def main():
 
                     params2hash = {k: params_dict[k] for k in params_dict if k != 'random_state'}
                     res['expid1'] = hashlib.md5(str.encode(''.join([str(s) for s in params2hash.values()]))).hexdigest()
-                    params2hash = {k: params_dict[k] for k in params_dict if k not in ['random_state', 'repeated_holdout_id']}
+                    params2hash = {k: params_dict[k] for k in params_dict if k not in ['random_state',
+                                                                                       'repeated_holdout_id']}
                     res['expid2'] = hashlib.md5(str.encode(''.join([str(s) for s in params2hash.values()]))).hexdigest()
                     res['expid3'] = hashlib.md5(str.encode(''.join([str(s) for s in params_dict.values()]))).hexdigest()
 
@@ -488,8 +532,15 @@ def main():
                             print('Already run')
                             continue
 
-                    print(datetime.datetime.now(), 'Task: %s, Dataset: %s (%s), Method: %s, Params: %s' % (
+                    # param_vals_test = [5, None, 2, 10, False, False, 2, False, 2, 0.0, 'bic', 'gini', 'squared_error', None, False, 2, 2, 1, 0]
+                    # for k, v in zip(methods_params[method_name].keys(), param_vals_test):
+                    #     params_dict[k] = v
+                    #
+                    # print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s, Params: %s' % (
+                    #     TASK_TYPE, dataset_name, rh, method_name, str(param_vals_test)), end=' ')
+                    print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s, Params: %s' % (
                         TASK_TYPE, dataset_name, rh, method_name, str(params_vals)), end=' ')
+
                     model.set_params(**params_dict)
 
                     if TASK_TYPE == TASK_CLU:
