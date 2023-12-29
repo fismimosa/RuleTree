@@ -414,7 +414,7 @@ def main():
                 if TASK_TYPE == TASK_CLR:
                     dist_train = skm.pairwise_distances(X_train, metric='euclidean')
 
-            for method_name in task_method[TASK_TYPE]:
+            for method_name in ['RT']:  #task_method[TASK_TYPE]:
                 print(datetime.datetime.now(), 'Task: %s, Dataset: %s (%s), Method: %s' % (
                     TASK_TYPE, dataset_name, rh, method_name))
 
@@ -481,7 +481,8 @@ def main():
                         if exp_already_run:
                             continue
 
-                    print(datetime.datetime.now(), '\tParams %s' % str(params_vals), end=' ')
+                    print(datetime.datetime.now(), 'Task: %s, Dataset: %s (%s), Method: %s, Params: %s' % (
+                        TASK_TYPE, dataset_name, rh, method_name, str(params_vals)), end=' ')
                     model.set_params(**params_dict)
 
                     if TASK_TYPE == TASK_CLU:

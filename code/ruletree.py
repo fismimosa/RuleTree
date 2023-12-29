@@ -1165,6 +1165,8 @@ class RuleTree:
             nodes_to_remove = list()
             for node_id in self.__tree_structure:
                 node_l, node_r = self.__tree_structure[node_id]
+                if node_l not in self.__node_dict or node_r not in self.__node_dict:
+                    continue
                 if self.__node_dict[node_l].is_leaf and self.__node_dict[node_r].is_leaf and \
                         self.__node_dict[node_l].label == self.__node_dict[node_r].label:
                     self._make_leaf(self.__node_dict[node_id])
