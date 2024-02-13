@@ -281,7 +281,7 @@ class ObliqueHouseHolderSplit:
         return self.oblq_clf.apply(X_house)
 
 
-class RuleTreeNode:
+class RuleTreeNode():
 
     def __init__(self, idx, node_id, label, parent_id, is_leaf=False, clf=None, node_l=None, node_r=None,
                  samples=None, support=None, impurity=None, is_oblique=None, proba=None):
@@ -378,7 +378,7 @@ class RuleTree:
         self.__X = None
         self.__Xr = None
         self.__typed_X = None
-        self.__y = None
+        self._y = None
         self.labels_ = None
         self.root_ = None
         self.label_encoder_ = None
@@ -396,7 +396,7 @@ class RuleTree:
 
         self.__queue = list()
         self.__tree_structure = dict()
-        self.__node_dict = dict()
+        self._node_dict = dict()
         self.__leaf_rule = dict()
         self.rules_to_tree_print_ = None
         self.rules_ = None
@@ -465,7 +465,7 @@ class RuleTree:
         else:
             raise Exception('Unknown model %s' % self.model_type)
 
-        clf.fit(self.__X[idx_iter], self.__y[idx_iter])
+        clf.fit(self.__X[idx_iter], self._y[idx_iter])
         labels = clf.apply(self.__X[idx_iter])
 
         is_oblique = False
@@ -477,7 +477,7 @@ class RuleTree:
                 random_state=self.random_state,
             )
 
-            olq_clf.fit(self.__X[idx_iter], self.__y[idx_iter])
+            olq_clf.fit(self.__X[idx_iter], self._y[idx_iter])
             labels_ob = olq_clf.apply(self.__X[idx_iter])
 
             vals, counts = np.unique(labels, return_counts=True)
@@ -645,29 +645,29 @@ class RuleTree:
         tiebreaker = count()  # counter for the priority queue. Used in case of the same -len(idx)
 
         self.__X = X
-        self.__y = y
+        self._y = y
 
-        if self.__y is None:
+        if self._y is None:
             self.model_type = MODEL_TYPE_CLU
 
         y_is_numerical = None
-        if self.__y is not None:
-            if len(np.unique(self.__y)) >= self.max_nbr_values_cat:  # infer is numerical
+        if self._y is not None:
+            if len(np.unique(self._y)) >= self.max_nbr_values_cat:  # infer is numerical
                 y_is_numerical = True
             else:                                                    # infer y is categorical
                 y_is_numerical = False
-                self.nbr_classes_ = len(np.unique(self.__y))
-                if isinstance(np.unique(self.__y)[0], str):
+                self.nbr_classes_ = len(np.unique(self._y))
+                if isinstance(np.unique(self._y)[0], str):
                     self.class_encoder_ = LabelEncoder()
-                    self.class_encoder_.fit(self.__y)
-                    self.__y = self.class_encoder_.transform(self.__y)
+                    self.class_encoder_.fit(self._y)
+                    self._y = self.class_encoder_.transform(self._y)
 
             if self.model_type == MODEL_TYPE_CLU:
                 if y_is_numerical:
                     self.clu_for_reg = True
                 else:
                     self.clu_for_clf = True
-                    self.nbr_classes_ = len(np.unique(self.__y))
+                    self.nbr_classes_ = len(np.unique(self._y))
 
         if self.verbose:
             print(datetime.datetime.now(), 'Model type: %s.' % self.model_type)
@@ -683,22 +683,22 @@ class RuleTree:
 
         node_id = 0
         proba = None
-        if self.__y is None:
+        if self._y is None:
             majority_class = node_id
         elif self.model_type == MODEL_TYPE_CLF:
-            majority_class = calculate_mode(self.__y)
-            proba = calculate_proba(self.__y, self.nbr_classes_)   # TODO se classi non intere fare mapping
+            majority_class = calculate_mode(self._y)
+            proba = calculate_proba(self._y, self.nbr_classes_)   # TODO se classi non intere fare mapping
         elif self.model_type == MODEL_TYPE_REG:
-            majority_class = np.mean(self.__y)
+            majority_class = np.mean(self._y)
         else:
-            if len(np.unique(self.__y)) >= self.max_nbr_values_cat:  # infer is numerical
-                majority_class = np.mean(self.__y)
+            if len(np.unique(self._y)) >= self.max_nbr_values_cat:  # infer is numerical
+                majority_class = np.mean(self._y)
             else:  # infer it is categorical
-                majority_class = calculate_mode(self.__y)
+                majority_class = calculate_mode(self._y)
                 proba = calculate_proba(y, self.nbr_classes_)
 
         root_node = RuleTreeNode(idx, node_id, majority_class, proba=proba, parent_id=-1)
-        self.__node_dict[root_node.node_id] = root_node
+        self._node_dict[root_node.node_id] = root_node
 
         if self.model_type == MODEL_TYPE_CLU:
             heapq.heappush(self.__queue, (-len(idx), (next(tiebreaker), idx, 0, root_node)))
@@ -769,7 +769,7 @@ class RuleTree:
             else:
                 (idx_iter, node_depth, node) = self.__queue.pop(0)
 
-            if self.model_type == MODEL_TYPE_CLF and len(np.unique(self.__y[idx_iter])) == 1:
+            if self.model_type == MODEL_TYPE_CLF and len(np.unique(self._y[idx_iter])) == 1:
                 self._make_leaf(node)
                 nbr_curr_nodes += 1
                 if self.verbose:
@@ -792,7 +792,7 @@ class RuleTree:
                     print(datetime.datetime.now(), 'Exceeded maximum number of nodes.')
                 continue
 
-            if node_depth >= self.max_depth:
+            if self.max_depth is not None and node_depth >= self.max_depth:
                 self._make_leaf(node)
                 nbr_curr_nodes += 1
                 if self.verbose:
@@ -856,26 +856,26 @@ class RuleTree:
             proba_l = None
             proba_r = None
 
-            if self.__y is None:
+            if self._y is None:
                 label_l = node_id + 1
                 label_r = node_id + 2
             elif self.model_type == MODEL_TYPE_CLF:
-                label_l = calculate_mode(self.__y[idx_all_l])
-                label_r = calculate_mode(self.__y[idx_all_r])
-                proba_l = calculate_proba(self.__y[idx_all_l], self.nbr_classes_)
-                proba_r = calculate_proba(self.__y[idx_all_r], self.nbr_classes_)
+                label_l = calculate_mode(self._y[idx_all_l])
+                label_r = calculate_mode(self._y[idx_all_r])
+                proba_l = calculate_proba(self._y[idx_all_l], self.nbr_classes_)
+                proba_r = calculate_proba(self._y[idx_all_r], self.nbr_classes_)
             elif self.model_type == MODEL_TYPE_REG:
-                label_l = np.mean(self.__y[idx_all_l])
-                label_r = np.mean(self.__y[idx_all_r])
+                label_l = np.mean(self._y[idx_all_l])
+                label_r = np.mean(self._y[idx_all_r])
             else:
                 if y_is_numerical:
-                    label_l = np.mean(self.__y[idx_all_l])
-                    label_r = np.mean(self.__y[idx_all_r])
+                    label_l = np.mean(self._y[idx_all_l])
+                    label_r = np.mean(self._y[idx_all_r])
                 else:
-                    label_l = calculate_mode(self.__y[idx_all_l])
-                    label_r = calculate_mode(self.__y[idx_all_r])
-                    proba_l = calculate_proba(self.__y[idx_all_l], self.nbr_classes_)
-                    proba_r = calculate_proba(self.__y[idx_all_r], self.nbr_classes_)
+                    label_l = calculate_mode(self._y[idx_all_l])
+                    label_r = calculate_mode(self._y[idx_all_r])
+                    proba_l = calculate_proba(self._y[idx_all_l], self.nbr_classes_)
+                    proba_r = calculate_proba(self._y[idx_all_r], self.nbr_classes_)
 
             node_id += 1
             if not is_oblique:
@@ -903,8 +903,8 @@ class RuleTree:
             node.is_oblique = is_oblique
 
             self.__tree_structure[node.node_id] = (node_l.node_id, node_r.node_id)
-            self.__node_dict[node_l.node_id] = node_l
-            self.__node_dict[node_r.node_id] = node_r
+            self._node_dict[node_l.node_id] = node_l
+            self._node_dict[node_r.node_id] = node_r
 
             if self.model_type == MODEL_TYPE_CLU:
                 bic_l = bic(self.__X[idx_iter[idx_l]], [0] * len(idx_l))
@@ -934,7 +934,7 @@ class RuleTree:
             self.labels_ = self.label_encoder_.fit_transform(self.labels_)
 
         if self.class_encoder_ is not None:
-            self.__y = self.class_encoder_.inverse_transform(self.__y)
+            self._y = self.class_encoder_.inverse_transform(self._y)
         self.rules_to_tree_print_ = self._get_rules_to_print_tree()
         self.rules_ = self._calculate_rules()
         self.rules_ = self._compact_rules()
@@ -991,10 +991,18 @@ class RuleTree:
 
         X = self._inverse_preprocessing(X)
 
-        if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+        """if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
             labels = self.label_encoder_.transform(labels)
             if self.class_encoder_ is not None:
+                labels = self.class_encoder_.inverse_transform(labels)"""
+
+        if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+            if self.class_encoder_ is not None:
                 labels = self.class_encoder_.inverse_transform(labels)
+        elif self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
+            labels = self.label_encoder_.transform(labels)
+
+
 
         if get_leaf and get_rule:
             rules = list()
@@ -1165,15 +1173,15 @@ class RuleTree:
             nodes_to_remove = list()
             for node_id in self.__tree_structure:
                 node_l, node_r = self.__tree_structure[node_id]
-                if node_l not in self.__node_dict or node_r not in self.__node_dict:
+                if node_l not in self._node_dict or node_r not in self._node_dict:
                     continue
-                if self.__node_dict[node_l].is_leaf and self.__node_dict[node_r].is_leaf and \
-                        self.__node_dict[node_l].label == self.__node_dict[node_r].label:
-                    self._make_leaf(self.__node_dict[node_id])
-                    del self.__node_dict[node_l]
-                    del self.__node_dict[node_r]
-                    self.__node_dict[node_id].node_l = None
-                    self.__node_dict[node_id].node_r = None
+                if self._node_dict[node_l].is_leaf and self._node_dict[node_r].is_leaf and \
+                        self._node_dict[node_l].label == self._node_dict[node_r].label:
+                    self._make_leaf(self._node_dict[node_id])
+                    del self._node_dict[node_l]
+                    del self._node_dict[node_r]
+                    self._node_dict[node_id].node_l = None
+                    self._node_dict[node_id].node_r = None
                     nodes_to_remove.append(node_id)
                     tree_pruned = True
 
@@ -1188,10 +1196,15 @@ class RuleTree:
 
         if node.is_leaf:
             label = node.label
-            if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
-                label = self.label_encoder_.transform([node.label])[0]
+            """if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+                #label = self.label_encoder_.transform([node.label])[0]
                 if self.class_encoder_ is not None:
-                    label = self.class_encoder_.inverse_transform([label])[0]
+                    label = self.class_encoder_.inverse_transform([label])[0]"""
+            if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+                if self.class_encoder_ is not None:
+                    label = self.class_encoder_.inverse_transform([node.label])[0]
+            elif self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
+                label = self.label_encoder_.transform([node.label])[0]
             leaf = (False, label, node.samples, node.support, node.node_id, cur_depth)
 
             rules.append(leaf)
@@ -1227,14 +1240,20 @@ class RuleTree:
         if self.verbose:
             print(datetime.datetime.now(), 'Calculate rules.')
 
-        for node_id in self.__node_dict:
-            node = self.__node_dict[node_id]
+        for node_id in self._node_dict:
+            node = self._node_dict[node_id]
             if not node.is_leaf:
                 continue
 
             label = node.label
+            #if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+            #    label = self.label_encoder_.transform([node.label])[0]
             if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+                if self.class_encoder_ is not None:
+                    label = self.class_encoder_.inverse_transform([node.label])[0]
+            elif self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
                 label = self.label_encoder_.transform([node.label])[0]
+
 
             rule = [(label,)]
 
@@ -1242,7 +1261,7 @@ class RuleTree:
             next_node_id = node.parent_id
             if next_node_id == -1:
                 break
-            next_node = self.__node_dict[next_node_id]
+            next_node = self._node_dict[next_node_id]
 
             while True:
 
@@ -1273,7 +1292,7 @@ class RuleTree:
 
                 if next_node_id == -1:
                     break
-                next_node = self.__node_dict[next_node_id]
+                next_node = self._node_dict[next_node_id]
 
         return self.__leaf_rule
 
@@ -1288,8 +1307,8 @@ class RuleTree:
             print(datetime.datetime.now(), 'Calculate medoids.')
 
         medoid_dict = dict()
-        for node_id in self.__node_dict:
-            node = self.__node_dict[node_id]
+        for node_id in self._node_dict:
+            node = self._node_dict[node_id]
             node.medoid = calculate_medoid(self.__X[node.idx], self.__Xr[node.idx])
             medoid_dict[node_id] = node.medoid
         return medoid_dict
@@ -1302,12 +1321,12 @@ class RuleTree:
             print(datetime.datetime.now(), 'Calculate class medoids.')
 
         class_medoid_dict = dict()
-        for node_id in self.__node_dict:
-            node = self.__node_dict[node_id]
+        for node_id in self._node_dict:
+            node = self._node_dict[node_id]
             node.class_medoid = dict()
-            for l in np.unique(self.__y[node.idx]):
-                node.class_medoid[l] = calculate_medoid(self.__X[node.idx][self.__y[node.idx] == l],
-                                                        self.__Xr[node.idx][self.__y[node.idx] == l])
+            for l in np.unique(self._y[node.idx]):
+                node.class_medoid[l] = calculate_medoid(self.__X[node.idx][self._y[node.idx] == l],
+                                                        self.__Xr[node.idx][self._y[node.idx] == l])
             class_medoid_dict[node_id] = node.class_medoid
         return class_medoid_dict
 
@@ -1319,10 +1338,10 @@ class RuleTree:
             print(datetime.datetime.now(), 'Calculate regression medoids.')
 
         regr_medoid_dict = dict()
-        for node_id in self.__node_dict:
-            node = self.__node_dict[node_id]
-            median_y = np.median(self.__y[node.idx])
-            diff_with_median_y = self.__y[node.idx] - median_y
+        for node_id in self._node_dict:
+            node = self._node_dict[node_id]
+            median_y = np.median(self._y[node.idx])
+            diff_with_median_y = self._y[node.idx] - median_y
             idx_regr_medoid = np.argmin(diff_with_median_y)
             node.regr_medoid = self.__Xr[idx_regr_medoid]
             regr_medoid_dict[node_id] = node.regr_medoid
@@ -1392,10 +1411,10 @@ class RuleTree:
                     if self.model_type == MODEL_TYPE_REG or self.clu_for_reg:
                         cons_txt = np.round(cond[0], self.precision)
                     else:
-                        if self.class_encoder_ is not None:
-                            cons_txt = self.class_encoder_.inverse_transform([cond[0]])[0]
-                        else:
-                            cons_txt = cond[0]
+                        #if self.class_encoder_ is not None:
+                        #    cons_txt = self.class_encoder_.inverse_transform([cond[0]])[0]
+                        #else:
+                        cons_txt = cond[0] #TODO: check con rick
                     cond_s = ('%s' % cons_txt)
 
                 else:
