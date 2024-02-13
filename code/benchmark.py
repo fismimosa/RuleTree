@@ -21,6 +21,10 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
+import warnings
+
+warnings.filterwarnings("ignore")
+
 dataset_path = '../datasets/'
 results_path = '../results/'
 
@@ -63,19 +67,42 @@ dataset_target_clf = {
 dataset_target_reg = {
     'abalone': 'Rings',
     'auction': 'verification.time',
-    'boston': '',
-    'carprice': '',
-    'drinks': '',
-    'insurance': '',
-    'intrusion': '',
+    'boston': 'MEDV',
+    'carprice': 'price',
+    'drinks': 'drinks',
+    'insurance': 'charges',
+    'intrusion': 'Number of Barriers',
     'metamaterial': '',
-    'parkinsons_updrs': '',
-    'students': '',
+    'parkinsons_updrs': 'motor_UPDRS',
+    'parkinsons_updrs_total': 'total_UPDRS',
+    'students': 'Performance Index',
 }
 
 dataset_target_clu = {
-
+    '2d-3c-no123': '2',
+    '2d-4c-no9': '2',
+    '2d-4c_y': '2',
+    '2d-10c': '2',
+    '2d-20c-no0': '2',
+    '2d-d31': '2',
+    'aggregation': '2',
+    'cure-t0-2000n-2D': '2',
+    'cure-t1-2000n-2D': '2',
+    'cure-t2-4k': '2',
+    'longsquare': '2',
+    's-set1': '2',
+    's-set2': '2',
+    'tetra': '3',
+    'triangle1': '2',
+    'triangle2': '2',
+    'zelnik5_y': '2',
+    'zelnik6_y': '2',
 }
+
+datasets_target_clu_sup = set(dataset_target_clu.keys())
+
+dataset_target_clu.update(dataset_target_clf)
+dataset_target_clu.update(dataset_target_reg)
 
 dataset_feat_drop_clf = {
     'adult': ['fnlwgt', 'education'],
@@ -84,7 +111,7 @@ dataset_feat_drop_clf = {
     'auction': ['verification.time'],
     'vehicle': [],
     'wdbc': [],
-    'compas-scores-two-years': ['Unnamed: 0',  'id', 'compas_screening_date', 'age_cat', 'decile_score',
+    'compas-scores-two-years': ['Unnamed: 0', 'id', 'compas_screening_date', 'age_cat', 'dob', 'decile_score',
                                 'c_jail_in', 'c_jail_out', 'c_offense_date', 'c_arrest_date',
                                 'c_days_from_compas', 'c_charge_degree', 'c_charge_desc',
                                 'r_charge_degree', 'r_days_from_arrest', 'r_offense_date',
@@ -107,27 +134,47 @@ dataset_feat_drop_reg = {
     'abalone': [],
     'auction': ['verification.result'],
     'boston': [],
-    'carprice': [],
-    'drinks': [],
+    'carprice': ['car_ID', 'CarName'],
+    'drinks': ['selector'],
     'insurance': [],
     'intrusion': [],
     'metamaterial': [],
-    'parkinsons_updrs': [],
+    'parkinsons_updrs': ['total_UPDRS'],
+    'parkinsons_updrs_total': ['motor_UPDRS'],
     'students': [],
 }
 
 dataset_feat_drop_clu = {
-
+    '2d-3c-no123': [],
+    '2d-4c-no9': [],
+    '2d-4c_y': [],
+    '2d-10c': [],
+    '2d-20c-no0': [],
+    '2d-d31': [],
+    'aggregation': [],
+    'cure-t0-2000n-2D': [],
+    'cure-t1-2000n-2D': [],
+    'cure-t2-4k': [],
+    'longsquare': [],
+    's-set1': [],
+    's-set2': [],
+    'tetra': [],
+    'triangle1': [],
+    'triangle2': [],
+    'zelnik5_y': [],
+    'zelnik6_y': [],
 }
+
+dataset_feat_drop_clu.update(dataset_feat_drop_clf)
+dataset_feat_drop_clu.update(dataset_feat_drop_reg)
 
 task_method = {
-    TASK_CLF: {'DT': DecisionTreeClassifier(), 'RT': RuleTree()},  # 'KNN': KNeighborsClassifier(),
-    TASK_REG: {'DT': DecisionTreeRegressor(), 'RT': RuleTree()},   # 'KNN': KNeighborsRegressor(),
-    TASK_CLU: {'KM': KMeans(), 'KT': KMeansTree(), 'RT': RuleTree()},
-    TASK_CLC: {'KT': KMeansTree(), 'RT': RuleTree()},
-    TASK_CLR: {'KT': KMeansTree(), 'RT': RuleTree()},
+    TASK_CLF: {'DT': DecisionTreeClassifier, 'RT': RuleTree},  # 'KNN': KNeighborsClassifier(),
+    TASK_REG: {'DT': DecisionTreeRegressor, 'RT': RuleTree},  # 'KNN': KNeighborsRegressor(),
+    TASK_CLU: {'KM': KMeans, 'KT': KMeansTree, 'RT': RuleTree},
+    TASK_CLC: {'KT': KMeansTree, 'RT': RuleTree},
+    TASK_CLR: {'KT': KMeansTree, 'RT': RuleTree},
 }
-
 
 MAX_DEPTH_LIST = [2, 3, 4, 5, 6, None]
 MIN_SAMPLE_SPLIT_LIST = [2, 5, 10, 20, 0.01, 0.05, 0.1]
@@ -136,7 +183,7 @@ MAX_LEAF_NODES = [None, 32]
 CCP_ALPHA_LIST = [0.0, 0.001, 0.01, 0.1]
 RANDOM_STATE_LIST = np.arange(0, 10).tolist()
 N_CLUSTERS_LIST = [2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 32, 64]
-BIC_EPS_LIST = [0.0, 0.001, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5]
+BIC_EPS_LIST = [0.0, 0.001, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.7, 1.0]
 
 MAX_NBR_VALUES_CAT = 20  # con meno-uguale di max_nbr_values_cat valori e' categorica
 MAX_NBR_VALUES = np.inf
@@ -183,6 +230,16 @@ methods_params_sup = {
 }
 
 methods_params_unsup = {
+    'KM': {
+        'n_clusters': N_CLUSTERS_LIST,
+        'init': ['k-means++'],
+        'n_init': [10],
+        'max_iter': [300],
+        'tol': [0.0001],
+        'copy_x': [True],
+        'algorithm': ['lloyd'],
+        'random_state': RANDOM_STATE_LIST,
+    },
     'KT': {
         'labels_as_tree_leaves': [False, True],
         # 'max_nbr_values_cat': [20],
@@ -196,7 +253,7 @@ methods_params_unsup = {
         'tol': [0.0001],
         'copy_x': [True],
         'max_depth': MAX_DEPTH_LIST,
-        'algorithm': ['auto'],
+        'algorithm': ['lloyd'],
         'splitter': ['best'],
         'min_weight_fraction_leaf': [0.0],
         'max_features': [None],
@@ -231,13 +288,11 @@ methods_params_unsup = {
     }
 }
 
-# all_params = sorted(set([k for m in methods_params_clf for k in methods_params_clf[m]]))
 all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
 
 
 def dataset_preprocessing(df, d, max_nbr_values, max_nbr_values_cat, one_hot_encode_cat, categorical_indices,
                           numerical_indices, numerical_scaler):
-
     nbr_classes = None
     distrib_classes = None
     avg_target = None
@@ -249,7 +304,7 @@ def dataset_preprocessing(df, d, max_nbr_values, max_nbr_values_cat, one_hot_enc
         target = dataset_target_clf[d]
         values, counts = np.unique(df[target], return_counts=True)
         nbr_classes = len(values)
-        distrib_classes = counts/len(df)
+        distrib_classes = counts / len(df)
         distrib_classes = distrib_classes.tolist()
         y = df[target].values
     elif TASK_TYPE == TASK_REG or TASK_TYPE == TASK_CLR:
@@ -261,7 +316,7 @@ def dataset_preprocessing(df, d, max_nbr_values, max_nbr_values_cat, one_hot_enc
         target = dataset_target_clu[d]
         values, counts = np.unique(df[target], return_counts=True)
         nbr_clusters = len(values)
-        distrib_clusters = counts/len(df)
+        distrib_clusters = counts / len(df)
         distrib_clusters = distrib_clusters.tolist()
         y = None
     else:
@@ -323,7 +378,6 @@ def add_dataset_stats(ds):
 
 
 def evaluate_clf(y_test, y_pred, y_pred_proba):
-
     class_values = np.unique(y_test)
     binary = len(class_values) <= 2
     res = {
@@ -350,11 +404,14 @@ def evaluate_clf(y_test, y_pred, y_pred_proba):
             y_test, y_pred_proba, average='micro', multi_class='ovr'),
         'roc_weighted': skm.roc_auc_score(y_test, y_pred_proba[:, 1], average='weighted')
         if binary else skm.roc_auc_score(y_test, y_pred_proba, average='weighted', multi_class='ovr'),
-        'average_precision_macro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='macro', pos_label=class_values[1])
+        'average_precision_macro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='macro',
+                                                               pos_label=class_values[1])
         if binary else skm.average_precision_score(y_test, y_pred_proba, average='macro'),
-        'average_precision_micro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='micro', pos_label=class_values[1])
+        'average_precision_micro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='micro',
+                                                               pos_label=class_values[1])
         if binary else skm.average_precision_score(y_test, y_pred_proba, average='micro'),
-        'average_precision_weighted': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='weighted', pos_label=class_values[1])
+        'average_precision_weighted': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='weighted',
+                                                                  pos_label=class_values[1])
         if binary else skm.average_precision_score(y_test, y_pred_proba, average='weighted'),
     }
     return res
@@ -374,7 +431,7 @@ def evaluate_reg(y_test, y_pred):
     return res
 
 
-def evaluate_clu(y_test, y_pred, X, dist):
+def evaluate_clu_sup(y_test, y_pred, X, dist):
     res = {
         'adjusted_mutual_info': skm.adjusted_mutual_info_score(y_test, y_pred),
         'adjusted_rand': skm.adjusted_rand_score(y_test, y_pred),
@@ -385,6 +442,15 @@ def evaluate_clu(y_test, y_pred, X, dist):
         'normalized_mutual_info': skm.normalized_mutual_info_score(y_test, y_pred),
         'rand_score': skm.rand_score(y_test, y_pred),
         'v_measure': skm.v_measure_score(y_test, y_pred),
+        'silhouette_score': skm.silhouette_score(dist, y_pred),
+        'calinski_harabasz': skm.calinski_harabasz_score(X, y_pred),
+        'davies_bouldin': skm.davies_bouldin_score(X, y_pred)
+    }
+    return res
+
+
+def evaluate_clu_unsup(y_pred, X, dist):
+    res = {
         'silhouette_score': skm.silhouette_score(dist, y_pred),
         'calinski_harabasz': skm.calinski_harabasz_score(X, y_pred),
         'davies_bouldin': skm.davies_bouldin_score(X, y_pred)
@@ -419,10 +485,10 @@ def main():
         dataset_feat_drop = dataset_feat_drop_clf
     elif TASK_TYPE == TASK_REG:
         dataset_feat_drop = dataset_feat_drop_reg
-    else:
-        dataset_feat_drop = dataset_feat_drop_clu
+    """else:
+        dataset_feat_drop = dataset_feat_drop_clu"""
 
-    for dataset_name in [dataset_argv]:  #datasets_dict:
+    for dataset_name in [dataset_argv]:  # datasets_dict:
         print(datetime.datetime.now(), 'Task: %s, Dataset: %s' % (TASK_TYPE, dataset_name))
         filename = datasets_dict[dataset_name]
         df = pd.read_csv(path + filename, skipinitialspace=True)
@@ -463,7 +529,7 @@ def main():
                 if TASK_TYPE == TASK_CLR:
                     dist_train = skm.pairwise_distances(X_train, metric='euclidean')
 
-            for method_name in ['RT']:  #task_method[TASK_TYPE]:
+            for method_name in task_method[TASK_TYPE]:
                 print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s' % (
                     TASK_TYPE, dataset_name, rh, method_name))
 
@@ -473,13 +539,13 @@ def main():
                 else:
                     methods_params = methods_params_unsup
 
-                model = task_method[TASK_TYPE][method_name]
                 params_prodcut = itertools.product(*methods_params[method_name].values())
+
                 for params_vals in params_prodcut:
                     params_dict = dict()
                     for k, v in zip(methods_params[method_name].keys(), params_vals):
                         params_dict[k] = v
-                    if method_name is 'RT':
+                    if method_name == 'RT':
                         if TASK_TYPE == TASK_CLF:
                             model_type = 'clf'
                         elif TASK_TYPE == TASK_REG:
@@ -508,7 +574,8 @@ def main():
                     for c in all_params:
                         if c not in res:
                             res[c] = -1
-                    for c in ['feature_names', 'one_hot_encode_cat', 'numerical_indices', 'numerical_scaler', 'model_type']:
+                    for c in ['feature_names', 'one_hot_encode_cat', 'numerical_indices', 'numerical_scaler',
+                              'model_type']:
                         if c not in res:
                             res[c] = -1
 
@@ -541,14 +608,18 @@ def main():
                     print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s, Params: %s' % (
                         TASK_TYPE, dataset_name, rh, method_name, str(params_vals)), end=' ')
 
-                    model.set_params(**params_dict)
+                    model = task_method[TASK_TYPE][method_name](**params_dict)
 
                     if TASK_TYPE == TASK_CLU:
                         start = time.time()
                         model.fit(X)
                         stop = time.time()
                         res_eval = {'fit_time': stop - start}
-                        res_clu = evaluate_clu(y, model.labels_, dist, X)
+                        if dataset_name in datasets_target_clu_sup:
+                            res_clu = evaluate_clu_sup(y, model.labels_, dist, X)
+                        else:
+                            res_clu = evaluate_clu_unsup(model.labels_, dist, X)
+
                         res_eval.update(res_clu)
 
                     else:
@@ -572,12 +643,13 @@ def main():
                             res_eval.update(res_reg)
                             print('R2: %.2f' % res_reg['r2'])
                         if TASK_TYPE == TASK_CLC or TASK_TYPE == TASK_CLR:
-                            res_clu = evaluate_clu(y_train, model.labels_, dist_train, X_train)
+                            res_clu = evaluate_clu_sup(y_train, model.labels_, dist_train, X_train)
                             res_eval.update(res_clu)
                             print('NMI: %.2f' % res_clu['normalized_mutual_info'])
 
                     res.update(res_eval)
 
+                    res = dict(sorted(res.items(), key=lambda x: x[0]))
                     df_res = pd.DataFrame(data=[res])
 
                     # if not os.path.isfile(results_path + RESULT_FILENAME):
