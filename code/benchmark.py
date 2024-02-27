@@ -288,8 +288,6 @@ methods_params_unsup = {
     }
 }
 
-all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
-
 
 def dataset_preprocessing(df, d, max_nbr_values, max_nbr_values_cat, one_hot_encode_cat, categorical_indices,
                           numerical_indices, numerical_scaler):
@@ -450,12 +448,18 @@ def evaluate_clu_sup(y_test, y_pred, X, dist):
 
 
 def evaluate_clu_unsup(y_pred, X, dist):
-    res = {
+    if len(y_pred.unique()) == 1:
+        return {
+            'silhouette_score': np.nan,
+            'calinski_harabasz': np.nan,
+            'davies_bouldin': np.nan
+        }
+
+    return {
         'silhouette_score': skm.silhouette_score(dist, y_pred),
         'calinski_harabasz': skm.calinski_harabasz_score(X, y_pred),
         'davies_bouldin': skm.davies_bouldin_score(X, y_pred)
     }
-    return res
 
 
 def main():
@@ -483,10 +487,13 @@ def main():
 
     if TASK_TYPE == TASK_CLF:
         dataset_feat_drop = dataset_feat_drop_clf
+        all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
     elif TASK_TYPE == TASK_REG:
         dataset_feat_drop = dataset_feat_drop_reg
+        all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
     else:
         dataset_feat_drop = dataset_feat_drop_clu
+        all_params = sorted(set([k for m in methods_params_unsup for k in methods_params_unsup[m]]))
 
     for dataset_name in [dataset_argv]:  # datasets_dict:
         print(datetime.datetime.now(), 'Task: %s, Dataset: %s' % (TASK_TYPE, dataset_name))
