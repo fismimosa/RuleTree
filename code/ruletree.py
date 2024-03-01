@@ -928,10 +928,13 @@ class RuleTree:
         self.root_ = root_node
         self.label_encoder_ = LabelEncoder()
 
-        if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+        if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf or self.model_type == MODEL_TYPE_CLU:
             if self.verbose:
                 print(datetime.datetime.now(), 'Normalize labels id.')
             self.labels_ = self.label_encoder_.fit_transform(self.labels_)
+
+        if self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
+            self.nbr_classes_ = len(np.unique(self.labels_))
 
         if self.class_encoder_ is not None:
             self._y = self.class_encoder_.inverse_transform(self._y)
@@ -1026,6 +1029,9 @@ class RuleTree:
         return labels
 
     def predict_proba(self, X):
+        if self.model_type == MODEL_TYPE_REG or self.clu_for_reg:
+            return self.predict(X)
+        
         X = self._preprocessing(X)
 
         idx = np.arange(X.shape[0])
@@ -1056,7 +1062,10 @@ class RuleTree:
             if self.model_type == MODEL_TYPE_REG or self.clu_for_reg:
                 labels = labels.astype(float)
             leaves = np.zeros(len(labels)).astype(int)
-            proba = np.zeros((len(labels), self.nbr_classes_))
+            if self.model_type != MODEL_TYPE_REG and not self.clu_for_reg:
+                proba = np.zeros((len(labels), self.nbr_classes_))
+            else:
+                proba = np.zeros((len(labels), 1))
 
             idx_l, idx_r = np.where(labels == 1)[0], np.where(labels == 2)[0]
             idx_all_l = idx_iter[idx_l]
@@ -1680,7 +1689,7 @@ def main():
 
     from sklearn.preprocessing import MinMaxScaler
 
-    rt = RuleTree(model_type='clf',
+    rt = RuleTree(model_type='reg',
                   # max_depth=4,
                   # min_samples_leaf=1,
                   # min_samples_split=2,
@@ -1709,8 +1718,8 @@ def main():
 
     y_train_o = y_train[::]
     y_test_o = y_test[::]
-    # y_train = np.log(X_train[:, 0] * X_train[:, 1])
-    # y_test = np.log(X_test[:, 0] * X_test[:, 1])
+    y_train = np.log(X_train[:, 0] * X_train[:, 1])
+    y_test = np.log(X_test[:, 0] * X_test[:, 1])
     # X_train = pd.concat([
     #     pd.DataFrame(data=X_train[:,:]),
     #     pd.DataFrame(data=y_train_o.reshape(-1, 1).astype(str))],
@@ -1719,12 +1728,12 @@ def main():
     #     pd.DataFrame(data=X_test[:, :]),
     #     pd.DataFrame(data=y_test_o.reshape(-1, 1).astype(str))],
     #     axis=1).values
-    print(rt.bic_eps)
-    rt.set_params(**{'bic_eps': 0.25})
-    print(rt.bic_eps)
+    #print(rt.bic_eps)
+    #rt.set_params(**{'bic_eps': 0.25})
+    #print(rt.bic_eps)
     rt.fit(X_train, y_train)
     # rt.fit(X_train)
-    print(rt.predict_proba(X_test))
+    # print(rt.predict_proba(X_test))
     print(rt.predict(X_test))
 
     # print(rt.feature_values[4])
