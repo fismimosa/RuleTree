@@ -34,7 +34,7 @@ TASK_CLU = 'CLU'
 TASK_CLC = 'CLC'
 TASK_CLR = 'CLR'
 
-TASK_TYPE = TASK_CLF
+TASK_TYPE = TASK_CLU
 NBR_REPEATED_HOLDOUT = 5
 DATASETS_STATS_FILENAME = '%s_datasets_stats.csv' % TASK_TYPE
 RESULT_FILENAME = '%s_results.csv' % TASK_TYPE
@@ -288,8 +288,6 @@ methods_params_unsup = {
     }
 }
 
-all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
-
 
 def dataset_preprocessing(df, d, max_nbr_values, max_nbr_values_cat, one_hot_encode_cat, categorical_indices,
                           numerical_indices, numerical_scaler):
@@ -318,7 +316,7 @@ def dataset_preprocessing(df, d, max_nbr_values, max_nbr_values_cat, one_hot_enc
         nbr_clusters = len(values)
         distrib_clusters = counts / len(df)
         distrib_clusters = distrib_clusters.tolist()
-        y = None
+        y = df[target].values
     else:
         raise Exception('Unknown TASK_TYPE %s' % TASK_TYPE)
 
@@ -450,12 +448,18 @@ def evaluate_clu_sup(y_test, y_pred, X, dist):
 
 
 def evaluate_clu_unsup(y_pred, X, dist):
-    res = {
+    if len(y_pred.unique()) == 1:
+        return {
+            'silhouette_score': np.nan,
+            'calinski_harabasz': np.nan,
+            'davies_bouldin': np.nan
+        }
+
+    return {
         'silhouette_score': skm.silhouette_score(dist, y_pred),
         'calinski_harabasz': skm.calinski_harabasz_score(X, y_pred),
         'davies_bouldin': skm.davies_bouldin_score(X, y_pred)
     }
-    return res
 
 
 def main():
@@ -483,10 +487,13 @@ def main():
 
     if TASK_TYPE == TASK_CLF:
         dataset_feat_drop = dataset_feat_drop_clf
+        all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
     elif TASK_TYPE == TASK_REG:
         dataset_feat_drop = dataset_feat_drop_reg
-    """else:
-        dataset_feat_drop = dataset_feat_drop_clu"""
+        all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
+    else:
+        dataset_feat_drop = dataset_feat_drop_clu
+        all_params = sorted(set([k for m in methods_params_unsup for k in methods_params_unsup[m]]))
 
     for dataset_name in [dataset_argv]:  # datasets_dict:
         print(datetime.datetime.now(), 'Task: %s, Dataset: %s' % (TASK_TYPE, dataset_name))
@@ -620,6 +627,8 @@ def main():
                         else:
                             res_clu = evaluate_clu_unsup(model.labels_, dist, X)
 
+                        print('Silhouette: %.2f' % res_clu['silhouette_score'])
+
                         res_eval.update(res_clu)
 
                     else:
@@ -642,7 +651,7 @@ def main():
                             res_reg = evaluate_reg(y_test, y_pred)
                             res_eval.update(res_reg)
                             print('R2: %.2f' % res_reg['r2'])
-                        if TASK_TYPE == TASK_CLC or TASK_TYPE == TASK_CLR:
+                        if TASK_TYPE == TASK_CLC or TASK_TYPE == TASK_CLR or TASK_TYPE == TASK_CLU:
                             res_clu = evaluate_clu_sup(y_train, model.labels_, dist_train, X_train)
                             res_eval.update(res_clu)
                             print('NMI: %.2f' % res_clu['normalized_mutual_info'])
