@@ -377,7 +377,7 @@ class RuleTree:
 
         self.__X = None
         self.__Xr = None
-        self.__typed_X = None
+        self._typed_X = None
         self._y = None
         self.labels_ = None
         self.root_ = None
@@ -512,6 +512,9 @@ class RuleTree:
         nbr_samples = len(idx_iter)
         n_components_split = min(self.n_components, nbr_samples)
 
+        if n_components_split >= self._typed_X.loc[idx_iter].shape[1]:
+            raise ValueError(f"n_components_split ({n_components_split}) should be less than X.shape[1] ({self._typed_X.loc[idx_iter].shape[1]})")
+
         if len(self.cat_indexes_r) == 0:  # all continous
             principal_transform = light_famd.PCA(n_components=n_components_split, random_state=self.random_state)
         elif len(self.con_indexes_r) == 0:  # all caregorical
@@ -519,7 +522,7 @@ class RuleTree:
         else:                               # mixed
             principal_transform = light_famd.FAMD(n_components=n_components_split, random_state=self.random_state)
 
-        y_pca = principal_transform.fit_transform(self.__typed_X.loc[idx_iter])
+        y_pca = principal_transform.fit_transform(self._typed_X.loc[idx_iter])
 
         clf_list = list()
         eval_list = list()
@@ -578,6 +581,9 @@ class RuleTree:
         nbr_samples = len(idx_iter)
         n_components_split = min(self.n_components, nbr_samples)
 
+        if n_components_split >= self._typed_X.loc[idx_iter].shape[1]:
+            raise ValueError(f"n_components_split ({n_components_split}) should be less than X.shape[1] ({self._typed_X.loc[idx_iter].shape[1]})")
+
         features_idx = np.arange(self.__Xr.shape[1])
         clf_list_all = list()
         eval_list_all = list()
@@ -594,7 +600,7 @@ class RuleTree:
             else:  # mixed
                 principal_transform = light_famd.FAMD(n_components=n_components_split, random_state=self.random_state)
 
-            y_pca = principal_transform.fit_transform(self.__typed_X.loc[idx_iter, features_idx != feature])
+            y_pca = principal_transform.fit_transform(self._typed_X.loc[idx_iter, features_idx != feature])
 
             clf_list = list()
             eval_list = list()
@@ -734,12 +740,12 @@ class RuleTree:
             print(datetime.datetime.now(), 'Categorical features onehot %s.' % self.cat_indexes)
 
         if self.model_type == MODEL_TYPE_CLU:
-            self.__typed_X = pd.DataFrame(data=self.__Xr)
+            self._typed_X = pd.DataFrame(data=self.__Xr)
             for index in self.con_indexes_r:
-                self.__typed_X[index] = self.__typed_X[index].astype(float)
+                self._typed_X[index] = self._typed_X[index].astype(float)
             for index in self.cat_indexes_r:
-                self.__typed_X[index] = self.__typed_X[index].astype(str)
-            self.__typed_X.columns = self.__typed_X.columns.astype(str)
+                self._typed_X[index] = self._typed_X[index].astype(str)
+            self._typed_X.columns = self._typed_X.columns.astype(str)
 
             if len(self.cat_indexes_r) == 0:  # all continous
                 if self.verbose:
@@ -928,13 +934,10 @@ class RuleTree:
         self.root_ = root_node
         self.label_encoder_ = LabelEncoder()
 
-        if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf or self.model_type == MODEL_TYPE_CLU:
+        if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
             if self.verbose:
                 print(datetime.datetime.now(), 'Normalize labels id.')
             self.labels_ = self.label_encoder_.fit_transform(self.labels_)
-
-        if self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
-            self.nbr_classes_ = len(np.unique(self.labels_))
 
         if self.class_encoder_ is not None:
             self._y = self.class_encoder_.inverse_transform(self._y)
@@ -1029,9 +1032,6 @@ class RuleTree:
         return labels
 
     def predict_proba(self, X):
-        if self.model_type == MODEL_TYPE_REG or self.clu_for_reg:
-            return self.predict(X)
-        
         X = self._preprocessing(X)
 
         idx = np.arange(X.shape[0])
@@ -1062,10 +1062,7 @@ class RuleTree:
             if self.model_type == MODEL_TYPE_REG or self.clu_for_reg:
                 labels = labels.astype(float)
             leaves = np.zeros(len(labels)).astype(int)
-            if self.model_type != MODEL_TYPE_REG and not self.clu_for_reg:
-                proba = np.zeros((len(labels), self.nbr_classes_))
-            else:
-                proba = np.zeros((len(labels), 1))
+            proba = np.zeros((len(labels), self.nbr_classes_))
 
             idx_l, idx_r = np.where(labels == 1)[0], np.where(labels == 2)[0]
             idx_all_l = idx_iter[idx_l]
@@ -1213,7 +1210,8 @@ class RuleTree:
                 if self.class_encoder_ is not None:
                     label = self.class_encoder_.inverse_transform([node.label])[0]
             elif self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
-                label = self.label_encoder_.transform([node.label])[0]
+                #label = self.label_encoder_.transform([node.label])[0]
+                label = node.label
             leaf = (False, label, node.samples, node.support, node.node_id, cur_depth)
 
             rules.append(leaf)
@@ -1261,7 +1259,8 @@ class RuleTree:
                 if self.class_encoder_ is not None:
                     label = self.class_encoder_.inverse_transform([node.label])[0]
             elif self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
-                label = self.label_encoder_.transform([node.label])[0]
+                #label = self.label_encoder_.transform([node.label])[0]
+                label = node.label
 
 
             rule = [(label,)]
@@ -1689,7 +1688,7 @@ def main():
 
     from sklearn.preprocessing import MinMaxScaler
 
-    rt = RuleTree(model_type='reg',
+    rt = RuleTree(model_type='clf',
                   # max_depth=4,
                   # min_samples_leaf=1,
                   # min_samples_split=2,
@@ -1718,8 +1717,8 @@ def main():
 
     y_train_o = y_train[::]
     y_test_o = y_test[::]
-    y_train = np.log(X_train[:, 0] * X_train[:, 1])
-    y_test = np.log(X_test[:, 0] * X_test[:, 1])
+    # y_train = np.log(X_train[:, 0] * X_train[:, 1])
+    # y_test = np.log(X_test[:, 0] * X_test[:, 1])
     # X_train = pd.concat([
     #     pd.DataFrame(data=X_train[:,:]),
     #     pd.DataFrame(data=y_train_o.reshape(-1, 1).astype(str))],
@@ -1728,12 +1727,12 @@ def main():
     #     pd.DataFrame(data=X_test[:, :]),
     #     pd.DataFrame(data=y_test_o.reshape(-1, 1).astype(str))],
     #     axis=1).values
-    #print(rt.bic_eps)
-    #rt.set_params(**{'bic_eps': 0.25})
-    #print(rt.bic_eps)
+    print(rt.bic_eps)
+    rt.set_params(**{'bic_eps': 0.25})
+    print(rt.bic_eps)
     rt.fit(X_train, y_train)
     # rt.fit(X_train)
-    # print(rt.predict_proba(X_test))
+    print(rt.predict_proba(X_test))
     print(rt.predict(X_test))
 
     # print(rt.feature_values[4])
