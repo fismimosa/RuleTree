@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 import sklearn.metrics as skm
+from threadpoolctl import threadpool_limits
 
 from ruletree import RuleTree
 from ruletree import prepare_data
@@ -34,7 +35,7 @@ TASK_CLU = 'CLU'
 TASK_CLC = 'CLC'
 TASK_CLR = 'CLR'
 
-TASK_TYPE = TASK_CLU
+TASK_TYPE = TASK_CLF
 NBR_REPEATED_HOLDOUT = 5
 DATASETS_STATS_FILENAME = '%s_datasets_stats.csv' % TASK_TYPE
 RESULT_FILENAME = '%s_results.csv' % TASK_TYPE
@@ -215,7 +216,7 @@ methods_params_sup = {
         'force_oblique_splits': [False, True],
         'max_oblique_features': [2],
         'prune_useless_leaves': [False, True],
-        'n_components': [2],
+        'n_components': [1, 2],
         'bic_eps': [0.0],
         'clus_impurity': ['bic'],
         'clf_impurity': ['gini'],
@@ -274,7 +275,7 @@ methods_params_unsup = {
         'force_oblique_splits': [False, True],
         'max_oblique_features': [2],
         'prune_useless_leaves': [False, True],
-        'n_components': [2],
+        'n_components': [1, 2],
         'bic_eps': BIC_EPS_LIST,
         'clus_impurity': ['r2', 'bic'],
         'clf_impurity': ['gini'],
@@ -439,16 +440,14 @@ def evaluate_clu_sup(y_test, y_pred, X, dist):
         'mutual_info': skm.mutual_info_score(y_test, y_pred),
         'normalized_mutual_info': skm.normalized_mutual_info_score(y_test, y_pred),
         'rand_score': skm.rand_score(y_test, y_pred),
-        'v_measure': skm.v_measure_score(y_test, y_pred),
-        'silhouette_score': skm.silhouette_score(dist, y_pred),
-        'calinski_harabasz': skm.calinski_harabasz_score(X, y_pred),
-        'davies_bouldin': skm.davies_bouldin_score(X, y_pred)
+        'v_measure': skm.v_measure_score(y_test, y_pred)
     }
+    res.update(evaluate_clu_unsup(y_pred, X, dist))
     return res
 
 
 def evaluate_clu_unsup(y_pred, X, dist):
-    if len(y_pred.unique()) == 1:
+    if len(np.unique(y_pred)) == 1:
         return {
             'silhouette_score': np.nan,
             'calinski_harabasz': np.nan,
@@ -463,223 +462,228 @@ def evaluate_clu_unsup(y_pred, X, dist):
 
 
 def main():
-    dataset_argv = sys.argv[1]
-    # dataset_argv = 'wine'
-    dataset_result_filename = RESULT_FILENAME.replace('.csv', '_%s.csv' % dataset_argv)
-    print(datetime.datetime.now(), 'BENCHMARK STARTED')
-    print(datetime.datetime.now(), 'Task: %s' % TASK_TYPE)
-    path = dataset_path + task_folder[TASK_TYPE]
-    datasets_dict = dict()
-    for filename in os.listdir(path):
-        if os.path.isfile(path + filename) and filename.endswith('.csv'):
-            datasets_dict[filename.replace('.csv', '')] = filename
+    with threadpool_limits(limits=1):
+            dataset_argv = sys.argv[1]
+            # dataset_argv = 'wine'
+            dataset_result_filename = RESULT_FILENAME.replace('.csv', '_%s.csv' % dataset_argv)
+            print(datetime.datetime.now(), 'BENCHMARK STARTED')
+            print(datetime.datetime.now(), 'Task: %s' % TASK_TYPE)
+            path = dataset_path + task_folder[TASK_TYPE]
+            datasets_dict = dict()
+            for filename in os.listdir(path):
+                if os.path.isfile(path + filename) and filename.endswith('.csv'):
+                    datasets_dict[filename.replace('.csv', '')] = filename
 
-    max_nbr_values_cat = MAX_NBR_VALUES_CAT
-    max_nbr_values = MAX_NBR_VALUES
-    one_hot_encode_cat = ONE_HOT_ENCODE_CAT
-    numerical_scaler = StandardScaler()
+            max_nbr_values_cat = MAX_NBR_VALUES_CAT
+            max_nbr_values = MAX_NBR_VALUES
+            one_hot_encode_cat = ONE_HOT_ENCODE_CAT
+            numerical_scaler = StandardScaler()
 
-    df_res_cache = None
-    # if os.path.isfile(results_path + RESULT_FILENAME):
-    if os.path.isfile(results_path + dataset_result_filename):
-        df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
-        # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
+            df_res_cache = None
+            # if os.path.isfile(results_path + RESULT_FILENAME):
+            if os.path.isfile(results_path + dataset_result_filename):
+                df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
+                # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
 
-    if TASK_TYPE == TASK_CLF:
-        dataset_feat_drop = dataset_feat_drop_clf
-        all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
-    elif TASK_TYPE == TASK_REG:
-        dataset_feat_drop = dataset_feat_drop_reg
-        all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
-    else:
-        dataset_feat_drop = dataset_feat_drop_clu
-        all_params = sorted(set([k for m in methods_params_unsup for k in methods_params_unsup[m]]))
+            if TASK_TYPE == TASK_CLF:
+                dataset_feat_drop = dataset_feat_drop_clf
+                all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
+            elif TASK_TYPE == TASK_REG:
+                dataset_feat_drop = dataset_feat_drop_reg
+                all_params = sorted(set([k for m in methods_params_sup for k in methods_params_sup[m]]))
+            else:
+                dataset_feat_drop = dataset_feat_drop_clu
+                all_params = sorted(set([k for m in methods_params_unsup for k in methods_params_unsup[m]]))
 
-    for dataset_name in [dataset_argv]:  # datasets_dict:
-        print(datetime.datetime.now(), 'Task: %s, Dataset: %s' % (TASK_TYPE, dataset_name))
-        filename = datasets_dict[dataset_name]
-        df = pd.read_csv(path + filename, skipinitialspace=True)
+            for dataset_name in [dataset_argv]:  # datasets_dict:
+                print(datetime.datetime.now(), 'Task: %s, Dataset: %s' % (TASK_TYPE, dataset_name))
+                filename = datasets_dict[dataset_name]
+                df = pd.read_csv(path + filename, skipinitialspace=True)
 
-        if dataset_feat_drop is not None and len(dataset_feat_drop) > 0 and len(dataset_feat_drop[dataset_name]) > 0:
-            df.drop(dataset_feat_drop[dataset_name], axis=1, inplace=True)
-        df = remove_missing_values(df)
+                if dataset_feat_drop is not None and len(dataset_feat_drop) > 0 and len(dataset_feat_drop[dataset_name]) > 0:
+                    df.drop(dataset_feat_drop[dataset_name], axis=1, inplace=True)
+                df = remove_missing_values(df)
 
-        numerical_indices = np.where(np.in1d(df.columns.values, df._get_numeric_data().columns.values))[0]
-        X, y, ds = dataset_preprocessing(df, dataset_name, max_nbr_values, max_nbr_values_cat, one_hot_encode_cat,
-                                         categorical_indices=None, numerical_indices=numerical_indices,
-                                         numerical_scaler=numerical_scaler)
-        add_dataset_stats(ds)
+                numerical_indices = np.where(np.in1d(df.columns.values, df._get_numeric_data().columns.values))[0]
+                X, y, ds = dataset_preprocessing(df, dataset_name, max_nbr_values, max_nbr_values_cat, one_hot_encode_cat,
+                                                 categorical_indices=None, numerical_indices=numerical_indices,
+                                                 numerical_scaler=numerical_scaler)
+                add_dataset_stats(ds)
 
-        dist = None
-        dist_train = None
-        if TASK_TYPE == TASK_CLU:
-            dist = skm.pairwise_distances(X, metric='euclidean')
+                dist = None
+                dist_train = None
+                if TASK_TYPE == TASK_CLU:
+                    dist = skm.pairwise_distances(X, metric='euclidean')
 
-        for rh in np.arange(NBR_REPEATED_HOLDOUT):
-            print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s' % (TASK_TYPE, dataset_name, rh))
-            X_train = None
-            y_train = None
-            X_test = None
-            y_test = None
-            if TASK_TYPE == TASK_CLF or TASK_TYPE == TASK_CLC:
-                X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                                    stratify=y,
-                                                                    test_size=0.3,
-                                                                    random_state=rh)
-                if TASK_TYPE == TASK_CLC:
-                    dist_train = skm.pairwise_distances(X_train, metric='euclidean')
+                for rh in np.arange(NBR_REPEATED_HOLDOUT):
+                    print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s' % (TASK_TYPE, dataset_name, rh))
+                    X_train = None
+                    y_train = None
+                    X_test = None
+                    y_test = None
+                    if TASK_TYPE == TASK_CLF or TASK_TYPE == TASK_CLC:
+                        X_train, X_test, y_train, y_test = train_test_split(X, y,
+                                                                            stratify=y,
+                                                                            test_size=0.3,
+                                                                            random_state=rh)
+                        if TASK_TYPE == TASK_CLC:
+                            dist_train = skm.pairwise_distances(X_train, metric='euclidean')
 
-            elif TASK_TYPE == TASK_REG or TASK_TYPE == TASK_CLR:
-                X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                                    test_size=0.3,
-                                                                    random_state=rh)
-                if TASK_TYPE == TASK_CLR:
-                    dist_train = skm.pairwise_distances(X_train, metric='euclidean')
+                    elif TASK_TYPE == TASK_REG or TASK_TYPE == TASK_CLR:
+                        X_train, X_test, y_train, y_test = train_test_split(X, y,
+                                                                            test_size=0.3,
+                                                                            random_state=rh)
+                        if TASK_TYPE == TASK_CLR:
+                            dist_train = skm.pairwise_distances(X_train, metric='euclidean')
 
-            for method_name in task_method[TASK_TYPE]:
-                print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s' % (
-                    TASK_TYPE, dataset_name, rh, method_name))
+                    for method_name in task_method[TASK_TYPE]:
+                        print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s' % (
+                            TASK_TYPE, dataset_name, rh, method_name))
 
-                # methods_params = None
-                if TASK_TYPE == TASK_CLF or TASK_TYPE == TASK_REG:
-                    methods_params = methods_params_sup
-                else:
-                    methods_params = methods_params_unsup
-
-                params_prodcut = itertools.product(*methods_params[method_name].values())
-
-                for params_vals in params_prodcut:
-                    params_dict = dict()
-                    for k, v in zip(methods_params[method_name].keys(), params_vals):
-                        params_dict[k] = v
-                    if method_name == 'RT':
-                        if TASK_TYPE == TASK_CLF:
-                            model_type = 'clf'
-                        elif TASK_TYPE == TASK_REG:
-                            model_type = 'reg'
-                        elif TASK_TYPE == TASK_CLU:
-                            model_type = 'clu'
-                        elif TASK_TYPE == TASK_CLC:
-                            model_type = 'clu'
-                        elif TASK_TYPE == TASK_CLR:
-                            model_type = 'clu'
+                        # methods_params = None
+                        if TASK_TYPE == TASK_CLF or TASK_TYPE == TASK_REG:
+                            methods_params = methods_params_sup
                         else:
-                            model_type = None
-                        params_dict['model_type'] = model_type
-                        params_dict['feature_names'] = None
-                        params_dict['one_hot_encode_cat'] = False
-                        params_dict['numerical_indices'] = numerical_indices
-                        params_dict['numerical_scaler'] = None
+                            methods_params = methods_params_unsup
 
-                    res = {
-                        'task': TASK_TYPE,
-                        'dataset': dataset_name,
-                        'method': method_name,
-                        'repeated_holdout_id': rh,
-                    }
-                    res.update(params_dict)
-                    for c in all_params:
-                        if c not in res:
-                            res[c] = -1
-                    for c in ['feature_names', 'one_hot_encode_cat', 'numerical_indices', 'numerical_scaler',
-                              'model_type']:
-                        if c not in res:
-                            res[c] = -1
+                        params_prodcut = itertools.product(*methods_params[method_name].values())
 
-                    params2hash = {k: params_dict[k] for k in params_dict if k != 'random_state'}
-                    res['expid1'] = hashlib.md5(str.encode(''.join([str(s) for s in params2hash.values()]))).hexdigest()
-                    params2hash = {k: params_dict[k] for k in params_dict if k not in ['random_state',
-                                                                                       'repeated_holdout_id']}
-                    res['expid2'] = hashlib.md5(str.encode(''.join([str(s) for s in params2hash.values()]))).hexdigest()
-                    res['expid3'] = hashlib.md5(str.encode(''.join([str(s) for s in params_dict.values()]))).hexdigest()
+                        for params_vals in params_prodcut:
+                            params_dict = dict()
+                            for k, v in zip(methods_params[method_name].keys(), params_vals):
+                                params_dict[k] = v
+                            if method_name == 'RT':
+                                if TASK_TYPE == TASK_CLF:
+                                    model_type = 'clf'
+                                elif TASK_TYPE == TASK_REG:
+                                    model_type = 'reg'
+                                elif TASK_TYPE == TASK_CLU:
+                                    model_type = 'clu'
+                                elif TASK_TYPE == TASK_CLC:
+                                    model_type = 'clu'
+                                elif TASK_TYPE == TASK_CLR:
+                                    model_type = 'clu'
+                                else:
+                                    model_type = None
+                                params_dict['model_type'] = model_type
+                                params_dict['feature_names'] = None
+                                params_dict['one_hot_encode_cat'] = False
+                                params_dict['numerical_indices'] = numerical_indices
+                                params_dict['numerical_scaler'] = None
 
-                    # df_res_cache = None
-                    # # if os.path.isfile(results_path + RESULT_FILENAME):
-                    # if os.path.isfile(results_path + dataset_result_filename):
-                    #     df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
-                    #     # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
+                            res = {
+                                'task': TASK_TYPE,
+                                'dataset': dataset_name,
+                                'method': method_name,
+                                'repeated_holdout_id': rh,
+                            }
+                            res.update(params_dict)
+                            for c in all_params:
+                                if c not in res:
+                                    res[c] = -1
+                            for c in ['feature_names', 'one_hot_encode_cat', 'numerical_indices', 'numerical_scaler',
+                                      'model_type']:
+                                if c not in res:
+                                    res[c] = -1
 
-                    if df_res_cache is not None:
-                        exp_already_run = res['expid3'] in df_res_cache['expid3'].values
+                            params2hash = {k: params_dict[k] for k in params_dict if k != 'random_state'}
+                            res['expid1'] = hashlib.md5(str.encode(''.join([str(s) for s in params2hash.values()]))).hexdigest()
+                            params2hash = {k: params_dict[k] for k in params_dict if k not in ['random_state',
+                                                                                               'repeated_holdout_id']}
+                            res['expid2'] = hashlib.md5(str.encode(''.join([str(s) for s in params2hash.values()]))).hexdigest()
+                            res['expid3'] = hashlib.md5(str.encode(''.join([str(s) for s in params_dict.values()]))).hexdigest()
 
-                        if exp_already_run:
-                            print('Already run')
-                            continue
+                            # df_res_cache = None
+                            # # if os.path.isfile(results_path + RESULT_FILENAME):
+                            # if os.path.isfile(results_path + dataset_result_filename):
+                            #     df_res_cache = pd.read_csv(results_path + dataset_result_filename, low_memory=False)
+                            #     # df_res_cache = pd.read_csv(results_path + RESULT_FILENAME)
 
-                    # param_vals_test = [5, None, 2, 10, False, False, 2, False, 2, 0.0, 'bic', 'gini', 'squared_error', None, False, 2, 2, 1, 0]
-                    # for k, v in zip(methods_params[method_name].keys(), param_vals_test):
-                    #     params_dict[k] = v
-                    #
-                    # print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s, Params: %s' % (
-                    #     TASK_TYPE, dataset_name, rh, method_name, str(param_vals_test)), end=' ')
-                    print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s, Params: %s' % (
-                        TASK_TYPE, dataset_name, rh, method_name, str(params_vals)), end=' ')
+                            if df_res_cache is not None:
+                                exp_already_run = res['expid3'] in df_res_cache['expid3'].values
 
-                    model = task_method[TASK_TYPE][method_name](**params_dict)
+                                if exp_already_run:
+                                    print('Already run')
+                                    continue
 
-                    if TASK_TYPE == TASK_CLU:
-                        start = time.time()
-                        model.fit(X)
-                        stop = time.time()
-                        res_eval = {'fit_time': stop - start}
-                        if dataset_name in datasets_target_clu_sup:
-                            res_clu = evaluate_clu_sup(y, model.labels_, dist, X)
-                        else:
-                            res_clu = evaluate_clu_unsup(model.labels_, dist, X)
+                            # param_vals_test = [5, None, 2, 10, False, False, 2, False, 2, 0.0, 'bic', 'gini', 'squared_error', None, False, 2, 2, 1, 0]
+                            # for k, v in zip(methods_params[method_name].keys(), param_vals_test):
+                            #     params_dict[k] = v
+                            #
+                            # print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s, Params: %s' % (
+                            #     TASK_TYPE, dataset_name, rh, method_name, str(param_vals_test)), end=' ')
+                            print(datetime.datetime.now(), 'Task: %s, Dataset: %s, rep: %s, Method: %s, Params: %s' % (
+                                TASK_TYPE, dataset_name, rh, method_name, str(params_vals)), end=' ')
 
-                        print('Silhouette: %.2f' % res_clu['silhouette_score'])
+                            model = task_method[TASK_TYPE][method_name](**params_dict)
 
-                        res_eval.update(res_clu)
+                            if TASK_TYPE == TASK_CLU:
+                                try:
+                                    start = time.time()
+                                    model.fit(X)
+                                    stop = time.time()
+                                except ValueError as e:
+                                    print("\n", e)
+                                    continue
+                                res_eval = {'fit_time': stop - start}
+                                if dataset_name in datasets_target_clu_sup:
+                                    res_clu = evaluate_clu_sup(y, model.labels_, dist, X)
+                                else:
+                                    res_clu = evaluate_clu_unsup(model.labels_, dist, X)
 
-                    else:
-                        start = time.time()
-                        model.fit(X_train, y_train)
-                        stop = time.time()
-                        res_eval = {'fit_time': stop - start}
+                                print('Silhouette: %.2f' % res_clu['silhouette_score'])
 
-                        start = time.time()
-                        y_pred = model.predict(X_test)
-                        stop = time.time()
-                        res_eval['predict_time'] = stop - start
+                                res_eval.update(res_clu)
 
-                        if TASK_TYPE == TASK_CLF or TASK_TYPE == TASK_CLC:
-                            y_pred_proba = model.predict_proba(X_test)
-                            res_clf = evaluate_clf(y_test, y_pred, y_pred_proba)
-                            res_eval.update(res_clf)
-                            print('Accuracy: %.2f' % res_clf['accuracy'])
-                        elif TASK_TYPE == TASK_REG or TASK_TYPE == TASK_CLR:
-                            res_reg = evaluate_reg(y_test, y_pred)
-                            res_eval.update(res_reg)
-                            print('R2: %.2f' % res_reg['r2'])
-                        if TASK_TYPE == TASK_CLC or TASK_TYPE == TASK_CLR or TASK_TYPE == TASK_CLU:
-                            res_clu = evaluate_clu_sup(y_train, model.labels_, dist_train, X_train)
-                            res_eval.update(res_clu)
-                            print('NMI: %.2f' % res_clu['normalized_mutual_info'])
+                            else:
+                                start = time.time()
+                                model.fit(X_train, y_train)
+                                stop = time.time()
+                                res_eval = {'fit_time': stop - start}
 
-                    res.update(res_eval)
+                                start = time.time()
+                                y_pred = model.predict(X_test)
+                                stop = time.time()
+                                res_eval['predict_time'] = stop - start
 
-                    res = dict(sorted(res.items(), key=lambda x: x[0]))
-                    df_res = pd.DataFrame(data=[res])
+                                if TASK_TYPE == TASK_CLF or TASK_TYPE == TASK_CLC:
+                                    y_pred_proba = model.predict_proba(X_test)
+                                    res_clf = evaluate_clf(y_test, y_pred, y_pred_proba)
+                                    res_eval.update(res_clf)
+                                    print('Accuracy: %.2f' % res_clf['accuracy'])
+                                elif TASK_TYPE == TASK_REG or TASK_TYPE == TASK_CLR:
+                                    res_reg = evaluate_reg(y_test, y_pred)
+                                    res_eval.update(res_reg)
+                                    print('R2: %.2f' % res_reg['r2'])
+                                if TASK_TYPE == TASK_CLC or TASK_TYPE == TASK_CLR or TASK_TYPE == TASK_CLU:
+                                    res_clu = evaluate_clu_sup(y_train, model.labels_, dist_train, X_train)
+                                    res_eval.update(res_clu)
+                                    print('NMI: %.2f' % res_clu['normalized_mutual_info'])
 
-                    # if not os.path.isfile(results_path + RESULT_FILENAME):
-                    #     df_res.to_csv(results_path + RESULT_FILENAME, index=False)
-                    # else:
-                    #     df_res.to_csv(results_path + RESULT_FILENAME, mode='a', index=False, header=False)
+                            res.update(res_eval)
 
-                    if not os.path.isfile(results_path + dataset_result_filename):
-                        df_res.to_csv(results_path + dataset_result_filename, index=False)
-                    else:
-                        df_res.to_csv(results_path + dataset_result_filename, mode='a', index=False, header=False)
+                            res = dict(sorted(res.items(), key=lambda x: x[0]))
+                            df_res = pd.DataFrame(data=[res])
 
-        #             break
-        #
-        #         break
-        #
-        #     break
-        #
-        # break
+                            # if not os.path.isfile(results_path + RESULT_FILENAME):
+                            #     df_res.to_csv(results_path + RESULT_FILENAME, index=False)
+                            # else:
+                            #     df_res.to_csv(results_path + RESULT_FILENAME, mode='a', index=False, header=False)
 
-    print(datetime.datetime.now(), 'BENCHMARK ENDED')
+                            if not os.path.isfile(results_path + dataset_result_filename):
+                                df_res.to_csv(results_path + dataset_result_filename, index=False)
+                            else:
+                                df_res.to_csv(results_path + dataset_result_filename, mode='a', index=False, header=False)
+
+                #             break
+                #
+                #         break
+                #
+                #     break
+                #
+                # break
+
+            print(datetime.datetime.now(), 'BENCHMARK ENDED')
 
 
 if __name__ == "__main__":
