@@ -997,10 +997,10 @@ class RuleTree:
 
         X = self._inverse_preprocessing(X)
 
-        """if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+        if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
             labels = self.label_encoder_.transform(labels)
             if self.class_encoder_ is not None:
-                labels = self.class_encoder_.inverse_transform(labels)"""
+                labels = self.class_encoder_.inverse_transform(labels)
 
         if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
             if self.class_encoder_ is not None:
@@ -1202,15 +1202,12 @@ class RuleTree:
 
         if node.is_leaf:
             label = node.label
-            """if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
-                #label = self.label_encoder_.transform([node.label])[0]
-                if self.class_encoder_ is not None:
-                    label = self.class_encoder_.inverse_transform([label])[0]"""
             if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+                label = self.label_encoder_.transform([node.label])[0]
                 if self.class_encoder_ is not None:
-                    label = self.class_encoder_.inverse_transform([node.label])[0]
+                    label = self.class_encoder_.inverse_transform([label])[0]
             elif self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
-                #label = self.label_encoder_.transform([node.label])[0]
+                #label = self.label_encoder_.transform([node.label])[0] # TODO: check rick. non fitti il labelencoder
                 label = node.label
             leaf = (False, label, node.samples, node.support, node.node_id, cur_depth)
 
@@ -1253,13 +1250,13 @@ class RuleTree:
                 continue
 
             label = node.label
-            #if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
-            #    label = self.label_encoder_.transform([node.label])[0]
+            if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
+                label = self.label_encoder_.transform([node.label])[0]
             if self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
                 if self.class_encoder_ is not None:
                     label = self.class_encoder_.inverse_transform([node.label])[0]
             elif self.model_type == MODEL_TYPE_CLU and not self.clu_for_clf:
-                #label = self.label_encoder_.transform([node.label])[0]
+                #label = self.label_encoder_.transform([node.label])[0] # TODO: check rick non fitti il label_encoder
                 label = node.label
 
 
