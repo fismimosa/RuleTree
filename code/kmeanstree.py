@@ -91,7 +91,7 @@ class KMeansTree:
             else:  # infer y is categorical
                 self.clu_for_clf = True
 
-        with threadpool_limits(_typed_Xlimits=self.n_jobs):
+        with threadpool_limits(limits=self.n_jobs):
             self.kmeans.fit(X)
             self.dt.fit(X, self.kmeans.labels_)
             if self.labels_as_tree_leaves:
@@ -111,7 +111,7 @@ class KMeansTree:
                             self.leaf_val[l] = np.mean(pred)
 
     def predict(self, X):
-        with threadpool_limits(_typed_Xlimits=self.n_jobs):
+        with threadpool_limits(limits=self.n_jobs):
 
             if self.clu_for_clf or self.clu_for_reg:
                 leaves_id = self.dt.apply(X)
