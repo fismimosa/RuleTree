@@ -1,4 +1,4 @@
-numpy~=1.26.3
-pandas~=2.1.4
-scipy~=1.11.4
-category_encoders
+numpy
+scikit-learn
+scipy
+#category_encoders

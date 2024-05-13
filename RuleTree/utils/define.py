@@ -1,0 +1,3 @@
+MODEL_TYPE_CLF = 'clf'
+MODEL_TYPE_REG = 'reg'
+MODEL_TYPE_CLU = 'clu'
