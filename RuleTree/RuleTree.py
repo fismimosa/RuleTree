@@ -4,10 +4,14 @@ from abc import ABC, abstractmethod
 from itertools import count
 from typing import Union
 import numpy as np
+import sklearn.preprocessing
+from category_encoders import OrdinalEncoder as cat_OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder as sk_OrdinalEncoder
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
 
 from RuleTree import RuleTreeNode
 from RuleTree.utils import MODEL_TYPE_CLF, MODEL_TYPE_REG, ObliqueHouseHolderSplit
+from RuleTree.utils.data_utils import preprocessing
 
 
 class RuleTree(ABC):
@@ -219,13 +223,13 @@ class RuleTree(ABC):
                 self.y_is_numerical = False
                 self.nbr_classes_ = len(np.unique(self._y))
                 if isinstance(np.unique(self._y)[0], str):
-                    self.class_encoder_ = LabelEncoder()
-                    self.class_encoder_.fit(self._y)
-                    self._y = self.class_encoder_.transform(self._y)
+                    self.class_encoder_ = sk_OrdinalEncoder(dtype=int)
+                    self.class_encoder_.fit(self._y.reshape(-1, 1))
+                    self._y = self.class_encoder_.transform(self._y.reshape(-1, 1))[:, 0]
 
     @abstractmethod
     def predict(self, X, get_leaf=False, get_rule=False):
-        X = RuleTree.preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
+        X = preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
 
         idx = np.arange(X.shape[0])
         labels, leaves, proba = self._predict(X, idx, self.root_)
@@ -258,7 +262,7 @@ class RuleTree(ABC):
         pass
 
     def predict_proba(self, X):
-        X = RuleTree.preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
+        X = preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
 
         idx = np.arange(X.shape[0])
         _, _, proba = self._predict(X, idx, self.root_)
@@ -282,7 +286,8 @@ class RuleTree(ABC):
             clf = node.clf
             labels = clf.apply(X[idx_iter])
             leaves = np.zeros(len(labels)).astype(int)
-            proba = np.zeros((len(labels), self.nbr_classes_))
+            proba = None
+            #proba = np.zeros((len(labels), self.nbr_classes_))
 
             idx_l, idx_r = np.where(labels == 1)[0], np.where(labels == 2)[0]
             idx_all_l = idx_iter[idx_l]
@@ -292,13 +297,13 @@ class RuleTree(ABC):
                 labels_l, leaves_l, proba_l = self._predict(X, idx_all_l, node.node_l)
                 labels[idx_l] = labels_l
                 leaves[idx_l] = leaves_l
-                proba[idx_l] = proba_l
+                #proba[idx_l] = proba_l
 
             if len(idx_all_r) > 0:
                 labels_r, leaves_r, proba_r = self._predict(X, idx_all_r, node.node_r)
                 labels[idx_r] = labels_r
                 leaves[idx_r] = leaves_r
-                proba[idx_r] = proba_r
+                #proba[idx_r] = proba_r
 
             return labels, leaves, proba
 
@@ -492,7 +497,7 @@ class RuleTree(ABC):
         return verified_list
 
     def are_rules_verified(self, X, count_cond=False, relative_count=False):
-        X = RuleTree.preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
+        X = preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
 
         verified_list = list()
         for leaf, rule in self.rules_.items():
@@ -505,7 +510,7 @@ class RuleTree(ABC):
         rules = list()
 
         if node.is_leaf:
-            label = self.__get_labels(node=node)
+            label = self._get_labels_from_node(node=node)
             leaf = (False, label, node.samples, node.support, node.node_id, cur_depth)
             rules.append(leaf)
             return rules
@@ -537,7 +542,7 @@ class RuleTree(ABC):
             return rules
 
     @abstractmethod
-    def _get_labels(self, node):
+    def _get_labels_from_node(self, node):
         pass
 
     def _calculate_rules(self):
@@ -549,7 +554,7 @@ class RuleTree(ABC):
             if not node.is_leaf:
                 continue
 
-            label = self.__get_labels(node.label)
+            label = self._get_labels_from_node(node)
 
             rule = [(label,)]
 
@@ -699,7 +704,6 @@ class RuleTree(ABC):
         pass
 
 
-    @staticmethod
     def print_tree(self, precision=2, cat_precision=2):
         rules = self.rules_to_tree_print_
 
@@ -738,17 +742,15 @@ class RuleTree(ABC):
             else:
                 _, label, samples, support, node_id, _ = rule
                 support = np.round(support, precision)
-                if self.model_type == MODEL_TYPE_REG or self.clu_for_reg:
-                    text = 'value'
-                elif self.model_type == MODEL_TYPE_CLF or self.clu_for_clf:
-                    text = 'class'
-                else:
-                    text = 'cluster'
-                label_txt = np.round(label, precision
-                                     ) if self.model_type == MODEL_TYPE_REG or self.clu_for_reg else label
+                text = self._print_tree_text()
+                label_txt = np.round(label, precision) if type(label) is float else label
                 # s = "%s|--> %s: %s (%s, %s)" % (ident, text, label_txt, samples, support)
                 # s = "%s--> %s: %s (%s, %s)" % (ident[:-1], text, label_txt, samples, support)
                 s = "%s+--> %s: %s (%s, %s)" % (ident[:-3], text, label_txt, samples, support)
             s_rules += "%s\n" % s
 
         return s_rules
+
+    @abstractmethod
+    def _print_tree_text(self):
+        pass

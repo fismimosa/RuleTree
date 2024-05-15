@@ -9,6 +9,7 @@ from sklearn.tree import DecisionTreeRegressor
 from RuleTree.RuleTree import RuleTree
 from RuleTree.RuleTreeNode import RuleTreeNode
 from RuleTree.utils import MODEL_TYPE_REG
+from RuleTree.utils.data_utils import prepare_data, preprocessing
 
 
 class RuleTreeRegressor(RuleTree):
@@ -54,7 +55,7 @@ class RuleTreeRegressor(RuleTree):
                          categorical_indices=categorical_indices, numerical_indices=numerical_indices,
                          numerical_scaler=numerical_scaler, precision=precision, cat_precision=cat_precision,
                          exclude_split_feature_from_reduction=exclude_split_feature_from_reduction,
-                         random_state=random_state, n_jobs=n_jobs, verbose=verbose, kwargs=kwargs)
+                         random_state=random_state, n_jobs=n_jobs, verbose=verbose, **kwargs)
 
         self.impurity = impurity_measure
 
@@ -102,12 +103,12 @@ class RuleTreeRegressor(RuleTree):
             self.feature_names_r = np.array(self.feature_names_r)
 
         self._Xr = X
-        res = RuleTree.prepare_data(self._X, self.max_nbr_values, self.max_nbr_values_cat,
-                                    self.feature_names_r, self.one_hot_encode_cat, self.categorical_indices,
-                                    self.numerical_indices, self.numerical_scaler)
+        res = prepare_data(self._X, self.max_nbr_values, self.max_nbr_values_cat, self.feature_names_r,
+                           self.one_hot_encode_cat, self.categorical_indices, self.numerical_indices,
+                           self.numerical_scaler)
         self._X = res[0]
-        self.feature_values_r, self.is_cat_feat_r, self.feature_values, self.is_cat_feat, self.data_encoder, self.feature_names = \
-            res[1]
+        (self.feature_values_r, self.is_cat_feat_r, self.feature_values, self.is_cat_feat, self.data_encoder,
+         self.feature_names) = res[1]
         self.maps = res[2]
 
         if self.feature_names is None:
@@ -144,13 +145,12 @@ class RuleTreeRegressor(RuleTree):
 
             clf, is_oblique = self._make_split(idx_iter)
             labels = clf.apply(self._X[idx_iter])
-            y_pred = clf.predict(self._X[idx_iter])
 
             if len(np.unique(labels)) == 1:
                 self._make_leaf(node)
                 nbr_curr_nodes += 1
                 if self.verbose:
-                    print(datetime.datetime.now(), 'Split useless in classification or regression.')
+                    print(datetime.datetime.now(), 'Split useless in regression.')
                 continue
 
             idx_l, idx_r = np.where(labels == 1)[0], np.where(labels == 2)[0]
@@ -195,33 +195,33 @@ class RuleTreeRegressor(RuleTree):
             self._queue.append((idx_all_l, node_depth + 1, node_l))
             self._queue.append((idx_all_r, node_depth + 1, node_r))
 
+        if self.verbose:
+            print(datetime.datetime.now(),
+                  'Training ended in %s iterations, with %s leaves.' % (iter_id, nbr_curr_nodes))
+
+        if self.prune_useless_leaves:
             if self.verbose:
-                print(datetime.datetime.now(),
-                      'Training ended in %s iterations, with %s leaves.' % (iter_id, nbr_curr_nodes))
+                print(datetime.datetime.now(), 'Pruning of useless leaves.')
+            self._prune_useless_leaves()
 
-            if self.prune_useless_leaves:
-                if self.verbose:
-                    print(datetime.datetime.now(), 'Pruning of useless leaves.')
-                self._prune_useless_leaves()
+        self.root_ = root_node
+        self.label_encoder_ = LabelEncoder()
 
-            self.root_ = root_node
-            self.label_encoder_ = LabelEncoder()
+        if self.class_encoder_ is not None:
+            self._y = self.class_encoder_.inverse_transform(self._y)
+        self.rules_to_tree_print_ = self._get_rules_to_print_tree()
+        self.rules_ = self._calculate_rules()
+        self.rules_ = self._compact_rules()
+        self.rules_s_ = self._rules2str()
+        self.medoid_dict_ = self._calculate_all_medoids()
 
-            if self.class_encoder_ is not None:
-                self._y = self.class_encoder_.inverse_transform(self._y)
-            self.rules_to_tree_print_ = self._get_rules_to_print_tree()
-            self.rules_ = self._calculate_rules()
-            self.rules_ = self._compact_rules()
-            self.rules_s_ = self._rules2str()
-            self.medoid_dict_ = self._calculate_all_medoids()
+        self.task_medoid_dict_ = self._calculate_task_medoids()
 
-            self.task_medoid_dict_ = self._calculate_task_medoids()
-
-            if self.verbose:
-                print(datetime.datetime.now(), 'RULE TREE - END.\n')
+        if self.verbose:
+            print(datetime.datetime.now(), 'RULE TREE - END.\n')
 
     def predict(self, X, get_leaf=False, get_rule=False):
-        super().predict(X, get_leaf=False, get_rule=False)
+        return super().predict(X, get_leaf=get_leaf, get_rule=get_rule)
 
     def _predict_adjust_labels(self, labels):
         return labels
@@ -255,14 +255,14 @@ class RuleTreeRegressor(RuleTree):
 
         P = np.array(P)
 
-        X = RuleTree.preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
-        P = RuleTree.preprocessing(P, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
+        X = preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
+        P = preprocessing(P, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
 
         dist = cdist(X.astype(float), P.astype(float), metric=metric)
 
         return dist
 
-    def _get_labels(self, node):
+    def _get_labels_from_node(self, node):
         return node.label
 
     def _rules2str_text(self, cond):
@@ -274,7 +274,7 @@ class RuleTreeRegressor(RuleTree):
             print(datetime.datetime.now(), 'Calculate regression medoids.')
 
         return RuleTreeRegressor.calculate_task_medoids(node_dict=self._node_dict, X=self._X, y=self._y,
-                                                          Xr=self._Xr)
+                                                        Xr=self._Xr)
 
     @staticmethod
     def calculate_task_medoids(node_dict, X, y, Xr):
@@ -287,3 +287,6 @@ class RuleTreeRegressor(RuleTree):
             node.task_medoid = Xr[idx_regr_medoid]
             regr_medoid_dict[node_id] = node.task_medoid
         return regr_medoid_dict
+
+    def _print_tree_text(self):
+        return "value"

@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 import category_encoders as ce
 
+
 def preprocessing(X, feature_names_r, is_cat_feat, data_encoder=None, numerical_scaler=None):
+    X = np.copy(X)
     if data_encoder is not None:
         df = pd.DataFrame(data=X, columns=feature_names_r)
         X = data_encoder.transform(df).values
@@ -12,7 +14,9 @@ def preprocessing(X, feature_names_r, is_cat_feat, data_encoder=None, numerical_
 
     return X
 
+
 def inverse_preprocessing(X, is_cat_feat, data_encoder=None, numerical_scaler=None):
+    X = np.copy(X)
     if numerical_scaler is not None and np.sum(~is_cat_feat) > 0:
         X[:, ~is_cat_feat] = numerical_scaler.inverse_transform(X[:, ~is_cat_feat])
 
@@ -21,9 +25,9 @@ def inverse_preprocessing(X, is_cat_feat, data_encoder=None, numerical_scaler=No
 
     return X
 
+
 def prepare_data(X_original, max_nbr_values, max_nbr_values_cat, feature_names_original, one_hot_encode_cat,
                  categorical_indices, numerical_indices, numerical_scaler):
-
     if categorical_indices is not None and numerical_indices is not None:
         if len(categorical_indices) + len(numerical_indices) != X_original.shape[1]:
             raise Exception('Provided indices are different from dataset size.')
@@ -84,7 +88,7 @@ def prepare_data(X_original, max_nbr_values, max_nbr_values_cat, feature_names_o
     feature_names = None
     maps = None
     if len(cols) > 0 and one_hot_encode_cat:
-        encoder = ce.OneHotEncoder(cols=cols, use_cat_names=True)  #TODO: non possiamo usare ohe di sklearn?
+        encoder = ce.OneHotEncoder(cols=cols, use_cat_names=True)
         df = encoder.fit_transform(
             pd.DataFrame(data=X, columns=feature_names_original))  #TODO: serve passare da pandas??
         X = df.values

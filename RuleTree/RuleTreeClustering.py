@@ -16,6 +16,7 @@ from RuleTree.RuleTreeNode import RuleTreeNode
 from RuleTree.RuleTreeRegressor import RuleTreeRegressor
 from RuleTree.utils import ObliqueHouseHolderSplit, MODEL_TYPE_REG, MODEL_TYPE_CLU
 from RuleTree.utils.bic_estimator import bic
+from RuleTree.utils.data_utils import prepare_data, preprocessing
 
 
 class RuleTreeClustering(RuleTree):
@@ -63,7 +64,7 @@ class RuleTreeClustering(RuleTree):
                          categorical_indices=categorical_indices, numerical_indices=numerical_indices,
                          numerical_scaler=numerical_scaler, precision=precision, cat_precision=cat_precision,
                          exclude_split_feature_from_reduction=exclude_split_feature_from_reduction,
-                         random_state=random_state, n_jobs=n_jobs, verbose=verbose, kwargs=kwargs)
+                         random_state=random_state, n_jobs=n_jobs, verbose=verbose, **kwargs)
 
         self._typed_X = None
         self.impurity = impurity_measure
@@ -218,6 +219,7 @@ class RuleTreeClustering(RuleTree):
         n_idx = X.shape[0]
         idx = np.arange(n_idx)
 
+        self.labels_ = -1 * np.ones(n_idx).astype(int)
         if self.clu_for_reg:
             self.labels_ = (-1.0 * np.ones(n_idx)).astype(float)
 
@@ -243,12 +245,12 @@ class RuleTreeClustering(RuleTree):
             self.feature_names_r = np.array(self.feature_names_r)
 
         self._Xr = X
-        res = RuleTree.prepare_data(self._X, self.max_nbr_values, self.max_nbr_values_cat,
-                                    self.feature_names_r, self.one_hot_encode_cat, self.categorical_indices,
-                                    self.numerical_indices, self.numerical_scaler)
+        res = prepare_data(self._X, self.max_nbr_values, self.max_nbr_values_cat, self.feature_names_r,
+                           self.one_hot_encode_cat, self.categorical_indices, self.numerical_indices,
+                           self.numerical_scaler)
         self._X = res[0]
-        self.feature_values_r, self.is_cat_feat_r, self.feature_values, self.is_cat_feat, self.data_encoder, self.feature_names = \
-            res[1]
+        (self.feature_values_r, self.is_cat_feat_r, self.feature_values, self.is_cat_feat, self.data_encoder,
+         self.feature_names) = res[1]
         self.maps = res[2]
 
         if self.feature_names is None:
@@ -374,51 +376,44 @@ class RuleTreeClustering(RuleTree):
             bic_l = bic(self._X[idx_iter[idx_l]], [0] * len(idx_l))
             bic_r = bic(self._X[idx_iter[idx_r]], [0] * len(idx_r))
             heapq.heappush(self._queue, (-len(idx_all_l) + 0.00001 * bic_l,
-                                          (next(self.tiebreaker), idx_all_l, node_depth + 1, node_l)))
+                                         (next(self.tiebreaker), idx_all_l, node_depth + 1, node_l)))
             heapq.heappush(self._queue, (-len(idx_all_r) + 0.00001 * bic_r,
-                                          (next(self.tiebreaker), idx_all_r, node_depth + 1, node_r)))
+                                         (next(self.tiebreaker), idx_all_r, node_depth + 1, node_r)))
 
-            if self.verbose:
-                print(datetime.datetime.now(),
-                      'Training ended in %s iterations, with %s leaves.' % (iter_id, nbr_curr_nodes))
+        if self.verbose:
+            print(datetime.datetime.now(),
+                  'Training ended in %s iterations, with %s leaves.' % (iter_id, nbr_curr_nodes))
 
-            self.root_ = root_node
-            self.label_encoder_ = LabelEncoder()
+        self.root_ = root_node
+        print(datetime.datetime.now(), 'Normalize labels id.')
+        self.label_encoder_ = LabelEncoder()
+        self.labels_ = self.label_encoder_.fit_transform(self.labels_)
 
-            if self.clu_for_clf:
-                if self.verbose:
-                    print(datetime.datetime.now(), 'Normalize labels id.')
-                self.labels_ = self.label_encoder_.fit_transform(self.labels_)
+        if self.class_encoder_ is not None:
+            self._y = self.class_encoder_.inverse_transform(self._y)
+        self.rules_to_tree_print_ = self._get_rules_to_print_tree()
+        self.rules_ = self._calculate_rules()
+        self.rules_ = self._compact_rules()
+        self.rules_s_ = self._rules2str()
+        self.medoid_dict_ = self._calculate_all_medoids()
 
-            if self.class_encoder_ is not None:
-                self._y = self.class_encoder_.inverse_transform(self._y)
-            self.rules_to_tree_print_ = self._get_rules_to_print_tree()
-            self.rules_ = self._calculate_rules()
-            self.rules_ = self._compact_rules()
-            self.rules_s_ = self._rules2str()
-            self.medoid_dict_ = self._calculate_all_medoids()
+        self.task_medoid_dict_ = self._calculate_task_medoids()
 
-            self.task_medoid_dict_ = self._calculate_task_medoids()
-
-            if self.verbose:
-                print(datetime.datetime.now(), 'RULE TREE - END.\n')
+        if self.verbose:
+            print(datetime.datetime.now(), 'RULE TREE - END.\n')
 
     def predict(self, X, get_leaf=False, get_rule=False):
-        super().predict(X, get_leaf=False, get_rule=False)
+        return super().predict(X, get_leaf=get_leaf, get_rule=get_rule)
 
     def _predict_adjust_labels(self, labels):
-        if self.clu_for_clf:
+        if self.clu_for_reg:
+            return labels
+        else:
             labels = self.label_encoder_.transform(labels)
-            if self.class_encoder_ is not None:
+            if self.clu_for_clf and self.class_encoder_ is not None:
                 labels = self.class_encoder_.inverse_transform(labels)
 
-        #if self.clu_for_clf:
-        #    if self.class_encoder_ is not None:
-        #        labels = self.class_encoder_.inverse_transform(labels)
-        if not self.clu_for_clf:
-            labels = self.label_encoder_.transform(labels)
-
-        return labels
+            return labels
 
     def _predict(self, X, idx, node):
         labels, leaves, proba = super()._predict(X=X, idx=idx, node=node)
@@ -464,23 +459,22 @@ class RuleTreeClustering(RuleTree):
 
         P = np.array(P)
 
-        X = RuleTree.preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
-        P = RuleTree.preprocessing(P, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
+        X = preprocessing(X, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
+        P = preprocessing(P, self.feature_names_r, self.is_cat_feat, self.data_encoder, self.numerical_scaler)
 
         dist = cdist(X.astype(float), P.astype(float), metric=metric)
 
         return dist
 
-    def _get_labels(self, node):
-        if self.clu_for_clf:
-            label = self.label_encoder_.transform([node.label])[0]
-            if self.class_encoder_ is not None:
-                label = self.class_encoder_.inverse_transform([label])[0]
+    def _get_labels_from_node(self, node):
+        if self.clu_for_reg:
+            return node.label
         else:
-            label = node.label
+            label = self.label_encoder_.transform([node.label])
+            if self.clu_for_clf and self.class_encoder_ is not None:
+                label = self.class_encoder_.inverse_transform(label)
 
-        return label
-
+            return label[0]
 
     def _rules2str_text(self, cond):
         if self.clu_for_reg:
@@ -506,3 +500,11 @@ class RuleTreeClustering(RuleTree):
 
             return RuleTreeRegressor.calculate_task_medoids(node_dict=self._node_dict, X=self._X, y=self._y,
                                                             Xr=self._Xr)
+
+    def _print_tree_text(self):
+        if self.clu_for_clf:
+            return "class"
+        elif self.clu_for_reg:
+            return "value"
+        else:
+            return "cluster"
