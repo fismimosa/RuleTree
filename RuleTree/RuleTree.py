@@ -6,6 +6,7 @@ from typing import Union
 import numpy as np
 import sklearn.preprocessing
 from category_encoders import OrdinalEncoder as cat_OrdinalEncoder
+from sklearn.base import BaseEstimator
 from sklearn.preprocessing import OrdinalEncoder as sk_OrdinalEncoder
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, LabelEncoder
 
@@ -14,7 +15,7 @@ from RuleTree.utils import MODEL_TYPE_CLF, MODEL_TYPE_REG, ObliqueHouseHolderSpl
 from RuleTree.utils.data_utils import preprocessing
 
 
-class RuleTree(ABC):
+class RuleTree(ABC, BaseEstimator):
     @staticmethod
     def calculate_medoid(X, Xr):
         median = np.median(X, axis=0)
