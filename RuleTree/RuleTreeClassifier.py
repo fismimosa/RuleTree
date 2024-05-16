@@ -56,6 +56,7 @@ class RuleTreeClassifier(RuleTree):
             min_samples_leaf=self.min_samples_leaf,
             min_samples_split=self.min_samples_split,
             random_state=self.random_state,
+            **self.kwargs
         )
 
         return super()._make_supervised_split(idx_iter=idx_iter, clf=clf)
@@ -268,7 +269,7 @@ class RuleTreeClassifier(RuleTree):
         return self.class_encoder_.inverse_transform(np.array([node.label]).reshape(-1, 1))[0, 0]
 
     def _rules2str_text(self, cond):
-        cons_txt = cond[0]  # TODO: check con rick
+        cons_txt = cond[0]
         return '%s' % cons_txt
 
     def _calculate_task_medoids(self):
