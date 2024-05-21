@@ -130,7 +130,7 @@ class RuleTreeClustering(RuleTree):
                     labels_i = clf.apply(self._X[idx_iter])
                     eval_val = bic(self._X[idx_iter], (np.array(labels_i) - 1).tolist())
                 else:
-                    raise Exception('Unknown clustering impurity measure %s' % self.impurity)
+                    raise Exception('Unknown CLU impurity measure %s' % self.impurity)
 
                 clf_list.append(clf)
                 eval_list.append(eval_val)
@@ -193,7 +193,7 @@ class RuleTreeClustering(RuleTree):
                     labels_i = clf.apply(self._X[idx_iter])
                     eval_val = bic(self._X[idx_iter], (np.array(labels_i) - 1).tolist())
                 else:
-                    raise Exception('Unknown clustering impurity measure %s' % self.impurity)
+                    raise Exception('Unknown CLU impurity measure %s' % self.impurity)
 
                 clf_list.append(clf)
                 eval_list.append(eval_val)
@@ -213,8 +213,8 @@ class RuleTreeClustering(RuleTree):
 
         if self.verbose:
             print(datetime.datetime.now(), 'Model type: %s.', MODEL_TYPE_CLU)
-            print(datetime.datetime.now(), 'Clustering for classification: %s.' % self.clu_for_clf)
-            print(datetime.datetime.now(), 'Clustering for regression: %s.' % self.clu_for_reg)
+            print(datetime.datetime.now(), 'Clustering for CLF: %s.' % self.clu_for_clf)
+            print(datetime.datetime.now(), 'Clustering for REG: %s.' % self.clu_for_reg)
 
         n_idx = X.shape[0]
         idx = np.arange(n_idx)
@@ -310,7 +310,7 @@ class RuleTreeClustering(RuleTree):
                 self._make_leaf(node)
                 nbr_curr_nodes += 1
                 if self.verbose:
-                    print(datetime.datetime.now(), 'Split useless in clustering.')
+                    print(datetime.datetime.now(), 'Split useless in CLU.')
                 continue
 
             bic_parent = bic(self._X[idx_iter], [0] * nbr_samples)
@@ -496,7 +496,7 @@ class RuleTreeClustering(RuleTree):
 
         elif self.clu_for_reg:
             if self.verbose:
-                print(datetime.datetime.now(), 'Calculate regression medoids.')
+                print(datetime.datetime.now(), 'Calculate REG medoids.')
 
             return RuleTreeRegressor.calculate_task_medoids(node_dict=self._node_dict, X=self._X, y=self._y,
                                                             Xr=self._Xr)

@@ -146,7 +146,7 @@ class RuleTreeClassifier(RuleTree):
                 self._make_leaf(node)
                 nbr_curr_leaves += 1
                 if self.verbose:
-                    print(datetime.datetime.now(), 'Split useless in classification.')
+                    print(datetime.datetime.now(), 'Split useless in CLF.')
                 continue
 
             idx_l, idx_r = np.where(idx_leaves == 1)[0], np.where(idx_leaves == 2)[0]

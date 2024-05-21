@@ -150,7 +150,7 @@ class RuleTreeRegressor(RuleTree):
                 self._make_leaf(node)
                 nbr_curr_nodes += 1
                 if self.verbose:
-                    print(datetime.datetime.now(), 'Split useless in regression.')
+                    print(datetime.datetime.now(), 'Split useless in REG.')
                 continue
 
             idx_l, idx_r = np.where(labels == 1)[0], np.where(labels == 2)[0]
@@ -271,7 +271,7 @@ class RuleTreeRegressor(RuleTree):
 
     def _calculate_task_medoids(self):
         if self.verbose:
-            print(datetime.datetime.now(), 'Calculate regression medoids.')
+            print(datetime.datetime.now(), 'Calculate REG medoids.')
 
         return RuleTreeRegressor.calculate_task_medoids(node_dict=self._node_dict, X=self._X, y=self._y,
                                                         Xr=self._Xr)
