@@ -25,7 +25,7 @@ from config import TASK_CLF, TASK_CLC, TASK_REG, TASK_CLR, TASK_CLU, dataset_tar
     NBR_REPEATED_HOLDOUT, task_method, datasets_target_clu_sup
 
 
-class Benchmark():
+class Benchmark:
     def __init__(self, task, dataset, numerical_scaler=StandardScaler(), verbose=2):
         if task not in [TASK_CLF, TASK_CLC, TASK_REG, TASK_CLR, TASK_CLU]:
             raise ValueError(f'Unknown task {task}')
@@ -139,7 +139,7 @@ class Benchmark():
             df = pd.read_csv(DATASET_PATH + self.task + "/" + self.dataset + ".csv", skipinitialspace=True)
 
             if len(self.dataset_feat_drop[self.dataset]) > 0:
-                df.drop(self.dataset_feat_drop[self.dataset_name], axis=1, inplace=True)
+                df.drop(self.dataset_feat_drop[self.dataset], axis=1, inplace=True)
             df = remove_missing_values(df)
 
             numerical_indices = np.where(np.in1d(df.columns.values, df._get_numeric_data().columns.values))[0]
@@ -245,10 +245,10 @@ class Benchmark():
 
 
                         # save the model
-                        with open(self.pickle_path + f"{res['exp_id']}_model.pkl", 'wb') as f:
+                        with open(self.pickle_path + f"{res['exp_id']}_{method_name}_model.pkl", 'wb') as f:
                             pickle.dump(model, f)
                         # save the output
-                        with open(self.pickle_path + f"{res['exp_id']}_results.pkl", 'wb') as f:
+                        with open(self.pickle_path + f"{res['exp_id']}_{method_name}_results.pkl", 'wb') as f:
                             pickle.dump(y, f)
 
                         res = dict(sorted(res.items(), key=lambda x: x[0]))
