@@ -51,5 +51,6 @@ def test_classifier_iris():
 
     assert accuracy_score(y_test, y_pred) > .9
 
+
 if __name__ == "__main__":
     pytest.main()
