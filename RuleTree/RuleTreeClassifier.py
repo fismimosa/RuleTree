@@ -266,7 +266,10 @@ class RuleTreeClassifier(RuleTree):
         return dist
 
     def _get_labels_from_node(self, node):
-        return self.class_encoder_.inverse_transform(np.array([node.label]).reshape(-1, 1))[0, 0]
+        if self.class_encoder_ is not None:
+            return self.class_encoder_.inverse_transform(np.array([node.label]).reshape(-1, 1))[0, 0]
+        else:
+            return node.label
 
     def _rules2str_text(self, cond):
         cons_txt = cond[0]
