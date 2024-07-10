@@ -283,7 +283,7 @@ class RuleTreeClustering(RuleTree):
                 print(datetime.datetime.now(), 'All categorical features, use MCA.')
         else:
             if self.verbose:
-                print(datetime.datetime.now(), 'All categorical features, use FAMD.')
+                print(datetime.datetime.now(), 'Mixed continuous and categorical features, use FAMD.')
 
         if self.verbose:
             print(datetime.datetime.now(), 'Training started')
