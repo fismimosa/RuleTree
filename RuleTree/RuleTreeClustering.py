@@ -70,6 +70,11 @@ class RuleTreeClustering(RuleTree):
         self.impurity = impurity_measure
         self.clu_for_clf = clu_for_clf
         self.clu_for_reg = clu_for_reg
+                     
+        if self.clu_for_clf and self.clu_for_reg:
+            raise Exception('Model cannot be both a classifier and a regressor at the same time.')
+
+    
 
     def _make_leaf(self, node: RuleTreeNode):
         super()._make_leaf(node=node)
