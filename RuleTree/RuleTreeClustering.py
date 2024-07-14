@@ -224,20 +224,26 @@ class RuleTreeClustering(RuleTree):
         n_idx = X.shape[0]
         idx = np.arange(n_idx)
 
-        self.labels_ = -1 * np.ones(n_idx).astype(int)
-        if self.clu_for_reg:
-            self.labels_ = (-1.0 * np.ones(n_idx)).astype(float)
-
         node_id = 0
         proba = None
+        
         if self._y is None:
             majority_class = node_id
         else:
             if len(np.unique(self._y)) >= self.max_nbr_values_cat:  # infer is numerical
                 majority_class = np.mean(self._y)
+                #infer the problem is a regression task
+                self.clu_for_reg = True 
             else:  # infer it is categorical
                 majority_class = RuleTree.calculate_mode(self._y)
                 proba = RuleTree.calculate_proba(y, self.nbr_classes_)
+                #infer the problem is a classification task
+                self.clu_for_clf = True
+                
+
+        self.labels_ = -1 * np.ones(n_idx).astype(int)
+        if self.clu_for_reg:
+            self.labels_ = (-1.0 * np.ones(n_idx)).astype(float)
 
         root_node = RuleTreeNode(idx, node_id, majority_class, proba=proba, parent_id=-1)
         self._node_dict[root_node.node_id] = root_node
