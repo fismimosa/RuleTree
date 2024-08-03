@@ -1,4 +1,5 @@
 import heapq
+import warnings
 from typing import Tuple
 
 import numpy as np
@@ -9,6 +10,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from RuleTree.RuleTree import RuleTree
 from RuleTree.RuleTreeBase import RuleTreeBase
 from RuleTree.RuleTreeNode import RuleTreeNode
+from RuleTree.utils.MyDecisionTreeRegressor import MyDecisionTreeRegressor
 from RuleTree.utils.data_utils import calculate_mode
 
 
@@ -20,7 +22,7 @@ class RuleTreeRegressor(RuleTree):
                  prune_useless_leaves=False,
                  random_state=None,
 
-                 criterion='gini',
+                 criterion='squared_error',
                  splitter='best',
                  min_samples_leaf=1,
                  min_weight_fraction_leaf=0.0,
@@ -60,7 +62,7 @@ class RuleTreeRegressor(RuleTree):
         return el[-2:]
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray) -> tree:
-        clf = DecisionTreeRegressor(
+        clf = MyDecisionTreeRegressor(
             max_depth=1,
             criterion=self.criterion,
             splitter=self.splitter,
@@ -83,8 +85,10 @@ class RuleTreeRegressor(RuleTree):
         return node
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
-        prediction = float(np.mean(y[idx]))
-        prediction_std = float(np.std(y[idx]))
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            prediction = float(np.mean(y[idx]))
+            prediction_std = float(np.std(y[idx]))
 
         return RuleTreeNode(
             node_id=node_id,

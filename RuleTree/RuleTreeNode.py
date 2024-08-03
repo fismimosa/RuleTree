@@ -49,3 +49,26 @@ class RuleTreeNode:
 
     def get_depth(self):
         return len(self.node_id)-1
+
+    def get_rule(self):
+        if self.is_leaf():
+            return {
+                "node_id": self.node_id,
+                "is_leaf": True,
+                "prediction": self.prediction,
+                "prediction_probability": self.prediction_probability,
+                "samples": self.samples,
+            }
+        else:
+            return {
+                "node_id": self.node_id,
+                "is_leaf": False,
+                "prediction": self.prediction,
+                "prediction_probability": self.prediction_probability,
+                "feature_idx": self.clf.feature_original[0],
+                "threshold_idx": self.clf.threshold_original[0],
+                "is_categorical": self.clf.is_categorical,
+                "samples": self.samples,
+                "left_node": self.node_l.get_rule(),
+                "right_node": self.node_r.get_rule(),
+            }

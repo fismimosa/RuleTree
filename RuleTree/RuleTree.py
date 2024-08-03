@@ -91,7 +91,7 @@ class RuleTree(RuleTreeBase):
 
         else:
             labels, leaves, proba = (
-                np.full(len(X), fill_value=-1, dtype=object if type(current_node.prediction) is str else None),
+                np.full(len(X), fill_value=-1, dtype=object if type(current_node.prediction) is str else type(current_node.prediction)),
                 np.zeros(len(X), dtype=object),
                 np.ones(len(X), dtype=float)*-1
             )
@@ -105,6 +105,41 @@ class RuleTree(RuleTreeBase):
                 labels[labels_clf==2], leaves[labels_clf==2], proba[labels_clf==2] = self._predict(X_r, current_node.node_r)
 
             return labels, leaves, proba
+
+
+    def get_rules(self):
+        return self.root.get_rule()
+
+
+    @classmethod
+    def print_rules(cls, rules:dict, columns_names:list=None, ndigits=2, indent:int=0, ):
+        names = lambda x: f"X_{x}"
+
+        if columns_names is not None:
+            names = lambda x: columns_names[x]
+
+        indentation = "".join(["|   " for _ in range(indent)])
+
+        if rules["is_leaf"]:
+            pred = rules['prediction']
+
+            print(f"{indentation} output: "
+                  f"{pred if type(pred) in [np.str_, np.string_, str]  else round(pred, ndigits=ndigits)}")
+        else:
+            comparison = "==" if rules['is_categorical'] else "<="
+            not_comparison = "!=" if rules['is_categorical'] else ">"
+            feature_idx = rules['feature_idx']
+            thr = rules['threshold_idx']
+            print(f"{indentation}|--- {names(feature_idx)} {comparison} "
+                  f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}"
+                  f"\t{rules['samples']}")
+            cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent+1)
+
+            print(f"{indentation}|--- {names(feature_idx)} {not_comparison} "
+                  f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
+            cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+
+
 
 
 

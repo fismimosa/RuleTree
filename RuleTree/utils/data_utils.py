@@ -148,6 +148,9 @@ def get_info_gain(clf: DecisionTreeClassifier):
         return 0 # TODO: check
     imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
     n_parent, n_child_l, n_child_r = clf.tree_.n_node_samples
+    return _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_child_r)
+
+def _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_child_r):
     gain_split = imp_parent - imp_child_l * (n_child_l / n_parent) - imp_child_r * (n_child_r / n_parent)
     return gain_split
 
@@ -162,3 +165,17 @@ def get_gain_ratio(clf: DecisionTreeClassifier):
     split_info *= -1
 
     return gain_split/split_info
+
+
+def gini(x):
+    _, counts = np.unique(x, return_counts=True)
+
+    return 1 - np.sum((counts/len(x))**2)
+
+def entropy(x):
+    _, counts = np.unique(x, return_counts=True)
+
+    p_j = counts/len(x)
+    p_j_log = np.log2(p_j)
+
+    return - p_j @ p_j_log
