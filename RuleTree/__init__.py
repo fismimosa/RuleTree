@@ -1,5 +1,5 @@
-from .RuleTreeRegressor import RuleTreeRegressor
-from .RuleTreeClassifier import RuleTreeClassifier
-from .RuleTreeClustering import RuleTreeClustering
+from RuleTree.old.RuleTreeRegressor import RuleTreeRegressor
+from RuleTree.old.RuleTreeClassifier import RuleTreeClassifier
+from RuleTree.old.RuleTreeClustering import RuleTreeClustering
 
-from RuleTree import RuleTree
+from .old import RuleTree

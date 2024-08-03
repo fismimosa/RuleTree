@@ -1,6 +1,9 @@
+import math
+
 import numpy as np
 import pandas as pd
 import category_encoders as ce
+from sklearn.tree import DecisionTreeClassifier
 
 
 def preprocessing(X, feature_names_r, is_cat_feat, data_encoder=None, numerical_scaler=None):
@@ -134,3 +137,28 @@ def prepare_data(X_original, max_nbr_values, max_nbr_values_cat, feature_names_o
                 encoder, feature_names)
 
     return X, features, maps
+
+def calculate_mode(x: np.ndarray):
+    vals, counts = np.unique(x, return_counts=True)
+    idx = np.argmax(counts)
+    return vals[idx]
+
+def get_info_gain(clf: DecisionTreeClassifier):
+    if len(clf.tree_.impurity) == 1:#no_split
+        return 0 # TODO: check
+    imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
+    n_parent, n_child_l, n_child_r = clf.tree_.n_node_samples
+    gain_split = imp_parent - imp_child_l * (n_child_l / n_parent) - imp_child_r * (n_child_r / n_parent)
+    return gain_split
+
+def get_gain_ratio(clf: DecisionTreeClassifier):
+    if len(clf.tree_.impurity) == 1:#no_split
+        return 0 # TODO: check
+    imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
+    n_parent, n_child_l, n_child_r = clf.tree_.n_node_samples
+    gain_split = imp_parent - imp_child_l * (n_child_l / n_parent) - imp_child_r * (n_child_r / n_parent)
+    split_info = (n_child_l / n_parent)*math.log2(n_child_l / n_parent) +\
+                 (n_child_r / n_parent)*math.log2(n_child_r / n_parent)
+    split_info *= -1
+
+    return gain_split/split_info

@@ -1,290 +1,71 @@
+import os
+from glob import glob
+from time import time
+
+import pandas as pd
 import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.datasets import load_iris
-from sklearn.metrics import r2_score, mean_absolute_percentage_error, accuracy_score, normalized_mutual_info_score, \
-    silhouette_score
+from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import classification_report, f1_score
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.tree import DecisionTreeClassifier
+from progress_table import ProgressTable
 
-from RuleTree.RuleTree import RuleTree
-from RuleTree import RuleTreeClassifier, RuleTreeRegressor, RuleTreeClustering
+from RuleTree.RuleTreeClassifier import RuleTreeClassifier
 
+def test_clf():
+    datasets = glob("datasets/CLF/*.csv")
+    table = ProgressTable(pbar_embedded=False, pbar_show_progress=True, pbar_show_percents=True,
+                          pbar_show_throughput=False, num_decimal_places=3)
 
-def test_CLF():
-    iris = load_iris()
-    X = iris.data
-    y = np.array(list(map(lambda x: iris.target_names[x], iris.target)))
+    for dataset in datasets:
+        dataset_name = dataset.split("/")[-1][:-4]
+        table["dataset"] = dataset_name
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.2, random_state=0)
+        try:
+            df = pd.read_csv(dataset)
+            ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
+                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=12)
+            df_onehot = pd.DataFrame(ct.fit_transform(df.iloc[:, :-1]), columns=ct.get_feature_names_out())
 
-    max_nbr_values_cat = 4
-    rt = RuleTreeClassifier(
-        # max_depth=4,
-        # min_samples_leaf=1,
-        # min_samples_split=2,
-        max_nbr_nodes=7,
-        # clf_impurity='entropy',
-        # feature_names=['Sex', 'Lies', 'Cookies'],
-        # feature_names=iris.feature_names,
-        # allow_oblique_splits=True,
-        # force_oblique_splits=True,
-        # max_nbr_values=4,
-        # max_nbr_nodes=32,
-        prune_useless_leaves=True,
-        # max_nbr_nodes=5,
-        bic_eps=0.5,
-        # max_nbr_values=20,
-        max_nbr_values_cat=max_nbr_values_cat,
-        one_hot_encode_cat=True,
-        # categorical_indices=[4],
-        # numerical_indices=[1],
-        numerical_scaler=StandardScaler(),
-        # exclude_split_feature_from_reduction=True,
-        random_state=0,
-        verbose=True
-    )
+            X = df.iloc[:, :-1].values
+            y = df.iloc[:, -1].values
+            X_onehot = df_onehot.to_numpy()
 
-    print(rt.bic_eps)
-    rt.set_params(**{'bic_eps': 0.25})
-    print(rt.bic_eps)
-    rt.fit(X_train, y_train)
-    # rt.fit(X_train)
-    print(rt.predict(X_test))
-    print(rt.predict(X_test))
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
+            X_train_onehot, X_test_onehot, _, _ = train_test_split(X_onehot, y, test_size=0.3, random_state=42,
+                                                                   stratify=y)
 
-    print('RuleTree')
-    print(rt.print_tree())
-    print('')
+            clf_rule = RuleTreeClassifier()
+            clf_sklearn = DecisionTreeClassifier()
 
-    y_pred, leaves, rules = rt.predict(X_test, get_leaf=True, get_rule=True)
-    print(y_pred, '<<<<<<<')
-    print(y_test)
-    print(leaves)
-    print(rt.rules_s_)
-    print(rt.predict_proba(X_test), 'PPPPPPP')
-    # print(X_test[2])
-
-    if len(np.unique(y_train)) >= max_nbr_values_cat:  # infer is numerical
-        print('R2', r2_score(y_test, y_pred))
-        print('MAPE', mean_absolute_percentage_error(y_test, y_pred))
-    else:  # infer it is categorical
-        print('Accuracy', accuracy_score(y_test, y_pred))
-    print('NMI', normalized_mutual_info_score(y_test, y_pred))
-    print('')
-    for r in rules:
-        print(r)
-    print('')
-
-    print(rt.are_rules_verified(X_test, count_cond=False, relative_count=False))
-    print('')
-
-    for k in rt.medoid_dict_:
-        print(k, rt.medoid_dict_[k])
-
-    print('')
-
-    for k in rt.rules_s_:
-        print(k, rt.rules_s_[k], rt.medoid_dict_[k])
-
-    print('')
-
-    if len(np.unique(y_train)) >= max_nbr_values_cat:  # infer is numerical
-        if rt.task_medoid_dict_ is not None:
-            for k in rt.task_medoid_dict_:
-                print(k, rt.task_medoid_dict_[k])
-
-            print('')
-
-            for k in rt.rules_s_:
-                print(k, rt.rules_s_[k], rt.task_medoid_dict_[k])
-
-            print('')
-    else:
-        if rt.task_medoid_dict_ is not None:
-            for k in rt.task_medoid_dict_:
-                print(k, rt.task_medoid_dict_[k])
-
-            print('')
-
-            for k in rt.rules_s_:
-                print(k, rt.rules_s_[k], rt.task_medoid_dict_[k])
-
-            print('')
-
-    dist = rt.transform(X_train, metric='euclidean', include_descriptive_pivot=True, include_target_pivot=True,
-                        only_leaf_pivot=True)
-    dist_test = rt.transform(X_test, metric='euclidean', include_descriptive_pivot=True, include_target_pivot=True,
-                             only_leaf_pivot=True)
-
-    rtp = RuleTreeClassifier(max_depth=4)
-    rtp.fit(dist, y_train)
-    print(RuleTree.print_tree(rtp))
-
-    print('Accuracy', accuracy_score(y_test, rtp.predict(dist_test)))
-
-def test_REG():
-    iris = load_iris()
-    X = iris.data[:, :-1]
-    y = iris.data[:, -1]
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-    max_nbr_values_cat = 4
-    rt = RuleTreeRegressor(
-        # max_depth=4,
-        # min_samples_leaf=1,
-        # min_samples_split=2,
-        max_nbr_nodes=7,
-        # clf_impurity='entropy',
-        # feature_names=['Sex', 'Lies', 'Cookies'],
-        # feature_names=iris.feature_names,
-        # allow_oblique_splits=True,
-        # force_oblique_splits=True,
-        # max_nbr_values=4,
-        # max_nbr_nodes=32,
-        prune_useless_leaves=True,
-        # max_nbr_nodes=5,
-        bic_eps=0.5,
-        # max_nbr_values=20,
-        max_nbr_values_cat=max_nbr_values_cat,
-        one_hot_encode_cat=True,
-        # categorical_indices=[4],
-        # numerical_indices=[1],
-        numerical_scaler=StandardScaler(),
-        # exclude_split_feature_from_reduction=True,
-        random_state=0,
-        verbose=True
-    )
-
-    print(rt.bic_eps)
-    rt.set_params(**{'bic_eps': 0.25})
-    print(rt.bic_eps)
-    rt.fit(X_train, y_train)
-    # rt.fit(X_train)
-    print(rt.predict(X_test))
-    print(rt.predict(X_test))
-
-    print('RuleTree')
-    print(rt.print_tree())
-    print('')
-
-    y_pred, leaves, rules = rt.predict(X_test, get_leaf=True, get_rule=True)
-    print(y_pred, '<<<<<<<')
-    print(y_test)
-    print(leaves)
-    print(rt.rules_s_)
-    print(rt.predict_proba(X_test), 'PPPPPPP')
-    # print(X_test[2])
-
-    if len(np.unique(y_train)) >= max_nbr_values_cat:  # infer is numerical
-        print('R2', r2_score(y_test, y_pred))
-        print('MAPE', mean_absolute_percentage_error(y_test, y_pred))
-    else:  # infer it is categorical
-        print('Accuracy', accuracy_score(y_test, y_pred))
-    print('NMI', normalized_mutual_info_score(y_test, y_pred))
-    print('')
-    for r in rules:
-        print(r)
-    print('')
-
-    print(rt.are_rules_verified(X_test, count_cond=False, relative_count=False))
-    print('')
-
-    for k in rt.medoid_dict_:
-        print(k, rt.medoid_dict_[k])
-
-    print('')
-
-    for k in rt.rules_s_:
-        print(k, rt.rules_s_[k], rt.medoid_dict_[k])
-
-    print('')
-
-    if len(np.unique(y_train)) >= max_nbr_values_cat:  # infer is numerical
-        if rt.task_medoid_dict_ is not None:
-            for k in rt.task_medoid_dict_:
-                print(k, rt.task_medoid_dict_[k])
-
-            print('')
-
-            for k in rt.rules_s_:
-                print(k, rt.rules_s_[k], rt.task_medoid_dict_[k])
-
-            print('')
-    else:
-        if rt.task_medoid_dict_ is not None:
-            for k in rt.task_medoid_dict_:
-                print(k, rt.task_medoid_dict_[k])
-
-            print('')
-
-            for k in rt.rules_s_:
-                print(k, rt.rules_s_[k], rt.task_medoid_dict_[k])
-
-            print('')
+            start_rule = time()
+            clf_rule.fit(X_train, y_train)
+            end_rule = time()
 
 
-    dtr = DecisionTreeRegressor().fit(X_train, y_train)
-    print('R2', r2_score(y_test, dtr.predict(X_test)))
-    print('MAPE', mean_absolute_percentage_error(y_test, dtr.predict(X_test)))
+            start_sklearn = time()
+            clf_sklearn.fit(X_train_onehot, y_train)
+            end_sklearn = time()
 
-def test_CLU():
-    iris = load_iris()
-    X = iris.data
+            f1_rule = f1_score(y_test, clf_rule.predict(X_test), average='weighted')
+            f1_sklearn = f1_score(y_test, clf_sklearn.predict(X_test_onehot), average='weighted')
 
-    max_nbr_values_cat = 4
-    rt = RuleTreeClustering(
-        # max_depth=4,
-        # min_samples_leaf=1,
-        # min_samples_split=2,
-        max_nbr_nodes=7,
-        # clf_impurity='entropy',
-        # feature_names=['Sex', 'Lies', 'Cookies'],
-        # feature_names=iris.feature_names,
-        # allow_oblique_splits=True,
-        # force_oblique_splits=True,
-        # max_nbr_values=4,
-        # max_nbr_nodes=32,
-        prune_useless_leaves=True,
-        # max_nbr_nodes=5,
-        bic_eps=0.5,
-        # max_nbr_values=20,
-        max_nbr_values_cat=max_nbr_values_cat,
-        one_hot_encode_cat=True,
-        # categorical_indices=[4],
-        # numerical_indices=[1],
-        numerical_scaler=StandardScaler(),
-        # exclude_split_feature_from_reduction=True,
-        random_state=0,
-        verbose=True
-    )
+            table["f1_rule"] = f1_rule
+            table["f1_sklearn"] = f1_sklearn
+            table["time_rule"] = end_rule - start_rule
+            table["time_sklearn"] = end_sklearn - start_sklearn
+        except ValueError as e:
+            table["error"] = str(e)
 
-    print(rt.bic_eps)
-    rt.set_params(**{'bic_eps': 0.25})
-    print(rt.bic_eps)
-    rt.fit(X)
-    # rt.fit(X_train)
+        table.next_row()
 
-    print('RuleTree')
-    print(rt.print_tree())
-    print('')
 
-    y_pred, leaves, rules = rt.predict(X, get_leaf=True, get_rule=True)
-    # print(X_test[2])
 
-    print(silhouette_score(X, y_pred))
 
-    kmeans = KMeans(n_clusters=3, random_state=0)
-    kmeans.fit(X)
-    print(silhouette_score(X, kmeans.predict(X)))
 
-if __name__ == '__main__':
-    #test_CLF()
-    #test_REG()
-    test_CLU()
 
-    # TODO fare benchmarking
-    # add medoide discriminativo??? direidi no
-    # TODO dopo benchmakring sfruttare in notebook clustering per class 2
-    #  per a) clustering iniziale e b) modello predittivo su coppie di cluster
+
+
+if __name__ == "__main__":
+    test_clf()
