@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from RuleTree import RuleTreeClassifier, RuleTreeRegressor, RuleTreeClustering
+from RuleTree import RuleTreeClassifier, RuleTreeRegressor, RuleTreeCluster
 from competitors.kmeanstree import KMeansTree
 
 warnings.filterwarnings("ignore")
@@ -152,9 +152,9 @@ dataset_feat_drop_clu.update(dataset_feat_drop_reg)
 task_method = {
     TASK_CLF: {'DT': DecisionTreeClassifier, 'RT': RuleTreeClassifier},  # 'KNN': KNeighborsClassifier(),
     TASK_REG: {'DT': DecisionTreeRegressor, 'RT': RuleTreeRegressor},  # 'KNN': KNeighborsRegressor(),
-    TASK_CLU: {'KM': KMeans, 'KT': KMeansTree, 'RT': RuleTreeClustering},
-    TASK_CLC: {'KT': KMeansTree, 'RT': RuleTreeClustering},
-    TASK_CLR: {'KT': KMeansTree, 'RT': RuleTreeClustering},
+    TASK_CLU: {'KM': KMeans, 'KT': KMeansTree, 'RT': RuleTreeCluster},
+    TASK_CLC: {'KT': KMeansTree, 'RT': RuleTreeCluster},
+    TASK_CLR: {'KT': KMeansTree, 'RT': RuleTreeCluster},
 }
 
 MAX_DEPTH_LIST = [2, 3, 4, 5, 6, None]
