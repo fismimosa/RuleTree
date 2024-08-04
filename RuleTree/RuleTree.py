@@ -1,4 +1,5 @@
 import heapq
+from abc import ABC
 from collections import deque
 from datetime import datetime
 from itertools import count
@@ -9,7 +10,7 @@ from RuleTree.RuleTreeBase import RuleTreeBase
 from RuleTree.RuleTreeNode import RuleTreeNode
 
 
-class RuleTree(RuleTreeBase):
+class RuleTree(RuleTreeBase, ABC):
     def __init__(self,
                  max_nbr_nodes,
                  min_samples_split,
@@ -17,6 +18,7 @@ class RuleTree(RuleTreeBase):
                  prune_useless_leaves,
                  random_state,
                  ):
+        self.root = None
         self.X = None
         self.y = None
         self.tiebreaker = count()
@@ -57,6 +59,11 @@ class RuleTree(RuleTreeBase):
                 nbr_curr_nodes += 1
                 continue
 
+            if self.check_additional_halting_condition(curr_idx=idx):
+                self.make_leaf(current_node)
+                nbr_curr_nodes += 1
+                continue
+
             clf = self.make_split(self.X, self.y, idx=idx)
             labels = clf.apply(self.X[idx])
 
@@ -87,7 +94,10 @@ class RuleTree(RuleTreeBase):
 
     def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
         if current_node.is_leaf():
-            return current_node.prediction, current_node.node_id, current_node.prediction_probability
+            n = len(X)
+            return np.array([current_node.prediction]*n), \
+                np.array([current_node.node_id]*n), \
+                np.array([current_node.prediction_probability]*n)
 
         else:
             labels, leaves, proba = (
@@ -110,6 +120,15 @@ class RuleTree(RuleTreeBase):
     def get_rules(self):
         return self.root.get_rule()
 
+    def make_leaf(self, node: RuleTreeNode) -> RuleTreeNode:
+        return node
+
+    def queue_pop(self):
+        el = heapq.heappop(self.queue)
+        return el[-2:]
+
+    def check_additional_halting_condition(self, curr_idx: np.ndarray):
+        return False
 
     @classmethod
     def print_rules(cls, rules:dict, columns_names:list=None, ndigits=2, indent:int=0, ):

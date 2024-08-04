@@ -1,20 +1,24 @@
 import os
+import warnings
 from glob import glob
 from time import time
 
 import pandas as pd
 import numpy as np
 from sklearn import tree
+from sklearn.cluster import KMeans
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, f1_score, r2_score
+from sklearn.metrics import classification_report, f1_score, r2_score, silhouette_score, rand_score
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from progress_table import ProgressTable
 
 from RuleTree.RuleTree import RuleTree
 from RuleTree.RuleTreeClassifier import RuleTreeClassifier
+from RuleTree.RuleTreeCluster import RuleTreeCluster
 from RuleTree.RuleTreeRegressor import RuleTreeRegressor
+from benchmark.config import dataset_target_clu
 
 
 def test_clf(max_depth=4):
@@ -31,7 +35,7 @@ def test_clf(max_depth=4):
             ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
                                    remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
 
-            clf_rule = RuleTreeClassifier(max_depth=max_depth)
+            clf_rule = RuleTreeClassifier(max_depth=max_depth, prune_useless_leaves=True)
             clf_sklearn = DecisionTreeClassifier(max_depth=max_depth)
 
             start_rule = time()
@@ -59,11 +63,6 @@ def test_clf(max_depth=4):
             table["f1_sklearn"] = f1_sklearn
             table["time_rule"] = end_rule - start_rule
             table["time_sklearn"] = end_sklearn - start_sklearn
-
-            text_representation = tree.export_text(clf_sklearn, feature_names=ct.get_feature_names_out())
-            print(text_representation)
-
-            RuleTree.print_rules(clf_rule.get_rules(), columns_names=df.columns)
         except ValueError as e:
             table["error"] = str(e)
 
@@ -139,12 +138,62 @@ def test_reg(max_depth=4):
         table.next_row()
 
 
+
+def test_clu(max_depth=4):
+    datasets = glob("datasets/CLU/*.csv")
+    table = ProgressTable(pbar_embedded=False, pbar_show_progress=True, pbar_show_percents=True,
+                          pbar_show_throughput=False, num_decimal_places=3)
+
+    for dataset in datasets:
+        dataset_name = dataset.split("/")[-1][:-4]
+        table["dataset"] = dataset_name
+
+        try:
+            df = pd.read_csv(dataset)
+            ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
+                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
+
+            clf_rule = RuleTreeCluster(max_depth=max_depth, prune_useless_leaves=True)
+            clf_sklearn = KMeans(n_clusters=2**max_depth)
+
+            df_onehot = pd.DataFrame(ct.fit_transform(df.iloc[:, :-1]), columns=ct.get_feature_names_out())
+            X_onehot = df_onehot.to_numpy()
+
+            start_rule = time()
+            X = df.drop(columns=[dataset_target_clu[dataset_name]]).values
+            y = df[dataset_target_clu[dataset_name]].values
+
+
+            clf_rule.fit(X_onehot)
+            end_rule = time()
+
+            start_sklearn = time()
+            clf_sklearn.fit(X_onehot)
+            end_sklearn = time()
+
+            rand_rule = rand_score(y, clf_rule.predict(X_onehot))
+            rand_sklearn = rand_score(y, clf_sklearn.predict(X_onehot))
+            sil_rule = silhouette_score(X_onehot, clf_rule.predict(X_onehot))
+            sil_sklearn = silhouette_score(X_onehot, clf_sklearn.predict(X_onehot))
+
+            table["rand_rule"] = rand_rule
+            table["rand_sklearn"] = rand_sklearn
+            table["sil_rule"] = sil_rule
+            table["sil_sklearn"] = sil_sklearn
+            table["time_rule"] = end_rule - start_rule
+            table["time_sklearn"] = end_sklearn - start_sklearn
+        except ValueError as e:
+            table["error"] = str(e)
+            raise e
+
+        table.next_row()
+
 def test_clf_iris():
     df = pd.read_csv("datasets/CLF/iris.csv")
     X = df.iloc[:, :-1].values
     y = df.iloc[:, -1].values
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
-    clf_rule = RuleTreeClassifier()
+    clf_rule = RuleTreeClassifier(max_depth=10, prune_useless_leaves=True)
 
     clf_rule.fit(X_train, y_train)
 
@@ -160,5 +209,7 @@ def test_clf_iris():
 
 if __name__ == "__main__":
     #test_clf()
-    test_reg()
+    #test_reg()
+    test_clu()
+
     #test_clf_iris()

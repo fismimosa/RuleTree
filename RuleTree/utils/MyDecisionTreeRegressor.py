@@ -85,7 +85,7 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
         if not self.is_categorical:
             return super().apply(X[:, self.numerical])
         else:
-            y_pred = np.ones(X.shape[0]) * 2
+            y_pred = np.ones(X.shape[0], dtype=int) * 2
             X_feature = X[:, self.feature_original[0]]
             y_pred[X_feature == self.threshold_original[0]] = 1
 

@@ -46,7 +46,8 @@ class FAMD(mfa.MFA):
     
     def fit_transform(self,X,y=None):
         if isinstance(X, np.ndarray):
-            X = pd.DataFrame(X)
+            X = pd.DataFrame(X).infer_objects()
+            X.columns = [str(x) for x in X.columns]
 
         # Separate numerical columns from categorical columns
         num_cols = X.select_dtypes(np.number).columns

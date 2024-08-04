@@ -51,15 +51,8 @@ class RuleTreeRegressor(RuleTree):
 
         return len(np.unique(labels)) == 1
 
-    def check_additional_halting_condition(self, curr_idx: np.ndarray):
-        return False
-
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
-
-    def queue_pop(self):
-        el = heapq.heappop(self.queue)
-        return el[-2:]
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray) -> tree:
         clf = MyDecisionTreeRegressor(
@@ -78,11 +71,7 @@ class RuleTreeRegressor(RuleTree):
 
         clf.fit(X[idx], y[idx],)
 
-
         return clf
-
-    def make_leaf(self, node: RuleTreeNode) -> RuleTreeNode:
-        return node
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         with warnings.catch_warnings():

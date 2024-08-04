@@ -30,22 +30,25 @@ class RuleTreeNode:
     def is_leaf(self):
         return self.node_l is None and self.node_r is None
 
-    def get_possible_outputs(self)->set:
+    def make_leaf(self):
+        self.node_l, self.node_r = None, None
+        return self
+
+    def simplify(self)->Self:
+        self._simplify()
+        return self
+
+    def _simplify(self):
         if self.is_leaf():
             return {self.prediction}
         else:
-            return self.node_l.get_possible_outputs() | self.node_r.get_possible_outputs()
+            all_pred = self.node_l._simplify() | self.node_r._simplify() | {self.prediction}
 
-    def simplify(self)->Self:
-        if not self.is_leaf():
-            if len(self.get_possible_outputs()) >= 2:
-                self.node_r = self.node_r.simplify()
-                self.node_l = self.node_l.simplify()
+            if len(all_pred) == 1:
+                self.make_leaf()
+                return {self.prediction}
             else:
-                self.node_r = None
-                self.node_l = None
-
-        return self
+                return all_pred
 
     def get_depth(self):
         return len(self.node_id)-1
