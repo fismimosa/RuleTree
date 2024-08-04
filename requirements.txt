@@ -3,6 +3,6 @@ scikit-learn~=1.4.0
 scipy~=1.11.4
 pandas~=2.1.4
 category_encoders~=2.6.3
-threadpoolctl~=2.2.0
+threadpoolctl>3.0.0
 tqdm~=4.66.2
 progress-table
