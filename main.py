@@ -14,10 +14,10 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from progress_table import ProgressTable
 
-from RuleTree.RuleTree import RuleTree
-from RuleTree.RuleTreeClassifier import RuleTreeClassifier
-from RuleTree.RuleTreeCluster import RuleTreeCluster
-from RuleTree.RuleTreeRegressor import RuleTreeRegressor
+from RuleTree import RuleTree
+from RuleTree import RuleTreeClassifier
+from RuleTree import RuleTreeCluster
+from RuleTree import RuleTreeRegressor
 from benchmark.config import dataset_target_clu
 
 
