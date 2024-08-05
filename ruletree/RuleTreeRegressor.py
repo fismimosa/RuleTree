@@ -55,7 +55,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray) -> tree:
+    def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
         clf = MyDecisionTreeRegressor(
             max_depth=1,
             criterion=self.criterion,
@@ -70,7 +70,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             monotonic_cst = self.monotonic_cst
         )
 
-        clf.fit(X[idx], y[idx],)
+        clf.fit(X[idx], y[idx], **kwargs)
 
         return clf
 

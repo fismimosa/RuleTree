@@ -50,7 +50,7 @@ class RuleForestClassifier(BaggingClassifier):
         self.random_state = random_state
         self.verbose = verbose
 
-    def fit(self, X:np.ndarray, y:np.ndarray, **kwargs):
+    def fit(self, X:np.ndarray, y:np.ndarray, sample_weight=None, check_input=True):
         if self.max_features is None:
             self.max_features = X.shape[1]
 
@@ -84,4 +84,4 @@ class RuleForestClassifier(BaggingClassifier):
                          random_state=self.random_state,
                          verbose=self.verbose)
 
-        return super().fit(X, y, **kwargs)
+        return super().fit(X, y, sample_weight=sample_weight)

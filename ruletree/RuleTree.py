@@ -24,12 +24,14 @@ class RuleTree(RuleTreeBase, ABC):
         self.prune_useless_leaves = prune_useless_leaves
         self.random_state = random_state
 
-    def fit(self, X: np.array, y: np.array = None):
+    def fit(self, X: np.array, y: np.array=None, **kwargs):
         self.X = X
         self.y = y
         self.root = None
         self.tiebreaker = count()
         self.queue = list()
+        self.classes_ = np.unique(y)
+        self.n_classes_ = len(self.classes_)
 
         idx = np.arange(X.shape[0])
 
@@ -61,7 +63,7 @@ class RuleTree(RuleTreeBase, ABC):
                 nbr_curr_nodes += 1
                 continue
 
-            clf = self.make_split(self.X, self.y, idx=idx)
+            clf = self.make_split(self.X, self.y, idx=idx, **kwargs)
             labels = clf.apply(self.X[idx])
 
             if self.is_split_useless(clf, idx):
@@ -90,6 +92,19 @@ class RuleTree(RuleTreeBase, ABC):
         labels, leaves, proba = self._predict(X, self.root)
 
         return labels
+
+    def apply(self, X: np.ndarray):
+        labels, leaves, proba = self._predict(X, self.root)
+
+        return leaves
+
+    def predict_proba(self, X: np.ndarray):
+        labels, leaves, proba = self._predict(X, self.root)
+        proba_matrix = np.zeros((X.shape[0], self.n_classes_))
+        for classe in self.classes_:
+            proba_matrix[labels == classe, self.classes_ == classe] = proba[labels == classe]
+
+        return proba_matrix
 
     def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
         if current_node.is_leaf():
@@ -130,7 +145,7 @@ class RuleTree(RuleTreeBase, ABC):
         return False
 
     def _post_fit_fix(self):
-        pass
+        return
 
     @classmethod
     def print_rules(cls, rules:dict, columns_names:list=None, ndigits=2, indent:int=0, ):

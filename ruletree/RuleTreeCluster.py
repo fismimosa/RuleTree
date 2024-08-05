@@ -74,7 +74,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         heapq.heappush(self.queue, (-len(idx), next(self.tiebreaker), idx, node))
 
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray) -> tree:
+    def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
         n_components_split = min(self.n_components, len(idx))
 
         dtypes = pd.DataFrame(X).infer_objects().dtypes

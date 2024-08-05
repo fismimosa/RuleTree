@@ -58,7 +58,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray) -> tree:
+    def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
         clf = MyDecisionTreeClassifier(
             max_depth=1,
             criterion=self.criterion,
@@ -74,7 +74,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             monotonic_cst = self.monotonic_cst
         )
 
-        clf.fit(X[idx], y[idx],)
+        clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
 
         return clf
 

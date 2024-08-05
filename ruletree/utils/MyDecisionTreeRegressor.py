@@ -34,12 +34,12 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
 
 
 
-    def fit(self, X, y):
+    def fit(self, X, y, **kwargs):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
 
-        super().fit(X[:, self.numerical], y)
+        super().fit(X[:, self.numerical], y, **kwargs)
         self.feature_original = self.tree_.feature
         self.threshold_original = self.tree_.threshold
 

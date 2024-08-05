@@ -9,7 +9,7 @@ from ruletree.RuleTreeNode import RuleTreeNode
 
 class RuleTreeBase(BaseEstimator, ABC):
     @abstractmethod
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray) -> tree:
+    def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
         pass
 
     @abstractmethod
