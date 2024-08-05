@@ -85,6 +85,8 @@ class RuleTree(RuleTreeBase, ABC):
         if self.prune_useless_leaves:
             self.root = self.root.simplify()
 
+        self._post_fit_fix()
+
         return self
 
     def predict(self, X: np.ndarray):
@@ -129,6 +131,9 @@ class RuleTree(RuleTreeBase, ABC):
 
     def check_additional_halting_condition(self, curr_idx: np.ndarray):
         return False
+
+    def _post_fit_fix(self):
+        pass
 
     @classmethod
     def print_rules(cls, rules:dict, columns_names:list=None, ndigits=2, indent:int=0, ):

@@ -35,3 +35,7 @@ class RuleTreeBase(BaseEstimator, ABC):
     @abstractmethod
     def is_split_useless(self, clf: tree, idx: np.ndarray):
         pass
+
+    @abstractmethod
+    def _post_fit_fix(self):
+        pass

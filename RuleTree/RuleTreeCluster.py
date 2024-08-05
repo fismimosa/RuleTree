@@ -6,6 +6,7 @@ import pandas as pd
 from numpy import bool_
 from sklearn import tree
 from sklearn.metrics import r2_score
+from sklearn.preprocessing import LabelEncoder
 
 from RuleTree import light_famd
 from RuleTree.RuleTree import RuleTree
@@ -42,6 +43,7 @@ class RuleTreeCluster(RuleTree):
                          prune_useless_leaves=prune_useless_leaves,
                          random_state=random_state)
 
+        self.label_encoder = None
         self.n_components = n_components
         self.clus_impurity = clus_impurity
         self.bic_eps = bic_eps
@@ -131,4 +133,24 @@ class RuleTreeCluster(RuleTree):
             node_r=None,
             samples=len(idx),
         )
+
+    def _post_fit_fix(self):
+        possible_labels = np.array(list(self.root.get_possible_outputs()))
+        if np.issubdtype(possible_labels.dtype, np.str_) and self.label_encoder is None:
+            self.label_encoder = LabelEncoder().fit(possible_labels)
+            self.__labels_obj_to_int(self.root, dict(zip(self.label_encoder.classes_,
+                                                         self.label_encoder.transform(self.label_encoder.classes_))))
+
+    def __labels_obj_to_int(self, node:RuleTreeNode, map:dict):
+        node.prediction = map[node.prediction]
+
+        if node.is_leaf():
+            return
+
+        self.__labels_obj_to_int(node.node_l, map)
+        self.__labels_obj_to_int(node.node_r, map)
+
+
+
+
 
