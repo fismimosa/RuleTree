@@ -128,9 +128,9 @@ def test_reg(max_depth=4):
                                    remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
 
             clf_rule = RuleTreeRegressor(max_depth=max_depth)
-            clf_forest_rule = RuleForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=-1)
+            clf_forest_rule = RuleForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=1)
             clf_sklearn = DecisionTreeRegressor(max_depth=max_depth)
-            clf_forest_sklearn = RandomForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=-1)
+            clf_forest_sklearn = RandomForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=1)
             clf_adaboost_rule = RuleTreeAdaBoostRegressor(n_estimators=100)
             clf_adaboost_sklearn = AdaBoostRegressor(estimator=DecisionTreeRegressor(max_depth=1), n_estimators=100)
 
@@ -178,8 +178,8 @@ def test_reg(max_depth=4):
 
             table.update_from_dict(res)
         except Exception as e:
-            table["error"] = str(e)
-            #raise e
+            #table["error"] = str(e)
+            raise e
 
         table.next_row()
 
@@ -262,7 +262,7 @@ def test_clf_iris():
 
 
 if __name__ == "__main__":
-    test_clf()
+    #test_clf()
     test_reg()
     #test_clu()
 
