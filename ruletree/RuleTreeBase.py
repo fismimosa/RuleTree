@@ -4,7 +4,7 @@ import numpy as np
 from sklearn import tree
 from sklearn.base import BaseEstimator
 
-from RuleTree.RuleTreeNode import RuleTreeNode
+from ruletree.RuleTreeNode import RuleTreeNode
 
 
 class RuleTreeBase(BaseEstimator, ABC):

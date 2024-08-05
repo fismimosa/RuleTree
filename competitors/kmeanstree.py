@@ -132,7 +132,7 @@ from sklearn.tree import export_text
 from sklearn.metrics import accuracy_score, normalized_mutual_info_score, mean_absolute_percentage_error, r2_score
 
 from sklearn.preprocessing import StandardScaler
-from RuleTree.utils.data_utils import prepare_data, preprocessing
+from ruletree.utils.data_utils import prepare_data, preprocessing
 
 
 def main():

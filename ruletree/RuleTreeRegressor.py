@@ -1,19 +1,21 @@
 import heapq
+import warnings
 from typing import Tuple
 
 import numpy as np
-import pandas as pd
 from numpy import bool_
 from sklearn import tree
-from sklearn.base import ClassifierMixin
+from sklearn.base import RegressorMixin
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from RuleTree.RuleTree import RuleTree
-from RuleTree.RuleTreeNode import RuleTreeNode
-from RuleTree.utils.MyDecisionTreeClassifier import MyDecisionTreeClassifier
-from RuleTree.utils.data_utils import calculate_mode, get_info_gain
+from ruletree.RuleTree import RuleTree
+from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.RuleTreeNode import RuleTreeNode
+from ruletree.utils.MyDecisionTreeRegressor import MyDecisionTreeRegressor
+from ruletree.utils.data_utils import calculate_mode
 
 
-class RuleTreeClassifier(RuleTree, ClassifierMixin):
+class RuleTreeRegressor(RuleTree, RegressorMixin):
     def __init__(self,
                  max_nbr_nodes=float('inf'),
                  min_samples_split=2,
@@ -21,13 +23,12 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  prune_useless_leaves=False,
                  random_state=None,
 
-                 criterion='gini',
+                 criterion='squared_error',
                  splitter='best',
                  min_samples_leaf=1,
                  min_weight_fraction_leaf=0.0,
                  max_features=None,
                  min_impurity_decrease=0.0,
-                 class_weight=None,
                  ccp_alpha=0.0,
                  monotonic_cst=None
                  ):
@@ -43,7 +44,6 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
         self.max_features = max_features
         self.min_impurity_decrease = min_impurity_decrease
-        self.class_weight = class_weight
         self.ccp_alpha = ccp_alpha
         self.monotonic_cst = monotonic_cst
 
@@ -52,14 +52,11 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
         return len(np.unique(labels)) == 1
 
-    def check_additional_halting_condition(self, curr_idx: np.ndarray):
-        return len(np.unique(self.y[curr_idx])) == 1  # only 1 target
-
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray) -> tree:
-        clf = MyDecisionTreeClassifier(
+        clf = MyDecisionTreeRegressor(
             max_depth=1,
             criterion=self.criterion,
             splitter=self.splitter,
@@ -69,7 +66,6 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             max_features=self.max_features,
             random_state=self.random_state,
             min_impurity_decrease=self.min_impurity_decrease,
-            class_weight=self.class_weight,
             ccp_alpha=self.ccp_alpha,
             monotonic_cst = self.monotonic_cst
         )
@@ -79,14 +75,15 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         return clf
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
-        prediction = calculate_mode(y[idx])
-        predict_proba = sum(np.where(y[idx] == prediction, 1, 0)) / len(y[idx])
-
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            prediction = float(np.mean(y[idx]))
+            prediction_std = float(np.std(y[idx]))
 
         return RuleTreeNode(
             node_id=node_id,
             prediction=prediction,
-            prediction_probability=predict_proba,
+            prediction_probability=prediction_std,
             parent=None,
             clf=None,
             node_l=None,

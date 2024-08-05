@@ -14,10 +14,10 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from progress_table import ProgressTable
 
-from RuleTree import RuleTree
-from RuleTree import RuleTreeClassifier
-from RuleTree import RuleTreeCluster
-from RuleTree import RuleTreeRegressor
+from ruletree import RuleTree
+from ruletree import RuleTreeClassifier
+from ruletree import RuleTreeCluster
+from ruletree import RuleTreeRegressor
 from benchmark.config import dataset_target_clu
 
 
@@ -133,7 +133,7 @@ def test_reg(max_depth=4):
         """text_representation = tree.export_text(clf_sklearn, feature_names=ct.get_feature_names_out())
         print(text_representation)
 
-        RuleTree.print_rules(clf_rule.get_rules(), columns_names=df.columns)"""
+        ruletree.print_rules(clf_rule.get_rules(), columns_names=df.columns)"""
 
         table.next_row()
 
@@ -210,6 +210,6 @@ def test_clf_iris():
 if __name__ == "__main__":
     #test_clf()
     #test_reg()
-    test_clu()
+    #test_clu()
 
-    #test_clf_iris()
+    test_clf_iris()

@@ -1,17 +1,14 @@
-import warnings
-
 import numpy as np
 import pandas as pd
 import sklearn
 from numba import jit
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.tree import DecisionTreeClassifier
 
-from RuleTree.utils.data_utils import get_info_gain, _get_info_gain
+from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy
 
 
-class MyDecisionTreeRegressor(DecisionTreeRegressor):
+class MyDecisionTreeClassifier(DecisionTreeClassifier):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -20,17 +17,10 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
         self.threshold_original = None
         self.feature_original = None
 
-        if kwargs['criterion'] == "squared_error":
-            self.impurity_fun_ = mean_squared_error
-        elif kwargs['criterion'] == "friedman_mse":
-            raise Exception("not implemented") # TODO: implement
-        elif kwargs['criterion'] == "absolute_error":
-            self.impurity_fun_ = mean_absolute_error
-        else: #poisson
-            self.impurity_fun_ = mean_poisson_deviance
-
-        self.impurity_fun = lambda **x: self.impurity_fun_(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
-
+        if kwargs['criterion'] == "gini":
+            self.impurity_fun = gini
+        else:
+            self.impurity_fun = entropy
 
 
     def fit(self, X, y):
@@ -46,8 +36,6 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
 
         self._fit_cat(X, y, best_info_gain)
 
-
-
         return self
 
     def _fit_cat(self, X, y, best_info_gain):
@@ -58,18 +46,12 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
                 for value in np.unique(X[:, i]):
                     X_split = X[:, i:i+1] == value
                     len_left = np.sum(X_split)
-                    curr_pred = np.ones((len(y), ))*np.mean(y)
-                    with warnings.catch_warnings():
-                        warnings.simplefilter('ignore')
-                        l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
-                        r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
-
-                        info_gain = _get_info_gain(self.impurity_fun(y_true=y, y_pred=curr_pred),
-                                                   self.impurity_fun(y_true=y[X_split[:, 0]], y_pred=l_pred),
-                                                   self.impurity_fun(y_true=y[~X_split[:, 0]], y_pred=r_pred),
-                                                   len_x,
-                                                   len_left,
-                                                   len_x-len_left)
+                    info_gain = _get_info_gain(self.impurity_fun(y),
+                                               self.impurity_fun(y[X_split[:, 0]]),
+                                               self.impurity_fun(y[~X_split[:, 0]]),
+                                               len_x,
+                                               len_left,
+                                               len_x-len_left)
 
                     if info_gain > best_info_gain:
                         best_info_gain = info_gain
@@ -85,7 +67,7 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
         if not self.is_categorical:
             return super().apply(X[:, self.numerical])
         else:
-            y_pred = np.ones(X.shape[0], dtype=int) * 2
+            y_pred = np.ones(X.shape[0]) * 2
             X_feature = X[:, self.feature_original[0]]
             y_pred[X_feature == self.threshold_original[0]] = 1
 

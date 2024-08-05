@@ -16,7 +16,7 @@ from threadpoolctl import threadpool_limits
 from tqdm.auto import tqdm
 import sklearn.metrics as skm
 
-from RuleTree.utils.data_utils import prepare_data
+from ruletree.utils.data_utils import prepare_data
 from evaluation_utils import evaluate_clu_sup, evaluate_clu_unsup, evaluate_reg, evaluate_clf
 from preprocessing_utils import remove_missing_values
 from config import TASK_CLF, TASK_CLC, TASK_REG, TASK_CLR, TASK_CLU, dataset_target_clf, dataset_target_reg, \

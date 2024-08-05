@@ -3,7 +3,7 @@ from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from scipy.linalg import norm
 
-from RuleTree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
+from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 
 class ObliqueHouseHolderSplit:

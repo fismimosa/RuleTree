@@ -6,8 +6,8 @@ from itertools import count
 
 import numpy as np
 
-from RuleTree.RuleTreeBase import RuleTreeBase
-from RuleTree.RuleTreeNode import RuleTreeNode
+from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.RuleTreeNode import RuleTreeNode
 
 
 class RuleTree(RuleTreeBase, ABC):

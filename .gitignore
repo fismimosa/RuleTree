@@ -132,3 +132,4 @@ dmypy.json
 .idea/
 *.pyc
 /results
+/venv_test/

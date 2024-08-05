@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from RuleTree import RuleTreeClassifier, RuleTreeRegressor, RuleTreeCluster
+from ruletree import RuleTreeClassifier, RuleTreeRegressor, RuleTreeCluster
 from competitors.kmeanstree import KMeansTree
 
 warnings.filterwarnings("ignore")

@@ -9,13 +9,13 @@ from sklearn.base import ClusterMixin
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import LabelEncoder
 
-from RuleTree import light_famd
-from RuleTree.RuleTree import RuleTree
-from RuleTree.RuleTreeNode import RuleTreeNode
-from RuleTree.utils import bic
-from RuleTree.utils.MyDecisionTreeClassifier import MyDecisionTreeClassifier
-from RuleTree.utils.MyDecisionTreeRegressor import MyDecisionTreeRegressor
-from RuleTree.utils.data_utils import calculate_mode, get_info_gain
+from ruletree import light_famd
+from ruletree.RuleTree import RuleTree
+from ruletree.RuleTreeNode import RuleTreeNode
+from ruletree.utils import bic
+from ruletree.utils.MyDecisionTreeClassifier import MyDecisionTreeClassifier
+from ruletree.utils.MyDecisionTreeRegressor import MyDecisionTreeRegressor
+from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 
 class RuleTreeCluster(RuleTree, ClusterMixin):
