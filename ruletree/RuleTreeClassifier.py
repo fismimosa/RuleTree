@@ -93,4 +93,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_r=None,
             samples=len(y[idx]),
         )
+    
+    def fit(self, X: np.array, y: np.array=None, sample_weight=None, **kwargs):
+        super().fit(X, y, sample_weight=sample_weight, **kwargs)
 

@@ -179,7 +179,7 @@ def test_reg(max_depth=4):
             table.update_from_dict(res)
         except Exception as e:
             table["error"] = str(e)
-            raise e
+            #raise e
 
         table.next_row()
 
@@ -242,7 +242,7 @@ def test_clf_iris():
     X = df.iloc[:, :-1].values
     y = df.iloc[:, -1].values
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
-    clf_rule = RuleTreeClassifier(max_depth=10, prune_useless_leaves=True)
+    clf_rule = RuleTreeAdaBoostClassifier(n_estimators=10, prune_useless_leaves=True)
 
     clf_rule.fit(X_train, y_train)
 
@@ -253,8 +253,6 @@ def test_clf_iris():
 
     f1_rule_load = f1_score(y_test, clf_rule_load.predict(X_test), average='weighted')
 
-    RuleTree.print_rules(clf_rule.get_rules(), columns_names=df.columns)
-    RuleTree.print_rules(clf_rule_load.get_rules(), columns_names=df.columns)
 
     print(f"F1: {f1_rule}")
     print(f"F1: {f1_rule_load}")
