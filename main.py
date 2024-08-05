@@ -1,4 +1,5 @@
 import os
+import pickle
 import warnings
 from glob import glob
 from time import time
@@ -8,6 +9,7 @@ import numpy as np
 from sklearn import tree
 from sklearn.cluster import KMeans
 from sklearn.compose import ColumnTransformer, make_column_selector
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, f1_score, r2_score, silhouette_score, rand_score
 from sklearn.preprocessing import OneHotEncoder
@@ -19,6 +21,8 @@ from ruletree import RuleTreeClassifier
 from ruletree import RuleTreeCluster
 from ruletree import RuleTreeRegressor
 from benchmark.config import dataset_target_clu
+from ruletree.RuleForestClassifier import RuleForestClassifier
+from ruletree.RuleForestRegressor import RuleForestRegressor
 
 
 def test_clf(max_depth=4):
@@ -35,35 +39,43 @@ def test_clf(max_depth=4):
             ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
                                    remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
 
-            clf_rule = RuleTreeClassifier(max_depth=max_depth, prune_useless_leaves=True)
+            clf_rule = RuleTreeClassifier(max_depth=max_depth)
+            clf_forest_rule = RuleForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
             clf_sklearn = DecisionTreeClassifier(max_depth=max_depth)
+            clf_forest_sklearn = RandomForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
 
-            start_rule = time()
             X = df.iloc[:, :-1].values
             y = df.iloc[:, -1].values
-
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
-
-            clf_rule.fit(X_train, y_train)
-            end_rule = time()
-
-            start_sklearn = time()
             df_onehot = pd.DataFrame(ct.fit_transform(df.iloc[:, :-1]), columns=ct.get_feature_names_out())
             X_onehot = df_onehot.to_numpy()
             X_train_onehot, X_test_onehot, _, _ = train_test_split(X_onehot, y, test_size=0.3, random_state=42,
                                                                    stratify=y)
 
-            clf_sklearn.fit(X_train_onehot, y_train)
-            end_sklearn = time()
+            res = dict()
+            for model, model_name in zip([clf_rule, clf_sklearn, clf_forest_rule, clf_forest_sklearn],
+                             ["rule", "dt", "forest_rule", "forest_dt"]):
+                start = time()
+                if "rule" not in model_name:
+                    model.fit(X_train_onehot, y_train)
+                else:
+                    model.fit(X_train, y_train)
+                stop = time()
 
-            f1_rule = f1_score(y_test, clf_rule.predict(X_test), average='weighted')
-            f1_sklearn = f1_score(y_test, clf_sklearn.predict(X_test_onehot), average='weighted')
+                pickle.dump(clf_rule, open("clf_rule.pkl", "wb"))
+                clf_rule = pickle.load(open("clf_rule.pkl", "rb"))
+                os.remove("clf_rule.pkl")
 
-            table["f1_rule"] = f1_rule
-            table["f1_sklearn"] = f1_sklearn
-            table["time_rule"] = end_rule - start_rule
-            table["time_sklearn"] = end_sklearn - start_sklearn
-        except ValueError as e:
+                if "rule" not in model_name:
+                    f1 = f1_score(y_test, model.predict(X_test_onehot), average='weighted')
+                else:
+                    f1 = f1_score(y_test, model.predict(X_test), average='weighted')
+
+                res[f"{model_name}_time"] = stop - start
+                res[f"{model_name}_f1"] = f1
+
+            table.update_from_dict(res)
+        except Exception as e:
             table["error"] = str(e)
 
         table.next_row()
@@ -93,47 +105,50 @@ def test_reg(max_depth=4):
         dataset_name = dataset.split("/")[-1][:-4]
         table["dataset"] = dataset_name
 
-        df = pd.read_csv(dataset)
-        ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
-                               remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
+        try:
+            df = pd.read_csv(dataset)
+            ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
+                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
 
-        clf_rule = RuleTreeRegressor(max_depth=max_depth)
-        clf_sklearn = DecisionTreeRegressor(max_depth=max_depth)
+            clf_rule = RuleTreeRegressor(max_depth=max_depth)
+            clf_forest_rule = RuleForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=-1)
+            clf_sklearn = DecisionTreeRegressor(max_depth=max_depth)
+            clf_forest_sklearn = RandomForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=-1)
 
-        start_rule = time()
-        X = df.drop(columns=dataset_target_reg[dataset_name]).to_numpy()
-        y = df[dataset_target_reg[dataset_name]].values
+            X = df.drop(columns=dataset_target_reg[dataset_name]).to_numpy()
+            y = df[dataset_target_reg[dataset_name]].values
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+            df_onehot = pd.DataFrame(ct.fit_transform(df.drop(columns=dataset_target_reg[dataset_name])),
+                                     columns=ct.get_feature_names_out())
+            X_onehot = df_onehot.to_numpy()
+            X_train_onehot, X_test_onehot, _, _ = train_test_split(X_onehot, y, test_size=0.3, random_state=42)
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+            res = dict()
+            for model, model_name in zip([clf_rule, clf_sklearn, clf_forest_rule, clf_forest_sklearn],
+                                         ["rule", "dt", "forest_rule", "forest_dt"]):
+                start = time()
+                if "rule" not in model_name:
+                    model.fit(X_train_onehot, y_train)
+                else:
+                    model.fit(X_train, y_train)
+                stop = time()
 
-        clf_rule.fit(X_train, y_train)
-        end_rule = time()
+                pickle.dump(clf_rule, open("clf_rule.pkl", "wb"))
+                clf_rule = pickle.load(open("clf_rule.pkl", "rb"))
+                os.remove("clf_rule.pkl")
 
+                if "rule" not in model_name:
+                    r2 = r2_score(y_test, model.predict(X_test_onehot))
+                else:
+                    r2 = r2_score(y_test, model.predict(X_test))
 
-        start_sklearn = time()
-        df_onehot = pd.DataFrame(ct.fit_transform(df.drop(columns=dataset_target_reg[dataset_name])),
-                                 columns=ct.get_feature_names_out())
-        X_onehot = df_onehot.to_numpy()
-        X_train_onehot, X_test_onehot, _, _ = train_test_split(X_onehot, y, test_size=0.3, random_state=42)
+                res[f"{model_name}_time"] = stop - start
+                res[f"{model_name}_r2"] = r2
 
-        clf_sklearn.fit(X_train_onehot, y_train)
-        end_sklearn = time()
-
-        y_pred_rule = clf_rule.predict(X_test)
-        y_pred_sklearn = clf_sklearn.predict(X_test_onehot)
-
-        r2_rule = r2_score(y_test, y_pred_rule)
-        r2_sklearn = r2_score(y_test, y_pred_sklearn)
-
-        table["r2_rule"] = r2_rule
-        table["r2_sklearn"] = r2_sklearn
-        table["time_rule"] = end_rule - start_rule
-        table["time_sklearn"] = end_sklearn - start_sklearn
-
-        """text_representation = tree.export_text(clf_sklearn, feature_names=ct.get_feature_names_out())
-        print(text_representation)
-
-        ruletree.print_rules(clf_rule.get_rules(), columns_names=df.columns)"""
+            table.update_from_dict(res)
+        except Exception as e:
+            table["error"] = str(e)
+            raise e
 
         table.next_row()
 
@@ -167,6 +182,10 @@ def test_clu(max_depth=4):
             clf_rule.fit(X_onehot)
             end_rule = time()
 
+            pickle.dump(clf_rule, open("clf_rule.pkl", "wb"))
+            clf_rule = pickle.load(open("clf_rule.pkl", "rb"))
+            os.remove("clf_rule.pkl")
+
             start_sklearn = time()
             clf_sklearn.fit(X_onehot)
             end_sklearn = time()
@@ -182,9 +201,8 @@ def test_clu(max_depth=4):
             table["sil_sklearn"] = sil_sklearn
             table["time_rule"] = end_rule - start_rule
             table["time_sklearn"] = end_sklearn - start_sklearn
-        except ValueError as e:
+        except Exception as e:
             table["error"] = str(e)
-            raise e
 
         table.next_row()
 
@@ -199,9 +217,16 @@ def test_clf_iris():
 
     f1_rule = f1_score(y_test, clf_rule.predict(X_test), average='weighted')
 
+    pickle.dump(clf_rule, open("clf_rule.pkl", "wb"))
+    clf_rule_load = pickle.load(open("clf_rule.pkl", "rb"))
+
+    f1_rule_load = f1_score(y_test, clf_rule_load.predict(X_test), average='weighted')
+
     RuleTree.print_rules(clf_rule.get_rules(), columns_names=df.columns)
+    RuleTree.print_rules(clf_rule_load.get_rules(), columns_names=df.columns)
 
     print(f"F1: {f1_rule}")
+    print(f"F1: {f1_rule_load}")
 
 
 
@@ -209,7 +234,7 @@ def test_clf_iris():
 
 if __name__ == "__main__":
     #test_clf()
-    #test_reg()
+    test_reg()
     #test_clu()
 
-    test_clf_iris()
+    #test_clf_iris()
