@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import sklearn
-from numba import jit
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.tree import DecisionTreeClassifier
 

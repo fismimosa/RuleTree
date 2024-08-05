@@ -3,7 +3,6 @@ import warnings
 import numpy as np
 import pandas as pd
 import sklearn
-from numba import jit
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
