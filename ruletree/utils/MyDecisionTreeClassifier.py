@@ -61,8 +61,6 @@ class MyDecisionTreeClassifier(DecisionTreeClassifier):
 
 
     def apply(self, X):
-        if X.shape[0] == 0:
-            print("HERE")
         if not self.is_categorical:
             return super().apply(X[:, self.numerical])
         else:

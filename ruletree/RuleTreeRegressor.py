@@ -17,7 +17,7 @@ from ruletree.utils.data_utils import calculate_mode
 
 class RuleTreeRegressor(RuleTree, RegressorMixin):
     def __init__(self,
-                 max_nbr_nodes=float('inf'),
+                 max_leaf_nodes=float('inf'),
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
@@ -32,7 +32,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  ccp_alpha=0.0,
                  monotonic_cst=None
                  ):
-        super().__init__(max_nbr_nodes=max_nbr_nodes,
+        super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,

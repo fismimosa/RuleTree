@@ -20,15 +20,17 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
         self.feature_original = None
 
         if kwargs['criterion'] == "squared_error":
-            self.impurity_fun_ = mean_squared_error
+            self.impurity_fun = mean_squared_error
         elif kwargs['criterion'] == "friedman_mse":
             raise Exception("not implemented") # TODO: implement
         elif kwargs['criterion'] == "absolute_error":
-            self.impurity_fun_ = mean_absolute_error
+            self.impurity_fun = mean_absolute_error
         else: #poisson
-            self.impurity_fun_ = mean_poisson_deviance
+            self.impurity_fun = mean_poisson_deviance
 
-        self.impurity_fun = lambda **x: self.impurity_fun_(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
+
+    def __impurity_fun(self, **x):
+        return self.impurity_fun(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
 
 
 
@@ -63,12 +65,12 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
                         l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
                         r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
 
-                        info_gain = _get_info_gain(self.impurity_fun(y_true=y, y_pred=curr_pred),
-                                                   self.impurity_fun(y_true=y[X_split[:, 0]], y_pred=l_pred),
-                                                   self.impurity_fun(y_true=y[~X_split[:, 0]], y_pred=r_pred),
+                        info_gain = _get_info_gain(self.__impurity_fun(y_true=y, y_pred=curr_pred),
+                                                   self.__impurity_fun(y_true=y[X_split[:, 0]], y_pred=l_pred),
+                                                   self.__impurity_fun(y_true=y[~X_split[:, 0]], y_pred=r_pred),
                                                    len_x,
                                                    len_left,
-                                                   len_x-len_left)
+                                                   len_x - len_left)
 
                     if info_gain > best_info_gain:
                         best_info_gain = info_gain
@@ -79,8 +81,6 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
 
 
     def apply(self, X):
-        if X.shape[0] == 0:
-            print("HERE")
         if not self.is_categorical:
             return super().apply(X[:, self.numerical])
         else:

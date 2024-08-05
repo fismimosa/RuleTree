@@ -12,13 +12,13 @@ from ruletree.RuleTreeNode import RuleTreeNode
 
 class RuleTree(RuleTreeBase, ABC):
     def __init__(self,
-                 max_nbr_nodes,
+                 max_leaf_nodes,
                  min_samples_split,
                  max_depth,
                  prune_useless_leaves,
                  random_state,
                  ):
-        self.max_nbr_nodes = max_nbr_nodes
+        self.max_leaf_nodes = max_leaf_nodes
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         self.prune_useless_leaves = prune_useless_leaves
@@ -38,7 +38,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.queue_push(self.root, idx)
 
         nbr_curr_nodes = 0
-        while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_nbr_nodes:
+        while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
             idx, current_node = self.queue_pop()
 
             if  len(idx) < self.min_samples_split:
@@ -46,7 +46,7 @@ class RuleTree(RuleTreeBase, ABC):
                 nbr_curr_nodes += 1
                 continue
 
-            if nbr_curr_nodes + len(self.queue) + 1 >= self.max_nbr_nodes:
+            if nbr_curr_nodes + len(self.queue) + 1 >= self.max_leaf_nodes:
                 self.make_leaf(current_node)
                 nbr_curr_nodes += 1
                 continue
