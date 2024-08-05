@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from numpy import bool_
 from sklearn import tree
+from sklearn.base import ClusterMixin
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import LabelEncoder
 
@@ -17,7 +18,7 @@ from RuleTree.utils.MyDecisionTreeRegressor import MyDecisionTreeRegressor
 from RuleTree.utils.data_utils import calculate_mode, get_info_gain
 
 
-class RuleTreeCluster(RuleTree):
+class RuleTreeCluster(RuleTree, ClusterMixin):
     def __init__(self,
                  n_components:int=2,
                  clus_impurity:str='bic',
@@ -43,7 +44,6 @@ class RuleTreeCluster(RuleTree):
                          prune_useless_leaves=prune_useless_leaves,
                          random_state=random_state)
 
-        self.label_encoder = None
         self.n_components = n_components
         self.clus_impurity = clus_impurity
         self.bic_eps = bic_eps
@@ -136,7 +136,7 @@ class RuleTreeCluster(RuleTree):
 
     def _post_fit_fix(self):
         possible_labels = np.array(list(self.root.get_possible_outputs()))
-        if np.issubdtype(possible_labels.dtype, np.str_) and self.label_encoder is None:
+        if np.issubdtype(possible_labels.dtype, np.str_) and not hasattr(self, 'label_encoder'):
             self.label_encoder = LabelEncoder().fit(possible_labels)
             self.__labels_obj_to_int(self.root, dict(zip(self.label_encoder.classes_,
                                                          self.label_encoder.transform(self.label_encoder.classes_))))

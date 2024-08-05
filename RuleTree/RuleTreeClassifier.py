@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from numpy import bool_
 from sklearn import tree
+from sklearn.base import ClassifierMixin
 
 from RuleTree.RuleTree import RuleTree
 from RuleTree.RuleTreeNode import RuleTreeNode
@@ -12,7 +13,7 @@ from RuleTree.utils.MyDecisionTreeClassifier import MyDecisionTreeClassifier
 from RuleTree.utils.data_utils import calculate_mode, get_info_gain
 
 
-class RuleTreeClassifier(RuleTree):
+class RuleTreeClassifier(RuleTree, ClassifierMixin):
     def __init__(self,
                  max_nbr_nodes=float('inf'),
                  min_samples_split=2,

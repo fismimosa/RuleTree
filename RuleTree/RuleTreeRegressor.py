@@ -5,6 +5,7 @@ from typing import Tuple
 import numpy as np
 from numpy import bool_
 from sklearn import tree
+from sklearn.base import RegressorMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from RuleTree.RuleTree import RuleTree
@@ -14,7 +15,7 @@ from RuleTree.utils.MyDecisionTreeRegressor import MyDecisionTreeRegressor
 from RuleTree.utils.data_utils import calculate_mode
 
 
-class RuleTreeRegressor(RuleTree):
+class RuleTreeRegressor(RuleTree, RegressorMixin):
     def __init__(self,
                  max_nbr_nodes=float('inf'),
                  min_samples_split=2,

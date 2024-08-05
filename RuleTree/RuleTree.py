@@ -18,12 +18,6 @@ class RuleTree(RuleTreeBase, ABC):
                  prune_useless_leaves,
                  random_state,
                  ):
-        self.root = None
-        self.X = None
-        self.y = None
-        self.tiebreaker = count()
-        self.queue = list()
-
         self.max_nbr_nodes = max_nbr_nodes
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
@@ -33,6 +27,9 @@ class RuleTree(RuleTreeBase, ABC):
     def fit(self, X: np.array, y: np.array = None):
         self.X = X
         self.y = y
+        self.root = None
+        self.tiebreaker = count()
+        self.queue = list()
 
         idx = np.arange(X.shape[0])
 
