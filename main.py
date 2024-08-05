@@ -9,7 +9,7 @@ import numpy as np
 from sklearn import tree
 from sklearn.cluster import KMeans
 from sklearn.compose import ColumnTransformer, make_column_selector
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, AdaBoostClassifier, AdaBoostRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, f1_score, r2_score, silhouette_score, rand_score
 from sklearn.preprocessing import OneHotEncoder
@@ -21,8 +21,10 @@ from ruletree import RuleTreeClassifier
 from ruletree import RuleTreeCluster
 from ruletree import RuleTreeRegressor
 from benchmark.config import dataset_target_clu
-from ruletree.RuleForestClassifier import RuleForestClassifier
-from ruletree.RuleForestRegressor import RuleForestRegressor
+from ruletree import RuleForestClassifier
+from ruletree import RuleForestRegressor
+from ruletree import RuleTreeAdaBoostClassifier
+from ruletree import RuleTreeAdaBoostRegressor
 
 
 def test_clf(max_depth=4):
@@ -40,9 +42,11 @@ def test_clf(max_depth=4):
                                    remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
 
             clf_rule = RuleTreeClassifier(max_depth=max_depth)
-            clf_forest_rule = RuleForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
             clf_sklearn = DecisionTreeClassifier(max_depth=max_depth)
+            clf_forest_rule = RuleForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
             clf_forest_sklearn = RandomForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
+            clf_adaboost_rule = RuleTreeAdaBoostClassifier(n_estimators=100)
+            clf_adaboost_sklearn = AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1), n_estimators=100)
 
             X = df.iloc[:, :-1].values
             y = df.iloc[:, -1].values
@@ -53,8 +57,20 @@ def test_clf(max_depth=4):
                                                                    stratify=y)
 
             res = dict()
-            for model, model_name in zip([clf_rule, clf_sklearn, clf_forest_rule, clf_forest_sklearn],
-                             ["rule", "dt", "forest_rule", "forest_dt"]):
+            for model, model_name in zip([clf_rule,
+                                          clf_sklearn,
+                                          clf_forest_rule,
+                                          clf_forest_sklearn,
+                                          clf_adaboost_rule,
+                                          clf_adaboost_sklearn
+                                          ],
+                                         ["rule",
+                                          "dt",
+                                          "forest_rule",
+                                          "forest_dt",
+                                          "adaboost_rule",
+                                          "adaboost_sklearn"
+                                          ]):
                 start = time()
                 if "rule" not in model_name:
                     model.fit(X_train_onehot, y_train)
@@ -77,6 +93,7 @@ def test_clf(max_depth=4):
             table.update_from_dict(res)
         except Exception as e:
             table["error"] = str(e)
+            #raise e
 
         table.next_row()
 
@@ -114,6 +131,8 @@ def test_reg(max_depth=4):
             clf_forest_rule = RuleForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=-1)
             clf_sklearn = DecisionTreeRegressor(max_depth=max_depth)
             clf_forest_sklearn = RandomForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=-1)
+            clf_adaboost_rule = RuleTreeAdaBoostRegressor(n_estimators=100)
+            clf_adaboost_sklearn = AdaBoostRegressor(estimator=DecisionTreeRegressor(max_depth=1), n_estimators=100)
 
             X = df.drop(columns=dataset_target_reg[dataset_name]).to_numpy()
             y = df[dataset_target_reg[dataset_name]].values
@@ -124,8 +143,20 @@ def test_reg(max_depth=4):
             X_train_onehot, X_test_onehot, _, _ = train_test_split(X_onehot, y, test_size=0.3, random_state=42)
 
             res = dict()
-            for model, model_name in zip([clf_rule, clf_sklearn, clf_forest_rule, clf_forest_sklearn],
-                                         ["rule", "dt", "forest_rule", "forest_dt"]):
+            for model, model_name in zip([clf_rule,
+                                          clf_sklearn,
+                                          clf_forest_rule,
+                                          clf_forest_sklearn,
+                                          clf_adaboost_rule,
+                                          clf_adaboost_sklearn
+                                          ],
+                                         ["rule",
+                                          "dt",
+                                          "forest_rule",
+                                          "forest_dt",
+                                          "adaboost_rule",
+                                          "adaboost_sklearn"
+                                          ]):
                 start = time()
                 if "rule" not in model_name:
                     model.fit(X_train_onehot, y_train)
@@ -233,7 +264,7 @@ def test_clf_iris():
 
 
 if __name__ == "__main__":
-    #test_clf()
+    test_clf()
     test_reg()
     #test_clu()
 
