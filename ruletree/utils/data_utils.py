@@ -166,16 +166,31 @@ def get_gain_ratio(clf: DecisionTreeClassifier):
 
     return gain_split/split_info
 
+def _my_counts(x, sample_weight:np.ndarray=None, class_weight:dict=None):
+    if sample_weight is None and class_weight is None:
+        _, counts = np.unique(x, return_counts=True)
 
-def gini(x):
-    _, counts = np.unique(x, return_counts=True)
+    else:
+        sample_weight = np.ones(x.shape[0]) if sample_weight is None else sample_weight
+        class_weight = dict([(y_, 1.) for y_ in np.unique(x)]) if class_weight is None else class_weight
 
-    return 1 - np.sum((counts/len(x))**2)
+        counts = np.zeros((len(class_weight), ))
+        for i, (c_k, c_w) in enumerate(class_weight.items()):
+            counts[i] = np.sum(sample_weight[x == c_k]) * c_w
 
-def entropy(x):
-    _, counts = np.unique(x, return_counts=True)
+    return counts
 
-    p_j = counts/len(x)
+def gini(x, sample_weight:np.ndarray=None, class_weight:dict=None):
+    counts = _my_counts(x, sample_weight=sample_weight, class_weight=class_weight)
+
+    total = sum(counts)
+
+    return 1 - np.sum((counts/total)**2)
+
+def entropy(x, sample_weight:np.ndarray=None, class_weight:dict=None):
+    counts = _my_counts(x, sample_weight=sample_weight, class_weight=class_weight)
+
+    p_j = counts/sum(counts)
     p_j_log = np.log2(p_j)
 
     return - p_j @ p_j_log

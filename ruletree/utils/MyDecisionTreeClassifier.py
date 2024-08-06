@@ -4,7 +4,7 @@ import sklearn
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.tree import DecisionTreeClassifier
 
-from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy
+from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
 
 
 class MyDecisionTreeClassifier(DecisionTreeClassifier):
@@ -28,7 +28,7 @@ class MyDecisionTreeClassifier(DecisionTreeClassifier):
         self.categorical = dtypes[dtypes == np.dtype('O')].index
 
         super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
-        self.feature_original = self.tree_.feature
+        self.feature_original = np.array([self.numerical[x] if x != -2 else -2 for x in self.tree_.feature])
         self.threshold_original = self.tree_.threshold
 
         best_info_gain = get_info_gain(self)
@@ -37,20 +37,58 @@ class MyDecisionTreeClassifier(DecisionTreeClassifier):
 
         return self
 
-    def _fit_cat(self, X, y, best_info_gain):
-        len_x = len(X)
-
+    def _fit_cat(self, X, y, best_info_gain, sample_weight=None):
         if len(self.categorical) > 0 and best_info_gain != float('inf'):
+            len_x = len(X)
+
+            class_weight = None
+            if self.class_weight == "balanced":
+                class_weight = dict()
+                for class_label in np.unique(y):
+                    class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
+
+
             for i in self.categorical:
                 for value in np.unique(X[:, i]):
                     X_split = X[:, i:i+1] == value
+
                     len_left = np.sum(X_split)
-                    info_gain = _get_info_gain(self.impurity_fun(y),
-                                               self.impurity_fun(y[X_split[:, 0]]),
-                                               self.impurity_fun(y[~X_split[:, 0]]),
-                                               len_x,
-                                               len_left,
-                                               len_x-len_left)
+
+                    if sample_weight is not None:
+                        # TODO: check. Sample weights. If None, then samples are equally weighted. Splits that would
+                        #  create child nodes with net zero or negative weight are ignored while searching for a split
+                        #  in each node. Splits are also ignored if they would result in any single class carrying a
+                        #  negative weight in either child node.
+
+                        if _my_counts(y, sample_weight) - (_my_counts(y[X_split[:, 0]], sample_weight)
+                                                           + _my_counts(y[~X_split[:, 0]], sample_weight)) <= 0:
+                            continue
+
+                        if sum(sample_weight[X_split[:, 0]]) < self.min_weight_fraction_leaf \
+                            or sum(sample_weight[~X_split[:, 0]]) < self.min_weight_fraction_leaf:
+                            continue
+
+                        if ((_my_counts(y[X_split[:, 0]], sample_weight) <= 0).any()
+                                or (_my_counts(y[~X_split[:, 0]], sample_weight) <= 0).any()):
+                            continue
+
+                        info_gain = _get_info_gain(self.impurity_fun(y, sample_weight, class_weight),
+                                                   self.impurity_fun(y[X_split[:, 0]],
+                                                                     sample_weight[X_split[:, 0]],
+                                                                     class_weight),
+                                                   self.impurity_fun(y[~X_split[:, 0]],
+                                                                     sample_weight[~X_split[:, 0]],
+                                                                     class_weight),
+                                                   len_x,
+                                                   len_left,
+                                                   len_x-len_left)
+                    else:
+                        info_gain = _get_info_gain(self.impurity_fun(y, sample_weight, class_weight),
+                                                   self.impurity_fun(y[X_split[:, 0]], None, class_weight),
+                                                   self.impurity_fun(y[~X_split[:, 0]], None, class_weight),
+                                                   len_x,
+                                                   len_left,
+                                                   len_x - len_left)
 
                     if info_gain > best_info_gain:
                         best_info_gain = info_gain

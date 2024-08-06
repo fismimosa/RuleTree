@@ -43,8 +43,8 @@ def test_clf(max_depth=4):
 
             clf_rule = RuleTreeClassifier(max_depth=max_depth)
             clf_sklearn = DecisionTreeClassifier(max_depth=max_depth)
-            clf_forest_rule = RuleForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
-            clf_forest_sklearn = RandomForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
+            clf_forest_rule = RuleForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=1)
+            clf_forest_sklearn = RandomForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=1)
             clf_adaboost_rule = RuleTreeAdaBoostClassifier(n_estimators=100)
             clf_adaboost_sklearn = AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1), n_estimators=100)
 
@@ -262,8 +262,8 @@ def test_clf_iris():
 
 
 if __name__ == "__main__":
-    #test_clf()
-    test_reg()
+    test_clf()
+    #test_reg()
     #test_clu()
 
     #test_clf_iris()
