@@ -41,7 +41,7 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
         best_info_gain = -float('inf')
 
         if len(self.numerical) > 0:
-            super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
+            super().fit(X[:, self.numerical], y, **kwargs)
             self.feature_original = self.tree_.feature
             self.threshold_original = self.tree_.threshold
             best_info_gain = get_info_gain(self)
