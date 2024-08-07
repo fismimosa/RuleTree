@@ -38,12 +38,13 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
+        best_info_gain = -float('inf')
 
-        super().fit(X[:, self.numerical], y, **kwargs)
-        self.feature_original = self.tree_.feature
-        self.threshold_original = self.tree_.threshold
-
-        best_info_gain = get_info_gain(self)
+         if len(self.numerical) > 0:
+            super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
+            self.feature_original = self.tree_.feature
+            self.threshold_original = self.tree_.threshold
+            best_info_gain = get_info_gain(self)
 
         self._fit_cat(X, y, best_info_gain)
 
