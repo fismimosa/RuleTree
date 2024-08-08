@@ -40,7 +40,7 @@ class RuleTreeAdaBoostClassifier(AdaBoostClassifier):
 
         super().__init__(
             estimator=RuleTreeClassifier(min_samples_split=min_samples_split,
-                                         max_depth=1, #stump
+                                         max_depth=3, #stump
                                          prune_useless_leaves=prune_useless_leaves,
                                          random_state=random_state,
 
