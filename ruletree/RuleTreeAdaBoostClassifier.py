@@ -1,9 +1,10 @@
 from sklearn.ensemble import AdaBoostClassifier
 
 from ruletree import RuleTreeClassifier
+from ruletree.RuleTreeBase import RuleTreeBase
 
 
-class RuleTreeAdaBoostClassifier(AdaBoostClassifier):
+class RuleTreeAdaBoostClassifier(AdaBoostClassifier, RuleTreeBase):
     def __init__(self,
                  n_estimators=50,
                  min_samples_split=2,

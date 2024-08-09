@@ -2,9 +2,10 @@ import numpy as np
 from sklearn.ensemble import BaggingClassifier
 
 from ruletree import RuleTreeClassifier
+from ruletree.RuleTreeBase import RuleTreeBase
 
 
-class RuleForestClassifier(BaggingClassifier):
+class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
     def __init__(self,
                  n_estimators=100,
                  criterion='gini',

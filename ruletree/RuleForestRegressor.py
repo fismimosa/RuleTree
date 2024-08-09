@@ -2,9 +2,10 @@ import numpy as np
 from sklearn.ensemble import BaggingRegressor
 
 from ruletree import RuleTreeRegressor
+from ruletree.RuleTreeBase import RuleTreeBase
 
 
-class RuleForestRegressor(BaggingRegressor):
+class RuleForestRegressor(BaggingRegressor, RuleTreeBase):
     def __init__(self,
                  n_estimators=100,
                  criterion='squared_error',

@@ -1,10 +1,11 @@
 import heapq
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections import deque
 from datetime import datetime
 from itertools import count
 
 import numpy as np
+from sklearn import tree
 
 from ruletree.RuleTreeBase import RuleTreeBase
 from ruletree.RuleTreeNode import RuleTreeNode
@@ -24,7 +25,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.prune_useless_leaves = prune_useless_leaves
         self.random_state = random_state
 
-    def fit(self, X: np.array, y: np.array=None, **kwargs):
+    def fit(self, X: np.array, y: np.array = None, **kwargs):
         self.X = X
         self.y = y
         self.root = None
@@ -43,7 +44,7 @@ class RuleTree(RuleTreeBase, ABC):
         while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
             idx, current_node = self.queue_pop()
 
-            if  len(idx) < self.min_samples_split:
+            if len(idx) < self.min_samples_split:
                 self.make_leaf(current_node)
                 nbr_curr_nodes += 1
                 continue
@@ -71,11 +72,11 @@ class RuleTree(RuleTreeBase, ABC):
                 nbr_curr_nodes += 1
                 continue
 
-            idx_l, idx_r = idx[labels==1], idx[labels==2]
+            idx_l, idx_r = idx[labels == 1], idx[labels == 2]
 
             current_node.clf = clf
-            current_node.node_l = self.prepare_node(self.y, idx_l, current_node.node_id + "l",)
-            current_node.node_r = self.prepare_node(self.y, idx_r, current_node.node_id + "r",)
+            current_node.node_l = self.prepare_node(self.y, idx_l, current_node.node_id + "l", )
+            current_node.node_r = self.prepare_node(self.y, idx_r, current_node.node_id + "r", )
             current_node.node_l.parent, current_node.node_r.parent = current_node, current_node
 
             self.queue_push(current_node.node_l, idx_l)
@@ -109,27 +110,29 @@ class RuleTree(RuleTreeBase, ABC):
     def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
         if current_node.is_leaf():
             n = len(X)
-            return np.array([current_node.prediction]*n), \
-                np.array([current_node.node_id]*n), \
-                np.array([current_node.prediction_probability]*n)
+            return np.array([current_node.prediction] * n), \
+                np.array([current_node.node_id] * n), \
+                np.array([current_node.prediction_probability] * n)
 
         else:
             labels, leaves, proba = (
-                np.full(len(X), fill_value=-1, dtype=object if type(current_node.prediction) is str else type(current_node.prediction)),
+                np.full(len(X), fill_value=-1,
+                        dtype=object if type(current_node.prediction) is str else type(current_node.prediction)),
                 np.zeros(len(X), dtype=object),
-                np.ones(len(X), dtype=float)*-1
+                np.ones(len(X), dtype=float) * -1
             )
 
             clf = current_node.clf
             labels_clf = clf.apply(X)
-            X_l, X_r = X[labels_clf==1], X[labels_clf==2]
+            X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
             if X_l.shape[0] != 0:
-                labels[labels_clf==1], leaves[labels_clf==1], proba[labels_clf==1] = self._predict(X_l, current_node.node_l)
+                labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = self._predict(X_l,
+                                                                                                         current_node.node_l)
             if X_r.shape[0] != 0:
-                labels[labels_clf==2], leaves[labels_clf==2], proba[labels_clf==2] = self._predict(X_r, current_node.node_r)
+                labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = self._predict(X_r,
+                                                                                                         current_node.node_r)
 
             return labels, leaves, proba
-
 
     def get_rules(self):
         return self.root.get_rule()
@@ -147,8 +150,24 @@ class RuleTree(RuleTreeBase, ABC):
     def _post_fit_fix(self):
         return
 
+    @abstractmethod
+    def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
+        pass
+
+    @abstractmethod
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+        pass
+
+    @abstractmethod
+    def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
+        pass
+
+    @abstractmethod
+    def is_split_useless(self, clf: tree, idx: np.ndarray):
+        pass
+
     @classmethod
-    def print_rules(cls, rules:dict, columns_names:list=None, ndigits=2, indent:int=0, ):
+    def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
         names = lambda x: f"X_{x}"
 
         if columns_names is not None:
@@ -160,7 +179,7 @@ class RuleTree(RuleTreeBase, ABC):
             pred = rules['prediction']
 
             print(f"{indentation} output: "
-                  f"{pred if type(pred) in [np.str_, np.string_, str]  else round(pred, ndigits=ndigits)}")
+                  f"{pred if type(pred) in [np.str_, np.string_, str] else round(pred, ndigits=ndigits)}")
         else:
             comparison = "==" if rules['is_categorical'] else "<="
             not_comparison = "!=" if rules['is_categorical'] else ">"
@@ -169,14 +188,8 @@ class RuleTree(RuleTreeBase, ABC):
             print(f"{indentation}|--- {names(feature_idx)} {comparison} "
                   f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}"
                   f"\t{rules['samples']}")
-            cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent+1)
+            cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
 
             print(f"{indentation}|--- {names(feature_idx)} {not_comparison} "
                   f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
             cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
-
-
-
-
-
-
