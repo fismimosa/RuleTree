@@ -166,11 +166,14 @@ RANDOM_STATE_LIST = np.arange(0, 10).tolist()
 N_CLUSTERS_LIST = [2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 32, 64]
 BIC_EPS_LIST = [0.0, 0.001, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.7, 1.0]
 
-MAX_NBR_VALUES_CAT = 20  # con meno-uguale di max_nbr_values_cat valori e' categorica
-MAX_NBR_VALUES = np.inf
-ONE_HOT_ENCODE_CAT = True
 
-methods_params_sup = {
+preprocessing_params = {
+    'one_hot_encode_cat': [True, False],
+    'max_n_vals': [np.inf],
+    'max_n_vals_cat': [0, 20]
+}
+
+methods_params_clf = {
     'DT': {
         'criterion': ['gini'],
         'splitter': ['best'],
@@ -186,27 +189,50 @@ methods_params_sup = {
         'random_state': RANDOM_STATE_LIST,
     },
     'RT': {
+        'max_leaf_nodes': MAX_LEAF_NODES,
+        'min_samples_split': MIN_SAMPLE_SPLIT_LIST,
         'max_depth': MAX_DEPTH_LIST,
-        'max_nbr_nodes': MAX_LEAF_NODES,
+        'prune_useless_leaves': [False, True],
+        'random_state': RANDOM_STATE_LIST,
+        'criterion': ['gini'],
+        'splitter': ['best'],
+        'min_samples_leaf': MIN_SAMPLE_LEAF_LIST,
+        'min_weight_fraction_leaf': [0.0],
+        'max_features': [None],
+        'min_impurity_decrease': [0.0],
+        'class_weight': [None],
+        'ccp_alpha': CCP_ALPHA_LIST,
+    }
+}
+
+
+methods_params_reg = {
+    'DT': {
+        'criterion': ['squared_error'],
+        'splitter': ['best'],
+        'max_depth': MAX_DEPTH_LIST,
         'min_samples_split': MIN_SAMPLE_SPLIT_LIST,
         'min_samples_leaf': MIN_SAMPLE_LEAF_LIST,
-        # 'max_nbr_values': [np.inf],
-        # 'max_nbr_values_cat': [20],
-        'allow_oblique_splits': [False, True],
-        'force_oblique_splits': [False, True],
-        'max_oblique_features': [2],
-        'prune_useless_leaves': [False, True],
-        'n_components': [1, 2],
-        'bic_eps': [0.0],
-        'clus_impurity': ['bic'],
-        'clf_impurity': ['gini'],
-        'reg_impurity': ['squared_error'],
-        'feature_names': [None],
-        'exclude_split_feature_from_reduction': [False],
-        'precision': [2],
-        'cat_precision': [2],
-        'n_jobs': [1],
+        'min_weight_fraction_leaf': [0.0],
+        'max_features': [None],
+        'max_leaf_nodes': MAX_LEAF_NODES,
+        'min_impurity_decrease': [0.0],
+        'ccp_alpha': CCP_ALPHA_LIST,
         'random_state': RANDOM_STATE_LIST,
+    },
+    'RT': {
+        'max_leaf_nodes': MAX_LEAF_NODES,
+        'min_samples_split': MIN_SAMPLE_SPLIT_LIST,
+        'max_depth': MAX_DEPTH_LIST,
+        'prune_useless_leaves': [False, True],
+        'random_state': RANDOM_STATE_LIST,
+        'criterion': ['squared_error'],
+        'splitter': ['best'],
+        'min_samples_leaf': MIN_SAMPLE_LEAF_LIST,
+        'min_weight_fraction_leaf': [0.0],
+        'max_features': [None],
+        'min_impurity_decrease': [0.0],
+        'ccp_alpha': CCP_ALPHA_LIST,
     }
 }
 
@@ -223,7 +249,6 @@ methods_params_unsup = {
     },
     'KT': {
         'labels_as_tree_leaves': [False, True],
-        # 'max_nbr_values_cat': [20],
         'n_clusters': N_CLUSTERS_LIST,
         'min_samples_split': MIN_SAMPLE_SPLIT_LIST,
         'min_samples_leaf': MIN_SAMPLE_LEAF_LIST,
@@ -249,8 +274,6 @@ methods_params_unsup = {
         'max_nbr_nodes': MAX_LEAF_NODES,
         'min_samples_split': MIN_SAMPLE_SPLIT_LIST,
         'min_samples_leaf': MIN_SAMPLE_LEAF_LIST,
-        # 'max_nbr_values': [np.inf],
-        # 'max_nbr_values_cat': [20],
         'allow_oblique_splits': [False, True],
         'force_oblique_splits': [False, True],
         'max_oblique_features': [2],
@@ -264,7 +287,6 @@ methods_params_unsup = {
         'exclude_split_feature_from_reduction': [False, True],
         'precision': [2],
         'cat_precision': [2],
-        'n_jobs': [1],
         'random_state': RANDOM_STATE_LIST,
     }
 }

@@ -1,5 +1,12 @@
 import numpy as np
 import sklearn.metrics as skm
+from sklearn import tree
+from sklearn.tree import _tree
+
+from ruletree import RuleTreeClassifier, RuleTree, RuleTreeRegressor
+from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.RuleTreeNode import RuleTreeNode
+
 
 def evaluate_clf(y_test, y_pred, y_pred_proba):
     class_values = np.unique(y_test)
@@ -70,12 +77,47 @@ def evaluate_clu_sup(y_test, y_pred, X, dist):
     res.update(evaluate_clu_unsup(y_pred, X, dist))
     return res
 
-def evaluate_expl(rt):
-    res = {
 
+def evaluate_expl(model):
+    if model.__class__ == RuleTreeClassifier or model.__class__ == RuleTreeRegressor:
+        res = _evaluate_expl_ruletree(model.root)
+    elif issubclass(model.__class__, tree.BaseDecisionTree):
+        res = _evaluate_expl_decisiontree(model)
+    else:
+        return {}
+
+    return {
+        "n_leaf": res[0],
+        "n_nodes": res[1],
+        "max_depth": res[2],
     }
 
-    return res
+
+def _evaluate_expl_ruletree(root_node: RuleTreeNode):
+    if root_node.is_leaf():
+        return 1, 0, 1
+
+    (n_leaf_l, n_nodes_l, max_depth_l) = _evaluate_expl_ruletree(root_node.node_l)
+
+    (n_leaf_r, n_nodes_r, max_depth_r) = _evaluate_expl_ruletree(root_node.node_r)
+
+    return (n_leaf_l + n_leaf_r,
+            n_nodes_l + n_nodes_r + 1,
+            max_depth_l + 1 if max_depth_l > max_depth_r else max_depth_r + 1)
+
+
+def _evaluate_expl_ruletree_depth(tree_, node):
+    if tree_.feature[node] != _tree.TREE_UNDEFINED:
+        depth_l = _evaluate_expl_ruletree_depth(tree_, tree_.children_left[node])
+        depth_r = _evaluate_expl_ruletree_depth(tree_, tree_.children_right[node])
+        return depth_l + 1 if depth_l > depth_r else depth_r + 1
+    else:
+        return 1
+
+
+def _evaluate_expl_decisiontree(clf: tree.BaseDecisionTree):
+    return clf.tree_.n_leaves, clf.tree_.node_count - clf.tree_.max_depth, _evaluate_expl_ruletree_depth(clf.tree_, 0)
+
 
 def evaluate_clu_unsup(y_pred, X, dist):
     if len(np.unique(y_pred)) == 1:
