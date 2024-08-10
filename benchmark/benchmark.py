@@ -6,6 +6,7 @@ import os
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
+from glob import glob
 from hashlib import md5
 
 import numpy as np
@@ -208,9 +209,9 @@ def run_clu(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict, path, preproce
             scores_train.update(evaluate_clu_sup(y_train, y_pred_train))
             scores_test.update(evaluate_clu_sup(y_test, y_pred_test))
 
-        for k, v in scores_train:
+        for k, v in scores_train.items():
             res[f"train_{k}"] = v
-        for k, v in scores_test:
+        for k, v in scores_test.items():
             res[f"test_{k}"] = v
 
         for k, v in evaluate_expl(model_inst).items():
@@ -320,6 +321,8 @@ def benchmark(task, methods_params, dataset_target, dataset_feat_drop):
 
     basepath = RESULTS_PATH + task + "/"
 
+    exp_to_skip = set([os.path.normpath(x) for x in glob(basepath+"*/*/*.zip")])
+
     for method_name, model in task_method[task].items():
         if not os.path.exists(basepath + method_name):
             os.mkdir(basepath + method_name)
@@ -376,13 +379,13 @@ def benchmark(task, methods_params, dataset_target, dataset_feat_drop):
                                                "max_n_vals": max_n_vals,
                                                "max_n_vals_cat": max_n_vals_cat}
 
-                        if os.path.exists(path):
-                            if skip_count == 10 ** 3:
+                        if os.path.normpath(path) in exp_to_skip:
+                            if skip_count == 10**4:
                                 skip_count = 0
                                 with sem:
                                     table["dataset"] = dataset_name
                                     table["method"] = method_name
-                                    table["error"] = "skip"
+                                    table["error"] = "skip10^4"
                                     table.next_row()
                             skip_count += 1
                             continue
@@ -424,7 +427,20 @@ def benchmark(task, methods_params, dataset_target, dataset_feat_drop):
                                 model_name=method_name
                             ))
                         elif task == TASK_CLU:
-                            pass
+                            process = exe.submit(run_clu,
+                                                 df_X,
+                                                 y,
+                                                 model,
+                                                 params_dict,
+                                                 path,
+                                                 preprocessing_hyper)
+                            process.add_done_callback(lambda x: callback_done_clu(
+                                future=x, table=table,
+                                preprocessing_hyper=preprocessing_hyper,
+                                hyper=params_dict,
+                                dataset_name=dataset_name,
+                                model_name=method_name
+                            ))
 
 
 def preprocess(df: pd.DataFrame, one_hot_encode_cat: bool, max_n_vals, max_n_vals_cat):
