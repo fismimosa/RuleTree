@@ -13,13 +13,14 @@ import pandas as pd
 import psutil
 from progress_table import ProgressTable
 from sklearn.compose import ColumnTransformer, make_column_selector
+from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import StratifiedKFold, train_test_split, KFold
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 from config import dataset_target_clf, task_method, TASK_CLF, DATASET_PATH, dataset_feat_drop_clf, \
     RESULTS_PATH, NBR_REPEATED_HOLDOUT, methods_params_clf, preprocessing_params, TASK_REG, dataset_target_reg, \
-    dataset_feat_drop_reg, methods_params_reg, N_JOBS, TASK_CLC, TASK_CLR, methods_params_unsup
-from evaluation_utils import evaluate_clf, evaluate_expl, evaluate_reg
+    dataset_feat_drop_reg, methods_params_reg, N_JOBS, TASK_CLC, TASK_CLR, methods_params_unsup, TASK_CLU
+from evaluation_utils import evaluate_clf, evaluate_expl, evaluate_reg, evaluate_clu_unsup, evaluate_clu_sup
 from preprocessing_utils import remove_missing_values
 from ruletree.RuleTreeBase import RuleTreeBase
 
@@ -53,7 +54,7 @@ class BoundedQueueProcessPoolExecutor(BoundedQueuePoolExecutor, concurrent.futur
 
 
 def run_clf(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
-            path, preprocessing_hyper):
+            path, preprocessing_hyper, eval_clu):
     skf = StratifiedKFold(n_splits=NBR_REPEATED_HOLDOUT)
 
     X = df_X.values
@@ -80,6 +81,11 @@ def run_clf(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
             res += [{f"validation_{k}": v for k, v in evaluate_clf(y_valid, y_pred, y_pred_proba).items()}]
             res[-1].update({f"validation_{k}": v for k, v in evaluate_expl(model_inst).items()})
 
+            if eval_clu:
+                res[-1].update({f"validation_{k}": v for k, v in evaluate_clu_sup(y_valid, y_pred).items()})
+                res[-1].update({f"validation_{k}": v for k, v in
+                                evaluate_clu_unsup(y_valid, X, pairwise_distances(X, metric="euclidean")).items()})
+
         model_inst = model(**hyper)
         start_time = time.time()
         model_inst.fit(X_train, y_train)
@@ -96,6 +102,11 @@ def run_clf(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
         for k, v in evaluate_expl(model_inst).items():
             res[f"test_{k}"] = v
 
+        if eval_clu:
+            res[-1].update({f"test_{k}": v for k, v in evaluate_clu_sup(y_test, y_pred).items()})
+            res[-1].update({f"test_{k}": v for k, v in
+                            evaluate_clu_unsup(y_test, X, pairwise_distances(X, metric="euclidean")).items()})
+
     except Exception as e:
         traceback.print_stack()
         return "fail", e
@@ -107,8 +118,9 @@ def run_clf(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
 
     return "ok", res
 
+
 def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
-            path, preprocessing_hyper):
+            path, preprocessing_hyper, eval_clu):
     kf = KFold(n_splits=NBR_REPEATED_HOLDOUT)
 
     X = df_X.values
@@ -130,6 +142,10 @@ def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
 
             res += [{f"validation_{k}": v for k, v in evaluate_reg(y_valid, y_pred).items()}]
             res[-1].update({f"validation_{k}": v for k, v in evaluate_expl(model_inst).items()})
+            if eval_clu:
+                res[-1].update({f"validation_{k}": v for k, v in evaluate_clu_sup(y_test, y_pred).items()})
+                res[-1].update({f"validation_{k}": v for k, v in
+                                evaluate_clu_unsup(y_test, X, pairwise_distances(X, metric="euclidean")).items()})
 
         model_inst = model(**hyper)
         start_time = time.time()
@@ -146,6 +162,11 @@ def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
         for k, v in evaluate_expl(model_inst).items():
             res[f"test_{k}"] = v
 
+        if eval_clu:
+            res.update({f"test_{k}": v for k, v in evaluate_clu_sup(y_test, y_pred).items()})
+            res.update({f"test_{k}": v for k, v in
+                        evaluate_clu_unsup(y_test, X, pairwise_distances(X, metric="euclidean")).items()})
+
     except Exception as e:
         traceback.print_stack()
         return "fail", e
@@ -154,6 +175,54 @@ def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
         res[k] = v
 
     res.to_csv(path, index=None)
+
+    return "ok", res
+
+
+def run_clu(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict, path, preprocessing_hyper):
+    X = df_X.values
+
+    y_train, y_test = None, None
+    if y is None:
+        X_train, X_test = train_test_split(X, test_size=0.2, random_state=42)
+    else:
+        y = y.values
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    res = dict()
+
+    try:
+        model_inst = model(**hyper)
+        start_time = time.time()
+        model_inst.fit(X_train, y_train)
+        stop_time = time.time()
+
+        y_pred_train = model_inst.predict(X_train)
+        y_pred_test = model_inst.predict(X_test)
+
+        res["fit_time"] = stop_time - start_time
+        scores_train = evaluate_clu_unsup(y_pred_train, X_train, pairwise_distances(X_train, metric='euclidean'))
+        scores_test = evaluate_clu_unsup(y_pred_test, X_test, pairwise_distances(X_test, metric='euclidean'))
+        if y is not None:
+            scores_train.update(evaluate_clu_sup(y_train, y_pred_train))
+            scores_test.update(evaluate_clu_sup(y_test, y_pred_test))
+
+        for k, v in scores_train:
+            res[f"train_{k}"] = v
+        for k, v in scores_test:
+            res[f"test_{k}"] = v
+
+        for k, v in evaluate_expl(model_inst).items():
+            res[f"test_{k}"] = v
+
+    except Exception as e:
+        traceback.print_stack()
+        return "fail", e
+
+    for k, v in preprocessing_hyper.items():
+        res[k] = v
+
+    pd.DataFrame.from_dict([res]).to_csv(path, index=None)
 
     return "ok", res
 
@@ -182,6 +251,7 @@ def callback_done_clf(future,
 
         table.next_row()
 
+
 def callback_done_reg(future,
                       table: ProgressTable,
                       dataset_name: str,
@@ -202,6 +272,31 @@ def callback_done_reg(future,
             return
 
         table["r2"] = res["test_r2"].iloc[0]
+        table["fit_time"] = res["fit_time"].iloc[0]
+
+        table.next_row()
+
+
+def callback_done_clu(future,
+                      table: ProgressTable,
+                      dataset_name: str,
+                      model_name,
+                      preprocessing_hyper: dict,
+                      hyper: dict):
+    res_code, res = future.result()
+
+    with sem:
+        table["dataset"] = dataset_name
+        table["method"] = model_name
+        table.update_from_dict({k[:7]: v for k, v in preprocessing_hyper.items()})
+        table.update_from_dict({k[:7]: v for k, v in hyper.items()})
+
+        if res_code == "fail":
+            table["Error"] = res
+            table.next_row()
+            return
+
+        table["sil"] = res["train_silhouette_score"].iloc[0]
         table["fit_time"] = res["fit_time"].iloc[0]
 
         table.next_row()
@@ -230,7 +325,7 @@ def benchmark(task, methods_params):
 
         n_workers = psutil.cpu_count(logical=False)
         if "n_jobs" in methods_params[method_name]:
-            n_workers = int(n_workers//N_JOBS)
+            n_workers = int(n_workers // N_JOBS)
 
         table = ProgressTable(pbar_embedded=False,
                               pbar_show_progress=True,
@@ -292,7 +387,14 @@ def benchmark(task, methods_params):
                             continue
 
                         if task in [TASK_CLF, TASK_CLC]:
-                            process = exe.submit(run_clf, df_X, y, model, params_dict, path, preprocessing_hyper)
+                            process = exe.submit(run_clf,
+                                                 df_X,
+                                                 y,
+                                                 model,
+                                                 params_dict,
+                                                 path,
+                                                 preprocessing_hyper,
+                                                 task == TASK_CLC)
                             process.add_done_callback(lambda x: callback_done_clf(
                                 future=x, table=table,
                                 preprocessing_hyper=preprocessing_hyper,
@@ -301,7 +403,18 @@ def benchmark(task, methods_params):
                                 model_name=method_name
                             ))
                         elif task in [TASK_REG, TASK_CLR]:
-                            process = exe.submit(run_reg, df_X, y, model, params_dict, path, preprocessing_hyper)
+                            if TASK_CLR == task:
+                                raise Exception(
+                                    "Unimplemented task - Parlare con Rick di metriche in caso di regressione")
+
+                            process = exe.submit(run_reg,
+                                                 df_X,
+                                                 y,
+                                                 model,
+                                                 params_dict,
+                                                 path,
+                                                 preprocessing_hyper,
+                                                 task == TASK_CLR)
                             process.add_done_callback(lambda x: callback_done_reg(
                                 future=x, table=table,
                                 preprocessing_hyper=preprocessing_hyper,
@@ -309,7 +422,8 @@ def benchmark(task, methods_params):
                                 dataset_name=dataset_name,
                                 model_name=method_name
                             ))
-
+                        elif task == TASK_CLU:
+                            pass
 
 
 def preprocess(df: pd.DataFrame, one_hot_encode_cat: bool, max_n_vals, max_n_vals_cat):
@@ -351,15 +465,15 @@ def main():
 
     for arg in sys.argv[1:]:
         if arg == TASK_CLF:
-            benchmark_clf(task=TASK_CLF, methods_params=methods_params_clf)
+            benchmark(task=TASK_CLF, methods_params=methods_params_clf)
         elif arg == TASK_REG:
-            benchmark_reg(task=TASK_REG)
+            benchmark(task=TASK_REG, methods_params=methods_params_reg)
         elif arg == "CLU":
-            raise Exception("Not implemented yet")
+            benchmark(task=TASK_CLU, methods_params=methods_params_unsup)
         elif arg == TASK_CLC:
-            benchmark_clf(task=TASK_CLC, methods_params=methods_params_unsup)
+            benchmark(task=TASK_CLC, methods_params=methods_params_unsup)
         elif arg == TASK_CLR:
-            benchmark_reg(task=TASK_CLR)
+            benchmark(task=TASK_CLR, methods_params=methods_params_unsup)
         else:
             print(f"Unknown argument: {arg}")
 

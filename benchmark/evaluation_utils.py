@@ -73,7 +73,7 @@ def evaluate_reg(y_test, y_pred):
     return res
 
 
-def evaluate_clu_sup(y_test, y_pred, X, dist):
+def evaluate_clu_sup(y_test, y_pred):
     res = {
         'adjusted_mutual_info': skm.adjusted_mutual_info_score(y_test, y_pred),
         'adjusted_rand': skm.adjusted_rand_score(y_test, y_pred),
@@ -85,7 +85,6 @@ def evaluate_clu_sup(y_test, y_pred, X, dist):
         'rand_score': skm.rand_score(y_test, y_pred),
         'v_measure': skm.v_measure_score(y_test, y_pred)
     }
-    res.update(evaluate_clu_unsup(y_pred, X, dist))
     return res
 
 
