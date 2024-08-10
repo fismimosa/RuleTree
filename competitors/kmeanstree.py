@@ -31,7 +31,7 @@ class KMeansTree:
                  copy_x: bool = True,
 
                  max_depth: int = None,
-                 algorithm: str = 'auto',
+                 algorithm: str = 'lloyd',
                  splitter: str = 'best',
                  min_weight_fraction_leaf: int = 0.0,
                  max_features: int = None,

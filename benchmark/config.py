@@ -2,9 +2,10 @@ import warnings
 
 import numpy as np
 from sklearn.cluster import KMeans
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from ruletree import RuleTreeClassifier, RuleTreeRegressor, RuleTreeCluster
+from ruletree import RuleTreeClassifier, RuleTreeRegressor, RuleTreeCluster, RuleForestClassifier, RuleForestRegressor
 from competitors.kmeanstree import KMeansTree
 
 warnings.filterwarnings("ignore")
@@ -150,12 +151,43 @@ dataset_feat_drop_clu.update(dataset_feat_drop_clf)
 dataset_feat_drop_clu.update(dataset_feat_drop_reg)
 
 task_method = {
-    TASK_CLF: {'DT': DecisionTreeClassifier, 'RT': RuleTreeClassifier},  # 'KNN': KNeighborsClassifier(),
-    TASK_REG: {'DT': DecisionTreeRegressor, 'RT': RuleTreeRegressor},  # 'KNN': KNeighborsRegressor(),
-    TASK_CLU: {'KM': KMeans, 'KT': KMeansTree, 'RT': RuleTreeCluster},
-    TASK_CLC: {'KT': KMeansTree, 'RT': RuleTreeCluster},
-    TASK_CLR: {'KT': KMeansTree, 'RT': RuleTreeCluster},
+    TASK_CLF:
+        {
+            'DT': DecisionTreeClassifier,
+            'RT': RuleTreeClassifier,
+            'RF': RandomForestClassifier,
+            'RTF': RuleForestClassifier,
+        },  # 'KNN': KNeighborsClassifier(),
+
+    TASK_REG:
+        {
+            'DT': DecisionTreeRegressor,
+            'RT': RuleTreeRegressor,
+            'RF': RandomForestRegressor,
+            'RTF': RuleForestRegressor,
+        },  # 'KNN': KNeighborsRegressor(),
+
+    TASK_CLU:
+        {
+            'KM': KMeans,
+            'KT': KMeansTree,
+            'RT': RuleTreeCluster
+        },
+
+    TASK_CLC:
+        {
+            'KT': KMeansTree,
+            'RT': RuleTreeCluster
+        },
+
+    TASK_CLR:
+        {
+            'KT': KMeansTree,
+            'RT': RuleTreeCluster
+        },
 }
+
+N_JOBS = [8]
 
 MAX_DEPTH_LIST = [2, 3, 4, 5, 6, None]
 MIN_SAMPLE_SPLIT_LIST = [2, 5, 10, 20, 0.01, 0.05, 0.1]
@@ -165,7 +197,7 @@ CCP_ALPHA_LIST = [0.0, 0.001, 0.01, 0.1]
 RANDOM_STATE_LIST = np.arange(0, 10).tolist()
 N_CLUSTERS_LIST = [2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 32, 64]
 BIC_EPS_LIST = [0.0, 0.001, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.7, 1.0]
-
+N_ESTIMATORS = [10, 100, 500, 1000]
 
 preprocessing_params = {
     'one_hot_encode_cat': [True, False],
@@ -202,9 +234,50 @@ methods_params_clf = {
         'min_impurity_decrease': [0.0],
         'class_weight': [None],
         'ccp_alpha': CCP_ALPHA_LIST,
+    },
+
+    'RF': {
+        'n_estimators': N_ESTIMATORS,
+        'criterion': ['gini'],
+        'max_depth': MAX_DEPTH_LIST,
+        'min_samples_split': [2],
+        'min_samples_leaf': [1],
+        'min_weight_fraction_leaf': [0.0],
+        'min_impurity_decrease': [0.0],
+        'max_leaf_nodes': MAX_LEAF_NODES,
+        'class_weight': [None],
+        'ccp_alpha': CCP_ALPHA_LIST,
+        'max_samples': [None],
+        'max_features': [None],
+        'bootstrap': [True],
+        'oob_score': [False],
+        'warm_start': [False],
+        'n_jobs': N_JOBS,
+        'random_state': RANDOM_STATE_LIST,
+    },
+
+    'RTF': {
+        'n_estimators': N_ESTIMATORS,
+        'criterion': ['gini'],
+        'splitter': ['best'],
+        'max_depth': MAX_DEPTH_LIST,
+        'min_samples_split': [2],
+        'min_samples_leaf': [1],
+        'min_weight_fraction_leaf': [0.0],
+        'min_impurity_decrease': [0.0],
+        'max_leaf_nodes': MAX_LEAF_NODES,
+        'class_weight': [None],
+        'ccp_alpha': CCP_ALPHA_LIST,
+        'prune_useless_leaves': [False, True],
+        'max_samples': [None],
+        'max_features': [None],
+        'bootstrap': [True],
+        'oob_score': [False],
+        'warm_start': [False],
+        'n_jobs': N_JOBS,
+        'random_state': RANDOM_STATE_LIST,
     }
 }
-
 
 methods_params_reg = {
     'DT': {
@@ -233,6 +306,46 @@ methods_params_reg = {
         'max_features': [None],
         'min_impurity_decrease': [0.0],
         'ccp_alpha': CCP_ALPHA_LIST,
+    },
+
+    'RF': {
+        'n_estimators': N_ESTIMATORS,
+        'criterion': ['squared_error'],
+        'max_depth': MAX_DEPTH_LIST,
+        'min_samples_split': [2],
+        'min_samples_leaf': [1],
+        'min_weight_fraction_leaf': [0.0],
+        'min_impurity_decrease': [0.0],
+        'max_leaf_nodes': MAX_LEAF_NODES,
+        'ccp_alpha': CCP_ALPHA_LIST,
+        'max_samples': [None],
+        'max_features': [None],
+        'bootstrap': [True],
+        'oob_score': [False],
+        'warm_start': [False],
+        'n_jobs': N_JOBS,
+        'random_state': RANDOM_STATE_LIST,
+    },
+
+    'RTF': {
+        'n_estimators': N_ESTIMATORS,
+        'criterion': ['squared_error'],
+        'splitter': ['best'],
+        'max_depth': MAX_DEPTH_LIST,
+        'min_samples_split': [2],
+        'min_samples_leaf': [1],
+        'min_weight_fraction_leaf': [0.0],
+        'min_impurity_decrease': [0.0],
+        'max_leaf_nodes': MAX_LEAF_NODES,
+        'ccp_alpha': CCP_ALPHA_LIST,
+        'prune_useless_leaves': [False, True],
+        'max_samples': [None],
+        'max_features': [None],
+        'bootstrap': [True],
+        'oob_score': [False],
+        'warm_start': [False],
+        'n_jobs': N_JOBS,
+        'random_state': RANDOM_STATE_LIST,
     }
 }
 

@@ -18,7 +18,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 from config import dataset_target_clf, task_method, TASK_CLF, DATASET_PATH, dataset_feat_drop_clf, \
     RESULTS_PATH, NBR_REPEATED_HOLDOUT, methods_params_clf, preprocessing_params, TASK_REG, dataset_target_reg, \
-    dataset_feat_drop_reg, methods_params_reg
+    dataset_feat_drop_reg, methods_params_reg, N_JOBS, TASK_CLC, TASK_CLR, methods_params_unsup
 from evaluation_utils import evaluate_clf, evaluate_expl, evaluate_reg
 from preprocessing_utils import remove_missing_values
 from ruletree.RuleTreeBase import RuleTreeBase
@@ -216,21 +216,21 @@ def generate_filename(dataset_name, model_name, hyper, preprocessing_hyper) -> s
     return md5(json.dumps(all_hyper, sort_keys=True).encode()).hexdigest() + ".zip"
 
 
-def benchmark_clf():
+def benchmark(task, methods_params):
     if not os.path.exists(RESULTS_PATH):
         os.mkdir(RESULTS_PATH)
-    if not os.path.exists(RESULTS_PATH + TASK_CLF):
-        os.mkdir(RESULTS_PATH + TASK_CLF)
+    if not os.path.exists(RESULTS_PATH + task):
+        os.mkdir(RESULTS_PATH + task)
 
-    basepath = RESULTS_PATH + TASK_CLF + "/"
+    basepath = RESULTS_PATH + task + "/"
 
-    for method_name, model in task_method[TASK_CLF].items():
+    for method_name, model in task_method[task].items():
         if not os.path.exists(basepath + method_name):
             os.mkdir(basepath + method_name)
 
         n_workers = psutil.cpu_count(logical=False)
-        if "n_jobs" in methods_params_clf[method_name]:
-            n_workers = 1
+        if "n_jobs" in methods_params[method_name]:
+            n_workers = int(n_workers//N_JOBS)
 
         table = ProgressTable(pbar_embedded=False,
                               pbar_show_progress=True,
@@ -244,7 +244,7 @@ def benchmark_clf():
             for dataset_name, target in dataset_target_clf.items():
                 print(f"===================================== dataset = {dataset_name}")
                 skip_count = 0
-                df = pd.read_csv(DATASET_PATH + TASK_CLF + "/" + dataset_name + ".csv", skipinitialspace=True)
+                df = pd.read_csv(DATASET_PATH + task + "/" + dataset_name + ".csv", skipinitialspace=True)
 
                 if not os.path.exists(basepath + method_name + "/" + dataset_name):
                     os.mkdir(basepath + method_name + "/" + dataset_name)
@@ -263,10 +263,10 @@ def benchmark_clf():
                                                                            max_n_vals_cat)
                     y = df[target]
 
-                    params_prodcut = itertools.product(*methods_params_clf[method_name].values())
+                    params_prodcut = itertools.product(*methods_params[method_name].values())
 
                     for params_vals in list(params_prodcut):
-                        params_dict = dict(zip(methods_params_clf[method_name].keys(), params_vals))
+                        params_dict = dict(zip(methods_params[method_name].keys(), params_vals))
 
                         filename = generate_filename(dataset_name,
                                                      method_name,
@@ -291,99 +291,25 @@ def benchmark_clf():
                             skip_count += 1
                             continue
 
-                        process = exe.submit(run_clf, df_X, y, model, params_dict, path, preprocessing_hyper)
-                        process.add_done_callback(lambda x: callback_done_clf(
-                            future=x, table=table,
-                            preprocessing_hyper=preprocessing_hyper,
-                            hyper=params_dict,
-                            dataset_name=dataset_name,
-                            model_name=method_name
-                        ))
+                        if task in [TASK_CLF, TASK_CLC]:
+                            process = exe.submit(run_clf, df_X, y, model, params_dict, path, preprocessing_hyper)
+                            process.add_done_callback(lambda x: callback_done_clf(
+                                future=x, table=table,
+                                preprocessing_hyper=preprocessing_hyper,
+                                hyper=params_dict,
+                                dataset_name=dataset_name,
+                                model_name=method_name
+                            ))
+                        elif task in [TASK_REG, TASK_CLR]:
+                            process = exe.submit(run_reg, df_X, y, model, params_dict, path, preprocessing_hyper)
+                            process.add_done_callback(lambda x: callback_done_reg(
+                                future=x, table=table,
+                                preprocessing_hyper=preprocessing_hyper,
+                                hyper=params_dict,
+                                dataset_name=dataset_name,
+                                model_name=method_name
+                            ))
 
-
-def benchmark_reg():
-    if not os.path.exists(RESULTS_PATH):
-        os.mkdir(RESULTS_PATH)
-    if not os.path.exists(RESULTS_PATH + TASK_REG):
-        os.mkdir(RESULTS_PATH + TASK_REG)
-
-    basepath = RESULTS_PATH + TASK_REG + "/"
-
-    for method_name, model in task_method[TASK_REG].items():
-        if not os.path.exists(basepath + method_name):
-            os.mkdir(basepath + method_name)
-
-        n_workers = psutil.cpu_count(logical=False)
-        if "n_jobs" in methods_params_reg[method_name]:
-            n_workers = 1
-
-        table = ProgressTable(pbar_embedded=False,
-                              pbar_show_progress=True,
-                              pbar_show_percents=True,
-                              pbar_show_throughput=False,
-                              num_decimal_places=3)
-
-        print(f"===================================== n_workers = {n_workers} =====================================")
-
-        with BoundedQueueProcessPoolExecutor(max_workers=n_workers) as exe:
-            for dataset_name, target in dataset_target_reg.items():
-                print(f"===================================== dataset = {dataset_name}")
-                skip_count = 0
-                df = pd.read_csv(DATASET_PATH + TASK_REG + "/" + dataset_name + ".csv", skipinitialspace=True)
-
-                if not os.path.exists(basepath + method_name + "/" + dataset_name):
-                    os.mkdir(basepath + method_name + "/" + dataset_name)
-
-                if len(dataset_feat_drop_reg[dataset_name]) > 0:
-                    df.drop(dataset_feat_drop_reg[dataset_name], axis=1, inplace=True)
-                df = remove_missing_values(df)
-
-                for one_hot_encode_cat, max_n_vals, max_n_vals_cat in itertools.product(*preprocessing_params.values()):
-                    if not issubclass(model, RuleTreeBase) and not one_hot_encode_cat:
-                        continue
-
-                    df_X, ct, cat_cols_names, cont_cols_names = preprocess(df.drop(columns=[target]).copy(),
-                                                                           one_hot_encode_cat,
-                                                                           max_n_vals,
-                                                                           max_n_vals_cat)
-                    y = df[target]
-
-                    params_prodcut = itertools.product(*methods_params_reg[method_name].values())
-
-                    for params_vals in list(params_prodcut):
-                        params_dict = dict(zip(methods_params_reg[method_name].keys(), params_vals))
-
-                        filename = generate_filename(dataset_name,
-                                                     method_name,
-                                                     params_dict,
-                                                     {"one_hot_encode_cat": one_hot_encode_cat,
-                                                      "max_n_vals": max_n_vals,
-                                                      "max_n_vals_cat": max_n_vals_cat})
-
-                        path = basepath + method_name + "/" + dataset_name + "/" + filename
-                        preprocessing_hyper = {"one_hot_encode_cat": one_hot_encode_cat,
-                                               "max_n_vals": max_n_vals,
-                                               "max_n_vals_cat": max_n_vals_cat}
-
-                        if os.path.exists(path):
-                            if skip_count == 10 ** 3:
-                                skip_count = 0
-                                with sem:
-                                    table["dataset"] = dataset_name
-                                    table["method"] = method_name
-                                    table["error"] = "skip"
-                                    table.next_row()
-                            skip_count += 1
-                            continue
-
-                        process = exe.submit(run_reg, df_X, y, model, params_dict, path, preprocessing_hyper)
-                        process.add_done_callback(lambda x: callback_done_reg(
-                            future=x, table=table,
-                            preprocessing_hyper=preprocessing_hyper,
-                            hyper=params_dict,
-                            dataset_name=dataset_name,
-                            model_name=method_name
-                        ))
 
 
 def preprocess(df: pd.DataFrame, one_hot_encode_cat: bool, max_n_vals, max_n_vals_cat):
@@ -421,15 +347,19 @@ def preprocess(df: pd.DataFrame, one_hot_encode_cat: bool, max_n_vals, max_n_val
 
 def main():
     if len(sys.argv) == 1:
-        print("Please provide at least one argument in ['CLF', 'REG', 'CLU']")
+        print("Please provide at least one argument in ['CLF', 'REG', 'CLU', 'CLC', 'CLR']")
 
     for arg in sys.argv[1:]:
-        if arg == "CLF":
-            benchmark_clf()
-        elif arg == "REG":
-            benchmark_reg()
+        if arg == TASK_CLF:
+            benchmark_clf(task=TASK_CLF, methods_params=methods_params_clf)
+        elif arg == TASK_REG:
+            benchmark_reg(task=TASK_REG)
         elif arg == "CLU":
             raise Exception("Not implemented yet")
+        elif arg == TASK_CLC:
+            benchmark_clf(task=TASK_CLC, methods_params=methods_params_unsup)
+        elif arg == TASK_CLR:
+            benchmark_reg(task=TASK_CLR)
         else:
             print(f"Unknown argument: {arg}")
 
