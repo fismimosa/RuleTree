@@ -19,7 +19,8 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 from config import dataset_target_clf, task_method, TASK_CLF, DATASET_PATH, dataset_feat_drop_clf, \
     RESULTS_PATH, NBR_REPEATED_HOLDOUT, methods_params_clf, preprocessing_params, TASK_REG, dataset_target_reg, \
-    dataset_feat_drop_reg, methods_params_reg, N_JOBS, TASK_CLC, TASK_CLR, methods_params_unsup, TASK_CLU
+    dataset_feat_drop_reg, methods_params_reg, N_JOBS, TASK_CLC, TASK_CLR, methods_params_unsup, TASK_CLU, \
+    dataset_target_clu, dataset_feat_drop_clu
 from evaluation_utils import evaluate_clf, evaluate_expl, evaluate_reg, evaluate_clu_unsup, evaluate_clu_sup
 from preprocessing_utils import remove_missing_values
 from ruletree.RuleTreeBase import RuleTreeBase
@@ -311,7 +312,7 @@ def generate_filename(dataset_name, model_name, hyper, preprocessing_hyper) -> s
     return md5(json.dumps(all_hyper, sort_keys=True).encode()).hexdigest() + ".zip"
 
 
-def benchmark(task, methods_params):
+def benchmark(task, methods_params, dataset_target, dataset_feat_drop):
     if not os.path.exists(RESULTS_PATH):
         os.mkdir(RESULTS_PATH)
     if not os.path.exists(RESULTS_PATH + task):
@@ -336,7 +337,7 @@ def benchmark(task, methods_params):
         print(f"===================================== n_workers = {n_workers} =====================================")
 
         with BoundedQueueProcessPoolExecutor(max_workers=n_workers) as exe:
-            for dataset_name, target in dataset_target_clf.items():
+            for dataset_name, target in dataset_target.items():
                 print(f"===================================== dataset = {dataset_name}")
                 skip_count = 0
                 df = pd.read_csv(DATASET_PATH + task + "/" + dataset_name + ".csv", skipinitialspace=True)
@@ -344,8 +345,8 @@ def benchmark(task, methods_params):
                 if not os.path.exists(basepath + method_name + "/" + dataset_name):
                     os.mkdir(basepath + method_name + "/" + dataset_name)
 
-                if len(dataset_feat_drop_clf[dataset_name]) > 0:
-                    df.drop(dataset_feat_drop_clf[dataset_name], axis=1, inplace=True)
+                if len(dataset_feat_drop[dataset_name]) > 0:
+                    df.drop(dataset_feat_drop[dataset_name], axis=1, inplace=True)
                 df = remove_missing_values(df)
 
                 for one_hot_encode_cat, max_n_vals, max_n_vals_cat in itertools.product(*preprocessing_params.values()):
@@ -465,15 +466,35 @@ def main():
 
     for arg in sys.argv[1:]:
         if arg == TASK_CLF:
-            benchmark(task=TASK_CLF, methods_params=methods_params_clf)
+            benchmark(task=TASK_CLF,
+                      methods_params=methods_params_clf,
+                      dataset_target=dataset_target_clf,
+                      dataset_feat_drop=dataset_feat_drop_clf)
+
         elif arg == TASK_REG:
-            benchmark(task=TASK_REG, methods_params=methods_params_reg)
+            benchmark(task=TASK_REG,
+                      methods_params=methods_params_reg,
+                      dataset_target=dataset_target_reg,
+                      dataset_feat_drop=dataset_feat_drop_reg)
+
         elif arg == "CLU":
-            benchmark(task=TASK_CLU, methods_params=methods_params_unsup)
+            benchmark(task=TASK_CLU,
+                      methods_params=methods_params_unsup,
+                      dataset_target=dataset_target_clu,
+                      dataset_feat_drop=dataset_feat_drop_clu)
+
         elif arg == TASK_CLC:
-            benchmark(task=TASK_CLC, methods_params=methods_params_unsup)
+            benchmark(task=TASK_CLC,
+                      methods_params=methods_params_unsup,
+                      dataset_target=dataset_target_clf,
+                      dataset_feat_drop=dataset_feat_drop_clf)
+
         elif arg == TASK_CLR:
-            benchmark(task=TASK_CLR, methods_params=methods_params_unsup)
+            benchmark(task=TASK_CLR,
+                      methods_params=methods_params_unsup,
+                      dataset_target=dataset_target_reg,
+                      dataset_feat_drop=dataset_feat_drop_reg)
+
         else:
             print(f"Unknown argument: {arg}")
 
