@@ -24,7 +24,6 @@ class RuleForestRegressor(BaggingRegressor, RuleTreeBase):
                  bootstrap=True,
                  oob_score=False,
                  warm_start=False,
-                 estimator=None,
                  n_jobs=None,
                  random_state=None,
                  verbose=0):
@@ -45,7 +44,6 @@ class RuleForestRegressor(BaggingRegressor, RuleTreeBase):
         self.bootstrap = bootstrap
         self.oob_score = oob_score
         self.warm_start = warm_start
-        self.estimator = estimator
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
