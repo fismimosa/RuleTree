@@ -3,6 +3,12 @@ import itertools
 import json
 import multiprocessing
 import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
@@ -170,6 +176,8 @@ def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
             res.update({f"test_{k}": v for k, v in
                         evaluate_clu_unsup(y_test, X, pairwise_distances(X, metric="euclidean")).items()})
 
+    except KeyboardInterrupt as e:
+        raise e
     except Exception as e:
         traceback.print_stack()
         return "fail", e
@@ -332,6 +340,8 @@ def benchmark(task, methods_params, dataset_target, dataset_feat_drop):
         n_workers = psutil.cpu_count(logical=False)
         if "n_jobs" in methods_params[method_name]:
             n_workers = int(n_workers // N_JOBS)
+        if task in [TASK_CLU, TASK_CLC, TASK_CLR]: # Problemi con la ram
+            n_workers = int(n_workers//3)
 
         table = ProgressTable(pbar_embedded=False,
                               pbar_show_progress=True,
