@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 from numpy import bool_
 from sklearn import tree
-from sklearn.base import ClusterMixin
+from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import LabelEncoder
 
-from ruletree import light_famd
+from ruletree import light_famd, RuleTreeClassifier, RuleTreeRegressor
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
 from ruletree.utils import bic
@@ -20,9 +20,9 @@ from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 class RuleTreeCluster(RuleTree, ClusterMixin):
     def __init__(self,
-                 n_components:int=2,
-                 clus_impurity:str='bic',
-                 bic_eps:float=.0,
+                 n_components: int = 2,
+                 clus_impurity: str = 'bic',
+                 bic_eps: float = .0,
                  max_leaf_nodes=float('inf'),
                  min_samples_split=2,
                  max_depth=float('inf'),
@@ -90,7 +90,6 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
 
         y_pca = principal_transform.fit_transform(X[idx])
 
-
         best_clf = None
         best_score = float('inf')
         for i in range(n_components_split):
@@ -121,7 +120,6 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
 
         return best_clf
 
-
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         return RuleTreeNode(
             node_id=node_id,
@@ -141,7 +139,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             self.__labels_obj_to_int(self.root, dict(zip(self.label_encoder.classes_,
                                                          self.label_encoder.transform(self.label_encoder.classes_))))
 
-    def __labels_obj_to_int(self, node:RuleTreeNode, map:dict):
+    def __labels_obj_to_int(self, node: RuleTreeNode, map: dict):
         node.prediction = map[node.prediction]
 
         if node.is_leaf():
@@ -151,6 +149,17 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         self.__labels_obj_to_int(node.node_r, map)
 
 
+class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+        return RuleTreeClassifier.prepare_node(self, y, idx, node_id)
+
+    def _post_fit_fix(self):
+        return
 
 
+class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+        return RuleTreeRegressor.prepare_node(self, y, idx, node_id)
 
+    def _post_fit_fix(self):
+        return

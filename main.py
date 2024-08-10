@@ -16,7 +16,8 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from progress_table import ProgressTable
 
-from ruletree import RuleTree
+from competitors.kmeanstree import KMeansTree
+from ruletree import RuleTree, RuleTreeClusterClassifier
 from ruletree import RuleTreeClassifier
 from ruletree import RuleTreeCluster
 from ruletree import RuleTreeRegressor
@@ -39,7 +40,8 @@ def test_clf(max_depth=4):
         try:
             df = pd.read_csv(dataset)
             ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
-                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
+                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0,
+                                   n_jobs=1)
 
             clf_rule = RuleTreeClassifier(max_depth=max_depth)
             clf_sklearn = DecisionTreeClassifier(max_depth=max_depth)
@@ -57,20 +59,20 @@ def test_clf(max_depth=4):
                                                                    stratify=y)
 
             res = dict()
-            for model, model_name in zip([#clf_rule,
-                                          #clf_sklearn,
-                                          #clf_forest_rule,
-                                          #clf_forest_sklearn,
-                                          clf_adaboost_rule,
-                                          clf_adaboost_sklearn
-                                          ],
-                                         [#"rule",
-                                          #"dt",
-                                          #"forest_rule",
-                                          #"forest_dt",
-                                          "adaboost_rule",
-                                          "adaboost_sklearn"
-                                          ]):
+            for model, model_name in zip([  #clf_rule,
+                #clf_sklearn,
+                #clf_forest_rule,
+                #clf_forest_sklearn,
+                clf_adaboost_rule,
+                clf_adaboost_sklearn
+            ],
+                    [  #"rule",
+                        #"dt",
+                        #"forest_rule",
+                        #"forest_dt",
+                        "adaboost_rule",
+                        "adaboost_sklearn"
+                    ]):
                 start = time()
                 if "rule" not in model_name:
                     model.fit(X_train_onehot, y_train)
@@ -127,7 +129,8 @@ def test_reg(max_depth=4):
         try:
             df = pd.read_csv(dataset)
             ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
-                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
+                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0,
+                                   n_jobs=1)
 
             clf_rule = RuleTreeRegressor(max_depth=max_depth)
             clf_forest_rule = RuleForestRegressor(max_depth=max_depth, n_estimators=100, n_jobs=1)
@@ -186,7 +189,6 @@ def test_reg(max_depth=4):
         table.next_row()
 
 
-
 def test_clu(max_depth=4):
     datasets = glob("datasets/CLU/*.csv")
     table = ProgressTable(pbar_embedded=False, pbar_show_progress=True, pbar_show_percents=True,
@@ -199,10 +201,11 @@ def test_clu(max_depth=4):
         try:
             df = pd.read_csv(dataset)
             ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
-                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
+                                   remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0,
+                                   n_jobs=1)
 
             clf_rule = RuleTreeCluster(max_depth=max_depth, prune_useless_leaves=True)
-            clf_sklearn = KMeans(n_clusters=2**max_depth)
+            clf_sklearn = KMeans(n_clusters=2 ** max_depth)
 
             df_onehot = pd.DataFrame(ct.fit_transform(df.iloc[:, :-1]), columns=ct.get_feature_names_out())
             X_onehot = df_onehot.to_numpy()
@@ -210,7 +213,6 @@ def test_clu(max_depth=4):
             start_rule = time()
             X = df.drop(columns=[dataset_target_clu[dataset_name]]).values
             y = df[dataset_target_clu[dataset_name]].values
-
 
             clf_rule.fit(X_onehot)
             end_rule = time()
@@ -239,6 +241,7 @@ def test_clu(max_depth=4):
 
         table.next_row()
 
+
 def test_clf_iris():
     df = pd.read_csv("datasets/CLF/iris.csv")
     X = df.iloc[:, :-1].values
@@ -255,37 +258,26 @@ def test_clf_iris():
 
     f1_rule_load = f1_score(y_test, clf_rule_load.predict(X_test), average='weighted')
 
-
     print(f"F1: {f1_rule}")
     print(f"F1: {f1_rule_load}")
 
 
-def test_ale_1():
-    np.random.seed(42)
-    n_samples = 1000
+def test_clc_iris():
+    df = pd.read_csv("datasets/CLF/home.csv")
+    X = df.iloc[:, :-1].values
+    y = df.iloc[:, -1].values
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
+    clf_rule = RuleTreeClusterClassifier()
+    clf_comp = KMeansTree()
 
-    categories = ['a', 'b', 'c', 'd', 'e']
+    clf_rule.fit(X_train, y_train)
+    clf_comp.fit(X_train, y_train)
 
-    X = np.random.choice(categories, size=(n_samples, 4))
+    f1_rule = f1_score(y_test, clf_rule.predict(X_test), average='weighted')
+    f1_comp = f1_score(y_test, clf_rule.predict(X_test), average='weighted')
 
-    y = np.random.choice([0, 1, 2], size=n_samples)
-
-    df = pd.DataFrame(X, columns=['Feature1', 'Feature2', 'Feature3', 'Feature4'])
-    df['Feture5_continuous'] = [indx * 0.3 / 4 for indx in range(len(X))]
-    df['Target'] = y
-
-    # Split into train and test sets
-    X = np.array(df[['Feature1', 'Feature2', 'Feature3', 'Feature4']].values)
-    y = np.array(df['Target'])
-
-    dictz = {0: 'A', 1: 'B', 2: 'C'}
-
-    rt = RuleTreeAdaBoostClassifier()
-    rt.fit(X, y)
-    preds = rt.predict(X)
-    print(np.unique(preds, return_counts=True))
-
-    print(classification_report(y, preds))
+    print(f"F1: {f1_rule}")
+    print(f"F1: {f1_comp}")
 
 
 if __name__ == "__main__":
@@ -294,4 +286,4 @@ if __name__ == "__main__":
     #test_clu()
 
     #test_clf_iris()
-    test_ale_1()
+    test_clc_iris()
