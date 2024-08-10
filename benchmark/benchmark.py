@@ -65,14 +65,17 @@ def run_clf(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
 
     try:
         for holdout_idx, (train_index, valid_index) in enumerate(skf.split(X_train, y_train)):
-            X_train_holdout, X_valid = X[train_index], X[valid_index]
-            y_train_holdout, y_valid = y[train_index], y[valid_index]
+            X_train_holdout, X_valid = X_train[train_index], X_train[valid_index]
+            y_train_holdout, y_valid = y_train[train_index], y_train[valid_index]
 
             model_inst = model(**hyper)
             model_inst.fit(X_train_holdout, y_train_holdout)
 
             y_pred = model_inst.predict(X_valid)
             y_pred_proba = model_inst.predict_proba(X_valid)
+
+            if len(np.unique(y_valid)) != y_pred_proba.shape[1]:
+                y_pred_proba = None
 
             res += [{f"validation_{k}": v for k, v in evaluate_clf(y_valid, y_pred, y_pred_proba).items()}]
             res[-1].update({f"validation_{k}": v for k, v in evaluate_expl(model_inst).items()})
@@ -117,8 +120,8 @@ def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
 
     try:
         for holdout_idx, (train_index, valid_index) in enumerate(kf.split(X_train, y_train)):
-            X_train_holdout, X_valid = X[train_index], X[valid_index]
-            y_train_holdout, y_valid = y[train_index], y[valid_index]
+            X_train_holdout, X_valid = X_train[train_index], X_train[valid_index]
+            y_train_holdout, y_valid = y_train[train_index], y_train[valid_index]
 
             model_inst = model(**hyper)
             model_inst.fit(X_train_holdout, y_train_holdout)

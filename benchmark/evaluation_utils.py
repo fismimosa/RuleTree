@@ -29,22 +29,33 @@ def evaluate_clf(y_test, y_pred, y_pred_proba):
         'recall_micro': skm.recall_score(y_test, y_pred, average='micro'),
         'recall_macro': skm.recall_score(y_test, y_pred, average='macro'),
         'recall_weighted': skm.recall_score(y_test, y_pred, average='weighted'),
-        'roc_macro': skm.roc_auc_score(y_test, y_pred_proba[:, 1], average='macro') if binary else skm.roc_auc_score(
-            y_test, y_pred_proba, average='macro', multi_class='ovr'),
-        'roc_micro': skm.roc_auc_score(y_test, y_pred_proba[:, 1], average='micro') if binary else skm.roc_auc_score(
-            y_test, y_pred_proba, average='micro', multi_class='ovr'),
-        'roc_weighted': skm.roc_auc_score(y_test, y_pred_proba[:, 1], average='weighted')
-        if binary else skm.roc_auc_score(y_test, y_pred_proba, average='weighted', multi_class='ovr'),
-        'average_precision_macro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='macro',
-                                                               pos_label=class_values[1])
-        if binary else skm.average_precision_score(y_test, y_pred_proba, average='macro'),
-        'average_precision_micro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='micro',
-                                                               pos_label=class_values[1])
-        if binary else skm.average_precision_score(y_test, y_pred_proba, average='micro'),
-        'average_precision_weighted': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='weighted',
-                                                                  pos_label=class_values[1])
-        if binary else skm.average_precision_score(y_test, y_pred_proba, average='weighted'),
+
     }
+
+    if y_pred_proba is not None:
+        res.update(
+            {
+                'roc_macro': skm.roc_auc_score(y_test, y_pred_proba[:, 1],
+                                               average='macro') if binary else skm.roc_auc_score(
+                    y_test, y_pred_proba, average='macro', multi_class='ovr'),
+                'roc_micro': skm.roc_auc_score(y_test, y_pred_proba[:, 1],
+                                               average='micro') if binary else skm.roc_auc_score(
+                    y_test, y_pred_proba, average='micro', multi_class='ovr'),
+                'roc_weighted': skm.roc_auc_score(y_test, y_pred_proba[:, 1], average='weighted')
+                if binary else skm.roc_auc_score(y_test, y_pred_proba, average='weighted', multi_class='ovr'),
+                'average_precision_macro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='macro',
+                                                                       pos_label=class_values[1])
+                if binary else skm.average_precision_score(y_test, y_pred_proba, average='macro'),
+                'average_precision_micro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='micro',
+                                                                       pos_label=class_values[1])
+                if binary else skm.average_precision_score(y_test, y_pred_proba, average='micro'),
+                'average_precision_weighted': skm.average_precision_score(y_test, y_pred_proba[:, 1],
+                                                                          average='weighted',
+                                                                          pos_label=class_values[1])
+                if binary else skm.average_precision_score(y_test, y_pred_proba, average='weighted'),
+            }
+        )
+
     return res
 
 

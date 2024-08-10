@@ -33,7 +33,7 @@ def test_clf(max_depth=4):
                           pbar_show_throughput=False, num_decimal_places=3)
 
     for dataset in datasets:
-        dataset_name = dataset.split("/")[-1][:-4]
+        dataset_name = dataset.split("/")[-1].split("\\")[-1][:-4]
         table["dataset"] = dataset_name
 
         try:
@@ -57,17 +57,17 @@ def test_clf(max_depth=4):
                                                                    stratify=y)
 
             res = dict()
-            for model, model_name in zip([clf_rule,
-                                          clf_sklearn,
-                                          clf_forest_rule,
-                                          clf_forest_sklearn,
+            for model, model_name in zip([#clf_rule,
+                                          #clf_sklearn,
+                                          #clf_forest_rule,
+                                          #clf_forest_sklearn,
                                           clf_adaboost_rule,
                                           clf_adaboost_sklearn
                                           ],
-                                         ["rule",
-                                          "dt",
-                                          "forest_rule",
-                                          "forest_dt",
+                                         [#"rule",
+                                          #"dt",
+                                          #"forest_rule",
+                                          #"forest_dt",
                                           "adaboost_rule",
                                           "adaboost_sklearn"
                                           ]):
@@ -84,8 +84,10 @@ def test_clf(max_depth=4):
 
                 if "rule" not in model_name:
                     f1 = f1_score(y_test, model.predict(X_test_onehot), average='weighted')
+                    print(classification_report(y_test, model.predict(X_test_onehot)))
                 else:
                     f1 = f1_score(y_test, model.predict(X_test), average='weighted')
+                    print(classification_report(y_test, model.predict(X_test)))
 
                 res[f"{model_name}_time"] = stop - start
                 res[f"{model_name}_f1"] = f1
@@ -119,7 +121,7 @@ def test_reg(max_depth=4):
                           pbar_show_throughput=False, num_decimal_places=3)
 
     for dataset in datasets:
-        dataset_name = dataset.split("/")[-1][:-4]
+        dataset_name = dataset.split("/")[-1].split("\\")[-1][:-4]
         table["dataset"] = dataset_name
 
         try:
@@ -191,7 +193,7 @@ def test_clu(max_depth=4):
                           pbar_show_throughput=False, num_decimal_places=3)
 
     for dataset in datasets:
-        dataset_name = dataset.split("/")[-1][:-4]
+        dataset_name = dataset.split("/")[-1].split("\\")[-1][:-4]
         table["dataset"] = dataset_name
 
         try:
@@ -258,12 +260,38 @@ def test_clf_iris():
     print(f"F1: {f1_rule_load}")
 
 
+def test_ale_1():
+    np.random.seed(42)
+    n_samples = 1000
 
+    categories = ['a', 'b', 'c', 'd', 'e']
+
+    X = np.random.choice(categories, size=(n_samples, 4))
+
+    y = np.random.choice([0, 1, 2], size=n_samples)
+
+    df = pd.DataFrame(X, columns=['Feature1', 'Feature2', 'Feature3', 'Feature4'])
+    df['Feture5_continuous'] = [indx * 0.3 / 4 for indx in range(len(X))]
+    df['Target'] = y
+
+    # Split into train and test sets
+    X = np.array(df[['Feature1', 'Feature2', 'Feature3', 'Feature4']].values)
+    y = np.array(df['Target'])
+
+    dictz = {0: 'A', 1: 'B', 2: 'C'}
+
+    rt = RuleTreeAdaBoostClassifier()
+    rt.fit(X, y)
+    preds = rt.predict(X)
+    print(np.unique(preds, return_counts=True))
+
+    print(classification_report(y, preds))
 
 
 if __name__ == "__main__":
-    test_clf()
+    #test_clf()
     #test_reg()
     #test_clu()
 
     #test_clf_iris()
+    test_ale_1()
