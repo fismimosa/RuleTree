@@ -17,6 +17,7 @@ from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import StratifiedKFold, train_test_split, KFold
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from threadpoolctl import threadpool_limits
 
 from config import dataset_target_clf, task_method, TASK_CLF, DATASET_PATH, dataset_feat_drop_clf, \
     RESULTS_PATH, NBR_REPEATED_HOLDOUT, methods_params_clf, preprocessing_params, TASK_REG, dataset_target_reg, \
@@ -224,7 +225,8 @@ def run_clu(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict, path, preproce
     for k, v in preprocessing_hyper.items():
         res[k] = v
 
-    pd.DataFrame.from_dict([res]).to_csv(path, index=None)
+    res = pd.DataFrame.from_dict([res])
+    res.to_csv(path, index=None)
 
     return "ok", res
 
@@ -288,7 +290,7 @@ def callback_done_clu(future,
     res_code, res = future.result()
 
     with sem:
-        table["dataset"] = dataset_name
+        table["dataset_name"] = dataset_name
         table["method"] = model_name
         table.update_from_dict({k[:7]: v for k, v in preprocessing_hyper.items()})
         table.update_from_dict({k[:7]: v for k, v in hyper.items()})
@@ -339,108 +341,110 @@ def benchmark(task, methods_params, dataset_target, dataset_feat_drop):
 
         print(f"===================================== n_workers = {n_workers} =====================================")
 
-        with BoundedQueueProcessPoolExecutor(max_workers=n_workers) as exe:
-            for dataset_name, target in dataset_target.items():
-                print(f"===================================== dataset = {dataset_name}")
-                skip_count = 0
-                df = pd.read_csv(DATASET_PATH + task + "/" + dataset_name + ".csv", skipinitialspace=True)
+        with (BoundedQueueProcessPoolExecutor(max_workers=n_workers) as exe):
+            with threadpool_limits(limits=1):
+                for dataset_name, target in dataset_target.items():
+                    print(f"===================================== dataset = {dataset_name}")
+                    skip_count = 0
+                    df = pd.read_csv(DATASET_PATH + task + "/" + dataset_name + ".csv", skipinitialspace=True)
 
-                if not os.path.exists(basepath + method_name + "/" + dataset_name):
-                    os.mkdir(basepath + method_name + "/" + dataset_name)
+                    if not os.path.exists(basepath + method_name + "/" + dataset_name):
+                        os.mkdir(basepath + method_name + "/" + dataset_name)
 
-                if len(dataset_feat_drop[dataset_name]) > 0:
-                    df.drop(dataset_feat_drop[dataset_name], axis=1, inplace=True)
-                df = remove_missing_values(df)
+                    if len(dataset_feat_drop[dataset_name]) > 0:
+                        df.drop(dataset_feat_drop[dataset_name], axis=1, inplace=True)
+                    df = remove_missing_values(df)
 
-                for one_hot_encode_cat, max_n_vals, max_n_vals_cat in itertools.product(*preprocessing_params.values()):
-                    if not issubclass(model, RuleTreeBase) and not one_hot_encode_cat:
-                        continue
-
-                    df_X, ct, cat_cols_names, cont_cols_names = preprocess(df.drop(columns=[target]).copy(),
-                                                                           one_hot_encode_cat,
-                                                                           max_n_vals,
-                                                                           max_n_vals_cat)
-                    y = df[target]
-
-                    params_prodcut = itertools.product(*methods_params[method_name].values())
-
-                    for params_vals in list(params_prodcut):
-                        params_dict = dict(zip(methods_params[method_name].keys(), params_vals))
-
-                        filename = generate_filename(dataset_name,
-                                                     method_name,
-                                                     params_dict,
-                                                     {"one_hot_encode_cat": one_hot_encode_cat,
-                                                      "max_n_vals": max_n_vals,
-                                                      "max_n_vals_cat": max_n_vals_cat})
-
-                        path = basepath + method_name + "/" + dataset_name + "/" + filename
-                        preprocessing_hyper = {"one_hot_encode_cat": one_hot_encode_cat,
-                                               "max_n_vals": max_n_vals,
-                                               "max_n_vals_cat": max_n_vals_cat}
-
-                        if os.path.normpath(path) in exp_to_skip:
-                            if skip_count == 10**4:
-                                skip_count = 0
-                                with sem:
-                                    table["dataset"] = dataset_name
-                                    table["method"] = method_name
-                                    table["error"] = "skip10^4"
-                                    table.next_row()
-                            skip_count += 1
+                    for one_hot_encode_cat, max_n_vals, max_n_vals_cat in \
+                        itertools.product(*preprocessing_params.values()):
+                        if not issubclass(model, RuleTreeBase) and not one_hot_encode_cat:
                             continue
 
-                        if task in [TASK_CLF, TASK_CLC]:
-                            process = exe.submit(run_clf,
-                                                 df_X,
-                                                 y,
-                                                 model,
-                                                 params_dict,
-                                                 path,
-                                                 preprocessing_hyper,
-                                                 task == TASK_CLC)
-                            process.add_done_callback(lambda x: callback_done_clf(
-                                future=x, table=table,
-                                preprocessing_hyper=preprocessing_hyper,
-                                hyper=params_dict,
-                                dataset_name=dataset_name,
-                                model_name=method_name
-                            ))
-                        elif task in [TASK_REG, TASK_CLR]:
-                            if TASK_CLR == task:
-                                raise Exception(
-                                    "Unimplemented task - Parlare con Rick di metriche in caso di regressione")
+                        df_X, ct, cat_cols_names, cont_cols_names = preprocess(df.drop(columns=[target]).copy(),
+                                                                               one_hot_encode_cat,
+                                                                               max_n_vals,
+                                                                               max_n_vals_cat)
+                        y = df[target]
 
-                            process = exe.submit(run_reg,
-                                                 df_X,
-                                                 y,
-                                                 model,
-                                                 params_dict,
-                                                 path,
-                                                 preprocessing_hyper,
-                                                 task == TASK_CLR)
-                            process.add_done_callback(lambda x: callback_done_reg(
-                                future=x, table=table,
-                                preprocessing_hyper=preprocessing_hyper,
-                                hyper=params_dict,
-                                dataset_name=dataset_name,
-                                model_name=method_name
-                            ))
-                        elif task == TASK_CLU:
-                            process = exe.submit(run_clu,
-                                                 df_X,
-                                                 y,
-                                                 model,
-                                                 params_dict,
-                                                 path,
-                                                 preprocessing_hyper)
-                            process.add_done_callback(lambda x: callback_done_clu(
-                                future=x, table=table,
-                                preprocessing_hyper=preprocessing_hyper,
-                                hyper=params_dict,
-                                dataset_name=dataset_name,
-                                model_name=method_name
-                            ))
+                        params_prodcut = itertools.product(*methods_params[method_name].values())
+
+                        for params_vals in list(params_prodcut):
+                            params_dict = dict(zip(methods_params[method_name].keys(), params_vals))
+
+                            filename = generate_filename(dataset_name,
+                                                         method_name,
+                                                         params_dict,
+                                                         {"one_hot_encode_cat": one_hot_encode_cat,
+                                                          "max_n_vals": max_n_vals,
+                                                          "max_n_vals_cat": max_n_vals_cat})
+
+                            path = basepath + method_name + "/" + dataset_name + "/" + filename
+                            preprocessing_hyper = {"one_hot_encode_cat": one_hot_encode_cat,
+                                                   "max_n_vals": max_n_vals,
+                                                   "max_n_vals_cat": max_n_vals_cat}
+
+                            if os.path.normpath(path) in exp_to_skip:
+                                if skip_count == 10**4:
+                                    skip_count = 0
+                                    with sem:
+                                        table["dataset"] = dataset_name
+                                        table["method"] = method_name
+                                        table["error"] = "skip10^4"
+                                        table.next_row()
+                                skip_count += 1
+                                continue
+
+                            if task in [TASK_CLF, TASK_CLC]:
+                                process = exe.submit(run_clf,
+                                                     df_X,
+                                                     y,
+                                                     model,
+                                                     params_dict,
+                                                     path,
+                                                     preprocessing_hyper,
+                                                     task == TASK_CLC)
+                                process.add_done_callback(lambda x: callback_done_clf(
+                                    future=x, table=table,
+                                    preprocessing_hyper=preprocessing_hyper,
+                                    hyper=params_dict,
+                                    dataset_name=dataset_name,
+                                    model_name=method_name
+                                ))
+                            elif task in [TASK_REG, TASK_CLR]:
+                                if TASK_CLR == task:
+                                    raise Exception(
+                                        "Unimplemented task - Parlare con Rick di metriche in caso di regressione")
+
+                                process = exe.submit(run_reg,
+                                                     df_X,
+                                                     y,
+                                                     model,
+                                                     params_dict,
+                                                     path,
+                                                     preprocessing_hyper,
+                                                     task == TASK_CLR)
+                                process.add_done_callback(lambda x: callback_done_reg(
+                                    future=x, table=table,
+                                    preprocessing_hyper=preprocessing_hyper,
+                                    hyper=params_dict,
+                                    dataset_name=dataset_name,
+                                    model_name=method_name
+                                ))
+                            elif task == TASK_CLU:
+                                process = exe.submit(run_clu,
+                                                     df_X,
+                                                     y,
+                                                     model,
+                                                     params_dict,
+                                                     path,
+                                                     preprocessing_hyper)
+                                process.add_done_callback(lambda x: callback_done_clu(
+                                    future=x, table=table,
+                                    preprocessing_hyper=preprocessing_hyper,
+                                    hyper=params_dict,
+                                    dataset_name=dataset_name,
+                                    model_name=method_name
+                                ))
 
 
 def preprocess(df: pd.DataFrame, one_hot_encode_cat: bool, max_n_vals, max_n_vals_cat):
