@@ -1,19 +1,17 @@
 from typing import Self
-
 from sklearn import tree
-
 
 class RuleTreeNode:
 
     def __init__(self,
-                 node_id:str,
-                 prediction:int|str|float,
-                 prediction_probability:float,
-                 parent:Self|None,
-                 clf:tree=None,
-                 node_l:Self=None,
-                 node_r:Self=None,
-                 samples:int=None,
+                 node_id: str,
+                 prediction: int | str | float,
+                 prediction_probability: float,
+                 parent: Self | None,
+                 clf: tree = None,
+                 node_l: Self = None,
+                 node_r: Self = None,
+                 samples: int = None,
                  **kwargs):
         self.node_id = node_id
         self.prediction = prediction
@@ -34,7 +32,7 @@ class RuleTreeNode:
         self.node_l, self.node_r = None, None
         return self
 
-    def simplify(self)->Self:
+    def simplify(self) -> Self:
         self._simplify()
         return self
 
@@ -57,7 +55,7 @@ class RuleTreeNode:
             return self.node_l.get_possible_outputs() | self.node_r.get_possible_outputs() | {self.prediction}
 
     def get_depth(self):
-        return len(self.node_id)-1
+        return len(self.node_id) - 1
 
     def get_rule(self):
         if self.is_leaf():
@@ -86,7 +84,7 @@ class RuleTreeNode:
         if self.is_leaf():
             vector[0][node_index] = -1
             vector[1][node_index] = self.prediction
-        else:            
+        else:
             feat = self.clf.feature_original[0]
             thr = self.clf.threshold_original[0]
          
@@ -99,8 +97,8 @@ class RuleTreeNode:
             index[node_l.node_id] = 2 * node_index + 1
             index[node_r.node_id] = 2 * node_index + 2
             
-            parent[2*index[self.node_id] + 1] = index[self.node_id]
-            parent[2*index[self.node_id] + 2] = index[self.node_id]
+            parent[2 * index[self.node_id] + 1] = index[self.node_id]
+            parent[2 * index[self.node_id] + 2] = index[self.node_id]
 
             node_l.encode_node(index, parent, vector, clf, 2 * node_index + 1)
             node_r.encode_node(index, parent, vector, clf, 2 * node_index + 2)
