@@ -10,7 +10,7 @@ from sklearn.base import ClassifierMixin
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
 from ruletree.utils.MyDecisionTreeClassifier import MyDecisionTreeClassifier
-from ruletree.utils.data_utils import calculate_mode, get_info_gain
+from ruletree.utils.data_utils import calculate_mode, get_info_gain, simplify_decode
 
 
 class RuleTreeClassifier(RuleTree, ClassifierMixin):
@@ -128,6 +128,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 set_node_children(idx_to_node, index, vector)
                 
         rule_tree = RuleTreeClassifier()
+        simplify_decode(idx_to_node[0])
         rule_tree.root = idx_to_node[0]
         return rule_tree
 
