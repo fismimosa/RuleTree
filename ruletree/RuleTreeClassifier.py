@@ -97,3 +97,37 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
     def fit(self, X: np.array, y: np.array=None, sample_weight=None, **kwargs):
         super().fit(X, y, sample_weight=sample_weight, **kwargs)
 
+    
+    @classmethod
+    def decode_ruletree(cls, vector, n_features_in_, n_classes_, n_outputs_, 
+                        numerical_idxs=None, categorical_idxs=None, criterion=None):
+        
+        idx_to_node = super().decode_ruletree(vector, n_features_in_, n_classes_, n_outputs_, 
+                                              numerical_idxs, categorical_idxs, criterion)
+        
+        for index in range(len(vector[0])):
+            if vector[0][index] == -1:
+                idx_to_node[index].prediction = vector[1][index]
+            else:
+                clf = MyDecisionTreeClassifier(
+                                        criterion=criterion)
+                                   
+            
+                if numerical_idxs is not None:
+                   clf.numerical = numerical_idxs
+        
+                if categorical_idxs is not None:
+                   clf.categorical = categorical_idxs
+                            
+                if isinstance(vector[1][index], str):
+                    configure_cat_split(clf, vector[0][index], vector[1][index])
+                else:
+                    configure_non_cat_split(clf, vector, index, 
+                                               n_features_in_, n_classes_, n_outputs_)
+                idx_to_node[index].clf = clf
+                set_node_children(idx_to_node, index, vector)
+                
+        rule_tree = RuleTreeClassifier()
+        rule_tree.root = idx_to_node[0]
+        return rule_tree
+
