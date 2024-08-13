@@ -65,7 +65,19 @@ def set_node_children(idx_to_node, index, vector):
 
     idx_to_node[index].node_l = idx_to_node[left_child_idx]
     idx_to_node[index].node_r = idx_to_node[right_child_idx]
-    
+
+
+def simplify_decode(node):
+     if node.is_leaf():
+         return {node.prediction}
+     else:
+         all_pred = simplify_decode(node.node_l) | simplify_decode(node.node_r)
+         if len(all_pred) == 1:
+             node.prediction = node.node_l.prediction
+             node.make_leaf()
+             return {node.prediction}
+         else:
+             return all_pred
     
     
     
