@@ -194,7 +194,22 @@ class RuleTree(RuleTreeBase, ABC):
                   f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
             cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
 
-    
+    @classmethod
+    def decode_ruletree(cls, vector, n_features_in_, n_classes_, n_outputs_, 
+                        numerical_idxs=None, categorical_idxs=None, criterion = None):
+
+        #need to check if n_classes_ is actually necessary
+        
+        n_classes_ = np.array([n_classes_], dtype=np.intp)
+        
+        idx_to_node = {index: RuleTreeNode(node_id=None, prediction=None, prediction_probability=None, parent=-1) 
+                       for index in range(len(vector[0]))}
+        
+        idx_to_node[0].node_id = 'R'
+        idx_to_node[0].parent = -1
+        
+        return idx_to_node
+                            
     def encode_ruletree(self):
         nodes = (2 ** (self.max_depth + 1)) - 1
         vector = np.zeros((2, nodes), dtype=object)
