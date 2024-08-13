@@ -193,3 +193,39 @@ class RuleTree(RuleTreeBase, ABC):
             print(f"{indentation}|--- {names(feature_idx)} {not_comparison} "
                   f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
             cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+
+    
+    def encode_ruletree(self):
+        nodes = (2 ** (self.max_depth + 1)) - 1
+        vector = np.zeros((2, nodes), dtype=object)
+        
+        index = {'R': 0}  # root index
+        parent = {}
+        
+        if not hasattr(self, 'root'):
+            raise ValueError('This RuleTree instance must be fitted before encoding.')
+        else:
+            root_node = self.root
+        root_node.encode_node(index, parent, vector, self)
+        
+        
+        for node in range(vector.shape[1]):
+            if vector[0][node] == -1:
+                # children update
+                if ((2*node + 1) < (vector.shape[1] - 1)) and ((2*node + 2) < vector.shape[1]):
+                    vector[0][2*node + 1] = -1
+                    vector[1][2*node + 1] = vector[1][node]
+                    vector[0][2*node + 2] = -1
+                    vector[1][2*node + 2] = vector[1][node]
+
+                    parent[2*node + 1] = node
+                    parent[2*node + 2] = node
+
+                    # update the node itself
+                    vector[0][node] = vector[0][parent[node]]
+                    vector[1][node] = vector[1][parent[node]]
+                    
+        self.vector = vector
+        
+        return vector
+
