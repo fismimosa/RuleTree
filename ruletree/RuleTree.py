@@ -19,7 +19,7 @@ class RuleTree(RuleTreeBase, ABC):
                  prune_useless_leaves,
                  random_state,
                  ):
-        self.max_leaf_nodes = max_leaf_nodes
+        self.max_leaf_nodes = float("inf") if max_leaf_nodes is None else max_leaf_nodes
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         self.prune_useless_leaves = prune_useless_leaves
