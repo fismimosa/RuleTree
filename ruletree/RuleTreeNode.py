@@ -1,4 +1,6 @@
 from typing import Self
+
+import numpy as np
 from sklearn import tree
 
 class RuleTreeNode:
@@ -6,7 +8,7 @@ class RuleTreeNode:
     def __init__(self,
                  node_id: str,
                  prediction: int | str | float,
-                 prediction_probability: float,
+                 prediction_probability: np.ndarray | float,
                  parent: Self | None,
                  clf: tree = None,
                  node_l: Self = None,
