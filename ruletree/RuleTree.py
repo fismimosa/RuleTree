@@ -243,4 +243,3 @@ class RuleTree(RuleTreeBase, ABC):
         self.vector = vector
         
         return vector
-
