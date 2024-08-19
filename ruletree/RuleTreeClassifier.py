@@ -84,7 +84,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         prediction = calculate_mode(y[idx])
-        predict_proba = sum(np.where(y[idx] == prediction, 1, 0)) / len(y[idx])
+        predict_proba = np.zeros((len(self.classes_), ))
+        for i, classe in enumerate(self.classes_):
+            predict_proba[i] = sum(np.where(y[idx] == classe, 1, 0)) / len(y[idx])
 
 
         return RuleTreeNode(
@@ -97,10 +99,42 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_r=None,
             samples=len(y[idx]),
         )
-    
+
     def fit(self, X: np.array, y: np.array=None, sample_weight=None, **kwargs):
         super().fit(X, y, sample_weight=sample_weight, **kwargs)
 
+    def predict_proba(self, X: np.ndarray):
+        labels, leaves, proba = self._predict(X, self.root)
+
+        return proba
+
+
+    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
+        if current_node.is_leaf():
+            n = len(X)
+            return np.array([current_node.prediction] * n), \
+                np.array([current_node.node_id] * n), \
+                np.zeros((len(X), len(self.classes_)), dtype=float) + current_node.prediction_probability
+
+        else:
+            labels, leaves, proba = (
+                np.full(len(X), fill_value=-1,
+                        dtype=object if type(current_node.prediction) is str else type(current_node.prediction)),
+                np.zeros(len(X), dtype=object),
+                np.ones((len(X), len(self.classes_)), dtype=float) * -1
+            )
+
+            clf = current_node.clf
+            labels_clf = clf.apply(X)
+            X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
+            if X_l.shape[0] != 0:
+                labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = self._predict(X_l,
+                                                                                                         current_node.node_l)
+            if X_r.shape[0] != 0:
+                labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = self._predict(X_r,
+                                                                                                         current_node.node_r)
+
+            return labels, leaves, proba
     
     @classmethod
     def decode_ruletree(cls, vector, n_features_in_, n_classes_, n_outputs_, 
