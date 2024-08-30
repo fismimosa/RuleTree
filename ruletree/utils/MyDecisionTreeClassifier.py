@@ -7,7 +7,7 @@ from sklearn.tree import DecisionTreeClassifier
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
 
 
-class MyDecisionTreeClassifier(DecisionTreeClassifier):
+class MyDecisionTreeClassifier(DecisionTreeClassifier): # TODO: cambio nome in categoricalDecisionTree
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -18,8 +18,10 @@ class MyDecisionTreeClassifier(DecisionTreeClassifier):
 
         if kwargs['criterion'] == "gini":
             self.impurity_fun = gini
-        else:
+        elif kwargs['criterion'] == "entropy":
             self.impurity_fun = entropy
+        else:
+            self.impurity_fun = kwargs['criterion']
 
 
     def fit(self, X, y, sample_weight=None, check_input=True):

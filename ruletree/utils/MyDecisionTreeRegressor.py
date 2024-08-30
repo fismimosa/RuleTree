@@ -25,8 +25,10 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
             raise Exception("not implemented") # TODO: implement
         elif kwargs['criterion'] == "absolute_error":
             self.impurity_fun = mean_absolute_error
-        else: #poisson
+        elif kwargs['criterion'] == "poisson":
             self.impurity_fun = mean_poisson_deviance
+        else:
+            self.impurity_fun = kwargs['criterion']
 
 
     def __impurity_fun(self, **x):
