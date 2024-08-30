@@ -170,8 +170,8 @@ task_method = {
     TASK_CLU:
         {
             'KM': KMeans,
+            'RT': RuleTreeCluster,
             'KT': KMeansTree,
-            'RT': RuleTreeCluster
         },
 
     TASK_CLC:
