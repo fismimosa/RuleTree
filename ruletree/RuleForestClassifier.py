@@ -76,7 +76,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                          max_samples=X.shape[0] if self.max_samples is None else self.max_samples,
                          max_features=self.max_features,
                          bootstrap=self.bootstrap,
-                         bootstrap_features=False,
+                         bootstrap_features=True,
                          oob_score=self.oob_score,
                          warm_start=self.warm_start,
                          n_jobs=self.n_jobs,

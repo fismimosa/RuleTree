@@ -123,6 +123,9 @@ def run_clf(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
     for k, v in preprocessing_hyper.items():
         res[k] = v
 
+    for k, v in hyper.items():
+        res[k] = v
+
     res.to_csv(path, index=None)
 
     return "ok", res
@@ -185,6 +188,9 @@ def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
     for k, v in preprocessing_hyper.items():
         res[k] = v
 
+    for k, v in hyper.items():
+        res[k] = v
+
     res.to_csv(path, index=None)
 
     return "ok", res
@@ -231,6 +237,9 @@ def run_clu(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict, path, preproce
         return "fail", e
 
     for k, v in preprocessing_hyper.items():
+        res[k] = v
+
+    for k, v in hyper.items():
         res[k] = v
 
     res = pd.DataFrame.from_dict([res])
@@ -356,6 +365,8 @@ def benchmark(task, methods_params, dataset_target, dataset_feat_drop):
                 for dataset_name, target in dataset_target.items():
                     print(f"===================================== dataset = {dataset_name}")
                     skip_count = 0
+                    no_fixed_count = 0
+                    fixed_count = 0
                     df = pd.read_csv(DATASET_PATH + task + "/" + dataset_name + ".csv", skipinitialspace=True)
 
                     if not os.path.exists(basepath + method_name + "/" + dataset_name):
@@ -394,6 +405,28 @@ def benchmark(task, methods_params, dataset_target, dataset_feat_drop):
                                                    "max_n_vals_cat": max_n_vals_cat}
 
                             if os.path.normpath(path) in exp_to_skip:
+                                """df_res = pd.read_csv(path)
+                                if list(params_dict.keys())[0] not in df_res.columns:
+                                    for k, v in params_dict.items():
+                                        df_res[k] = v
+                                    df_res.to_csv(path, index=False)
+                                    if fixed_count >= 10**4:
+                                        table["dataset"] = dataset_name
+                                        table["method"] = method_name
+                                        table["error"] = "10^4 FIXED"
+                                        table.next_row()
+                                        fixed_count = 0
+                                    fixed_count += 1
+                                else:
+                                    if no_fixed_count >= 10 ** 4:
+                                        table["dataset"] = dataset_name
+                                        table["method"] = method_name
+                                        table["error"] = "10^4 NOT FIXED"
+                                        table.next_row()
+                                        no_fixed_count = 0
+                                    no_fixed_count += 1"""
+
+
                                 if skip_count == 10**4:
                                     skip_count = 0
                                     with sem:
