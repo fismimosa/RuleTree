@@ -50,11 +50,14 @@ class RuleTreeNode:
             else:
                 return all_pred
 
-    def get_possible_outputs(self) -> set:
+    def get_possible_outputs(self) -> tuple[set, set]:
         if self.is_leaf():
-            return {self.prediction}
+            return {self.prediction}, set()
         else:
-            return self.node_l.get_possible_outputs() | self.node_r.get_possible_outputs() | {self.prediction}
+            leaf_l, node_l = self.node_l.get_possible_outputs()
+            leaf_r, node_r = self.node_r.get_possible_outputs()
+
+            return leaf_l | leaf_r, node_l | node_r | {self.prediction}
 
     def get_depth(self):
         return len(self.node_id) - 1

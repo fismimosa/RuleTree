@@ -133,20 +133,20 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         )
 
     def _post_fit_fix(self):
-        possible_labels = np.array(list(self.root.get_possible_outputs()))
-        if np.issubdtype(possible_labels.dtype, np.str_) and not hasattr(self, 'label_encoder'):
-            self.label_encoder = LabelEncoder().fit(possible_labels)
-            self.__labels_obj_to_int(self.root, dict(zip(self.label_encoder.classes_,
-                                                         self.label_encoder.transform(self.label_encoder.classes_))))
+        possible_labels, inner_nodes = self.root.get_possible_outputs()
+        all_outputs = list(possible_labels) + list(inner_nodes)
+        if type(next(iter(all_outputs))) is str and not hasattr(self, 'label_encoder'):
+            self.label_encoder = {k: all_outputs.index(k) for k in set(all_outputs)}
+            self.__labels_obj_to_int(self.root)
 
-    def __labels_obj_to_int(self, node: RuleTreeNode, map: dict):
-        node.prediction = map[node.prediction]
+    def __labels_obj_to_int(self, node: RuleTreeNode):
+        node.prediction = self.label_encoder[node.prediction]
 
         if node.is_leaf():
             return
 
-        self.__labels_obj_to_int(node.node_l, map)
-        self.__labels_obj_to_int(node.node_r, map)
+        self.__labels_obj_to_int(node.node_l)
+        self.__labels_obj_to_int(node.node_r)
 
 
 class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
@@ -156,6 +156,9 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
     def _post_fit_fix(self):
         return
 
+    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
+        return RuleTreeClassifier._predict(self, X, current_node)
+
 
 class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
@@ -163,3 +166,6 @@ class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
 
     def _post_fit_fix(self):
         return
+
+    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
+        return RuleTreeRegressor._predict(self, X, current_node)
