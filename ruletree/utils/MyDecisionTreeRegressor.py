@@ -55,6 +55,9 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
         return self
 
     def _fit_cat(self, X, y, best_info_gain):
+        if self.tree_.max_depth > 1:
+            raise Exception("not implemented") # TODO: implement?
+
         len_x = len(X)
 
         if len(self.categorical) > 0 and best_info_gain != float('inf'):
