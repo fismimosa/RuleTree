@@ -1,4 +1,6 @@
 import numpy as np
+import sklearn.base
+from PIL.ImagePalette import random
 from sklearn.ensemble import BaggingClassifier
 
 from ruletree import RuleTreeClassifier
@@ -25,6 +27,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                  bootstrap=True,
                  oob_score=False,
                  warm_start=False,
+                 custom_estimator:sklearn.base.ClassifierMixin=None,
                  n_jobs=None,
                  random_state=None,
                  verbose=0):
@@ -45,6 +48,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
         self.bootstrap = bootstrap
         self.oob_score = oob_score
         self.warm_start = warm_start
+        self.custom_estimator = custom_estimator
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
@@ -59,19 +63,24 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
             elif self.max_features == "log2":
                 self.max_features = int(np.log2(X.shape[1]))
 
-        super().__init__(estimator=RuleTreeClassifier(criterion=self.criterion,
-                                                      max_depth=self.max_depth,
-                                                      min_samples_split=self.min_samples_split,
-                                                      min_samples_leaf=self.min_samples_leaf,
-                                                      min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                                                      min_impurity_decrease=self.min_impurity_decrease,
-                                                      random_state=self.random_state,
-                                                      max_leaf_nodes=self.max_leaf_nodes,
-                                                      class_weight=self.class_weight,
-                                                      ccp_alpha=self.ccp_alpha,
-                                                      prune_useless_leaves=self.prune_useless_leaves,
-                                                      splitter=self.splitter
-                                                      ),
+        base_estimator = RuleTreeClassifier if self.custom_estimator is None else self.custom_estimator
+        splitter = .5 if self.splitter is 'hybrid_forest' else self.splitter
+        if type(splitter) is float:
+            base_estimator = RuleTreeClassifier_choosing_splitter_randomly
+
+        super().__init__(estimator=base_estimator(criterion=self.criterion,
+                                                  max_depth=self.max_depth,
+                                                  min_samples_split=self.min_samples_split,
+                                                  min_samples_leaf=self.min_samples_leaf,
+                                                  min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                                                  min_impurity_decrease=self.min_impurity_decrease,
+                                                  random_state=self.random_state,
+                                                  max_leaf_nodes=self.max_leaf_nodes,
+                                                  class_weight=self.class_weight,
+                                                  ccp_alpha=self.ccp_alpha,
+                                                  prune_useless_leaves=self.prune_useless_leaves,
+                                                  splitter=self.splitter
+                                                  ),
                          n_estimators=self.n_estimators,
                          max_samples=X.shape[0] if self.max_samples is None else self.max_samples,
                          max_features=self.max_features,
@@ -84,3 +93,13 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                          verbose=self.verbose)
 
         return super().fit(X, y, sample_weight=sample_weight, **kwargs)
+
+class RuleTreeClassifier_choosing_splitter_randomly(RuleTreeClassifier):
+    def __init__(self, splitter, **kwargs):
+        if random() < splitter:
+            if random() < splitter:
+                splitter = 'random'
+            else:
+                splitter = 'best'
+        kwargs["splitter"] = splitter
+        super().__init__(**kwargs)

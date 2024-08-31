@@ -1,4 +1,5 @@
 import heapq
+from random import random
 from typing import Tuple
 
 import numpy as np
@@ -63,10 +64,17 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
+        splitter = .5 if self.splitter is 'hybrid_tree' else self.splitter
+        if type(splitter) is float:
+            if random() < splitter:
+                splitter = 'random'
+            else:
+                splitter = 'best'
+
         clf = MyDecisionTreeClassifier(
             max_depth=1,
             criterion=self.criterion,
-            splitter=self.splitter,
+            splitter=splitter,
             min_samples_split=self.min_samples_split,
             min_samples_leaf = self.min_samples_leaf,
             min_weight_fraction_leaf=self.min_weight_fraction_leaf,
