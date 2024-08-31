@@ -57,7 +57,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
-        splitter = .5 if self.splitter is 'hybrid' else self.splitter
+        splitter = .5 if self.splitter == 'hybrid' else self.splitter
         if type(splitter) is float:
             if random() < splitter:
                 splitter = 'random'

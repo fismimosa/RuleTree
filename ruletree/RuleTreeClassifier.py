@@ -64,7 +64,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
-        splitter = .5 if self.splitter is 'hybrid_tree' else self.splitter
+        splitter = .5 if self.splitter == 'hybrid_tree' else self.splitter
         if type(splitter) is float:
             if random() < splitter:
                 splitter = 'random'

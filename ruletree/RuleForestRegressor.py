@@ -64,7 +64,7 @@ class RuleForestRegressor(BaggingRegressor, RuleTreeBase):
                 self.max_features = int(np.log2(X.shape[1]))
 
         base_estimator = RuleTreeRegressor if self.custom_estimator is None else self.custom_estimator
-        splitter = .5 if self.splitter is 'hybrid_forest' else self.splitter
+        splitter = .5 if self.splitter == 'hybrid_forest' else self.splitter
         if type(splitter) is float:
             base_estimator = RuleTreeRegressor_choosing_splitter_randomly
 
