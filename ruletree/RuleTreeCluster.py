@@ -13,8 +13,8 @@ from ruletree import light_famd, RuleTreeClassifier, RuleTreeRegressor
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
 from ruletree.utils import bic
-from ruletree.utils.MyDecisionTreeClassifier import MyDecisionTreeClassifier
-from ruletree.utils.MyDecisionTreeRegressor import MyDecisionTreeRegressor
+from ruletree.utils.DecisionTreeClassifierStump import MyDecisionTreeClassifier
+from ruletree.utils.DecisionTreeRegressorStump import MyDecisionTreeRegressor
 from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 

@@ -12,7 +12,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeBase import RuleTreeBase
 from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.utils.MyDecisionTreeRegressor import MyDecisionTreeRegressor
+from ruletree.utils.DecisionTreeRegressorStump import MyDecisionTreeRegressor
 from ruletree.utils.data_utils import calculate_mode
 
 

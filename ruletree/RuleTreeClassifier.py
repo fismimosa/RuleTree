@@ -10,7 +10,7 @@ from sklearn.base import ClassifierMixin
 
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.utils.MyDecisionTreeClassifier import MyDecisionTreeClassifier
+from ruletree.utils.DecisionTreeClassifierStump import MyDecisionTreeClassifier
 from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 from ruletree.utils.utils_decoding import configure_non_cat_split, configure_cat_split
