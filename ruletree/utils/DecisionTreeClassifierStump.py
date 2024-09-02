@@ -7,7 +7,7 @@ from sklearn.tree import DecisionTreeClassifier
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
 
 
-class MyDecisionTreeClassifier(DecisionTreeClassifier): # TODO: cambio nome in categoricalDecisionTree
+class MyDecisionTreeClassifier(DecisionTreeClassifier):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
