@@ -3,7 +3,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 from data_utils import get_info_gain
 
-class ObilqueBivariateSplit:
+class ObliqueBivariateSplit:
     def __init__(
         self,
         H = 10, #number of orientations to generate
