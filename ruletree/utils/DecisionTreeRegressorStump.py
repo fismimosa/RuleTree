@@ -7,7 +7,12 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
 
+from ruletree.utils.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
+from ruletree.utils.ObliqueBivariateSplit import ObliqueBivariateSplit
+
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain
+
+from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 
 class MyDecisionTreeRegressor(DecisionTreeRegressor):
@@ -95,4 +100,61 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor):
             y_pred[X_feature == self.threshold_original[0]] = 1
 
             return y_pred
+        
+        
+class MyObliqueDecisionTreeRegressor(DecisionTreeRegressor):
+    def __init__(self, oblique_params = {}, oblique_split_type =  'householder', **kwargs):
+        super().__init__(**kwargs)
+        self.is_categorical = False
+        self.kwargs = kwargs
+        self.unique_val_enum = None
+        self.threshold_original = None
+        self.feature_original = None
+        self.is_oblique = True
+        self.coefficients = None
+        
+        self.oblique_params = oblique_params
+        self.oblique_split_type = oblique_split_type
+        self.oblique_split = None
+        
+        if kwargs['criterion'] == "squared_error":
+            self.impurity_fun = mean_squared_error
+        elif kwargs['criterion'] == "friedman_mse":
+            raise Exception("not implemented") # TODO: implement
+        elif kwargs['criterion'] == "absolute_error":
+            self.impurity_fun = mean_absolute_error
+        elif kwargs['criterion'] == "poisson":
+            self.impurity_fun = mean_poisson_deviance
+        else:
+            self.impurity_fun = kwargs['criterion']
+
+        
+        if self.oblique_split_type == 'householder':
+            self.oblique_split = ObliqueHouseHolderSplit(**oblique_params, **kwargs, model_type = MODEL_TYPE_REG)
+           
+        if self.oblique_split_type == 'bivariate':
+            self.oblique_split = ObliqueBivariateSplit(**oblique_params, **kwargs, model_type  = MODEL_TYPE_REG)
+        
+    def __impurity_fun(self, **x):
+        return self.impurity_fun(**x) if len(x["y_true"]) > 0 else 0 # TODO: chec
+    
+    def fit(self, X, y):
+        dtypes = pd.DataFrame(X).infer_objects().dtypes
+        self.numerical = dtypes[dtypes != np.dtype('O')].index
+        self.categorical = dtypes[dtypes == np.dtype('O')].index
+        best_info_gain = -float('inf')
+        
+        if len(self.numerical) > 0:
+            self.oblique_split.fit(X[:, self.numerical], y)
+            self.feature_original = [[self.oblique_split.feats], -2, -2]
+            self.coefficients = self.oblique_split.coeff
+            self.threshold_original = np.array([self.oblique_split.threshold, -2, -2])
+            best_info_gain = get_info_gain(self.oblique_split.oblq_clf)
+            
+            self.best_info_gain = best_info_gain
+       
+        return self
+    
+    def apply(self, X):
+        return self.oblique_split.apply(X[:, self.numerical])
 
