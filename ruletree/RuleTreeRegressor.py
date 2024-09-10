@@ -12,8 +12,8 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeBase import RuleTreeBase
 from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.utils.DecisionTreeRegressorStump import MyDecisionTreeRegressor
-from ruletree.utils.data_utils import calculate_mode
+from ruletree.utils.DecisionTreeRegressorStump import MyDecisionTreeRegressor, MyObliqueDecisionTreeRegressor
+from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 
 class RuleTreeRegressor(RuleTree, RegressorMixin):
@@ -31,7 +31,11 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  max_features=None,
                  min_impurity_decrease=0.0,
                  ccp_alpha=0.0,
-                 monotonic_cst=None
+                 monotonic_cst=None,
+                 oblique = False,
+                 oblique_params = {},
+                 oblique_split_type =  'householder',
+                 force_oblique = False
                  ):
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
@@ -47,10 +51,13 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
         self.min_impurity_decrease = min_impurity_decrease
         self.ccp_alpha = ccp_alpha
         self.monotonic_cst = monotonic_cst
+        self.oblique = oblique
+        self.oblique_params = oblique_params
+        self.oblique_split_type = oblique_split_type
+        self.force_oblique = force_oblique
 
     def is_split_useless(self, clf: tree, idx: np.ndarray):
         labels = clf.apply(self.X[idx])
-
         return len(np.unique(labels)) == 1
 
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
@@ -79,8 +86,36 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
         )
 
         clf.fit(X[idx], y[idx], **kwargs)
+        
+        if self.oblique:
+            clf_obl = MyObliqueDecisionTreeRegressor(
+                max_depth=1,
+                criterion=self.criterion,
+                splitter=splitter,
+                min_samples_split=self.min_samples_split,
+                min_samples_leaf = self.min_samples_leaf,
+                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                max_features=self.max_features,
+                random_state=self.random_state,
+                min_impurity_decrease=self.min_impurity_decrease,
+                ccp_alpha=self.ccp_alpha,
+                monotonic_cst = self.monotonic_cst,
+                oblique_params = self.oblique_params,
+                oblique_split_type =  self.oblique_split_type
+            )
+
+            clf_obl.fit(X[idx], y[idx])
+            
+            if clf_obl is not None:
+                gain_obl = get_info_gain(clf_obl.oblique_split.oblq_clf)
+                gain_univ = get_info_gain(clf)
+                
+                if gain_obl > gain_univ or self.force_oblique:
+                    clf = clf_obl
 
         return clf
+
+    
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         with warnings.catch_warnings():
