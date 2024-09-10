@@ -11,35 +11,31 @@ class ObliqueHouseHolderSplit:
         self,
         pca=None,
         max_oblique_features=2,
-        min_samples_leaf=3,
-        min_samples_split=5,
         tau=1e-4,
         model_type='clf',
-        clf_impurity: str = 'gini',
-        reg_impurity: str = 'squared_error',
-        random_state=None,
+        **kwargs
     ):
+        self.kwargs = kwargs
         self.pca = pca
         self.max_oblique_features = max_oblique_features
-        self.min_samples_leaf = min_samples_leaf
-        self.min_samples_split = min_samples_split
         self.tau = tau
         self.model_type = model_type
-        self.clf_impurity = clf_impurity
-        self.reg_impurity = reg_impurity
-
+       
         self.dominant_ev = None
         self.u_weights = None
         self.householder_matrix = None
         self.oblq_clf = None
-        self.random_state = random_state
+
+        self.feats = None
+        self.coeff = None
+        self.threshold = None
 
     def transform(self, X):
         X_house = X.dot(self.householder_matrix)
         return X_house
 
-    def fit(self, X, y):
-
+    def fit(self, X, y, sample_weight=None, check_input=True):
+        
         n_features = X.shape[1]
 
         if self.pca is None:
@@ -71,24 +67,18 @@ class ObliqueHouseHolderSplit:
         X_house = self.transform(X)
 
         if self.model_type == MODEL_TYPE_CLF:
-            self.oblq_clf = DecisionTreeClassifier(
-                max_depth=1,
-                criterion=self.clf_impurity,
-                min_samples_leaf=self.min_samples_leaf,
-                min_samples_split=self.min_samples_split,
-                random_state=self.random_state,
-            )
+            self.oblq_clf = DecisionTreeClassifier(**self.kwargs) 
         elif self.model_type == MODEL_TYPE_REG:
-            self.oblq_clf = DecisionTreeRegressor(
-                max_depth=1,
-                criterion=self.reg_impurity,
-                min_samples_leaf=self.min_samples_leaf,
-                min_samples_split=self.min_samples_split,
-                random_state=self.random_state,
-            )
+            self.oblq_clf = DecisionTreeRegressor(**self.kwargs)     
         else:
             raise Exception('Unknown model %s' % self.model_type)
         self.oblq_clf.fit(X_house, y)
+        
+        self.feats = list(np.nonzero(self.u_weights)[0])
+        self.coeff = list(self.u_weights[self.feats])
+        self.threshold = self.oblq_clf.tree_.threshold[0]
+        
+        return self
 
     def predict(self, X):
         X_house = self.transform(X)

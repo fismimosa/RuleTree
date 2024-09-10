@@ -4,7 +4,12 @@ import sklearn
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.tree import DecisionTreeClassifier
 
+from ruletree.utils.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
+from ruletree.utils.ObliqueBivariateSplit import ObliqueBivariateSplit
+
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
+
+from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 
 class MyDecisionTreeClassifier(DecisionTreeClassifier):
@@ -15,6 +20,8 @@ class MyDecisionTreeClassifier(DecisionTreeClassifier):
         self.unique_val_enum = None
         self.threshold_original = None
         self.feature_original = None
+        self.is_oblique = False
+        self.coefficients = None
 
         if kwargs['criterion'] == "gini":
             self.impurity_fun = gini
@@ -114,3 +121,46 @@ class MyDecisionTreeClassifier(DecisionTreeClassifier):
 
             return y_pred
 
+
+class MyObliqueDecisionTreeClassifier(DecisionTreeClassifier):
+    def __init__(self, oblique_params = {}, oblique_split_type =  'householder', **kwargs):
+        super().__init__(**kwargs)
+        self.is_categorical = False
+        self.kwargs = kwargs
+        self.unique_val_enum = None
+        self.threshold_original = None
+        self.feature_original = None
+        self.is_oblique = True
+        self.coefficients = None
+        
+        self.oblique_params = oblique_params
+        self.oblique_split_type = oblique_split_type
+        self.oblique_split = None
+        
+        
+        if self.oblique_split_type == 'householder':
+            self.oblique_split = ObliqueHouseHolderSplit(**oblique_params, **kwargs, model_type = MODEL_TYPE_CLF)
+           
+        if self.oblique_split_type == 'bivariate':
+            self.oblique_split = ObliqueBivariateSplit(**oblique_params, **kwargs, model_type  = MODEL_TYPE_CLF)
+        
+       
+    def fit(self, X, y, sample_weight=None, check_input=True):
+        dtypes = pd.DataFrame(X).infer_objects().dtypes
+        self.numerical = dtypes[dtypes != np.dtype('O')].index
+        self.categorical = dtypes[dtypes == np.dtype('O')].index
+        best_info_gain = -float('inf')
+        
+        if len(self.numerical) > 0:
+            self.oblique_split.fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
+            self.feature_original = [[self.oblique_split.feats], -2, -2]
+            self.coefficients = self.oblique_split.coeff
+            self.threshold_original = np.array([self.oblique_split.threshold, -2, -2])
+            best_info_gain = get_info_gain(self.oblique_split.oblq_clf)
+            
+            self.best_info_gain = best_info_gain
+       
+        return self
+    
+    def apply(self, X):
+        return self.oblique_split.apply(X[:, self.numerical])
