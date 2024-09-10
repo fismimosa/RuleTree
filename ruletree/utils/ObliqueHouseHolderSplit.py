@@ -72,7 +72,7 @@ class ObliqueHouseHolderSplit:
             self.oblq_clf = DecisionTreeRegressor(**self.kwargs)     
         else:
             raise Exception('Unknown model %s' % self.model_type)
-        self.oblq_clf.fit(X_house, y)
+        self.oblq_clf.fit(X_house, y, sample_weight=sample_weight, check_input=check_input)
         
         self.feats = list(np.nonzero(self.u_weights)[0])
         self.coeff = list(self.u_weights[self.feats])
