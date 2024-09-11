@@ -100,6 +100,15 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             y_pred[X_feature == self.threshold_original[0]] = 1
 
             return y_pred
+
+    def get_feature(self):
+        return self.feature_original[0]
+
+    def get_thresholds(self):
+        return self.threshold_original[0]
+
+    def get_is_categorical(self):
+        return self.is_categorical
         
         
 class MyObliqueDecisionTreeRegressor(DecisionTreeRegressor):

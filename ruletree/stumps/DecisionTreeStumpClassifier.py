@@ -124,6 +124,15 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
             return y_pred
 
+    def get_feature(self):
+        return self.feature_original[0]
+
+    def get_thresholds(self):
+        return self.threshold_original[0]
+
+    def get_is_categorical(self):
+        return self.is_categorical
+
 
 class MyObliqueDecisionTreeClassifier(DecisionTreeClassifier):
     def __init__(self, oblique_params = {}, oblique_split_type =  'householder', **kwargs):

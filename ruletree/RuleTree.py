@@ -116,7 +116,7 @@ class RuleTree(RuleTreeBase, ABC):
 
             idx_l, idx_r = idx[labels == 1], idx[labels == 2]
 
-            current_node.clf = clf
+            current_node.set_clf(clf)
             current_node.node_l = self.prepare_node(self.y, idx_l, current_node.node_id + "l", )
             current_node.node_r = self.prepare_node(self.y, idx_r, current_node.node_id + "r", )
             current_node.node_l.parent, current_node.node_r.parent = current_node, current_node
@@ -231,14 +231,18 @@ class RuleTree(RuleTreeBase, ABC):
             not_comparison = "!=" if rules['is_categorical'] else ">"
             feature_idx = rules['feature_idx']
             thr = rules['threshold_idx']
-            print(f"{indentation}|--- {names(feature_idx)} {comparison} "
-                  f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}"
-                  f"\t{rules['samples']}")
-            cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
 
-            print(f"{indentation}|--- {names(feature_idx)} {not_comparison} "
-                  f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
-            cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+            if type(feature_idx) == int:
+                print(f"{indentation}|--- {names(feature_idx)} {comparison} "
+                      f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}"
+                      f"\t{rules['samples']}")
+                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
+
+                print(f"{indentation}|--- {names(feature_idx)} {not_comparison} "
+                      f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
+                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+            else: #if list -> oblique
+                raise Exception("Unimplemented")
 
     @classmethod
     def decode_ruletree(cls, vector, n_features_in_, n_classes_, n_outputs_, 

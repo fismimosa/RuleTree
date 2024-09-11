@@ -3,6 +3,9 @@ from typing import Self
 import numpy as np
 from sklearn import tree
 
+from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
+
+
 class RuleTreeNode:
 
     def __init__(self,
@@ -50,6 +53,9 @@ class RuleTreeNode:
             else:
                 return all_pred
 
+    def set_clf(self, clf:RuleTreeBaseStump):
+        self.clf = clf
+
     def get_possible_outputs(self) -> tuple[set, set]:
         if self.is_leaf():
             return {self.prediction}, set()
@@ -77,9 +83,9 @@ class RuleTreeNode:
                 "is_leaf": False,
                 "prediction": self.prediction,
                 "prediction_probability": self.prediction_probability,
-                "feature_idx": self.clf.feature_original[0],
-                "threshold_idx": self.clf.threshold_original[0],
-                "is_categorical": self.clf.is_categorical,
+                "feature_idx": self.clf.get_features(),
+                "threshold_idx": self.clf.get_thresholds(),
+                "is_categorical": self.clf.get_is_categorical(),
                 "samples": self.samples,
                 "left_node": self.node_l.get_rule(),
                 "right_node": self.node_r.get_rule(),
