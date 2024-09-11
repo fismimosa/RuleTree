@@ -3,7 +3,8 @@ import math
 import numpy as np
 import pandas as pd
 import category_encoders as ce
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.base import ClassifierMixin, RegressorMixin
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
 def preprocessing(X, feature_names_r, is_cat_feat, data_encoder=None, numerical_scaler=None):
@@ -143,7 +144,7 @@ def calculate_mode(x: np.ndarray):
     idx = np.argmax(counts)
     return vals[idx]
 
-def get_info_gain(clf: DecisionTreeClassifier):
+def get_info_gain(clf: DecisionTreeClassifier | DecisionTreeRegressor):
     if len(clf.tree_.impurity) == 1:#no_split
         return 0 # TODO: check
     imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
@@ -154,7 +155,7 @@ def _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_
     gain_split = imp_parent - imp_child_l * (n_child_l / n_parent) - imp_child_r * (n_child_r / n_parent)
     return gain_split
 
-def get_gain_ratio(clf: DecisionTreeClassifier):
+def get_gain_ratio(clf: DecisionTreeClassifier | DecisionTreeRegressor):
     if len(clf.tree_.impurity) == 1:#no_split
         return 0 # TODO: check
     imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity

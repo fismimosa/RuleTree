@@ -1,21 +1,16 @@
 import heapq
-from typing import Tuple
 
 import numpy as np
 import pandas as pd
-from numpy import bool_
 from sklearn import tree
 from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
-from sklearn.preprocessing import LabelEncoder
 
 from ruletree import light_famd, RuleTreeClassifier, RuleTreeRegressor
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
 from ruletree.utils import bic
-from ruletree.utils.DecisionTreeClassifierStump import MyDecisionTreeClassifier
-from ruletree.utils.DecisionTreeRegressorStump import MyDecisionTreeRegressor
-from ruletree.utils.data_utils import calculate_mode, get_info_gain
+from ruletree.stumps.DecisionTreeStumpRegressor import MyDecisionTreeRegressor
 
 
 class RuleTreeCluster(RuleTree, ClusterMixin):

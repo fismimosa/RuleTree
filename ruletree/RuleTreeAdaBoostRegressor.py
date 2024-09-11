@@ -1,7 +1,7 @@
 from sklearn.ensemble import AdaBoostRegressor
 
 from ruletree import RuleTreeRegressor
-from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.base.RuleTreeBase import RuleTreeBase
 
 
 class RuleTreeAdaBoostRegressor(AdaBoostRegressor, RuleTreeBase):

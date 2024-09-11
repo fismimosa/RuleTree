@@ -1,7 +1,7 @@
 from sklearn.ensemble import AdaBoostClassifier
 
 from ruletree import RuleTreeClassifier
-from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.base.RuleTreeBase import RuleTreeBase
 
 
 class RuleTreeAdaBoostClassifier(AdaBoostClassifier, RuleTreeBase):

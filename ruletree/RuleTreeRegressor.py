@@ -1,19 +1,15 @@
 import heapq
 import warnings
 from random import random
-from typing import Tuple
 
 import numpy as np
-from numpy import bool_
 from sklearn import tree
 from sklearn.base import RegressorMixin
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from ruletree.RuleTree import RuleTree
-from ruletree.RuleTreeBase import RuleTreeBase
 from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.utils.DecisionTreeRegressorStump import MyDecisionTreeRegressor, MyObliqueDecisionTreeRegressor
-from ruletree.utils.data_utils import calculate_mode, get_info_gain
+from ruletree.stumps.DecisionTreeStumpRegressor import MyDecisionTreeRegressor, MyObliqueDecisionTreeRegressor
+from ruletree.utils.data_utils import get_info_gain
 
 
 class RuleTreeRegressor(RuleTree, RegressorMixin):
