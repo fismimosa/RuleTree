@@ -34,6 +34,21 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                  ccp_alpha=0.0,
                  monotonic_cst=None
                  ):
+        if base_stump is None:
+            base_stump = DecisionTreeStumpRegressor(
+                max_depth=1,
+                criterion=criterion,
+                splitter=splitter,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                random_state=random_state,
+                min_impurity_decrease=min_impurity_decrease,
+                ccp_alpha=ccp_alpha,
+                monotonic_cst=monotonic_cst
+            )
+
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,

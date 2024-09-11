@@ -285,5 +285,5 @@ if __name__ == "__main__":
     #test_reg()
     #test_clu()
 
-    test_clf_iris()
-    #test_clc_iris()
+    #test_clf_iris()
+    test_clc_iris()
