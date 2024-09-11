@@ -22,7 +22,6 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stump:RegressorMixin | list  = None,
                  random_state=None,
 
                  criterion='squared_error',
@@ -34,26 +33,26 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                  ccp_alpha=0.0,
                  monotonic_cst=None
                  ):
-        if base_stump is None:
-            base_stump = DecisionTreeStumpRegressor(
-                max_depth=1,
-                criterion=criterion,
-                splitter=splitter,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                random_state=random_state,
-                min_impurity_decrease=min_impurity_decrease,
-                ccp_alpha=ccp_alpha,
-                monotonic_cst=monotonic_cst
-            )
+        base_stump = DecisionTreeStumpRegressor(
+            max_depth=1,
+            criterion=criterion,
+            splitter=splitter,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_weight_fraction_leaf=min_weight_fraction_leaf,
+            max_features=max_features,
+            random_state=random_state,
+            min_impurity_decrease=min_impurity_decrease,
+            ccp_alpha=ccp_alpha,
+            monotonic_cst=monotonic_cst
+        )
 
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
                          base_stump=base_stump,
+                         stump_selection='random',
                          random_state=random_state)
 
         self.n_components = n_components
@@ -105,19 +104,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         best_clf = None
         best_score = float('inf')
         for i in range(n_components_split):
-            clf = DecisionTreeStumpRegressor(
-                max_depth=1,
-                criterion=self.criterion,
-                splitter=self.splitter,
-                min_samples_split=self.min_samples_split,
-                min_samples_leaf=self.min_samples_leaf,
-                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                max_features=self.max_features,
-                random_state=self.random_state,
-                min_impurity_decrease=self.min_impurity_decrease,
-                ccp_alpha=self.ccp_alpha,
-                monotonic_cst=self.monotonic_cst
-            )
+            clf = self._get_random_stump()
 
             clf.fit(X[idx], y_pca[:, i])
             if self.clus_impurity == 'r2':

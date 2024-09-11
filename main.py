@@ -86,10 +86,10 @@ def test_clf(max_depth=4):
 
                 if "rule" not in model_name:
                     f1 = f1_score(y_test, model.predict(X_test_onehot), average='weighted')
-                    print(classification_report(y_test, model.predict(X_test_onehot)))
+                    #print(classification_report(y_test, model.predict(X_test_onehot)))
                 else:
                     f1 = f1_score(y_test, model.predict(X_test), average='weighted')
-                    print(classification_report(y_test, model.predict(X_test)))
+                    #print(classification_report(y_test, model.predict(X_test)))
 
                 res[f"{model_name}_time"] = stop - start
                 res[f"{model_name}_f1"] = f1
@@ -281,9 +281,9 @@ def test_clc_iris():
 
 
 if __name__ == "__main__":
-    #test_clf()
-    #test_reg()
+    test_clf()
+    test_reg()
     #test_clu()
 
     #test_clf_iris()
-    test_clc_iris()
+    #test_clc_iris()

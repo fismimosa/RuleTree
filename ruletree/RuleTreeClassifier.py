@@ -2,6 +2,7 @@ import heapq
 from random import random
 
 import numpy as np
+import sklearn
 from sklearn import tree
 from sklearn.base import ClassifierMixin
 
@@ -22,6 +23,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
                  base_stump: ClassifierMixin | list = None,
+                 stump_selection: str = 'random',
                  random_state=None,
 
                  criterion='gini',
@@ -55,6 +57,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
                          base_stump=base_stump,
+                         stump_selection=stump_selection,
                          random_state=random_state)
 
         self.max_depth = max_depth
@@ -83,9 +86,23 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
-        clf = self._get_stump()
+        if self.stump_selection == 'random':
+            clf = self._get_random_stump()
+            clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+        elif self.stump_selection == 'best':
+            clfs = []
+            info_gains = []
+            for _, clf in self.base_stump:
+                clf = sklearn.clone(clf)
+                clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
 
-        clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+                gain = get_info_gain(clf) #TODO: @Alessio non possiamo implementare oblique_split direttamente
+                                                #  dentro MyObliqueDecisionTreeClassifier? Per come è scritto ora questa istruzione non funzionerebbe
+                info_gains.append(gain)
+
+            clf = clfs[np.argmax(info_gains)]
+        else:
+            raise Exception('Unknown stump selection method')
 
         return clf
 

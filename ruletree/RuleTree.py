@@ -21,6 +21,7 @@ class RuleTree(RuleTreeBase, ABC):
                  prune_useless_leaves,
                  base_stump, #isinstance of RuleTreeBaseStump, list of instances of RuleTreeBaseStump,
                                 # list of tuple (probability, RuleTreeBaseStump) where sum(probabilities)==1
+                 stump_selection, # ['random', 'best']
                  random_state,
                  ):
         self.max_leaf_nodes = float("inf") if max_leaf_nodes is None else max_leaf_nodes
@@ -29,6 +30,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.prune_useless_leaves = prune_useless_leaves
 
         self.base_stump = base_stump
+        self.stump_selection = stump_selection
 
         self.random_state = random_state
         random.seed(random_state)
@@ -58,7 +60,7 @@ class RuleTree(RuleTreeBase, ABC):
         assert sum(_p) == 1.
         self.base_stump = [(p, stump) for p, stump in zip(np.cumsum(_p), _base_stump)]
 
-    def _get_stump(self):
+    def _get_random_stump(self):
         val = random.random()
         for p, clf in self.base_stump:
             if val <= p:

@@ -3,6 +3,7 @@ import warnings
 from random import random
 
 import numpy as np
+import sklearn
 from sklearn import tree
 from sklearn.base import RegressorMixin
 
@@ -19,6 +20,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
                  base_stump: RegressorMixin | list = None,
+                 stump_selection:str='random',
                  random_state=None,
 
                  criterion='squared_error',
@@ -54,6 +56,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
                          base_stump=base_stump,
+                         stump_selection=stump_selection,
                          random_state=random_state)
 
         self.criterion = criterion
@@ -77,54 +80,22 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
-        splitter = .5 if self.splitter == 'hybrid' else self.splitter
-        if type(splitter) is float:
-            if random() < splitter:
-                splitter = 'random'
-            else:
-                splitter = 'best'
+        if self.stump_selection == 'random':
+            clf = self._get_random_stump()
+            clf.fit(X[idx], y[idx], **kwargs)
+        elif self.stump_selection == 'best':
+            clfs = []
+            info_gains = []
+            for _, clf in self.base_stump:
+                clf = sklearn.clone(clf)
+                clf.fit(X[idx], y[idx], **kwargs)
 
-        clf = DecisionTreeStumpRegressor(
-            max_depth=1,
-            criterion=self.criterion,
-            splitter=splitter,
-            min_samples_split=self.min_samples_split,
-            min_samples_leaf = self.min_samples_leaf,
-            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-            max_features=self.max_features,
-            random_state=self.random_state,
-            min_impurity_decrease=self.min_impurity_decrease,
-            ccp_alpha=self.ccp_alpha,
-            monotonic_cst = self.monotonic_cst
-        )
+                gain = get_info_gain(clf)  # TODO: @Alessio vedi commento su classifier
+                info_gains.append(gain)
 
-        clf.fit(X[idx], y[idx], **kwargs)
-        
-        if self.oblique:
-            clf_obl = MyObliqueDecisionTreeRegressor(
-                max_depth=1,
-                criterion=self.criterion,
-                splitter=splitter,
-                min_samples_split=self.min_samples_split,
-                min_samples_leaf = self.min_samples_leaf,
-                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                max_features=self.max_features,
-                random_state=self.random_state,
-                min_impurity_decrease=self.min_impurity_decrease,
-                ccp_alpha=self.ccp_alpha,
-                monotonic_cst = self.monotonic_cst,
-                oblique_params = self.oblique_params,
-                oblique_split_type =  self.oblique_split_type
-            )
-
-            clf_obl.fit(X[idx], y[idx])
-            
-            if clf_obl is not None:
-                gain_obl = get_info_gain(clf_obl.oblique_split.oblq_clf)
-                gain_univ = get_info_gain(clf)
-                
-                if gain_obl > gain_univ or self.force_oblique:
-                    clf = clf_obl
+            clf = clfs[np.argmax(info_gains)]
+        else:
+            raise Exception('Unknown stump selection method')
 
         return clf
 
