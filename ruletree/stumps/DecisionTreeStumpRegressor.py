@@ -5,15 +5,16 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
 
-from ruletree.stumps.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
-from ruletree.stumps.ObliqueBivariateSplitRegressor import ObliqueBivariateSplit
+from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from ruletree.stumps.splitters.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
+from ruletree.stumps.splitters.ObliqueBivariateSplitRegressor import ObliqueBivariateSplitRegressor
 
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain
 
 from ruletree.utils.define import MODEL_TYPE_REG
 
 
-class MyDecisionTreeRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
+class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -37,7 +38,8 @@ class MyDecisionTreeRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
     def __impurity_fun(self, **x):
         return self.impurity_fun(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
 
-
+    def get_params(self, deep=True):
+        return self.kwargs
 
     def fit(self, X, y, **kwargs):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
@@ -128,10 +130,10 @@ class MyObliqueDecisionTreeRegressor(DecisionTreeRegressor):
 
         
         if self.oblique_split_type == 'householder':
-            self.oblique_split = ObliqueHouseHolderSplit(**oblique_params, **kwargs, model_type = MODEL_TYPE_REG)
+            self.oblique_split = ObliqueHouseHolderSplit(**oblique_params, **kwargs)
            
         if self.oblique_split_type == 'bivariate':
-            self.oblique_split = ObliqueBivariateSplit(**oblique_params, **kwargs, model_type  = MODEL_TYPE_REG)
+            self.oblique_split = ObliqueBivariateSplitRegressor(**oblique_params, **kwargs)
         
     def __impurity_fun(self, **x):
         return self.impurity_fun(**x) if len(x["y_true"]) > 0 else 0 # TODO: chec

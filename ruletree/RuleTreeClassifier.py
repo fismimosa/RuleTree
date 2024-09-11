@@ -7,7 +7,7 @@ from sklearn.base import ClassifierMixin
 
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.stumps.DecisionTreeStumpClassifier import MyDecisionTreeClassifier, MyObliqueDecisionTreeClassifier
+from ruletree.stumps.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier, MyObliqueDecisionTreeClassifier
 from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 from ruletree.utils.utils_decoding import configure_non_cat_split, configure_cat_split
@@ -21,7 +21,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
+                 base_stump: ClassifierMixin | list = None,
                  random_state=None,
+
                  criterion='gini',
                  splitter='best',
                  min_samples_leaf=1,
@@ -31,30 +33,43 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  class_weight=None,
                  ccp_alpha=0.0,
                  monotonic_cst=None,
-                 oblique = False,
-                 oblique_params = {},
-                 oblique_split_type =  'householder',
-                 force_oblique = False
                  ):
+        if base_stump is None:
+            base_stump = DecisionTreeStumpClassifier(
+                                max_depth=1,
+                                criterion=criterion,
+                                splitter=splitter,
+                                min_samples_split=min_samples_split,
+                                min_samples_leaf = min_samples_leaf,
+                                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                                max_features=max_features,
+                                random_state=random_state,
+                                min_impurity_decrease=min_impurity_decrease,
+                                class_weight=class_weight,
+                                ccp_alpha=ccp_alpha,
+                                monotonic_cst = monotonic_cst
+            )
+
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
+                         base_stump=base_stump,
                          random_state=random_state)
 
+        self.max_depth = max_depth
         self.criterion = criterion
         self.splitter = splitter
+        self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
         self.max_features = max_features
+        self.random_state = random_state
         self.min_impurity_decrease = min_impurity_decrease
         self.class_weight = class_weight
         self.ccp_alpha = ccp_alpha
         self.monotonic_cst = monotonic_cst
-        self.oblique = oblique
-        self.oblique_params = oblique_params
-        self.oblique_split_type = oblique_split_type
-        self.force_oblique = force_oblique
+
 
     def is_split_useless(self, clf: tree, idx: np.ndarray):
         labels = clf.apply(self.X[idx])
@@ -68,56 +83,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
-        splitter = .5 if self.splitter == 'hybrid_tree' else self.splitter
-        if type(splitter) is float:
-            if random() < splitter:
-                splitter = 'random'
-            else:
-                splitter = 'best'
-
-        clf = MyDecisionTreeClassifier(
-            max_depth=1,
-            criterion=self.criterion,
-            splitter=splitter,
-            min_samples_split=self.min_samples_split,
-            min_samples_leaf = self.min_samples_leaf,
-            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-            max_features=self.max_features,
-            random_state=self.random_state,
-            min_impurity_decrease=self.min_impurity_decrease,
-            class_weight=self.class_weight,
-            ccp_alpha=self.ccp_alpha,
-            monotonic_cst = self.monotonic_cst
-        )
+        clf = self._get_stump()
 
         clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
-        
-        if self.oblique:
-            clf_obl = MyObliqueDecisionTreeClassifier(
-                max_depth=1,
-                criterion=self.criterion,
-                splitter=splitter,
-                min_samples_split=self.min_samples_split,
-                min_samples_leaf = self.min_samples_leaf,
-                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                max_features=self.max_features,
-                random_state=self.random_state,
-                min_impurity_decrease=self.min_impurity_decrease,
-                class_weight=self.class_weight,
-                ccp_alpha=self.ccp_alpha,
-                monotonic_cst = self.monotonic_cst,
-                oblique_params = self.oblique_params,
-                oblique_split_type =  self.oblique_split_type
-            )
-
-            clf_obl.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
-            
-            if clf_obl is not None:
-                gain_obl = get_info_gain(clf_obl.oblique_split.oblq_clf)
-                gain_univ = get_info_gain(clf)
-                
-                if gain_obl > gain_univ or self.force_oblique:
-                    clf = clf_obl
 
         return clf
 
@@ -174,6 +142,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                                                                                                          current_node.node_r)
 
             return labels, leaves, proba
+
+    def _get_stumps_base_class(self):
+        return ClassifierMixin
     
     @classmethod
     def decode_ruletree(cls, vector, n_features_in_, n_classes_, n_outputs_, 
@@ -186,7 +157,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             if vector[0][index] == -1:
                 idx_to_node[index].prediction = vector[1][index]
             else:
-                clf = MyDecisionTreeClassifier(
+                clf = DecisionTreeStumpClassifier(
                                         criterion=criterion)
                                    
             

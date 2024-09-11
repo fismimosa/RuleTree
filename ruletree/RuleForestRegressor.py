@@ -5,7 +5,7 @@ import sklearn
 from sklearn.ensemble import BaggingRegressor
 
 from ruletree import RuleTreeRegressor
-from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.base.RuleTreeBase import RuleTreeBase
 
 
 class RuleForestRegressor(BaggingRegressor, RuleTreeBase):

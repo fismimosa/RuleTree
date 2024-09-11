@@ -1,14 +1,16 @@
 import heapq
+import random
 from abc import ABC, abstractmethod
-from collections import deque
-from datetime import datetime
+from collections.abc import Sequence
 from itertools import count
 
 import numpy as np
+import sklearn
 from sklearn import tree
 
-from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.base.RuleTreeBase import RuleTreeBase
 from ruletree.RuleTreeNode import RuleTreeNode
+from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 
 
 class RuleTree(RuleTreeBase, ABC):
@@ -17,13 +19,50 @@ class RuleTree(RuleTreeBase, ABC):
                  min_samples_split,
                  max_depth,
                  prune_useless_leaves,
+                 base_stump, #isinstance of RuleTreeBaseStump, list of instances of RuleTreeBaseStump,
+                                # list of tuple (probability, RuleTreeBaseStump) where sum(probabilities)==1
                  random_state,
                  ):
         self.max_leaf_nodes = float("inf") if max_leaf_nodes is None else max_leaf_nodes
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         self.prune_useless_leaves = prune_useless_leaves
+
+        self.base_stump = base_stump
+
         self.random_state = random_state
+        random.seed(random_state)
+
+    def _set_stump(self):
+        # base stump type checking
+        class_to_check = self._get_stumps_base_class()
+        _base_stump = []
+        _p = []
+        if isinstance(self.base_stump, RuleTreeBaseStump):
+            assert isinstance(self.base_stump, class_to_check)
+            _base_stump.append(self.base_stump)
+            _p.append(1.)
+        elif type(self.base_stump) == list:
+            assert len(self.base_stump) > 0
+            _equal_p = 1 / len(self.base_stump)
+            for el in self.base_stump:
+                if isinstance(el, Sequence):
+                    assert isinstance(el[1], RuleTreeBaseStump)
+                    assert isinstance(el[1], class_to_check)
+                    _p.append(el[0])
+                else:
+                    assert isinstance(el, RuleTreeBaseStump)
+                    assert isinstance(el, class_to_check)
+                    _p.append(_equal_p)
+
+        assert sum(_p) == 1.
+        self.base_stump = [(p, stump) for p, stump in zip(np.cumsum(_p), _base_stump)]
+
+    def _get_stump(self):
+        val = random.random()
+        for p, clf in self.base_stump:
+            if val <= p:
+                return sklearn.clone(clf)
 
     def fit(self, X: np.array, y: np.array = None, **kwargs):
         self.X = X
@@ -33,6 +72,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.queue = list()
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
+        self._set_stump()
 
         idx = np.arange(X.shape[0])
 
@@ -165,6 +205,10 @@ class RuleTree(RuleTreeBase, ABC):
     @abstractmethod
     def is_split_useless(self, clf: tree, idx: np.ndarray):
         pass
+
+    @abstractmethod
+    def _get_stumps_base_class(self):
+        return RuleTreeBaseStump
 
     @classmethod
     def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):

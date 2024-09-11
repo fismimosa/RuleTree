@@ -10,7 +10,7 @@ from ruletree import light_famd, RuleTreeClassifier, RuleTreeRegressor
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
 from ruletree.utils import bic
-from ruletree.stumps.DecisionTreeStumpRegressor import MyDecisionTreeRegressor
+from ruletree.stumps.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 
 
 class RuleTreeCluster(RuleTree, ClusterMixin):
@@ -22,6 +22,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
+                 base_stump:RegressorMixin | list  = None,
                  random_state=None,
 
                  criterion='squared_error',
@@ -37,6 +38,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
+                         base_stump=base_stump,
                          random_state=random_state)
 
         self.n_components = n_components
@@ -88,7 +90,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         best_clf = None
         best_score = float('inf')
         for i in range(n_components_split):
-            clf = MyDecisionTreeRegressor(
+            clf = DecisionTreeStumpRegressor(
                 max_depth=1,
                 criterion=self.criterion,
                 splitter=self.splitter,
@@ -142,6 +144,9 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
 
         self.__labels_obj_to_int(node.node_l)
         self.__labels_obj_to_int(node.node_r)
+
+    def _get_stumps_base_class(self):
+        return RegressorMixin
 
 
 class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):

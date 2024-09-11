@@ -39,8 +39,7 @@ class RuleTreeAdaBoostClassifier(AdaBoostClassifier, RuleTreeBase):
         self.learning_rate = learning_rate
         self.algorithm = algorithm
 
-        super().__init__(
-            estimator=RuleTreeClassifier(min_samples_split=min_samples_split,
+        estimator = RuleTreeClassifier(min_samples_split=min_samples_split,
                                          max_depth=3, #stump
                                          prune_useless_leaves=prune_useless_leaves,
                                          random_state=random_state,
@@ -54,6 +53,9 @@ class RuleTreeAdaBoostClassifier(AdaBoostClassifier, RuleTreeBase):
                                          class_weight=class_weight,
                                          ccp_alpha=ccp_alpha,
                                          monotonic_cst=monotonic_cst
-                                         ),
+                                         )
+
+        super().__init__(
+            estimator=estimator,
             n_estimators=n_estimators, learning_rate=learning_rate, algorithm=algorithm, random_state=random_state
         )

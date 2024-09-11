@@ -1,9 +1,11 @@
+from copy import copy
+
 import numpy as np
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 
-from ruletree.stumps.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
-from ruletree.stumps.ObliqueBivariateSplitRegressor import ObliqueBivariateSplit
+from ruletree.stumps.splitters.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
+from ruletree.stumps.splitters.ObliqueBivariateSplitRegressor import ObliqueBivariateSplitRegressor
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
@@ -11,7 +13,7 @@ from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entro
 from ruletree.utils.define import MODEL_TYPE_CLF
 
 
-class MyDecisionTreeClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
+class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -19,16 +21,18 @@ class MyDecisionTreeClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         self.unique_val_enum = None
         self.threshold_original = None
         self.feature_original = None
-        self.is_oblique = False
         self.coefficients = None
 
-        if kwargs['criterion'] == "gini":
+
+        if 'criterion' not in kwargs or kwargs['criterion'] == "gini":
             self.impurity_fun = gini
         elif kwargs['criterion'] == "entropy":
             self.impurity_fun = entropy
         else:
             self.impurity_fun = kwargs['criterion']
 
+    def get_params(self, deep=True):
+        return self.kwargs
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
@@ -138,10 +142,10 @@ class MyObliqueDecisionTreeClassifier(DecisionTreeClassifier):
         
         
         if self.oblique_split_type == 'householder':
-            self.oblique_split = ObliqueHouseHolderSplit(**oblique_params, **kwargs, model_type = MODEL_TYPE_CLF)
+            self.oblique_split = ObliqueHouseHolderSplit(**oblique_params, **kwargs)
            
         if self.oblique_split_type == 'bivariate':
-            self.oblique_split = ObliqueBivariateSplit(**oblique_params, **kwargs, model_type  = MODEL_TYPE_CLF)
+            self.oblique_split = ObliqueBivariateSplitRegressor(**oblique_params, **kwargs)
         
        
     def fit(self, X, y, sample_weight=None, check_input=True):

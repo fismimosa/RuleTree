@@ -247,7 +247,7 @@ def test_clf_iris():
     X = df.iloc[:, :-1].values
     y = df.iloc[:, -1].values
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
-    clf_rule = RuleTreeAdaBoostClassifier(n_estimators=10, prune_useless_leaves=True)
+    clf_rule = RuleTreeClassifier(max_depth=5)
 
     clf_rule.fit(X_train, y_train)
 
@@ -285,5 +285,5 @@ if __name__ == "__main__":
     #test_reg()
     #test_clu()
 
-    #test_clf_iris()
-    test_clc_iris()
+    test_clf_iris()
+    #test_clc_iris()

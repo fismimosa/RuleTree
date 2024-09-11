@@ -8,7 +8,7 @@ from sklearn.base import RegressorMixin
 
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.stumps.DecisionTreeStumpRegressor import MyDecisionTreeRegressor, MyObliqueDecisionTreeRegressor
+from ruletree.stumps.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor, MyObliqueDecisionTreeRegressor
 from ruletree.utils.data_utils import get_info_gain
 
 
@@ -18,6 +18,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
+                 base_stump: RegressorMixin | list = None,
                  random_state=None,
 
                  criterion='squared_error',
@@ -37,6 +38,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
+                         base_stump=base_stump,
                          random_state=random_state)
 
         self.criterion = criterion
@@ -67,7 +69,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             else:
                 splitter = 'best'
 
-        clf = MyDecisionTreeRegressor(
+        clf = DecisionTreeStumpRegressor(
             max_depth=1,
             criterion=self.criterion,
             splitter=splitter,
@@ -129,3 +131,6 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             node_r=None,
             samples=len(y[idx]),
         )
+
+    def _get_stumps_base_class(self):
+        return RegressorMixin

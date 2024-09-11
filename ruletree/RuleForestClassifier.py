@@ -1,10 +1,11 @@
+from random import random
+
 import numpy as np
 import sklearn.base
-from PIL.ImagePalette import random
 from sklearn.ensemble import BaggingClassifier
 
 from ruletree import RuleTreeClassifier
-from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.base.RuleTreeBase import RuleTreeBase
 
 
 class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
