@@ -1,11 +1,11 @@
 from sklearn.base import ClassifierMixin
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.tree import DecisionTreeClassifier
 
-from ruletree.stumps.ObliqueBivariateStump import ObliqueBivariateStump
+from ruletree.stumps.splitters.ObliqueBivariateSplit import ObliqueBivariateSplit
 from ruletree.utils.data_utils import get_info_gain
 
 
-class ObliqueBivariateStumpClassifier(ClassifierMixin, ObliqueBivariateStump):
+class ObliqueBivariateSplitClassifier(ClassifierMixin, ObliqueBivariateSplit):
 
     def best_threshold(self, X_proj, y, sample_weight=None, check_input=True):
         # for each orientation of the current feature pair,

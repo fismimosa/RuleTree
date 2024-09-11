@@ -1,3 +1,5 @@
+from abc import abstractmethod, ABC
+
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -7,21 +9,19 @@ from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 
-class ObliqueHouseHolderSplit(RuleTreeBaseStump):
+class ObliqueHouseHolderSplit(RuleTreeBaseStump, ABC):
     def __init__(
         self,
         pca=None,
         max_oblique_features=2,
         tau=1e-4,
-        model_type='clf',
         **kwargs
     ):
         self.kwargs = kwargs
         self.pca = pca
         self.max_oblique_features = max_oblique_features
         self.tau = tau
-        self.model_type = model_type
-       
+
         self.dominant_ev = None
         self.u_weights = None
         self.householder_matrix = None
@@ -34,6 +34,10 @@ class ObliqueHouseHolderSplit(RuleTreeBaseStump):
     def transform(self, X):
         X_house = X.dot(self.householder_matrix)
         return X_house
+
+    @abstractmethod
+    def get_base_model(self):
+        pass
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         
@@ -67,12 +71,8 @@ class ObliqueHouseHolderSplit(RuleTreeBaseStump):
 
         X_house = self.transform(X)
 
-        if self.model_type == MODEL_TYPE_CLF:
-            self.oblq_clf = DecisionTreeClassifier(**self.kwargs) 
-        elif self.model_type == MODEL_TYPE_REG:
-            self.oblq_clf = DecisionTreeRegressor(**self.kwargs)     
-        else:
-            raise Exception('Unknown model %s' % self.model_type)
+        self.oblq_clf = self.get_base_model()
+
         self.oblq_clf.fit(X_house, y, sample_weight=sample_weight, check_input=check_input)
         
         self.feats = list(np.nonzero(self.u_weights)[0])

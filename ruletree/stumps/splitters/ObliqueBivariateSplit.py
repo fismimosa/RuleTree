@@ -1,10 +1,10 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
 import numpy as np
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 
-class ObliqueBivariateStump(RuleTreeBaseStump):
+class ObliqueBivariateSplit(RuleTreeBaseStump, ABC):
     def __init__(
             self,
             n_orientations=10,  # number of orientations to generate

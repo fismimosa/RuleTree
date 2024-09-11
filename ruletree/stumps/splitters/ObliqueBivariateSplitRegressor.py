@@ -1,11 +1,11 @@
 from sklearn.base import RegressorMixin
 from sklearn.tree import DecisionTreeRegressor
 
-from ruletree.stumps.ObliqueBivariateStump import ObliqueBivariateStump
+from ruletree.stumps.splitters.ObliqueBivariateSplit import ObliqueBivariateSplit
 from ruletree.utils.data_utils import get_info_gain
 
 
-class ObliqueBivariateSplit(RegressorMixin, ObliqueBivariateStump):
+class ObliqueBivariateSplitRegressor(RegressorMixin, ObliqueBivariateSplit):
     
     def best_threshold(self, X_proj, y, sample_weight=None, check_input=True):
         #for each orientation of the current feature pair, 
