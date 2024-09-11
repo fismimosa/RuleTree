@@ -31,7 +31,7 @@ from config import dataset_target_clf, task_method, TASK_CLF, DATASET_PATH, data
     dataset_target_clu, dataset_feat_drop_clu
 from evaluation_utils import evaluate_clf, evaluate_expl, evaluate_reg, evaluate_clu_unsup, evaluate_clu_sup
 from preprocessing_utils import remove_missing_values
-from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree.base.RuleTreeBase import RuleTreeBase
 
 import traceback
 

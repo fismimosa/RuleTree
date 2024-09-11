@@ -3,8 +3,7 @@ import sklearn.metrics as skm
 from sklearn import tree
 from sklearn.tree import _tree
 
-from ruletree import RuleTreeClassifier, RuleTree, RuleTreeRegressor
-from ruletree.RuleTreeBase import RuleTreeBase
+from ruletree import RuleTreeClassifier, RuleTreeRegressor
 from ruletree.RuleTreeNode import RuleTreeNode
 
 
