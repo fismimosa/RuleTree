@@ -60,7 +60,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         return self
 
     def _fit_cat(self, X, y, best_info_gain):
-        if self.tree_.max_depth > 1:
+        if self.max_depth > 1:
             raise Exception("not implemented") # TODO: implement?
 
         len_x = len(X)
