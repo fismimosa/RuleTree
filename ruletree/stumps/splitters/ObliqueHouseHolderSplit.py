@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 
 import numpy as np
+from sklearn.base import TransformerMixin
 from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from scipy.linalg import norm
@@ -9,7 +10,7 @@ from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 
-class ObliqueHouseHolderSplit(RuleTreeBaseStump, ABC):
+class ObliqueHouseHolderSplit(RuleTreeBaseStump, TransformerMixin, ABC):
     def __init__(
         self,
         pca=None,

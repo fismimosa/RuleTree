@@ -90,7 +90,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                 clf = sklearn.clone(clf)
                 clf.fit(X[idx], y[idx], **kwargs)
 
-                gain = get_info_gain(clf)  # TODO: @Alessio vedi commento su classifier
+                gain = get_info_gain(clf)
                 info_gains.append(gain)
 
             clf = clfs[np.argmax(info_gains)]

@@ -96,8 +96,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 clf = sklearn.clone(clf)
                 clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
 
-                gain = get_info_gain(clf) #TODO: @Alessio non possiamo implementare oblique_split direttamente
-                                                #  dentro MyObliqueDecisionTreeClassifier? Per come è scritto ora questa istruzione non funzionerebbe
+                gain = get_info_gain(clf)
                 info_gains.append(gain)
 
             clf = clfs[np.argmax(info_gains)]

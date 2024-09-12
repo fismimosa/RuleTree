@@ -1,10 +1,11 @@
 from abc import abstractmethod, ABC
 
 import numpy as np
+from sklearn.base import TransformerMixin
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 
-class ObliqueBivariateSplit(RuleTreeBaseStump, ABC):
+class ObliqueBivariateSplit(RuleTreeBaseStump, TransformerMixin, ABC):
     def __init__(
             self,
             n_orientations=10,  # number of orientations to generate
@@ -39,8 +40,9 @@ class ObliqueBivariateSplit(RuleTreeBaseStump, ABC):
         pass
 
     def transform(self, X):
-        i, j = self.feats[0], self.feats[1]
-        return X[:, [i, j]]
+        i, j = self.feats
+        X_proj = self.project_features(X[:, [i, j]], self.orientations_matrix)
+        return X_proj
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         self.n_features = X.shape[1]  # number of features
@@ -70,13 +72,11 @@ class ObliqueBivariateSplit(RuleTreeBaseStump, ABC):
         return self
 
     def predict(self, X):
-        X_pair = self.transform(X)
-        X_proj = self.project_features(X_pair, self.orientations_matrix)
+        X_proj = self.transform(X)
         return self.oblq_clf.predict(X_proj)
 
     def apply(self, X):
-        X_pair = self.transform(X)
-        X_proj = self.project_features(X_pair, self.orientations_matrix)
+        X_proj = self.transform(X)
         return self.oblq_clf.apply(X_proj)
 
 
