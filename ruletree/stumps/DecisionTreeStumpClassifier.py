@@ -161,10 +161,9 @@ class MyObliqueDecisionTreeClassifier(DecisionTreeClassifier):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
-        best_info_gain = -float('inf')
-        
+
         if len(self.numerical) > 0:
-            self.oblique_split.fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
+            self.fit( self.oblique_split.transform(X[:, self.numerical]), y, sample_weight=sample_weight, check_input=check_input)
             self.feature_original = [[self.oblique_split.feats], -2, -2]
             self.coefficients = self.oblique_split.coeff
             self.threshold_original = np.array([self.oblique_split.threshold, -2, -2])
@@ -175,4 +174,4 @@ class MyObliqueDecisionTreeClassifier(DecisionTreeClassifier):
         return self
     
     def apply(self, X):
-        return self.oblique_split.apply(X[:, self.numerical])
+        return self.apply(self.oblique_split.transform(X))

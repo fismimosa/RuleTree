@@ -147,14 +147,14 @@ class MyObliqueDecisionTreeRegressor(DecisionTreeRegressor):
     def __impurity_fun(self, **x):
         return self.impurity_fun(**x) if len(x["y_true"]) > 0 else 0 # TODO: chec
     
-    def fit(self, X, y):
+    def fit(self, X, y, **kwargs):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
         best_info_gain = -float('inf')
         
         if len(self.numerical) > 0:
-            self.oblique_split.fit(X[:, self.numerical], y)
+            self.fit( self.oblique_split.transform(X[:, self.numerical]), y, **kwargs)
             self.feature_original = [[self.oblique_split.feats], -2, -2]
             self.coefficients = self.oblique_split.coeff
             self.threshold_original = np.array([self.oblique_split.threshold, -2, -2])
@@ -165,5 +165,5 @@ class MyObliqueDecisionTreeRegressor(DecisionTreeRegressor):
         return self
     
     def apply(self, X):
-        return self.oblique_split.apply(X[:, self.numerical])
+        return self.apply(self.oblique_split.transform(X))
 
