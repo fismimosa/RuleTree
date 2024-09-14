@@ -10,7 +10,7 @@ from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 
-class ObliqueHouseHolderSplit(RuleTreeBaseStump, TransformerMixin, ABC):
+class ObliqueHouseHolderSplit(TransformerMixin, ABC):
     def __init__(
         self,
         pca=None,
@@ -30,15 +30,13 @@ class ObliqueHouseHolderSplit(RuleTreeBaseStump, TransformerMixin, ABC):
 
         self.feats = None
         self.coeff = None
-        self.threshold = None
 
     def transform(self, X):
-        X_house = X.dot(self.householder_matrix)
+        if self.householder_matrix is None:
+            X_house = X
+        else:
+            X_house = X.dot(self.householder_matrix)
         return X_house
-
-    @abstractmethod
-    def get_base_model(self):
-        pass
 
     def fit(self, X, y, sample_weight=None, check_input=True):
         
@@ -72,20 +70,19 @@ class ObliqueHouseHolderSplit(RuleTreeBaseStump, TransformerMixin, ABC):
 
         X_house = self.transform(X)
 
-        self.oblq_clf = self.get_base_model()
-
-        self.oblq_clf.fit(X_house, y, sample_weight=sample_weight, check_input=check_input)
-        
         self.feats = list(np.nonzero(self.u_weights)[0])
         self.coeff = list(self.u_weights[self.feats])
-        self.threshold = self.oblq_clf.tree_.threshold[0]
+
+        #self.oblq_clf.fit(X_house, y, sample_weight=sample_weight, check_input=check_input)
         
         return self
 
-    def predict(self, X):
-        X_house = self.transform(X)
-        return self.oblq_clf.predict(X_house)
+    #def predict(self, X):
+    #    X_house = self.transform(X)
+    #    return self.oblq_clf.predict(X_house)
 
-    def apply(self, X):
-        X_house = self.transform(X)
-        return self.oblq_clf.apply(X_house)
+    #def apply(self, X):
+    #    X_house = self.transform(X)
+    #    return self.oblq_clf.apply(X_house)
+    
+    

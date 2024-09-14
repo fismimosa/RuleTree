@@ -5,7 +5,7 @@ from sklearn.base import TransformerMixin
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 
-class ObliqueBivariateSplit(RuleTreeBaseStump, TransformerMixin, ABC):
+class ObliqueBivariateSplit(TransformerMixin, ABC):
     def __init__(
             self,
             n_orientations=10,  # number of orientations to generate
@@ -25,7 +25,7 @@ class ObliqueBivariateSplit(RuleTreeBaseStump, TransformerMixin, ABC):
 
         self.feats = None
         self.coeff = None
-        self.threshold = None
+        #self.threshold = None
 
     def generate_orientations(self, H):
         angles = np.linspace(0, np.pi, H)  # np.pi is 180 degrees
@@ -66,18 +66,18 @@ class ObliqueBivariateSplit(RuleTreeBaseStump, TransformerMixin, ABC):
                     # self.best_feats_pair = (i,j)
 
                     self.coeff = self.orientations_matrix[:, (clf.tree_.feature)[0]]
-                    self.threshold = clf.tree_.threshold[0]
                     self.feats = [i, j]
+                    #self.threshold = clf.tree_.threshold[0]
 
         return self
 
-    def predict(self, X):
-        X_proj = self.transform(X)
-        return self.oblq_clf.predict(X_proj)
+    #def predict(self, X):
+    #    X_proj = self.transform(X)
+    #    return self.oblq_clf.predict(X_proj)
 
-    def apply(self, X):
-        X_proj = self.transform(X)
-        return self.oblq_clf.apply(X_proj)
+    #def apply(self, X):
+    #    X_proj = self.transform(X)
+    #    return self.oblq_clf.apply(X_proj)
 
 
 
