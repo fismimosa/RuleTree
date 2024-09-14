@@ -4,9 +4,10 @@ import numpy as np
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 
-from ruletree.stumps.splitters.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
-from ruletree.stumps.splitters.ObliqueBivariateSplitRegressor import ObliqueBivariateSplitRegressor
+
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from ruletree.stumps.splitters.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
+from ruletree.stumps.splitters.ObliqueBivariateSplitClassifier import ObliqueBivariateSplitClassifier
 
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
 
@@ -134,7 +135,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         return self.is_categorical
 
 
-class MyObliqueDecisionTreeClassifier(DecisionTreeClassifier):
+class ObliqueDecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
     def __init__(self, oblique_params = {}, oblique_split_type =  'householder', **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -154,24 +155,37 @@ class MyObliqueDecisionTreeClassifier(DecisionTreeClassifier):
             self.oblique_split = ObliqueHouseHolderSplit(**oblique_params, **kwargs)
            
         if self.oblique_split_type == 'bivariate':
-            self.oblique_split = ObliqueBivariateSplitRegressor(**oblique_params, **kwargs)
+            self.oblique_split = ObliqueBivariateSplitClassifier(**oblique_params, **kwargs)
         
+        
+    def get_params(self, deep=True):
+        return self.kwargs
        
     def fit(self, X, y, sample_weight=None, check_input=True):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
-
+    
         if len(self.numerical) > 0:
-            self.fit( self.oblique_split.transform(X[:, self.numerical]), y, sample_weight=sample_weight, check_input=check_input)
-            self.feature_original = [[self.oblique_split.feats], -2, -2]
+            self.oblique_split.fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
+            X_transform = self.oblique_split.transform(X[:, self.numerical])
+            super().fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
+        
+            self.feature_original = [self.oblique_split.feats, -2, -2]
             self.coefficients = self.oblique_split.coeff
-            self.threshold_original = np.array([self.oblique_split.threshold, -2, -2])
-            best_info_gain = get_info_gain(self.oblique_split.oblq_clf)
+            self.threshold_original = self.tree_.threshold
             
-            self.best_info_gain = best_info_gain
-       
         return self
     
     def apply(self, X):
-        return self.apply(self.oblique_split.transform(X))
+        X_transform = self.oblique_split.transform(X[:, self.numerical])
+        return super().apply(X_transform)
+    
+    def get_feature(self):
+        return self.feature_original[0]
+
+    def get_thresholds(self):
+        return self.threshold_original[0]
+
+    def get_is_categorical(self):
+        return self.is_categorical
