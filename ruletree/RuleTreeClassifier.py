@@ -98,6 +98,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
                 gain = get_info_gain(clf)
                 info_gains.append(gain)
+                clfs.append(clf)
 
             clf = clfs[np.argmax(info_gains)]
         else:
