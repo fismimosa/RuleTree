@@ -149,6 +149,14 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStu
         self.oblique_params = oblique_params
         self.oblique_split_type = oblique_split_type
         self.oblique_split = None
+
+
+        if 'criterion' not in kwargs or kwargs['criterion'] == "gini":
+            self.impurity_fun = gini
+        elif kwargs['criterion'] == "entropy":
+            self.impurity_fun = entropy
+        else:
+            self.impurity_fun = kwargs['criterion']
         
         
         if self.oblique_split_type == 'householder':
