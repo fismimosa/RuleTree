@@ -168,8 +168,9 @@ class ObliqueDecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump
     def get_is_categorical(self):
         return self.is_categorical
         
-        
- """class MyObliqueDecisionTreeRegressor(DecisionTreeRegressor):
+
+
+class MyObliqueDecisionTreeRegressor(DecisionTreeRegressor):
     def __init__(self, oblique_params = {}, oblique_split_type =  'householder', **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -223,5 +224,5 @@ class ObliqueDecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump
         return self
     
     def apply(self, X):
-        return self.apply(self.oblique_split.transform(X))"""
+        return self.apply(self.oblique_split.transform(X))
 
