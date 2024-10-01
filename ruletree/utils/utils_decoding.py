@@ -6,10 +6,12 @@ def configure_cat_split(clf, feature_index, threshold_value):
     clf.is_categorical = True
     clf.feature_original = [feature_index - 1, -2, -2]
     clf.threshold_original = np.array([threshold_value, -2, -2])
+    return clf
     
 def configure_non_cat_split(clf, vector, index, n_features_in_, n_classes_, n_outputs_):
     inner_tree = create_inner_tree(n_features_in_, n_classes_, n_outputs_, vector, index)
     assign_tree_properties(clf, inner_tree)
+    return clf
 
 
 def create_inner_tree(n_features_in_, n_classes_, n_outputs_, vector, index):
@@ -19,7 +21,6 @@ def create_inner_tree(n_features_in_, n_classes_, n_outputs_, vector, index):
     
     node_count = 3  # Assuming max_depth 1 implies 3 nodes
     state['node_count'] = node_count
-    
     state['nodes'] = np.zeros((node_count,), 
                               dtype=[('left_child', '<i8'),
                                      ('right_child', '<i8'), 
@@ -38,8 +39,6 @@ def create_inner_tree(n_features_in_, n_classes_, n_outputs_, vector, index):
     
     return inner_tree
 
-
-
 def assign_tree_properties(clf, inner_tree):
     clf.tree_ = inner_tree
     clf.n_outputs_ = inner_tree.n_outputs
@@ -49,7 +48,6 @@ def assign_tree_properties(clf, inner_tree):
     clf.max_features_ = inner_tree.n_features
     clf.feature_original = clf.tree_.feature
     clf.threshold_original = clf.tree_.threshold
-    
     
 def set_node_children(idx_to_node, index, vector):
     left_child_idx = 2 * index + 1
