@@ -164,11 +164,69 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         return ClassifierMixin
     
     @classmethod
+    def complete_tree(cls, node, X, y, n_classes_):
+        classes_ = [i for i in range(n_classes_)]
+        node.prediction = calculate_mode(y)
+        node.prediction_probability = np.zeros((len(classes_), ))
+        node.samples = len(y)
+        
+        
+        for i, classe in enumerate(classes_):
+            node.prediction_probability[i] = np.sum(np.where(y == classe, 1, 0)) / len(y)
+
+        if not node.is_leaf():            
+            labels_clf = node.clf.apply(X)
+            X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
+            y_l, y_r = y[labels_clf == 1], y[labels_clf == 2]         
+            if X_l.shape[0] != 0:
+                cls.complete_tree(node.node_l, X_l, y_l, n_classes_)
+            if X_r.shape[0] != 0:
+                cls.complete_tree(node.node_r, X_r, y_r, n_classes_)
+
+            
+        
+    @classmethod    
     def decode_ruletree(cls, vector, n_features_in_, n_classes_, n_outputs_, 
+                        numerical_idxs=None, categorical_idxs=None):
+        
+        idx_to_node = super().decode_ruletree(vector)
+        
+        for index in range(len(vector[0])):
+            #if leaf
+            if vector[0][index] == -1:
+                idx_to_node[index].prediction = vector[1][index]
+            else:
+                clf = DecisionTreeStumpClassifier() ##add kwargs in the function
+                clf.numerical = numerical_idxs
+                clf.categorical = categorical_idxs
+                if isinstance(vector[1][index], str):
+                    clf = configure_cat_split(clf, vector[0][index], vector[1][index])
+                else:
+                    clf = configure_non_cat_split(clf, vector, index, 
+                                               n_features_in_, n_classes_, n_outputs_)
+                    
+                idx_to_node[index].clf = clf
+                set_node_children(idx_to_node, index, vector)
+                
+        
+        rule_tree = RuleTreeClassifier()
+        rule_tree.classes_ = [i for i in range(n_classes_)]
+        simplify_decode(idx_to_node[0])
+        rule_tree.root = idx_to_node[0]
+        return rule_tree
+                
+                
+        
+            
+    @classmethod
+    def _decode_old(cls, vector, n_features_in_, n_classes_, n_outputs_, 
                         numerical_idxs=None, categorical_idxs=None, criterion=None):
         
         idx_to_node = super().decode_ruletree(vector, n_features_in_, n_classes_, n_outputs_, 
                                               numerical_idxs, categorical_idxs, criterion)
+        
+        
+       
         
         for index in range(len(vector[0])):
             if vector[0][index] == -1:
@@ -176,8 +234,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             else:
                 clf = DecisionTreeStumpClassifier(
                                         criterion=criterion)
-                                   
-            
+                
+                clf = DecisionTreeStumpClassifier()
+        
                 if numerical_idxs is not None:
                    clf.numerical = numerical_idxs
         
@@ -192,8 +251,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 idx_to_node[index].clf = clf
                 set_node_children(idx_to_node, index, vector)
                 
+                print(clf)
+                
         rule_tree = RuleTreeClassifier()
         simplify_decode(idx_to_node[0])
         rule_tree.root = idx_to_node[0]
         return rule_tree
-
