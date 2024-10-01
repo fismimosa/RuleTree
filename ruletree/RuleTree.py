@@ -230,9 +230,9 @@ class RuleTree(RuleTreeBase, ABC):
             comparison = "==" if rules['is_categorical'] else "<="
             not_comparison = "!=" if rules['is_categorical'] else ">"
             feature_idx = rules['feature_idx']
-            thr = rules['threshold_idx']
+            thr = rules['threshold']
 
-            if type(feature_idx) == int:
+            if isinstance(feature_idx, (int, np.integer)):
                 print(f"{indentation}|--- {names(feature_idx)} {comparison} "
                       f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}"
                       f"\t{rules['samples']}")
