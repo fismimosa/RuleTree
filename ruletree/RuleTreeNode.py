@@ -83,7 +83,7 @@ class RuleTreeNode:
                 "is_leaf": False,
                 "prediction": self.prediction,
                 "prediction_probability": self.prediction_probability,
-                "feature_idx": self.clf.get_features(),
+                "feature_idx": self.clf.get_feature(),
                 "threshold": self.clf.get_thresholds(),
                 "split_type": self.clf.__name__,
                 "is_categorical": self.clf.get_is_categorical(),
