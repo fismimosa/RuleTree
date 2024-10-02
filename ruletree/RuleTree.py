@@ -245,14 +245,14 @@ class RuleTree(RuleTreeBase, ABC):
                 raise Exception("Unimplemented")
 
     @classmethod
-    def decode_ruletree(cls, vector, n_features_in_, n_classes_, n_outputs_, 
-                        numerical_idxs=None, categorical_idxs=None, criterion = None):
+    def decode_ruletree(cls, vector):
 
         #need to check if n_classes_ is actually necessary
         
-        n_classes_ = np.array([n_classes_], dtype=np.intp)
+        #n_classes_ = np.array([n_classes_], dtype=np.intp)
         
-        idx_to_node = {index: RuleTreeNode(node_id=None, prediction=None, prediction_probability=None, parent=-1) 
+        idx_to_node = {index: RuleTreeNode(node_id=None,
+                                        prediction=None, prediction_probability=None, parent=-1) 
                        for index in range(len(vector[0]))}
         
         idx_to_node[0].node_id = 'R'
