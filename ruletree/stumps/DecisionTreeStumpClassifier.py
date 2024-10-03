@@ -18,6 +18,8 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
+        self.is_oblique = False
+        self.is_pivotal = False
         self.kwargs = kwargs
         self.unique_val_enum = None
         self.threshold_original = None
@@ -139,6 +141,8 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStu
     def __init__(self, oblique_params = {}, oblique_split_type =  'householder', **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
+        self.is_oblique = False
+        self.is_pivotal = False
         self.kwargs = kwargs
         self.unique_val_enum = None
         self.threshold_original = None
@@ -182,6 +186,7 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStu
             self.feature_original = [self.oblique_split.feats, -2, -2]
             self.coefficients = self.oblique_split.coeff
             self.threshold_original = self.tree_.threshold
+            self.is_oblique = True
             
         return self
     
