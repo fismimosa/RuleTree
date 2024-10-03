@@ -15,11 +15,12 @@ class PivotTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
+        self.is_oblique = False
+        self.is_pivotal = False
         self.kwargs = kwargs
         self.unique_val_enum = None
         self.threshold_original = None
         self.feature_original = None 
-        self.is_oblique = True
         self.coefficients = None
         
         
@@ -51,6 +52,7 @@ class PivotTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             
             self.feature_original = [candidate_names[self.tree_.feature[0]], -2, -2]
             self.threshold_original = self.tree_.threshold
+            self.is_pivotal = True
             
     
         return self
