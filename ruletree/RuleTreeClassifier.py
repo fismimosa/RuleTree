@@ -9,6 +9,7 @@ from sklearn.base import ClassifierMixin
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
 from ruletree.stumps.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier
+from ruletree.stumps.PivotTreeStumpClassifier import PivotTreeStumpClassifier
 from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 from ruletree.utils.utils_decoding import configure_non_cat_split, configure_cat_split
@@ -35,6 +36,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  class_weight=None,
                  ccp_alpha=0.0,
                  monotonic_cst=None,
+                 distance_matrix = None
                  ):
         if base_stump is None:
             base_stump = DecisionTreeStumpClassifier(
@@ -72,6 +74,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         self.class_weight = class_weight
         self.ccp_alpha = ccp_alpha
         self.monotonic_cst = monotonic_cst
+        self.distance_matrix = distance_matrix         
 
 
     def is_split_useless(self, clf: tree, idx: np.ndarray):
@@ -94,8 +97,13 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             info_gains = []
             for _, clf in self.base_stump:
                 clf = sklearn.clone(clf)
-                clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+                if isinstance(clf, PivotTreeStumpClassifier):
+                    clf.fit(X[idx], y[idx], distance_matrix=self.distance_matrix, idx=idx,
+                            sample_weight=None if sample_weight is None else sample_weight[idx]) 
+                else:
+                    clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
 
+            
                 gain = get_info_gain(clf)
                 info_gains.append(gain)
                 clfs.append(clf)
@@ -225,9 +233,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         idx_to_node = super().decode_ruletree(vector, n_features_in_, n_classes_, n_outputs_, 
                                               numerical_idxs, categorical_idxs, criterion)
         
-        
-       
-        
+    
         for index in range(len(vector[0])):
             if vector[0][index] == -1:
                 idx_to_node[index].prediction = vector[1][index]
