@@ -52,10 +52,12 @@ class RuleTree(RuleTreeBase, ABC):
                     assert isinstance(el[1], RuleTreeBaseStump)
                     assert isinstance(el[1], class_to_check)
                     _p.append(el[0])
+                    _base_stump.append(el[1])
                 else:
                     assert isinstance(el, RuleTreeBaseStump)
                     assert isinstance(el, class_to_check)
                     _p.append(_equal_p)
+                    _base_stump.append(el)
 
         assert sum(_p) == 1.
         self.base_stump = [(p, stump) for p, stump in zip(np.cumsum(_p), _base_stump)]
