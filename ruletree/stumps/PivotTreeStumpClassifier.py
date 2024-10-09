@@ -54,7 +54,7 @@ class PivotTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             
             
             
-            self.feature_original = [candidate_names[self.tree_.feature[0]], -2, -2]
+            self.feature_original = [f'{candidate_names[self.tree_.feature[0]]}_P', -2, -2]
             self.threshold_original = self.tree_.threshold
             self.is_pivotal = True
             
