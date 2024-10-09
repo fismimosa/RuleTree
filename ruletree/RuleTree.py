@@ -217,6 +217,7 @@ class RuleTree(RuleTreeBase, ABC):
     @classmethod
     def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
         names = lambda x: f"X_{x}"
+        names_pivots = lambda x: f"P_{x}"
 
         if columns_names is not None:
             names = lambda x: columns_names[x]
@@ -243,6 +244,39 @@ class RuleTree(RuleTreeBase, ABC):
                 print(f"{indentation}|--- {names(feature_idx)} {not_comparison} "
                       f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
                 cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+                
+            elif (isinstance(feature_idx, str) and feature_idx.endswith('_P')):
+                print(f"{indentation}|--- {names_pivots(feature_idx[:-2])} {comparison} "
+                      f"{thr if isinstance(thr, (np.str_, np.string_, str)) else round(thr, ndigits=ndigits)}"
+                      f"\t{rules['samples']}")
+                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
+            
+                print(f"{indentation}|--- {names_pivots(feature_idx[:-2])} {not_comparison} "
+                      f"{thr if isinstance(thr, (np.str_, np.string_, str)) else round(thr, ndigits=ndigits)}")
+                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+
+            
+            elif isinstance(feature_idx, tuple) and all(isinstance(i, (int, np.integer)) for i in feature_idx):
+                
+                print(f"{indentation}|--- near {names_pivots(feature_idx[0])}"
+                      
+                      f"\t{rules['samples']}")
+                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
+
+                print(f"{indentation}|--- near {names_pivots(feature_idx[1])}"
+                     )
+                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+                
+                
+                #print(f"{indentation}|--- near {names_pivots(feature_idx[0])} {comparison} "
+                 #     f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}"
+                 #     f"\t{rules['samples']}")
+               # cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
+
+                #print(f"{indentation}|--- near {names_pivots(feature_idx[1])} {not_comparison} "
+                #      f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
+                #cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+
             else: #if list -> oblique
                 raise Exception("Unimplemented")
 
