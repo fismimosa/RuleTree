@@ -17,6 +17,7 @@ class RuleTreeNode:
                  node_l: Self = None,
                  node_r: Self = None,
                  samples: int = None,
+                 balance_score : float = None,
                  **kwargs):
         self.node_id = node_id
         self.prediction = prediction
@@ -26,6 +27,8 @@ class RuleTreeNode:
         self.node_l = node_l
         self.node_r = node_r
         self.samples = samples
+        self.balance_score = balance_score
+                     
 
         for name, value in kwargs.items():
             setattr(self, name, value)
