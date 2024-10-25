@@ -122,6 +122,7 @@ class RuleTree(RuleTreeBase, ABC):
             current_node.node_l = self.prepare_node(self.y, idx_l, current_node.node_id + "l", )
             current_node.node_r = self.prepare_node(self.y, idx_r, current_node.node_id + "r", )
             current_node.node_l.parent, current_node.node_r.parent = current_node, current_node
+            current_node.balance_score = (np.min(np.unique(labels, return_counts= True)[1]) / labels.shape[0])
 
             self.queue_push(current_node.node_l, idx_l)
             self.queue_push(current_node.node_r, idx_r)
