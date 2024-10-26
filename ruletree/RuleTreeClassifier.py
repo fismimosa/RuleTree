@@ -9,7 +9,7 @@ from sklearn.base import ClassifierMixin
 from ruletree.RuleTree import RuleTree
 from ruletree.RuleTreeNode import RuleTreeNode
 from ruletree.stumps.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier
-from ruletree.stumps.PivotTreeStumpClassifier import PivotTreeStumpClassifier
+from ruletree.stumps.PivotTreeStumpClassifier import PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier
 from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 from ruletree.utils.utils_decoding import configure_non_cat_split, configure_cat_split
@@ -36,7 +36,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  class_weight=None,
                  ccp_alpha=0.0,
                  monotonic_cst=None,
-                 distance_matrix = None
+                 distance_matrix = None,
+                 distance_measure = None
+                 
                  ):
         if base_stump is None:
             base_stump = DecisionTreeStumpClassifier(
@@ -74,7 +76,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         self.class_weight = class_weight
         self.ccp_alpha = ccp_alpha
         self.monotonic_cst = monotonic_cst
-        self.distance_matrix = distance_matrix         
+        self.distance_matrix = distance_matrix    
+        self.distance_measure = distance_measure
 
 
     def is_split_useless(self, clf: tree, idx: np.ndarray):
@@ -90,15 +93,18 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
         if self.stump_selection == 'random':
+            
             clf = self._get_random_stump()
             clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
         elif self.stump_selection == 'best':
             clfs = []
             info_gains = []
             for _, clf in self.base_stump:
+                
+                
                 clf = sklearn.clone(clf)
-                if isinstance(clf, PivotTreeStumpClassifier):
-                    clf.fit(X[idx], y[idx], distance_matrix=self.distance_matrix, idx=idx,
+                if isinstance(clf, (PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)):
+                    clf.fit(X[idx], y[idx], distance_matrix=self.distance_matrix, idx=idx, distance_measure = self.distance_measure,
                             sample_weight=None if sample_weight is None else sample_weight[idx]) 
                 else:
                     clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
@@ -106,6 +112,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             
                 gain = get_info_gain(clf)
                 info_gains.append(gain)
+                
                 clfs.append(clf)
 
             clf = clfs[np.argmax(info_gains)]
