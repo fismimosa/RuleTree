@@ -1,11 +1,12 @@
 from random import random
-
 import numpy as np
 import sklearn.base
 from sklearn.ensemble import BaggingClassifier
 
 from ruletree import RuleTreeClassifier
 from ruletree.base.RuleTreeBase import RuleTreeBase
+from sklearn.base import ClassifierMixin
+from ruletree.stumps.PivotTreeStumpClassifier import PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier
 
 
 class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
@@ -31,7 +32,12 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                  custom_estimator:sklearn.base.ClassifierMixin=None,
                  n_jobs=None,
                  random_state=None,
+                 base_stump = None,
+                 distance_matrix = None,
+                 distance_measure = None,
+                 stump_selection = 'best',
                  verbose=0):
+        
         self.n_estimators = n_estimators
         self.criterion = criterion
         self.max_depth = max_depth
@@ -53,6 +59,11 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
+        self.base_stump = base_stump
+        self.distance_matrix = distance_matrix
+        self.distance_measure = distance_measure
+        self.stump_selection= stump_selection
+               
 
     def fit(self, X:np.ndarray, y:np.ndarray, sample_weight=None, **kwargs):
         if self.max_features is None:
@@ -68,6 +79,10 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
         splitter = .5 if self.splitter == 'hybrid_forest' else self.splitter
         if type(splitter) is float:
             base_estimator = RuleTreeClassifier_choosing_splitter_randomly
+            
+        if self.base_stump is not None:
+            if any(isinstance(clf, (PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)) for clf in self.base_stump):
+                base_estimator = ForestEstimatorPivotClassifier
 
         super().__init__(estimator=base_estimator(criterion=self.criterion,
                                                   max_depth=self.max_depth,
@@ -80,7 +95,12 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                                                   class_weight=self.class_weight,
                                                   ccp_alpha=self.ccp_alpha,
                                                   prune_useless_leaves=self.prune_useless_leaves,
-                                                  splitter=self.splitter
+                                                  splitter=self.splitter,
+                                                  base_stump = self.base_stump,
+                                                  distance_measure = self.distance_measure,
+                                                  distance_matrix = self.distance_matrix,
+                                                  stump_selection= self.stump_selection
+                        
                                                   ),
                          n_estimators=self.n_estimators,
                          max_samples=X.shape[0] if self.max_samples is None else self.max_samples,
@@ -104,3 +124,54 @@ class RuleTreeClassifier_choosing_splitter_randomly(RuleTreeClassifier):
                 splitter = 'best'
         kwargs["splitter"] = splitter
         super().__init__(**kwargs)
+        
+class ForestEstimatorPivotClassifier(RuleTreeClassifier):
+    def __init__(self,
+                 max_leaf_nodes=float('inf'),
+                 min_samples_split=2,
+                 max_depth=float('inf'),
+                 prune_useless_leaves=False,
+                 base_stump: ClassifierMixin | list = None,
+                 stump_selection: str = 'random',
+                 random_state=None,
+
+                 criterion='gini',
+                 splitter='best',
+                 min_samples_leaf=1,
+                 min_weight_fraction_leaf=0.0,
+                 max_features=None,
+                 min_impurity_decrease=0.0,
+                 class_weight=None,
+                 ccp_alpha=0.0,
+                 monotonic_cst=None,
+                 distance_matrix = None,
+                 distance_measure = None
+                 
+                 ):
+        
+        super().__init__(max_leaf_nodes=max_leaf_nodes,
+                         min_samples_split=min_samples_split,
+                         max_depth=max_depth,
+                         prune_useless_leaves=prune_useless_leaves,
+                         base_stump=base_stump,
+                         stump_selection=stump_selection,
+                         random_state=random_state)
+
+        self.max_depth = max_depth
+        self.criterion = criterion
+        self.splitter = splitter
+        self.min_samples_split = min_samples_split
+        self.min_samples_leaf = min_samples_leaf
+        self.min_weight_fraction_leaf = min_weight_fraction_leaf
+        self.max_features = max_features
+        self.random_state = random_state
+        self.min_impurity_decrease = min_impurity_decrease
+        self.class_weight = class_weight
+        self.ccp_alpha = ccp_alpha
+        self.monotonic_cst = monotonic_cst
+        self.distance_matrix = distance_matrix    
+        self.distance_measure = distance_measure
+
+    
+    def fit(self, X: np.array, y: np.array=None, **kwargs):
+        super().fit(X, y, **kwargs)
