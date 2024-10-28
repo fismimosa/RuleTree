@@ -195,3 +195,16 @@ def entropy(x, sample_weight:np.ndarray=None, class_weight:dict=None):
     p_j_log = np.log2(p_j)
 
     return - p_j @ p_j_log
+
+def select_stumps(node, p=0.2, selected_stumps=None):
+    if selected_stumps is None:
+        selected_stumps = []
+
+    if node.clf is not None and node.balance_score > p:
+        selected_stumps.append(node.clf)
+        
+    if node.node_l is not None:
+        select_stumps(node.node_l, p, selected_stumps)
+        select_stumps(node.node_r, p, selected_stumps)
+    
+    return selected_stumps
