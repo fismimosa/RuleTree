@@ -43,7 +43,7 @@ class PivotSplit(TransformerMixin, ABC):
     def fit(self, X, y, distance_matrix, distance_measure, idx,
             sample_weight=None, check_input=True):
     
-        sub_matrix = distance_matrix[idx][:,idx]
+        sub_matrix = distance_matrix
         local_idx = np.arange(len(y))
     
         
