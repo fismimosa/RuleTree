@@ -104,8 +104,11 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 
                 clf = sklearn.clone(clf)
                 if isinstance(clf, (PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)):
-                    clf.fit(X[idx], y[idx], distance_matrix=self.distance_matrix, idx=idx, distance_measure = self.distance_measure,
+                    if self.distance_matrix is None:
+                        self.distance_matrix = pairwise_distances(X[idx], metric = self.distance_measure)
+                    clf.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, distance_measure = self.distance_measure,
                             sample_weight=None if sample_weight is None else sample_weight[idx]) 
+                  
                 else:
                     clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
 
