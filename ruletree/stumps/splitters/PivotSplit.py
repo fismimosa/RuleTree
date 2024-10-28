@@ -131,7 +131,7 @@ class MultiplePivotSplit(PivotSplit, ABC):
         
         super().fit(X, y, distance_matrix, distance_measure, idx,sample_weight=sample_weight, check_input=check_input)
         self.find_best_tuple(X, y, distance_measure = distance_measure, sample_weight=sample_weight, check_input=check_input)   
-        print(self.best_tup_name)
+       # print(self.best_tup_name)
         
     def transform(self, X, distance_measure = 'euclidean'):
         dist_to_p0 = pairwise_distances(X, self.best_tup[0].reshape(1, -1), metric = distance_measure).flatten()
