@@ -6,8 +6,7 @@ from sklearn.ensemble import BaggingClassifier
 from ruletree import RuleTreeClassifier
 from ruletree.base.RuleTreeBase import RuleTreeBase
 from sklearn.base import ClassifierMixin
-from ruletree.stumps.PivotTreeStumpClassifier import PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier
-
+from ruletree.stumps.DecisionTreeStumpClassifier import PivotTreeStumpClassifier, ObliquePivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier
 
 class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
     def __init__(self,
@@ -81,7 +80,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
             base_estimator = RuleTreeClassifier_choosing_splitter_randomly
             
         if self.base_stump is not None:
-            if any(isinstance(clf, (PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)) for clf in self.base_stump):
+            if any(isinstance(clf, (PivotTreeStumpClassifier, ObliquePivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)) for clf in self.base_stump):
                 base_estimator = ForestEstimatorPivotClassifier
 
         super().__init__(estimator=base_estimator(criterion=self.criterion,
