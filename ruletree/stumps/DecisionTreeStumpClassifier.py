@@ -8,10 +8,14 @@ from sklearn.tree import DecisionTreeClassifier
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.stumps.splitters.ObliqueHouseHolderSplit import ObliqueHouseHolderSplit
 from ruletree.stumps.splitters.ObliqueBivariateSplitClassifier import ObliqueBivariateSplitClassifier
+from ruletree.stumps.splitters.PivotSplitClassifier import ObliquePivotSplitClassifier
 
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
+from ruletree.stumps.splitters.PivotSplitClassifier import PivotSplitClassifier, MultiplePivotSplitClassifier
+
 
 from ruletree.utils.define import MODEL_TYPE_CLF
+
 
 
 class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
@@ -20,13 +24,14 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         self.is_categorical = False
         self.is_oblique = False
         self.is_pivotal = False
+        
         self.kwargs = kwargs
         self.unique_val_enum = None
+        
         self.threshold_original = None
         self.feature_original = None
         self.coefficients = None
-
-
+        
         if 'criterion' not in kwargs or kwargs['criterion'] == "gini":
             self.impurity_fun = gini
         elif kwargs['criterion'] == "entropy":
@@ -36,11 +41,14 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
     def get_params(self, deep=True):
         return self.kwargs
-
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    
+    def feature_analysis(self, X, y):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
+
+    def fit(self, X, y, sample_weight=None, check_input=True):
+        self.feature_analysis(X, y)
         best_info_gain = -float('inf')
 
         if len(self.numerical) > 0:
@@ -135,48 +143,101 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
     def get_is_categorical(self):
         return self.is_categorical
-
-
-class ObliqueDecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
-    def __init__(self, oblique_params = {}, oblique_split_type =  'householder', **kwargs):
+    
+    
+class PivotTreeStumpClassifier(DecisionTreeStumpClassifier,RuleTreeBaseStump):
+    def __init__(self, distance_matrix = None, distance_measure = 'euclidean', **kwargs ):
         super().__init__(**kwargs)
-        self.is_categorical = False
-        self.is_oblique = False
-        self.is_pivotal = False
-        self.kwargs = kwargs
-        self.unique_val_enum = None
-        self.threshold_original = None
-        self.feature_original = None
-        self.is_oblique = True
-        self.coefficients = None
+        self.pivot_split = PivotSplitClassifier(**kwargs)
+        self.distance_matrix = distance_matrix
+        self.distance_measure = distance_measure
         
-        self.oblique_params = oblique_params
-        self.oblique_split_type = oblique_split_type
-        self.oblique_split = None
+    def fit(self, X, y, distance_matrix, distance_measure, idx, sample_weight=None, check_input=True):
+        self.feature_analysis(X, y)
+        self.num_pre_transformed = self.numerical
+        self.cat_pre_transformed  = self.categorical 
+        best_info_gain = -float('inf')
+    
+        if len(self.numerical) > 0:
+            self.pivot_split.fit(X[:, self.numerical], y, distance_matrix, distance_measure, idx, sample_weight=sample_weight, check_input=check_input)
+            X_transform = self.pivot_split.transform(X[:, self.numerical])
+            candidate_names = self.pivot_split.get_candidates_names()
+            super().fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
+        
+            self.feature_original = [f'{candidate_names[self.tree_.feature[0]]}_P', -2, -2]
+            self.threshold_original = self.tree_.threshold
+            self.is_pivotal = True
+            
+        return self
+    
+    def apply(self, X):
+        X_transformed = self.pivot_split.transform(X[:, self.num_pre_transformed], self.distance_measure)
+        return super().apply(X_transformed)
+    
+    
+    
+class MultiplePivotTreeStumpClassifier(DecisionTreeStumpClassifier,RuleTreeBaseStump):
+    def __init__(self, distance_matrix = None, distance_measure = 'euclidean', **kwargs ):
+        super().__init__(**kwargs)
+        self.multi_pivot_split = MultiplePivotSplitClassifier(**kwargs)
+        self.distance_matrix = distance_matrix
+        self.distance_measure = distance_measure
+        
+    def fit(self, X, y, distance_matrix, distance_measure, idx, sample_weight=None, check_input=True):
+        self.feature_analysis(X, y)
+        self.num_pre_transformed = self.numerical
+        self.cat_pre_transformed  = self.categorical 
+        best_info_gain = -float('inf')
+    
+        if len(self.numerical) > 0:
+            self.multi_pivot_split.fit(X[:, self.numerical], y, distance_matrix, distance_measure, idx, sample_weight=sample_weight, check_input=check_input)
+            X_transform = self.multi_pivot_split.transform(X[:, self.numerical])
+            candidate_names = self.multi_pivot_split.get_candidates_names()
+            super().fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
+        
+            self.feature_original = [(candidate_names[0],candidate_names[1]), -2, -2]
+            self.threshold_original = self.tree_.threshold
+            self.is_pivotal = True
+            
+        return self
+    
+    def apply(self, X):
+        X_transformed = self.multi_pivot_split.transform(X[:, self.num_pre_transformed], self.distance_measure)
+        return super().apply(X_transformed)
 
+    
+    
+class ObliqueDecisionTreeStumpClassifier(DecisionTreeStumpClassifier,RuleTreeBaseStump):
+    def __init__(self, 
+                 oblique_split_type ='householder',
+                 pca = None, 
+                 max_oblique_features = 2, 
+                 tau = 1e-4,
+                 n_orientations = 10,
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.pca = pca 
+        self.max_oblique_features = max_oblique_features
+        self.tau = tau
+        self.n_orientations = n_orientations
 
-        if 'criterion' not in kwargs or kwargs['criterion'] == "gini":
-            self.impurity_fun = gini
-        elif kwargs['criterion'] == "entropy":
-            self.impurity_fun = entropy
-        else:
-            self.impurity_fun = kwargs['criterion']
         
-        
-        if self.oblique_split_type == 'householder':
-            self.oblique_split = ObliqueHouseHolderSplit(**oblique_params, **kwargs)
+        if oblique_split_type == 'householder':
+            self.oblique_split = ObliqueHouseHolderSplit(pca = self.pca,
+                                                         max_oblique_features = self.max_oblique_features,
+                                                         tau = self.tau,
+                                                         **kwargs)
            
-        if self.oblique_split_type == 'bivariate':
-            self.oblique_split = ObliqueBivariateSplitClassifier(**oblique_params, **kwargs)
+        if oblique_split_type == 'bivariate':
+            self.oblique_split = ObliqueBivariateSplitClassifier(n_orientations = self.n_orientations, **kwargs)
         
         
-    def get_params(self, deep=True):
-        return self.kwargs
-       
+    
     def fit(self, X, y, sample_weight=None, check_input=True):
-        dtypes = pd.DataFrame(X).infer_objects().dtypes
-        self.numerical = dtypes[dtypes != np.dtype('O')].index
-        self.categorical = dtypes[dtypes == np.dtype('O')].index
+        self.feature_analysis(X, y)
+        self.num_pre_transformed = self.numerical
+        self.cat_pre_transformed  = self.categorical 
+        best_info_gain = -float('inf')
     
         if len(self.numerical) > 0:
             self.oblique_split.fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
@@ -188,17 +249,84 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStu
             self.threshold_original = self.tree_.threshold
             self.is_oblique = True
             
+            
         return self
     
     def apply(self, X):
-        X_transform = self.oblique_split.transform(X[:, self.numerical])
+        X_transform = self.oblique_split.transform(X[:, self.num_pre_transformed])
         return super().apply(X_transform)
     
-    def get_feature(self):
-        return self.feature_original[0]
+    def get_params(self, deep=True):
+        return {
+            **self.kwargs,
+            'max_oblique_features': self.max_oblique_features,
+            'pca': self.pca,
+            'tau': self.tau,
+            'n_orientations': self.n_orientations
+        }
 
-    def get_thresholds(self):
-        return self.threshold_original[0]
-
-    def get_is_categorical(self):
-        return self.is_categorical
+    
+class ObliquePivotTreeStumpClassifier(DecisionTreeStumpClassifier,RuleTreeBaseStump):
+    def __init__(self,
+                 distance_matrix = None, 
+                 distance_measure = 'euclidean',
+                 oblique_split_type = 'householder', 
+                 pca = None, 
+                 max_oblique_features = 2, 
+                 tau = 1e-4,
+                 n_orientations = 10,
+                 **kwargs ):
+        super().__init__(**kwargs)
+        self.distance_matrix = distance_matrix
+        self.distance_measure = distance_measure
+        
+        self.pca = pca 
+        self.max_oblique_features = max_oblique_features
+        self.tau = tau
+        self.n_orientations = n_orientations
+        
+        
+        self.obl_pivot_split = ObliquePivotSplitClassifier(oblique_split_type = oblique_split_type,
+                                                       **kwargs)
+        
+        if oblique_split_type == 'householder':
+            self.oblique_split = ObliqueHouseHolderSplit(pca = self.pca,
+                                                         max_oblique_features = self.max_oblique_features,
+                                                         tau = self.tau,
+                                                         **kwargs)
+           
+        if oblique_split_type == 'bivariate':
+            self.oblique_split = ObliqueBivariateSplitClassifier(n_orientations = self.n_orientations, **kwargs)
+            
+        
+    def fit(self, X, y, distance_matrix, distance_measure, idx, sample_weight=None, check_input=True):
+        self.feature_analysis(X, y)
+        self.num_pre_transformed = self.numerical
+        self.cat_pre_transformed  = self.categorical 
+        best_info_gain = -float('inf')
+    
+        if len(self.numerical) > 0:
+            self.obl_pivot_split.fit(X[:, self.numerical], y, distance_matrix, distance_measure, idx, sample_weight=sample_weight, check_input=check_input)
+            X_transform = self.obl_pivot_split.transform(X[:, self.numerical])
+            candidate_names = self.obl_pivot_split.get_candidates_names()
+            
+            self.obl_split.fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
+            X_transform_oblique = self.obl_split.transform(X_transform)
+            super().fit(X_transform_oblique, y, sample_weight=sample_weight, check_input=check_input)
+            
+          
+            
+            feats = [f'{p}_P' for p in candidate_names[self.obl_split.feats]]
+            self.feature_original = [feats, -2, -2]
+            self.coefficients = self.obl_split.coeff
+            self.threshold_original = self.tree_.threshold
+            self.is_oblique = True
+            self.is_pivotal = True
+            
+        return self
+    
+    def apply(self, X):
+        X_transformed = self.obl_pivot_split.transform(X[:, self.num_pre_transformed], self.distance_measure)
+        X_transformed_oblique = self.obl_split.transform(X_transformed)
+        return super().apply(X_transformed_oblique)
+        
