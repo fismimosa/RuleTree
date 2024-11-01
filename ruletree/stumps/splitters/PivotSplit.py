@@ -64,13 +64,16 @@ class PivotSplit(TransformerMixin, ABC):
             desc_id = self.compute_descriptive(sub_matrix_label[idx_label])
             desc_idx =  local_idx_label[desc_id]
             
-            
-            local_discriminatives += [disc_idx]
+            if isinstance(disc_idx, (list, np.ndarray)):
+                local_discriminatives += list(disc_idx)
+            else:
+                local_discriminatives += [disc_idx]
+                
             local_descriptives += [desc_idx]
             
         
-        local_discriminatives = list(chain.from_iterable(item for item in local_discriminatives))
         local_candidates = local_descriptives + local_discriminatives
+        print(local_candidates)
             
           
         self.X_candidates = X[local_candidates]
@@ -152,8 +155,7 @@ class MultiplePivotSplit(PivotSplit, ABC):
         
         super().fit(X, y, distance_matrix, distance_measure, idx,sample_weight=sample_weight, check_input=check_input)
         self.find_best_tuple(X, y, distance_measure = distance_measure, sample_weight=sample_weight, check_input=check_input)   
-       # print(self.best_tup_name)
-        
+       
     def transform(self, X, distance_measure = 'euclidean'):
         dist_to_p0 = pairwise_distances(X, self.best_tup[0].reshape(1, -1), metric = distance_measure).flatten()
         dist_to_p1 = pairwise_distances(X, self.best_tup[1].reshape(1, -1), metric = distance_measure).flatten()
