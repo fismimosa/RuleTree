@@ -234,7 +234,10 @@ class RuleTree(RuleTreeBase, ABC):
             comparison = "==" if rules['is_categorical'] else "<="
             not_comparison = "!=" if rules['is_categorical'] else ">"
             feature_idx = rules['feature_idx']
+            coefficients = rules['coefficients']
             thr = rules['threshold']
+            
+            print(feature_idx)
 
             if isinstance(feature_idx, (int, np.integer)):
                 print(f"{indentation}|--- {names(feature_idx)} {comparison} "
@@ -268,16 +271,32 @@ class RuleTree(RuleTreeBase, ABC):
                      )
                 cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
                 
+            elif isinstance(feature_idx, list) and all(isinstance(i, (int, np.integer)) for i in feature_idx):
+                feature_coefficient_pairs = [f"{round(coef, ndigits=ndigits)} * {names(idx)}" for coef, idx in zip(coefficients, feature_idx)]
+                feature_coefficient_str = " + ".join(feature_coefficient_pairs)
                 
-                #print(f"{indentation}|--- near {names_pivots(feature_idx[0])} {comparison} "
-                 #     f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}"
-                 #     f"\t{rules['samples']}")
-               # cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
-
-                #print(f"{indentation}|--- near {names_pivots(feature_idx[1])} {not_comparison} "
-                #      f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
-                #cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
-
+                print(f"{indentation}|--- {feature_coefficient_str} {comparison} "
+                      f"{thr if isinstance(thr, (str, np.str_, np.string_)) else round(thr, ndigits=ndigits)}"
+                      f"\t{rules['samples']}")
+                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
+                
+                print(f"{indentation}|--- {feature_coefficient_str} {not_comparison} "
+                      f"{thr if isinstance(thr, (str, np.str_, np.string_)) else round(thr, ndigits=ndigits)}")
+                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+                
+            elif isinstance(feature_idx, list) and feature_idx[0].endswith('_P'):
+                feature_coefficient_pairs = [f"{round(coef, ndigits=ndigits)} * {names_pivots(idx[:-2])}" for coef, idx in zip(coefficients, feature_idx)]
+                feature_coefficient_str = " + ".join(feature_coefficient_pairs)
+                
+                print(f"{indentation}|--- {feature_coefficient_str} {comparison} "
+                      f"{thr if isinstance(thr, (str, np.str_, np.string_)) else round(thr, ndigits=ndigits)}"
+                      f"\t{rules['samples']}")
+                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
+                
+                print(f"{indentation}|--- {feature_coefficient_str} {not_comparison} "
+                      f"{thr if isinstance(thr, (str, np.str_, np.string_)) else round(thr, ndigits=ndigits)}")
+                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+                
             else: #if list -> oblique
                 raise Exception("Unimplemented")
 
