@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 
 import numpy as np
+from itertools import chain
 from sklearn.base import TransformerMixin
 from sklearn.metrics.pairwise import pairwise_distances
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
@@ -67,6 +68,8 @@ class PivotSplit(TransformerMixin, ABC):
             local_discriminatives += [disc_idx]
             local_descriptives += [desc_idx]
             
+        
+        local_discriminatives = list(chain.from_iterable(item for item in local_discriminatives))
         local_candidates = local_descriptives + local_discriminatives
             
           
@@ -89,6 +92,24 @@ class PivotSplit(TransformerMixin, ABC):
     def get_discriminative_names(self):
         return self.discriminative_names
     
+    
+class ObliquePivotSplit(PivotSplit, ABC):
+    def __init__(
+        self,
+        **kwargs
+    ):
+        super().__init__(**kwargs)    
+        
+    @abstractmethod
+    def get_base_model(self):
+        pass
+    
+    def compute_discriminative(self, sub_matrix, y, sample_weight=None, check_input=True):
+       disc = self.get_base_model()
+       disc.fit(sub_matrix, y, sample_weight=sample_weight, check_input = check_input)
+       discriminative_id = disc.feats
+       return (discriminative_id)
+
 
 class MultiplePivotSplit(PivotSplit, ABC):
     def __init__(
@@ -141,15 +162,6 @@ class MultiplePivotSplit(PivotSplit, ABC):
     
     def get_best_tup_names(self):
         return self.best_tup_name
-    
-    def get_candidates_names(self):
-        return self.candidates_names
-    
-    def get_descriptive_names(self):
-        return self.descriptive_names
-    
-    def get_discriminative_names(self):
-        return self.discriminative_names
     
     
 
