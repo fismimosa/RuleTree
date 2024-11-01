@@ -65,7 +65,7 @@ class PivotSplit(TransformerMixin, ABC):
             desc_idx =  local_idx_label[desc_id]
             
             if isinstance(disc_idx, (list, np.ndarray)):
-                local_discriminatives += list(disc_idx)
+                local_discriminatives += disc_idx.flatten().tolist() if isinstance(disc_idx, np.ndarray) else list(disc_idx)
             else:
                 local_discriminatives += [disc_idx]
                 
@@ -73,8 +73,7 @@ class PivotSplit(TransformerMixin, ABC):
             
         
         local_candidates = local_descriptives + local_discriminatives
-        print(local_candidates)
-            
+      
           
         self.X_candidates = X[local_candidates]
         
