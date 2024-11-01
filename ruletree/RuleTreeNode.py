@@ -28,8 +28,7 @@ class RuleTreeNode:
         self.node_r = node_r
         self.samples = samples
         self.balance_score = balance_score
-                     
-
+        
         for name, value in kwargs.items():
             setattr(self, name, value)
 
@@ -88,11 +87,12 @@ class RuleTreeNode:
                 "prediction_probability": self.prediction_probability,
                 "feature_idx": self.clf.get_feature(),
                 "threshold": self.clf.get_thresholds(),
-                "split_type": self.clf.__name__,
+      #          "split_type": self.clf.__name__,
                 "is_categorical": self.clf.get_is_categorical(),
                 "samples": self.samples,
                 "left_node": self.node_l.get_rule(),
                 "right_node": self.node_r.get_rule(),
+                "coefficients" : self.clf.coefficients
             }
             
     def encode_node(self, index, parent, vector, clf, node_index=0):
