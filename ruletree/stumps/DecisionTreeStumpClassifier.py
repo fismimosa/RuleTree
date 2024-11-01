@@ -310,15 +310,15 @@ class ObliquePivotTreeStumpClassifier(DecisionTreeStumpClassifier,RuleTreeBaseSt
             X_transform = self.obl_pivot_split.transform(X[:, self.numerical])
             candidate_names = self.obl_pivot_split.get_candidates_names()
             
-            self.obl_split.fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
-            X_transform_oblique = self.obl_split.transform(X_transform)
+            self.oblique_split.fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
+            X_transform_oblique = self.oblique_split.transform(X_transform)
             super().fit(X_transform_oblique, y, sample_weight=sample_weight, check_input=check_input)
             
           
             
-            feats = [f'{p}_P' for p in candidate_names[self.obl_split.feats]]
+            feats = [f'{p}_P' for p in candidate_names[self.oblique_split.feats]]
             self.feature_original = [feats, -2, -2]
-            self.coefficients = self.obl_split.coeff
+            self.coefficients = self.oblique_split.coeff
             self.threshold_original = self.tree_.threshold
             self.is_oblique = True
             self.is_pivotal = True
@@ -327,6 +327,16 @@ class ObliquePivotTreeStumpClassifier(DecisionTreeStumpClassifier,RuleTreeBaseSt
     
     def apply(self, X):
         X_transformed = self.obl_pivot_split.transform(X[:, self.num_pre_transformed], self.distance_measure)
-        X_transformed_oblique = self.obl_split.transform(X_transformed)
+        X_transformed_oblique = self.oblique_split.transform(X_transformed)
         return super().apply(X_transformed_oblique)
+    
+    def get_params(self, deep=True):
+        return {
+            **self.kwargs,
+            'max_oblique_features': self.max_oblique_features,
+            'pca': self.pca,
+            'tau': self.tau,
+            'n_orientations': self.n_orientations
+        }
+
         
