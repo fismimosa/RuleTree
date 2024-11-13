@@ -4,6 +4,7 @@ import numpy as np
 from sklearn import tree
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from ruletree.stumps.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 
 class RuleTreeNode:
@@ -28,10 +29,11 @@ class RuleTreeNode:
         self.node_r = node_r
         self.samples = samples
         self.balance_score = balance_score
-        
+
         for name, value in kwargs.items():
             setattr(self, name, value)
-
+            
+        
     def is_leaf(self):
         return self.node_l is None and self.node_r is None
 
@@ -71,30 +73,70 @@ class RuleTreeNode:
         return len(self.node_id) - 1
 
     def get_rule(self):
-        if self.is_leaf():
-            return {
-                "node_id": self.node_id,
-                "is_leaf": True,
-                "prediction": self.prediction,
-                "prediction_probability": self.prediction_probability,
-                "samples": self.samples,
-            }
-        else:
-            return {
-                "node_id": self.node_id,
-                "is_leaf": False,
-                "prediction": self.prediction,
-                "prediction_probability": self.prediction_probability,
+        rule = {
+            "node_id": self.node_id,
+            "is_leaf": self.is_leaf(),
+            "prediction": self.prediction,
+            "prediction_probability": self.prediction_probability,
+            "samples": self.samples,
+        }
+    
+        if not self.is_leaf():
+            rule.update({
                 "feature_idx": self.clf.get_feature(),
                 "threshold": self.clf.get_thresholds(),
-      #          "split_type": self.clf.__name__,
                 "is_categorical": self.clf.get_is_categorical(),
-                "samples": self.samples,
                 "left_node": self.node_l.get_rule(),
                 "right_node": self.node_r.get_rule(),
-                "coefficients" : self.clf.coefficients
-            }
+                "coefficients": self.clf.coefficients
+            })
+    
+        return rule
+    
+
+    def node_to_dict(self):
+        info_dict = {
+            "node_id": self.node_id,
+            "is_leaf" : self.is_leaf(),
+            "prediction": self.prediction,
+            "prediction_probability": self.prediction_probability,
+            "parent_id": self.parent.node_id if self.parent is not None else None,
+            "node_l_id": self.node_l.node_id if self.node_l is not None else None,
+            "node_r_id": self.node_r.node_id if self.node_r is not None else None,
+            "samples": self.samples,
+            "feature_idx": self.clf.get_feature() if self.clf is not None else None,
+            "threshold": self.clf.get_thresholds() if self.clf is not None else None,
+            "is_categorical": self.clf.get_is_categorical() if self.clf is not None else None,
+            "coefficients": self.clf.coefficients if self.clf is not None else None,
+            "kwargs" : self.clf.kwargs if self.clf is not None else {}
             
+           
+        }
+        
+        return info_dict
+
+    def dict_to_node(self, info_dict):
+        node = RuleTreeNode(node_id = info_dict['node_id'],
+                            prediction = info_dict['prediction'],
+                            prediction_probability = info_dict['prediction_probability'],
+                            parent = info_dict['parent_id'],
+                            samples = info_dict['samples'])
+        
+        if info_dict['is_leaf'] == True:
+            return node
+        
+        node.clf = DecisionTreeStumpClassifier(**info_dict['kwargs'])
+        
+        node.clf.feature_original = [info_dict['feature_idx'], -2, -2]
+        node.clf.threshold_original =  np.array([info_dict['threshold'], -2, -2])
+        node.clf.is_categoricl = info_dict['is_categorical']
+        
+
+        return node
+    
+
+        
+                        
     def encode_node(self, index, parent, vector, clf, node_index=0):
         if self.is_leaf():
             vector[0][node_index] = -1
