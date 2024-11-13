@@ -127,13 +127,29 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
     def apply(self, X):
         if not self.is_categorical:
-            return super().apply(X[:, self.numerical])
+            y_pred = (np.ones(X.shape[0]) * 2)
+            X_feature = X[:, self.feature_original[0]]
+            y_pred[X_feature <= self.threshold_original[0]] = 1
+            
+            return y_pred
+            
         else:
             y_pred = np.ones(X.shape[0]) * 2
             X_feature = X[:, self.feature_original[0]]
             y_pred[X_feature == self.threshold_original[0]] = 1
 
             return y_pred
+        
+    #def apply_fit(self, X):
+    #    if not self.is_categorical:
+     #       return super().apply(X[:, self.numerical])
+     #   else:
+     #       y_pred = np.ones(X.shape[0]) * 2
+     #       X_feature = X[:, self.feature_original[0]]
+     #       y_pred[X_feature == self.threshold_original[0]] = 1
+
+     #      return y_pred
+        
 
     def get_feature(self):
         return self.feature_original[0]
