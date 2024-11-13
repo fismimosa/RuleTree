@@ -129,7 +129,7 @@ class RuleTreeNode:
         
         node.clf.feature_original = [info_dict['feature_idx'], -2, -2]
         node.clf.threshold_original =  np.array([info_dict['threshold'], -2, -2])
-        node.clf.is_categoricl = info_dict['is_categorical']
+        node.clf.is_categorical = info_dict['is_categorical']
         
 
         return node
