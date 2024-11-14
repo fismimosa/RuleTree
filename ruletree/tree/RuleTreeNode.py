@@ -1,10 +1,8 @@
 from typing import Self
 
 import numpy as np
-import pydot
-from pandas.core.roperator import rtruediv
 from sklearn import tree
-from sklearn.tree import export_graphviz
+import pygraphviz as pgv
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
@@ -166,26 +164,26 @@ class RuleTreeNode:
 
     def export_graphviz(self, graph=None, n_round=3):
         if graph is None:
-            graph = pydot.Dot("my_graph", graph_type="graph")
+            graph = pgv.AGraph(name="RuleTree")
 
         if self.is_leaf():
-            graph.add_node(pydot.Node(self.node_id, label=self.prediction))
+            graph.add_node(self.node_id, label=self.prediction)
             if self.parent is not None:
-                graph.add_edge(pydot.Edge(self.parent.node_id, self.node_id))
+                graph.add_edge(self.parent.node_id, self.node_id)
 
             return graph
 
         comp = "=" if self.clf.get_is_categorical() else "<="
-        graph.add_node(pydot.Node(self.node_id, label=f"X_{self.clf.get_feature()} "
-                                                      f"{comp} "
-                                                      f"{round(self.clf.get_thresholds(), n_round)}"))
-        if self.parent is not None:
-            graph.add_edge(pydot.Edge(self.parent.node_id, self.node_id))
+        graph.add_node(self.node_id, label=f"X_{self.clf.get_feature()} "
+                                           f"{comp} "
+                                           f"{round(self.clf.get_thresholds(), n_round)}")
 
         if self.node_l is not None:
             graph = self.node_l.export_graphviz(graph)
+            graph.add_edge(self.node_id, self.node_l.node_id, color="green")
         if self.node_r is not None:
             graph = self.node_r.export_graphviz(graph)
+            graph.add_edge(self.node_id, self.node_r.node_id, color="red")
 
         return graph
 
