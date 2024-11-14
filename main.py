@@ -17,8 +17,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from progress_table import ProgressTable
 
 from competitors.kmeanstree import KMeansTree
-from ruletree import RuleTree, RuleTreeClusterClassifier
-from ruletree import RuleTreeClassifier
+from ruletree import RuleTreeClassifier, RuleTreeClusterClassifier
 from ruletree import RuleTreeCluster
 from ruletree import RuleTreeRegressor
 from benchmark.config import dataset_target_clu
