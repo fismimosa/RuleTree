@@ -190,7 +190,7 @@ class MFA(pca.PCA):
             X = self._prepare_input(X)
             X_global = self._build_X_global(X)
         
-        return util.df_correlation(X_t,X_global)
+        return util.df_correlation(X_t, X_global)
     
 
 

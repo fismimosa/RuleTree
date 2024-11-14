@@ -1,11 +1,9 @@
-from .RuleTree import RuleTree
+from ruletree.tree.RuleTreeRegressor import RuleTreeRegressor
+from ruletree.tree.RuleTreeClassifier import RuleTreeClassifier
+from ruletree.tree.RuleTreeCluster import RuleTreeCluster, RuleTreeClusterRegressor, RuleTreeClusterClassifier
 
-from .RuleTreeClassifier import RuleTreeClassifier
-from .RuleTreeCluster import RuleTreeCluster, RuleTreeClusterClassifier, RuleTreeClusterRegressor
-from .RuleTreeRegressor import RuleTreeRegressor
+from ruletree.ensemble.RuleForestRegressor import RuleForestRegressor
+from ruletree.ensemble.RuleForestClassifier import RuleForestClassifier
+from ruletree.ensemble.RuleTreeAdaBoostRegressor import RuleTreeAdaBoostRegressor
+from ruletree.ensemble.RuleTreeAdaBoostClassifier import RuleTreeAdaBoostClassifier
 
-from .RuleForestClassifier import RuleForestClassifier
-from .RuleForestRegressor import RuleForestRegressor
-
-from .RuleTreeAdaBoostClassifier import RuleTreeAdaBoostClassifier
-from .RuleTreeAdaBoostRegressor import RuleTreeAdaBoostRegressor

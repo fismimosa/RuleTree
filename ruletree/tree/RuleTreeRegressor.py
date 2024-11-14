@@ -1,15 +1,14 @@
 import heapq
 import warnings
-from random import random
 
 import numpy as np
 import sklearn
 from sklearn import tree
 from sklearn.base import RegressorMixin
 
-from ruletree.RuleTree import RuleTree
-from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.stumps.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor, MyObliqueDecisionTreeRegressor
+from ruletree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
+from ruletree.tree.RuleTree import RuleTree
+from ruletree.tree.RuleTreeNode import RuleTreeNode
 from ruletree.utils.data_utils import get_info_gain
 
 

@@ -1,15 +1,15 @@
 import heapq
-from random import random
 
 import numpy as np
 import sklearn
 from sklearn import tree
 from sklearn.base import ClassifierMixin
 
-from ruletree.RuleTree import RuleTree
-from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.stumps.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier
-from ruletree.stumps.PivotTreeStumpClassifier import PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier
+from ruletree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
+from ruletree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
+from ruletree.tree.RuleTree import RuleTree
+from ruletree.tree.RuleTreeNode import RuleTreeNode
+from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from ruletree.utils.data_utils import calculate_mode, get_info_gain
 
 from ruletree.utils.utils_decoding import configure_non_cat_split, configure_cat_split

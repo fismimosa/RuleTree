@@ -1,10 +1,6 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
-import numpy as np
-from sklearn import tree
 from sklearn.base import BaseEstimator
-
-from ruletree.RuleTreeNode import RuleTreeNode
 
 
 class RuleTreeBase(BaseEstimator, ABC):

@@ -6,7 +6,11 @@ from sklearn.ensemble import BaggingClassifier
 from ruletree import RuleTreeClassifier
 from ruletree.base.RuleTreeBase import RuleTreeBase
 from sklearn.base import ClassifierMixin
-from ruletree.stumps.DecisionTreeStumpClassifier import PivotTreeStumpClassifier, ObliquePivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier
+
+from ruletree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
+from ruletree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
+from ruletree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
+
 
 class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
     def __init__(self,

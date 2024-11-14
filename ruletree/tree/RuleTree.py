@@ -9,7 +9,7 @@ import sklearn
 from sklearn import tree
 
 from ruletree.base.RuleTreeBase import RuleTreeBase
-from ruletree.RuleTreeNode import RuleTreeNode
+from ruletree.tree.RuleTreeNode import RuleTreeNode
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 
 

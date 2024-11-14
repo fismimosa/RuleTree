@@ -2,16 +2,24 @@ from abc import abstractmethod, ABC
 
 import numpy as np
 from sklearn.base import TransformerMixin
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from ruletree.base.RuleTreeBaseSplit import RuleTreeBaseSplit
+from ruletree.utils.data_utils import get_info_gain
+from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG, MODEL_TYPE_CLU
 
-class ObliqueBivariateSplit(TransformerMixin, ABC):
+
+class ObliqueBivariateSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     def __init__(
             self,
+            ml_task,
             n_orientations=10,  # number of orientations to generate
             **kwargs
     ):
+        super(RuleTreeBaseSplit, self).__init__(ml_task)
+
         self.kwargs = kwargs
+        self.ml_task = ml_task
 
         self.n_orientations = n_orientations
         self.n_features = None  # number of features
@@ -35,9 +43,38 @@ class ObliqueBivariateSplit(TransformerMixin, ABC):
         X_proj = X @ W
         return X_proj
 
-    @abstractmethod
     def best_threshold(self, X_proj, y, sample_weight=None, check_input=True):
-        pass
+        if self.ml_task == MODEL_TYPE_CLF:
+            return self.__best_threshold_clf(X_proj, y, sample_weight, check_input)
+        elif self.ml_task == MODEL_TYPE_REG:
+            return self.__best_threshold_reg(X_proj, y, sample_weight, check_input)
+        elif self.ml_task == MODEL_TYPE_CLU:
+            return self.__best_threshold_clu(X_proj, y, sample_weight, check_input)
+
+    def __best_threshold_clf(self, X_proj, y, sample_weight=None, check_input=True):
+        # for each orientation of the current feature pair,
+        # find the best threshold with a DT
+
+        clf = DecisionTreeClassifier(**self.kwargs)
+
+        clf.fit(X_proj, y, sample_weight=None, check_input=True)
+        gain_clf = get_info_gain(clf)
+
+        return clf, gain_clf
+
+    def __best_threshold_reg(self, X_proj, y, sample_weight=None, check_input=True):
+        # for each orientation of the current feature pair,
+        # find the best threshold with a DT
+
+        clf = DecisionTreeRegressor(**self.kwargs)
+
+        clf.fit(X_proj, y, sample_weight=None, check_input=True)
+        gain_clf = get_info_gain(clf)
+
+        return clf, gain_clf
+
+    def __best_threshold_clu(self, X_proj, y, sample_weight=None, check_input=True):
+        raise NotImplementedError()
 
     def transform(self, X):
         i, j = self.feats
@@ -78,15 +115,3 @@ class ObliqueBivariateSplit(TransformerMixin, ABC):
     #def apply(self, X):
     #    X_proj = self.transform(X)
     #    return self.oblq_clf.apply(X_proj)
-
-
-
-
-
-
-
-
-
-
-
-

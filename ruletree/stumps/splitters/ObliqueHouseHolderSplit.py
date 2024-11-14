@@ -6,18 +6,22 @@ from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from scipy.linalg import norm
 
+from ruletree.base.RuleTreeBaseSplit import RuleTreeBaseSplit
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
+from ruletree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG, MODEL_TYPE_CLU
 
 
-class ObliqueHouseHolderSplit(TransformerMixin, ABC):
+class ObliqueHouseHolderSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     def __init__(
         self,
+        ml_task,
         pca=None,
         max_oblique_features=2,
         tau=1e-4,
         **kwargs
     ):
+        super(RuleTreeBaseSplit, self).__init__(ml_task)
+
         self.kwargs = kwargs
         self.pca = pca
         self.max_oblique_features = max_oblique_features
@@ -77,12 +81,11 @@ class ObliqueHouseHolderSplit(TransformerMixin, ABC):
         
         return self
 
-    #def predict(self, X):
-    #    X_house = self.transform(X)
-    #    return self.oblq_clf.predict(X_house)
-
-    #def apply(self, X):
-    #    X_house = self.transform(X)
-    #    return self.oblq_clf.apply(X_house)
-    
+    def get_base_model(self):
+        if self.ml_task == MODEL_TYPE_CLF:
+            return DecisionTreeClassifier(**self.kwargs)
+        elif self.ml_task == MODEL_TYPE_REG:
+            return DecisionTreeRegressor(**self.kwargs)
+        elif self.ml_task == MODEL_TYPE_CLU:
+            raise NotImplementedError()
     

@@ -6,11 +6,11 @@ from sklearn import tree
 from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 
-from ruletree import light_famd, RuleTreeClassifier, RuleTreeRegressor
-from ruletree.RuleTree import RuleTree
-from ruletree.RuleTreeNode import RuleTreeNode
-from ruletree.utils import bic
-from ruletree.stumps.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
+from ruletree import RuleTreeRegressor, RuleTreeClassifier
+from ruletree.tree.RuleTree import RuleTree
+from ruletree.tree.RuleTreeNode import RuleTreeNode
+from ruletree.utils import bic, light_famd
+from ruletree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 
 
 class RuleTreeCluster(RuleTree, ClusterMixin):

@@ -4,7 +4,7 @@ from sklearn import tree
 from sklearn.tree import _tree
 
 from ruletree import RuleTreeClassifier, RuleTreeRegressor
-from ruletree.RuleTreeNode import RuleTreeNode
+from ruletree.tree.RuleTreeNode import RuleTreeNode
 
 
 def evaluate_clf(y_test, y_pred, y_pred_proba):

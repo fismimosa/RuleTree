@@ -4,7 +4,7 @@ import numpy as np
 from sklearn import tree
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from ruletree.stumps.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
+from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 
 class RuleTreeNode:
