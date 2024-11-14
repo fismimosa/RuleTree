@@ -21,14 +21,14 @@ class RuleTreeNode:
                  balance_score : float = None,
                  **kwargs):
         self.node_id = node_id
-        self.prediction = prediction
-        self.prediction_probability = prediction_probability
+        self.prediction = prediction  # TODO: remove (by saving it in the clf)
+        self.prediction_probability = prediction_probability  # TODO: remove (by saving it in the clf)
         self.parent = parent
         self.clf = clf
         self.node_l = node_l
         self.node_r = node_r
-        self.samples = samples
-        self.balance_score = balance_score
+        self.samples = samples  # TODO: remove (by saving it in the clf)
+        self.balance_score = balance_score  # TODO: remove (by saving it in the clf)
 
         for name, value in kwargs.items():
             setattr(self, name, value)
@@ -45,7 +45,7 @@ class RuleTreeNode:
         self._simplify()
         return self
 
-    def _simplify(self):
+    def _simplify(self):  # TODO: update
         if self.is_leaf():
             return {self.prediction}
         else:
@@ -60,7 +60,7 @@ class RuleTreeNode:
     def set_clf(self, clf:RuleTreeBaseStump):
         self.clf = clf
 
-    def get_possible_outputs(self) -> tuple[set, set]:
+    def get_possible_outputs(self) -> tuple[set, set]:  # TODO: update
         if self.is_leaf():
             return {self.prediction}, set()
         else:
@@ -94,7 +94,7 @@ class RuleTreeNode:
         return rule
     
 
-    def node_to_dict(self):
+    def node_to_dict(self):  # TODO: update
         info_dict = {
             "node_id": self.node_id,
             "is_leaf" : self.is_leaf(),
@@ -115,7 +115,7 @@ class RuleTreeNode:
         
         return info_dict
 
-    def dict_to_node(self, info_dict):
+    def dict_to_node(self, info_dict):  # TODO: update
         node = RuleTreeNode(node_id = info_dict['node_id'],
                             prediction = info_dict['prediction'],
                             prediction_probability = info_dict['prediction_probability'],
