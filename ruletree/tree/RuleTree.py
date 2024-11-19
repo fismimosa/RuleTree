@@ -118,7 +118,7 @@ class RuleTree(RuleTreeBase, ABC):
 
             idx_l, idx_r = idx[labels == 1], idx[labels == 2]
 
-            current_node.set_clf(clf)
+            current_node.set_stump(clf)
             current_node.node_l = self.prepare_node(self.y, idx_l, current_node.node_id + "l", )
             current_node.node_r = self.prepare_node(self.y, idx_r, current_node.node_id + "r", )
             current_node.node_l.parent, current_node.node_r.parent = current_node, current_node
@@ -167,7 +167,7 @@ class RuleTree(RuleTreeBase, ABC):
                 np.ones(len(X), dtype=float) * -1
             )
 
-            clf = current_node.clf
+            clf = current_node.stump
             labels_clf = clf.apply(X)
             X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
             if X_l.shape[0] != 0:
@@ -234,7 +234,7 @@ class RuleTree(RuleTreeBase, ABC):
             comparison = "==" if rules['is_categorical'] else "<="
             not_comparison = "!=" if rules['is_categorical'] else ">"
             feature_idx = rules['feature_idx']
-            coefficients = rules['coefficients']
+            coefficients = rules['coefficients'] if 'coefficients' in rules else None
             thr = rules['threshold']
             
             print(feature_idx)

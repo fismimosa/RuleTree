@@ -58,3 +58,9 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBa
             'tau': self.tau,
             'n_orientations': self.n_orientations
         }
+
+    def get_rule(self, columns_names=None, scaler=None, float_precision=3):
+        raise NotImplementedError()
+
+    def node_to_dict(self, col_names):
+        raise NotImplementedError()

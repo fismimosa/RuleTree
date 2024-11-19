@@ -9,6 +9,37 @@ from ruletree.utils.data_utils import get_info_gain, _get_info_gain, gini, entro
 
 
 class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
+
+    def get_rule(self, columns_names=None, scaler=None, float_precision=3):
+        rule = {
+            "feature_idx": self.feature_original[0],
+            "threshold": self.threshold_original[0],
+            "is_categorical": self.is_categorical,
+            "samples": self.tree_.n_node_samples[0],
+        }
+
+        feat_name = f"X_{rule['feature_idx']}"
+        if columns_names is not None:
+            feat_name = columns_names[self.feature_original[0]]
+        rule["feature_name"] = feat_name
+
+        if scaler is not None:
+            array = np.zeros((1, scaler.n_features_in_))
+            array[0, self.feature_original[0]] = self.feature_original[0]
+
+            rule["threshold"] = scaler.inverse_transform(array)[0, self.feature_original[0]]
+
+        comparison = "<=" if self.is_categorical else "="
+        rule["textual_rule"] = f"{feat_name} {comparison} {round(rule['threshold'], float_precision)}"
+        rule["blob_rule"] = f"{feat_name} {comparison} {round(rule['threshold'], float_precision)}"
+        rule["graphviz_rule"] = f"{feat_name} {comparison} {round(rule['threshold'], float_precision)}"
+
+        return rule
+
+    def node_to_dict(self, col_names):
+        #TODO: ricorda kwargs
+        pass
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -115,7 +146,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                         self.is_categorical = True
 
 
-    def apply(self, X):
+    def apply(self, X, check_input=False):
         if not self.is_categorical:
             y_pred = (np.ones(X.shape[0]) * 2)
             X_feature = X[:, self.feature_original[0]]
@@ -129,24 +160,4 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             y_pred[X_feature == self.threshold_original[0]] = 1
 
             return y_pred
-        
-    #def apply_fit(self, X):
-    #    if not self.is_categorical:
-     #       return super().apply(X[:, self.numerical])
-     #   else:
-     #       y_pred = np.ones(X.shape[0]) * 2
-     #       X_feature = X[:, self.feature_original[0]]
-     #       y_pred[X_feature == self.threshold_original[0]] = 1
-
-     #      return y_pred
-        
-
-    def get_feature(self):
-        return self.feature_original[0]
-
-    def get_thresholds(self):
-        return self.threshold_original[0]
-
-    def get_is_categorical(self):
-        return self.is_categorical
         

@@ -125,7 +125,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             prediction=node_id,
             prediction_probability=-1,
             parent=None,
-            clf=None,
+            stump=None,
             node_l=None,
             node_r=None,
             samples=len(idx),

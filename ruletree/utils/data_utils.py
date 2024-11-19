@@ -200,8 +200,8 @@ def select_stumps(node, p=0.2, selected_stumps=None):
     if selected_stumps is None:
         selected_stumps = []
 
-    if node.clf is not None and node.balance_score > p:
-        selected_stumps.append(node.clf)
+    if node.stump is not None and node.balance_score > p:
+        selected_stumps.append(node.stump)
         
     if node.node_l is not None:
         select_stumps(node.node_l, p, selected_stumps)

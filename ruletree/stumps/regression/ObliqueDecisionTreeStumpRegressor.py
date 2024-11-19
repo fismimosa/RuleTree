@@ -7,8 +7,18 @@ from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 
 
 class ObliqueDecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
+    def get_rule(self, columns_names=None, scaler=None, float_precision=3):
+        raise NotImplementedError()
+
+    def node_to_dict(self, col_names):
+        raise NotImplementedError()
+
+    def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
+        raise NotImplementedError()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.oblique_split = None
         self.is_categorical = False
         self.kwargs = kwargs
         self.unique_val_enum = None
@@ -51,12 +61,3 @@ class ObliqueDecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump
     def apply(self, X):
         X_transform = self.oblique_split.transform(X[:, self.numerical])
         return super().apply(X_transform)
-
-    def get_feature(self):
-        return self.feature_original[0]
-
-    def get_thresholds(self):
-        return self.threshold_original[0]
-
-    def get_is_categorical(self):
-        return self.is_categorical

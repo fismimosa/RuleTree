@@ -14,22 +14,24 @@ class RuleTreeNode:
                  node_id: str,
                  prediction: int | str | float,
                  prediction_probability: np.ndarray | float,
+                 classes: np.ndarray,
                  parent: Self | None,
-                 clf: tree = None,
+                 stump: RuleTreeBaseStump = None,
                  node_l: Self = None,
                  node_r: Self = None,
                  samples: int = None,
                  balance_score : float = None,
                  **kwargs):
         self.node_id = node_id
-        self.prediction = prediction  # TODO: remove (by saving it in the clf)
-        self.prediction_probability = prediction_probability  # TODO: remove (by saving it in the clf)
+        self.prediction = prediction
+        self.prediction_probability = prediction_probability
+        self.classes = classes
         self.parent = parent
-        self.clf = clf
+        self.stump = stump
         self.node_l = node_l
         self.node_r = node_r
-        self.samples = samples  # TODO: remove (by saving it in the clf)
-        self.balance_score = balance_score  # TODO: remove (by saving it in the clf)
+        self.samples = samples  # TODO: remove (by saving it in the stump)
+        self.balance_score = balance_score  # TODO: remove (by saving it in the stump)
 
         for name, value in kwargs.items():
             setattr(self, name, value)
@@ -58,8 +60,8 @@ class RuleTreeNode:
             else:
                 return all_pred
 
-    def set_clf(self, clf:RuleTreeBaseStump):
-        self.clf = clf
+    def set_stump(self, stump:RuleTreeBaseStump):
+        self.stump = stump
 
     def get_possible_outputs(self) -> tuple[set, set]:  # TODO: update
         if self.is_leaf():
@@ -73,24 +75,19 @@ class RuleTreeNode:
     def get_depth(self):
         return len(self.node_id) - 1
 
-    def get_rule(self):
+    def get_rule(self, column_names=None, scaler=None):
         rule = {
             "node_id": self.node_id,
             "is_leaf": self.is_leaf(),
             "prediction": self.prediction,
             "prediction_probability": self.prediction_probability,
-            "samples": self.samples,
+            "prediction_classes_": self.classes,
+            "left_node": self.node_l.get_rule() if self.node_l is not None else None,
+            "right_node": self.node_r.get_rule() if self.node_r is not None else None,
         }
     
         if not self.is_leaf():
-            rule.update({
-                "feature_idx": self.clf.get_feature(),
-                "threshold": self.clf.get_thresholds(),
-                "is_categorical": self.clf.get_is_categorical(),
-                "left_node": self.node_l.get_rule(),
-                "right_node": self.node_r.get_rule(),
-                "coefficients": self.clf.coefficients
-            })
+            rule |= self.stump.get_rule(columns_names=column_names, scaler=scaler)
     
         return rule
     
@@ -105,11 +102,11 @@ class RuleTreeNode:
             "node_l_id": self.node_l.node_id if self.node_l is not None else None,
             "node_r_id": self.node_r.node_id if self.node_r is not None else None,
             "samples": self.samples,
-            "feature_idx": self.clf.get_feature() if self.clf is not None else None,
-            "threshold": self.clf.get_thresholds() if self.clf is not None else None,
-            "is_categorical": self.clf.get_is_categorical() if self.clf is not None else None,
-            "coefficients": self.clf.coefficients if self.clf is not None else None,
-            "kwargs" : self.clf.kwargs if self.clf is not None else {}
+            "feature_idx": self.stump.get_feature() if self.stump is not None else None,
+            "threshold": self.stump.get_thresholds() if self.stump is not None else None,
+            "is_categorical": self.stump.get_is_categorical() if self.stump is not None else None,
+            "coefficients": self.stump.coefficients if self.stump is not None else None,
+            "kwargs" : self.stump.kwargs if self.stump is not None else {}
             
            
         }
@@ -126,11 +123,11 @@ class RuleTreeNode:
         if info_dict['is_leaf'] == True:
             return node
         
-        node.clf = DecisionTreeStumpClassifier(**info_dict['kwargs'])
+        node.stump = DecisionTreeStumpClassifier(**info_dict['kwargs'])
         
-        node.clf.feature_original = [info_dict['feature_idx'], -2, -2]
-        node.clf.threshold_original =  np.array([info_dict['threshold'], -2, -2])
-        node.clf.is_categorical = info_dict['is_categorical']
+        node.stump.feature_original = [info_dict['feature_idx'], -2, -2]
+        node.stump.threshold_original =  np.array([info_dict['threshold'], -2, -2])
+        node.stump.is_categorical = info_dict['is_categorical']
         
 
         return node
@@ -138,13 +135,13 @@ class RuleTreeNode:
 
         
                         
-    def encode_node(self, index, parent, vector, clf, node_index=0):
+    def encode_node(self, index, parent, vector, stump, node_index=0):
         if self.is_leaf():
             vector[0][node_index] = -1
             vector[1][node_index] = self.prediction
         else:
-            feat = self.clf.feature_original[0]
-            thr = self.clf.threshold_original[0]
+            feat = self.stump.feature_original[0]
+            thr = self.stump.threshold_original[0]
          
             vector[0][node_index] = feat + 1
             vector[1][node_index] = thr
@@ -158,11 +155,12 @@ class RuleTreeNode:
             parent[2 * index[self.node_id] + 1] = index[self.node_id]
             parent[2 * index[self.node_id] + 2] = index[self.node_id]
 
-            node_l.encode_node(index, parent, vector, clf, 2 * node_index + 1)
-            node_r.encode_node(index, parent, vector, clf, 2 * node_index + 2)
+            node_l.encode_node(index, parent, vector, stump, 2 * node_index + 1)
+            node_r.encode_node(index, parent, vector, stump, 2 * node_index + 2)
 
 
-    def export_graphviz(self, graph=None, n_round=3):
+    def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
+
         if graph is None:
             graph = pgv.AGraph(name="RuleTree")
 
@@ -173,10 +171,9 @@ class RuleTreeNode:
 
             return graph
 
-        comp = "=" if self.clf.get_is_categorical() else "<="
-        graph.add_node(self.node_id, label=f"X_{self.clf.get_feature()} "
-                                           f"{comp} "
-                                           f"{round(self.clf.get_thresholds(), n_round)}")
+        rule = self.stump.get_rule(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
+
+        graph.add_node(self.node_id, label=rule["textual_rule"])
 
         if self.node_l is not None:
             graph = self.node_l.export_graphviz(graph)

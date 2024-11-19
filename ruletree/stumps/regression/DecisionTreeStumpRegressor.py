@@ -6,11 +6,24 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisso
 from sklearn.tree import DecisionTreeRegressor
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 from ruletree.utils.data_utils import get_info_gain, _get_info_gain
 
 
 class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
+    def get_rule(self, columns_names=None, scaler=None, float_precision=3):
+        DecisionTreeStumpClassifier.get_rule(self,
+                                             columns_names=columns_names,
+                                             scaler=scaler,
+                                             float_precision=float_precision)
+
+    def node_to_dict(self, col_names):
+        pass
+
+    def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
+        pass
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -87,7 +100,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                         self.is_categorical = True
 
 
-    def apply(self, X):
+    def apply(self, X, check_input=False):
         if not self.is_categorical:
             return super().apply(X[:, self.numerical])
         else:
@@ -97,11 +110,3 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
             return y_pred
 
-    def get_feature(self):
-        return self.feature_original[0]
-
-    def get_thresholds(self):
-        return self.threshold_original[0]
-
-    def get_is_categorical(self):
-        return self.is_categorical

@@ -136,8 +136,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_id=node_id,
             prediction=prediction,
             prediction_probability=predict_proba,
+            classes = self.classes_,
             parent=None,
-            clf=None,
+            stump=None,
             node_l=None,
             node_r=None,
             samples=len(y[idx]),
@@ -167,7 +168,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 np.ones((len(X), len(self.classes_)), dtype=float) * -1
             )
 
-            clf = current_node.clf
+            clf = current_node.stump
             labels_clf = clf.apply(X)
             X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
             if X_l.shape[0] != 0:
@@ -194,7 +195,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node.prediction_probability[i] = np.sum(np.where(y == classe, 1, 0)) / len(y)
 
         if not node.is_leaf():            
-            labels_clf = node.clf.apply(X)
+            labels_clf = node.stump.apply(X)
             X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
             y_l, y_r = y[labels_clf == 1], y[labels_clf == 2]         
             if X_l.shape[0] != 0:
@@ -224,7 +225,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                     clf = configure_non_cat_split(clf, vector, index, 
                                                n_features_in_, n_classes_, n_outputs_)
                     
-                idx_to_node[index].clf = clf
+                idx_to_node[index].stump = clf
                 set_node_children(idx_to_node, index, vector)
                 
         
@@ -265,7 +266,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 else:
                     configure_non_cat_split(clf, vector, index, 
                                                n_features_in_, n_classes_, n_outputs_)
-                idx_to_node[index].clf = clf
+                idx_to_node[index].stump = clf
                 set_node_children(idx_to_node, index, vector)
                 
                 print(clf)

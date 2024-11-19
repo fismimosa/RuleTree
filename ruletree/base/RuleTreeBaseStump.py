@@ -5,13 +5,9 @@ from sklearn.base import BaseEstimator
 
 class RuleTreeBaseStump(BaseEstimator, ABC):
     @abstractmethod
-    def get_feature(self):
+    def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         pass
 
     @abstractmethod
-    def get_thresholds(self):
-        pass
-
-    @abstractmethod
-    def get_is_categorical(self):
+    def node_to_dict(self, col_names):
         pass

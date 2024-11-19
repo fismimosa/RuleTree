@@ -111,7 +111,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             prediction=prediction,
             prediction_probability=prediction_std,
             parent=None,
-            clf=None,
+            stump=None,
             node_l=None,
             node_r=None,
             samples=len(y[idx]),
