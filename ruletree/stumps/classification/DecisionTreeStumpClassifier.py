@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
@@ -15,7 +17,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],
             "is_categorical": self.is_categorical,
-            "samples": self.tree_.n_node_samples[0],
         }
 
         feat_name = f"X_{rule['feature_idx']}"
@@ -27,24 +28,58 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             array = np.zeros((1, scaler.n_features_in_))
             array[0, self.feature_original[0]] = self.feature_original[0]
 
-            rule["threshold"] = scaler.inverse_transform(array)[0, self.feature_original[0]]
+            rule["threshold_scaled"] = scaler.inverse_transform(array)[0, self.feature_original[0]]
 
         comparison = "<=" if self.is_categorical else "="
-        rule["textual_rule"] = f"{feat_name} {comparison} {round(rule['threshold'], float_precision)}"
-        rule["blob_rule"] = f"{feat_name} {comparison} {round(rule['threshold'], float_precision)}"
-        rule["graphviz_rule"] = f"{feat_name} {comparison} {round(rule['threshold'], float_precision)}"
+        rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
+        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}"
+        rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
+        rule["graphviz_rule"] = f"{feat_name} {comparison} {rounded_value}"
 
         return rule
 
-    def node_to_dict(self, col_names):
-        #TODO: ricorda kwargs
-        pass
+    def node_to_dict(self):
+        rule = self.get_rule(float_precision=None)
+
+        rule["stump_type"] = self.__class__.__name__
+        rule["samples"] = self.tree_.n_node_samples[0]
+        rule["impurity"] = self.tree_.impurity[0]
+
+        rule["args"] = {
+            "is_oblique": self.is_oblique,
+            "is_pivotal": self.is_pivotal,
+            "unique_val_enum": self.unique_val_enum,
+            "coefficients": self.coefficients,
+        } | self.kwargs
+
+        rule["split"] = {
+            "args": {}
+        }
+
+        return rule
+
+    def dict_to_node(self, node_dict):
+        self.feature_original = np.zeros(3)
+        self.threshold_original = np.zeros(3)
+
+        self.feature_original[0] = node_dict["feature_original"]
+        self.threshold_original[0] = node_dict["threshold"]
+        self.is_categorical = node_dict["is_categorical"]
+
+        args = copy.deepcopy(node_dict["args"])
+        self.is_oblique = args.pop("is_oblique")
+        self.is_pivotal = args.pop("is_pivotal")
+        self.unique_val_enum = args.pop("unique_val_enum")
+        self.coefficients = args.pop("coefficients")
+        self.kwargs = args
+
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.is_categorical = False
-        self.is_oblique = False
-        self.is_pivotal = False
+        self.is_categorical = None
+        self.is_oblique = False # TODO: @Alessio, ma questi ci servono qui? Non sarebbe meglio mettere tutto in
+        self.is_pivotal = False #       PivotTreeStumpClassifier e poi usare l'ereditarietà da quello?
+
         
         self.kwargs = kwargs
         self.unique_val_enum = None

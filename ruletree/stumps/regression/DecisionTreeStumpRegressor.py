@@ -1,3 +1,4 @@
+import copy
 import warnings
 
 import numpy as np
@@ -13,16 +14,41 @@ from ruletree.utils.data_utils import get_info_gain, _get_info_gain
 
 class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
-        DecisionTreeStumpClassifier.get_rule(self,
-                                             columns_names=columns_names,
-                                             scaler=scaler,
-                                             float_precision=float_precision)
+        return DecisionTreeStumpClassifier.get_rule(self,
+                                                    columns_names=columns_names,
+                                                    scaler=scaler,
+                                                    float_precision=float_precision)
 
-    def node_to_dict(self, col_names):
-        pass
+    def node_to_dict(self):
+        rule = self.get_rule(float_precision=None)
 
-    def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
-        pass
+        rule["stump_type"] = self.__class__.__name__
+        rule["samples"] = self.tree_.n_node_samples[0]
+        rule["impurity"] = self.tree_.impurity[0]
+
+        rule["args"] = {
+                           "unique_val_enum": self.unique_val_enum,
+                       } | self.kwargs
+
+        rule["split"] = {
+            "args": {}
+        }
+
+        return rule
+
+    def dict_to_node(self, node_dict):
+        self.feature_original = np.zeros(3)
+        self.threshold_original = np.zeros(3)
+
+        self.feature_original[0] = node_dict["feature_original"]
+        self.threshold_original[0] = node_dict["threshold"]
+        self.is_categorical = node_dict["is_categorical"]
+
+        args = copy.deepcopy(node_dict["args"])
+        self.unique_val_enum = args.pop("unique_val_enum")
+        self.kwargs = args
+
+        self.__set_impurity_fun(args["criterion"])
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -32,16 +58,20 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         self.threshold_original = None
         self.feature_original = None
 
-        if kwargs['criterion'] == "squared_error":
+        self.__set_impurity_fun(kwargs['criterion'])
+
+
+    def __set_impurity_fun(self, imp):
+        if imp == "squared_error":
             self.impurity_fun = mean_squared_error
-        elif kwargs['criterion'] == "friedman_mse":
+        elif imp == "friedman_mse":
             raise Exception("not implemented") # TODO: implement
-        elif kwargs['criterion'] == "absolute_error":
+        elif imp == "absolute_error":
             self.impurity_fun = mean_absolute_error
-        elif kwargs['criterion'] == "poisson":
+        elif imp == "poisson":
             self.impurity_fun = mean_poisson_deviance
         else:
-            self.impurity_fun = kwargs['criterion']
+            self.impurity_fun = imp
 
 
     def __impurity_fun(self, **x):
@@ -102,7 +132,9 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
     def apply(self, X, check_input=False):
         if not self.is_categorical:
-            return super().apply(X[:, self.numerical])
+            y_pred = np.ones(X.shape[0], dtype=int) * 2
+            X_feature = X[:, self.feature_original[0]]
+            y_pred[X_feature <= self.threshold_original[0]] = 1
         else:
             y_pred = np.ones(X.shape[0], dtype=int) * 2
             X_feature = X[:, self.feature_original[0]]
