@@ -81,13 +81,13 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         self.distance_measure = distance_measure
 
 
-    def is_split_useless(self, clf: tree, idx: np.ndarray):
-        labels = clf.apply(self.X[idx])
+    def is_split_useless(self, X, clf: tree, idx: np.ndarray):
+        labels = clf.apply(X[idx])
 
         return len(np.unique(labels)) == 1
 
-    def check_additional_halting_condition(self, curr_idx: np.ndarray):
-        return len(np.unique(self.y[curr_idx])) == 1  # only 1 target
+    def check_additional_halting_condition(self, y, curr_idx: np.ndarray):
+        return len(np.unique(y[curr_idx])) == 1  # only 1 target
 
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))

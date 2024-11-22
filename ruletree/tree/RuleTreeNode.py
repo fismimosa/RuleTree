@@ -1,3 +1,4 @@
+import importlib
 from typing import Self
 
 import numpy as np
@@ -19,8 +20,6 @@ class RuleTreeNode:
                  stump: RuleTreeBaseStump = None,
                  node_l: Self = None,
                  node_r: Self = None,
-                 samples: int = None,
-                 balance_score : float = None,
                  **kwargs):
         self.node_id = node_id
         self.prediction = prediction
@@ -30,8 +29,6 @@ class RuleTreeNode:
         self.stump = stump
         self.node_l = node_l
         self.node_r = node_r
-        self.samples = samples  # TODO: remove (by saving it in the stump)
-        self.balance_score = balance_score  # TODO: remove (by saving it in the stump)
 
         for name, value in kwargs.items():
             setattr(self, name, value)
@@ -92,42 +89,44 @@ class RuleTreeNode:
         return rule
     
 
-    def node_to_dict(self):  # TODO: update
-        info_dict = {
+    def node_to_dict(self):
+        node_as_dict ={
             "node_id": self.node_id,
-            "is_leaf" : self.is_leaf(),
+            "is_leaf": self.is_leaf(),
             "prediction": self.prediction,
-            "prediction_probability": self.prediction_probability,
-            "parent_id": self.parent.node_id if self.parent is not None else None,
-            "node_l_id": self.node_l.node_id if self.node_l is not None else None,
-            "node_r_id": self.node_r.node_id if self.node_r is not None else None,
-            "samples": self.samples,
-            "feature_idx": self.stump.get_feature() if self.stump is not None else None,
-            "threshold": self.stump.get_thresholds() if self.stump is not None else None,
-            "is_categorical": self.stump.get_is_categorical() if self.stump is not None else None,
-            "coefficients": self.stump.coefficients if self.stump is not None else None,
-            "kwargs" : self.stump.kwargs if self.stump is not None else {}
-            
-           
+            "prediction_probability": self.prediction_probability if type(self.prediction_probability) == float else self.prediction_probability.tolist(),
+            "prediction_classes_": self.classes.tolist(),
+            "left_node": self.node_l.node_id if self.node_l is not None else None,
+            "right_node": self.node_r.node_id if self.node_r is not None else None,
         }
-        
-        return info_dict
 
-    def dict_to_node(self, info_dict):  # TODO: update
+        if not self.is_leaf():
+            node_as_dict |= self.stump.node_to_dict()
+        
+        return node_as_dict
+
+    @classmethod
+    def dict_to_node(cls, info_dict):
         node = RuleTreeNode(node_id = info_dict['node_id'],
                             prediction = info_dict['prediction'],
                             prediction_probability = info_dict['prediction_probability'],
-                            parent = info_dict['parent_id'],
-                            samples = info_dict['samples'])
+                            parent = None,
+                            classes=info_dict['prediction_classes_'],)
         
         if info_dict['is_leaf'] == True:
             return node
+
+        if "Classifier" in info_dict['stump_type']:
+            stump_type = "classification"
+        elif "Regressor" in info_dict['stump_type']:
+            stump_type = "regression"
+        else:
+            raise ValueError("Unknown stump type: "+str(info_dict['stump_type']))
+
+        import_path = f"ruletree.stumps.{stump_type}.{info_dict['stump_type']}"
+        class_c = getattr(importlib.import_module(import_path), info_dict['stump_type'])
         
-        node.stump = DecisionTreeStumpClassifier(**info_dict['kwargs'])
-        
-        node.stump.feature_original = [info_dict['feature_idx'], -2, -2]
-        node.stump.threshold_original =  np.array([info_dict['threshold'], -2, -2])
-        node.stump.is_categorical = info_dict['is_categorical']
+        node.stump = class_c.dict_to_node(info_dict)
         
 
         return node
@@ -173,13 +172,13 @@ class RuleTreeNode:
 
         rule = self.stump.get_rule(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
 
-        graph.add_node(self.node_id, label=rule["textual_rule"])
+        graph.add_node(self.node_id, **rule["graphviz_rule"])
 
         if self.node_l is not None:
-            graph = self.node_l.export_graphviz(graph)
+            graph = self.node_l.export_graphviz(graph, columns_names, scaler, float_precision)
             graph.add_edge(self.node_id, self.node_l.node_id, color="green")
         if self.node_r is not None:
-            graph = self.node_r.export_graphviz(graph)
+            graph = self.node_r.export_graphviz(graph, columns_names, scaler, float_precision)
             graph.add_edge(self.node_id, self.node_r.node_id, color="red")
 
         return graph

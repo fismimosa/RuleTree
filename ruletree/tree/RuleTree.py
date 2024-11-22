@@ -1,5 +1,8 @@
 import heapq
+import importlib
+import json
 import random
+import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from itertools import count
@@ -11,6 +14,7 @@ from sklearn import tree
 from ruletree.base.RuleTreeBase import RuleTreeBase
 from ruletree.tree.RuleTreeNode import RuleTreeNode
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from ruletree.utils.data_utils import json_NumpyEncoder
 
 
 class RuleTree(RuleTreeBase, ABC):
@@ -24,6 +28,12 @@ class RuleTree(RuleTreeBase, ABC):
                  stump_selection, # ['random', 'best']
                  random_state,
                  ):
+        self.tiebreaker = count()
+        self.root:RuleTreeNode = None
+        self.queue = list()
+        self.classes_ = None
+        self.n_classes_ = None
+
         self.max_leaf_nodes = float("inf") if max_leaf_nodes is None else max_leaf_nodes
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
@@ -69,18 +79,13 @@ class RuleTree(RuleTreeBase, ABC):
                 return sklearn.clone(clf)
 
     def fit(self, X: np.array, y: np.array = None, **kwargs):
-        self.X = X
-        self.y = y
-        self.root = None
-        self.tiebreaker = count()
-        self.queue = list()
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
         self._set_stump()
 
         idx = np.arange(X.shape[0])
 
-        self.root = self.prepare_node(self.y, idx, "R")
+        self.root = self.prepare_node(y, idx, "R")
 
         self.queue_push(self.root, idx)
 
@@ -103,15 +108,15 @@ class RuleTree(RuleTreeBase, ABC):
                 nbr_curr_nodes += 1
                 continue
 
-            if self.check_additional_halting_condition(curr_idx=idx):
+            if self.check_additional_halting_condition(y=y, curr_idx=idx):
                 self.make_leaf(current_node)
                 nbr_curr_nodes += 1
                 continue
 
-            clf = self.make_split(self.X, self.y, idx=idx, **kwargs)
-            labels = clf.apply(self.X[idx])
+            clf = self.make_split(X, y, idx=idx, **kwargs)
+            labels = clf.apply(X[idx])
 
-            if self.is_split_useless(clf, idx):
+            if self.is_split_useless(X=X, clf=clf, idx=idx):
                 self.make_leaf(current_node)
                 nbr_curr_nodes += 1
                 continue
@@ -119,8 +124,8 @@ class RuleTree(RuleTreeBase, ABC):
             idx_l, idx_r = idx[labels == 1], idx[labels == 2]
 
             current_node.set_stump(clf)
-            current_node.node_l = self.prepare_node(self.y, idx_l, current_node.node_id + "l", )
-            current_node.node_r = self.prepare_node(self.y, idx_r, current_node.node_id + "r", )
+            current_node.node_l = self.prepare_node(y, idx_l, current_node.node_id + "l", )
+            current_node.node_r = self.prepare_node(y, idx_r, current_node.node_id + "r", )
             current_node.node_l.parent, current_node.node_r.parent = current_node, current_node
             current_node.balance_score = (np.min(np.unique(labels, return_counts= True)[1]) / labels.shape[0])
 
@@ -189,7 +194,7 @@ class RuleTree(RuleTreeBase, ABC):
         el = heapq.heappop(self.queue)
         return el[-2:]
 
-    def check_additional_halting_condition(self, curr_idx: np.ndarray):
+    def check_additional_halting_condition(self, y, curr_idx: np.ndarray):
         return False
 
     def _post_fit_fix(self):
@@ -208,7 +213,7 @@ class RuleTree(RuleTreeBase, ABC):
         pass
 
     @abstractmethod
-    def is_split_useless(self, clf: tree, idx: np.ndarray):
+    def is_split_useless(self, X: np.ndarray, clf: tree, idx: np.ndarray):
         pass
 
     @abstractmethod
@@ -240,16 +245,13 @@ class RuleTree(RuleTreeBase, ABC):
             print(feature_idx)
 
             if isinstance(feature_idx, (int, np.integer)):
-                print(f"{indentation}|--- {names(feature_idx)} {comparison} "
-                      f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}"
-                      f"\t{rules['samples']}")
+                print(f"{indentation}|--- {rules['textual_rule']}")
                 cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
 
-                print(f"{indentation}|--- {names(feature_idx)} {not_comparison} "
-                      f"{thr if type(thr) in [np.str_, np.string_, str] else round(thr, ndigits=ndigits)}")
+                print(f"{indentation}|--- {rules['not_textual_rule']}")
                 cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
                 
-            elif (isinstance(feature_idx, str) and feature_idx.endswith('_P')):
+            elif (isinstance(feature_idx, str) and feature_idx.endswith('_P')): #TODO: cambia
                 print(f"{indentation}|--- {names_pivots(feature_idx[:-2])} {comparison} "
                       f"{thr if isinstance(thr, (np.str_, np.string_, str)) else round(thr, ndigits=ndigits)}"
                       f"\t{rules['samples']}")
@@ -349,3 +351,66 @@ class RuleTree(RuleTreeBase, ABC):
         self.vector = vector
         
         return vector
+
+
+    def to_dict(self, filename=None):
+        node_list = [self.root]
+
+        args = {
+            "max_leaf_nodes": self.max_leaf_nodes,
+            "min_samples_split": self.min_samples_split,
+            "max_depth": self.max_depth,
+            "prune_useless_leaves": self.prune_useless_leaves,
+            "base_stump": None,
+            "stump_selection": self.stump_selection,
+            "random_state": self.random_state,
+        }
+
+        warnings.warn("As for now base_stump is not serializable")
+
+        dictionary = {
+            "tree_type": self.__class__.__name__,
+            "args": args,
+            "classes_": self.classes_.tolist(),
+            "n_classes_": self.n_classes_,
+            "nodes": [],
+        }
+
+        while len(node_list) > 0:
+            node = node_list.pop()
+            if not node.is_leaf():
+                node_list += [node.node_l, node.node_r]
+
+            dictionary["nodes"].append(node.node_to_dict())
+
+        with open(filename, 'w') as f:
+            json.dump(dictionary, f, cls=json_NumpyEncoder)
+
+        return dictionary
+
+    @classmethod
+    def from_dict(cls, filename):
+        with open(filename, 'r') as f:
+            dictionary = json.load(f)
+
+        class_c = getattr(importlib.import_module(f"ruletree.tree.{dictionary['tree_type']}"), dictionary['tree_type'])
+        tree = class_c(**dictionary['args'])
+        tree.classes_ = dictionary['classes_']
+        tree.n_classes_ = dictionary['n_classes_']
+
+        nodes = {node["node_id"]: RuleTreeNode.dict_to_node(node) for node in dictionary['nodes']}
+
+        for node_instance, node_info in zip(nodes.values(), dictionary['nodes']):
+            if not node_info["is_leaf"]:
+                node_instance.node_l = nodes[node_info["left_node"]]
+                node_instance.node_r = nodes[node_info["right_node"]]
+                nodes[node_info["left_node"]].parent = node_instance
+                nodes[node_info["right_node"]].parent = node_instance
+
+        tree.root = nodes['R']
+
+        return tree
+
+    def export_graphviz(self, columns_names=None, scaler=None, float_precision=3):
+        return self.root.export_graphviz(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
+

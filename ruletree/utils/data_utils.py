@@ -1,3 +1,4 @@
+import json
 import math
 
 import numpy as np
@@ -208,3 +209,14 @@ def select_stumps(node, p=0.2, selected_stumps=None):
         select_stumps(node.node_r, p, selected_stumps)
     
     return selected_stumps
+
+
+class json_NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(json_NumpyEncoder, self).default(obj)

@@ -71,8 +71,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
         self.oblique_split_type = oblique_split_type
         self.force_oblique = force_oblique
 
-    def is_split_useless(self, clf: tree, idx: np.ndarray):
-        labels = clf.apply(self.X[idx])
+    def is_split_useless(self, X, clf: tree, idx: np.ndarray):
+        labels = clf.apply(X[idx])
         return len(np.unique(labels)) == 1
 
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
@@ -115,6 +115,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             node_l=None,
             node_r=None,
             samples=len(y[idx]),
+            classes=self.classes_
         )
 
     def _get_stumps_base_class(self):

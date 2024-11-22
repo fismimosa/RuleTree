@@ -133,3 +133,6 @@ dmypy.json
 *.pyc
 /results
 /venv_test/
+dizionario.json
+Source.gv
+Source.gv.pdf

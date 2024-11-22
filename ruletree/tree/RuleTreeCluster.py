@@ -70,15 +70,15 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         if self.clus_impurity not in ['bic', 'r2']:
             raise Exception('Unknown clustering impurity measure %s' % self.clus_impurity)
 
-    def is_split_useless(self, clf: tree, idx: np.ndarray):
-        labels = clf.apply(self.X[idx])
+    def is_split_useless(self, X, clf: tree, idx: np.ndarray):
+        labels = clf.apply(X[idx])
 
         if len(np.unique(labels)) == 1:
             return True
 
         # CHECK BIC DECREASE
-        bic_parent = bic(self.X[idx], [0] * len(idx))
-        bic_children = bic(self.X[idx], (np.array(labels) - 1).tolist())
+        bic_parent = bic(X[idx], [0] * len(idx))
+        bic_children = bic(X[idx], (np.array(labels) - 1).tolist())
 
         return bic_parent < bic_children - self.bic_eps * np.abs(bic_parent)
 

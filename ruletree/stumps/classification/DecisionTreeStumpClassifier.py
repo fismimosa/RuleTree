@@ -1,4 +1,5 @@
 import copy
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],
             "is_categorical": self.is_categorical,
+            "samples": self.n_node_samples[0]
         }
 
         feat_name = f"X_{rule['feature_idx']}"
@@ -26,15 +28,27 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
         if scaler is not None:
             array = np.zeros((1, scaler.n_features_in_))
-            array[0, self.feature_original[0]] = self.feature_original[0]
+            array[0, self.feature_original[0]] = self.threshold_original[0]
 
             rule["threshold_scaled"] = scaler.inverse_transform(array)[0, self.feature_original[0]]
 
-        comparison = "<=" if self.is_categorical else "="
+        comparison = "<=" if not self.is_categorical else "="
+        not_comparison = ">" if not self.is_categorical else "!="
         rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
-        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}"
+        if scaler is not None:
+            rounded_value = str(rule["threshold_scaled"]) if float_precision is None else (
+                round(rule["threshold_scaled"], float_precision))
+        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}\t{rule['samples']}"
         rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
-        rule["graphviz_rule"] = f"{feat_name} {comparison} {rounded_value}"
+        rule["graphviz_rule"] = {
+            "label": f"{feat_name} {comparison} {rounded_value}",
+        }
+
+        rule["not_textual_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
+        rule["not_blob_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
+        rule["not_graphviz_rule"] = {
+            "label": f"{feat_name} {not_comparison} {rounded_value}"
+        }
 
         return rule
 
@@ -42,7 +56,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         rule = self.get_rule(float_precision=None)
 
         rule["stump_type"] = self.__class__.__name__
-        rule["samples"] = self.tree_.n_node_samples[0]
+        rule["samples"] = self.n_node_samples[0]
         rule["impurity"] = self.tree_.impurity[0]
 
         rule["args"] = {
@@ -58,12 +72,16 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
         return rule
 
-    def dict_to_node(self, node_dict):
-        self.feature_original = np.zeros(3)
+    @classmethod
+    def dict_to_node(cls, node_dict):
+        self = cls()
+        self.feature_original = np.zeros(3, dtype=int)
         self.threshold_original = np.zeros(3)
+        self.n_node_samples = np.zeros(3, dtype=int)
 
-        self.feature_original[0] = node_dict["feature_original"]
+        self.feature_original[0] = node_dict["feature_idx"]
         self.threshold_original[0] = node_dict["threshold"]
+        self.n_node_samples[0] = node_dict["samples"]
         self.is_categorical = node_dict["is_categorical"]
 
         args = copy.deepcopy(node_dict["args"])
@@ -73,9 +91,12 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         self.coefficients = args.pop("coefficients")
         self.kwargs = args
 
+        return self
+
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
         self.is_categorical = None
         self.is_oblique = False # TODO: @Alessio, ma questi ci servono qui? Non sarebbe meglio mettere tutto in
         self.is_pivotal = False #       PivotTreeStumpClassifier e poi usare l'ereditarietà da quello?
@@ -111,6 +132,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
             self.feature_original = self.tree_.feature
             self.threshold_original = self.tree_.threshold
+            self.n_node_samples = self.tree_.n_node_samples
             best_info_gain = get_info_gain(self)
             
         self._fit_cat(X, y, best_info_gain)
@@ -179,6 +201,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                         self.threshold_original = np.array([value, -2, -2])
                         self.unique_val_enum = np.unique(X[:, i])
                         self.is_categorical = True
+                        self.n_node_samples = X.shape[0]
 
 
     def apply(self, X, check_input=False):
