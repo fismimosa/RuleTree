@@ -25,6 +25,7 @@ from ruletree import RuleForestClassifier
 from ruletree import RuleForestRegressor
 from ruletree import RuleTreeAdaBoostClassifier
 from ruletree import RuleTreeAdaBoostRegressor
+from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 
 def test_clf(max_depth=4):
