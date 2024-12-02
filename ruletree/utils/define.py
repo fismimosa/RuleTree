@@ -1,3 +1,7 @@
 MODEL_TYPE_CLF = 'clf'
 MODEL_TYPE_REG = 'reg'
 MODEL_TYPE_CLU = 'clu'
+
+DATA_TYPE_TABULAR = 'tabular'
+DATA_TYPE_TS = 'ts'
+DATA_TYPE_IMAGE = 'image'

@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 from sklearn.base import BaseEstimator
 
+from ruletree.utils.define import DATA_TYPE_TABULAR
+
 
 class RuleTreeBaseStump(BaseEstimator, ABC):
     @abstractmethod
@@ -15,3 +17,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     @abstractmethod
     def dict_to_node(self, node_dict):
         pass
+
+    @staticmethod
+    def supports(data_type):
+        return data_type in [DATA_TYPE_TABULAR]

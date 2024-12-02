@@ -94,36 +94,35 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
         if self.stump_selection == 'random':
-            
-            clf = self._get_random_stump()
-            clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+            stump = self._get_random_stump(X)
+            stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
         elif self.stump_selection == 'best':
             clfs = []
             info_gains = []
-            for _, clf in self.base_stump:
+            for _, stump in self._filter_types(X):
                 
                 
-                clf = sklearn.clone(clf)
-                if isinstance(clf, (PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)):
+                stump = sklearn.clone(stump)
+                if isinstance(stump, (PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)):
                     if self.distance_matrix is None:
                         self.distance_matrix = pairwise_distances(X[idx], metric = self.distance_measure)
-                    clf.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, distance_measure = self.distance_measure,
+                    stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, distance_measure = self.distance_measure,
                             sample_weight=None if sample_weight is None else sample_weight[idx]) 
                   
                 else:
-                    clf.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+                    stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
 
             
-                gain = get_info_gain(clf)
+                gain = get_info_gain(stump)
                 info_gains.append(gain)
                 
-                clfs.append(clf)
+                clfs.append(stump)
 
-            clf = clfs[np.argmax(info_gains)]
+            stump = clfs[np.argmax(info_gains)]
         else:
-            raise Exception('Unknown stump selection method')
+            raise TypeError('Unknown stump selection method')
 
-        return clf
+        return stump
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         prediction = calculate_mode(y[idx])

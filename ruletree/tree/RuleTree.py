@@ -15,6 +15,7 @@ from ruletree.base.RuleTreeBase import RuleTreeBase
 from ruletree.tree.RuleTreeNode import RuleTreeNode
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.utils.data_utils import json_NumpyEncoder
+from ruletree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS
 
 
 class RuleTree(RuleTreeBase, ABC):
@@ -39,7 +40,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.max_depth = max_depth
         self.prune_useless_leaves = prune_useless_leaves
 
-        self.base_stump = base_stump
+        self.base_stumps = base_stump
         self.stump_selection = stump_selection
 
         self.random_state = random_state
@@ -50,14 +51,14 @@ class RuleTree(RuleTreeBase, ABC):
         class_to_check = self._get_stumps_base_class()
         _base_stump = []
         _p = []
-        if isinstance(self.base_stump, RuleTreeBaseStump):
-            assert isinstance(self.base_stump, class_to_check)
-            _base_stump.append(self.base_stump)
+        if isinstance(self.base_stumps, RuleTreeBaseStump):
+            assert isinstance(self.base_stumps, class_to_check)
+            _base_stump.append(self.base_stumps)
             _p.append(1.)
-        elif type(self.base_stump) == list:
-            assert len(self.base_stump) > 0
-            _equal_p = 1 / len(self.base_stump)
-            for el in self.base_stump:
+        elif type(self.base_stumps) == list:
+            assert len(self.base_stumps) > 0
+            _equal_p = 1 / len(self.base_stumps)
+            for el in self.base_stumps:
                 if isinstance(el, Sequence):
                     assert isinstance(el[1], RuleTreeBaseStump)
                     assert isinstance(el[1], class_to_check)
@@ -70,13 +71,39 @@ class RuleTree(RuleTreeBase, ABC):
                     _base_stump.append(el)
 
         assert sum(_p) == 1.
-        self.base_stump = [(p, stump) for p, stump in zip(np.cumsum(_p), _base_stump)]
+        self.base_stumps = [(p, stump) for p, stump in zip(np.cumsum(_p), _base_stump)]
 
-    def _get_random_stump(self):
+    def _get_random_stump(self, X):
         val = random.random()
-        for p, clf in self.base_stump:
+
+        supported_stumps = self._filter_types(self.base_stumps)
+
+        for p, clf in self.base_stumps:
             if val <= p:
                 return sklearn.clone(clf)
+
+    def _filter_types(self, X):
+        if len(X) == 2:
+            data_type = DATA_TYPE_TABULAR
+        elif len(X) == 3:
+            data_type = DATA_TYPE_TS
+        elif len(X) == 4:
+            data_type = DATA_TYPE_IMAGE
+        else:
+            raise TypeError(f"Invalid data type for shape {X.shape}")
+
+        compatible_stumps = [(p, x) for p, x in self.base_stumps if x.supports(data_type)]
+
+        if len(compatible_stumps) == 0:
+            raise TypeError(f"No compatible stumps found for "
+                            f"shape {X.shape}.\r\n{[x.__name__ for x in self.base_stumps]}")
+
+        p_total = sum([x for x, _ in compatible_stumps])
+        if p_total < 1:
+            compatible_stumps = [(p/p_total, x) for p, x in compatible_stumps]
+
+        return compatible_stumps
+
 
     def fit(self, X: np.array, y: np.array = None, **kwargs):
         self.classes_ = np.unique(y)

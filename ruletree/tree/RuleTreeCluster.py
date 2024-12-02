@@ -86,6 +86,9 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         heapq.heappush(self.queue, (-len(idx), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
+        if len(X.shape) != 2:
+            raise TypeError(f'Unsupported data type for shape {X.shape}')
+
         n_components_split = min(self.n_components, len(idx))
 
         dtypes = pd.DataFrame(X).infer_objects().dtypes
@@ -104,7 +107,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         best_clf = None
         best_score = float('inf')
         for i in range(n_components_split):
-            clf = self._get_random_stump()
+            clf = self._get_random_stump(y_pca)
 
             clf.fit(X[idx], y_pca[:, i])
             if self.clus_impurity == 'r2':

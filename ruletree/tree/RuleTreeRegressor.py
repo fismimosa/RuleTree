@@ -80,25 +80,24 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
         if self.stump_selection == 'random':
-            clf = self._get_random_stump()
-            clf.fit(X[idx], y[idx], **kwargs)
+            stump = self._get_random_stump(X)
+            stump.fit(X[idx], y[idx], **kwargs)
         elif self.stump_selection == 'best':
             clfs = []
             info_gains = []
-            for _, clf in self.base_stump:
-                clf = sklearn.clone(clf)
-                clf.fit(X[idx], y[idx], **kwargs)
+            for _, stump in self._filter_types(X):
+                stump = sklearn.clone(stump)
+                stump.fit(X[idx], y[idx], **kwargs)
 
-                gain = get_info_gain(clf)
+                gain = get_info_gain(stump)
                 info_gains.append(gain)
 
-            clf = clfs[np.argmax(info_gains)]
+            stump = clfs[np.argmax(info_gains)]
         else:
-            raise Exception('Unknown stump selection method')
+            raise TypeError('Unknown stump selection method')
 
-        return clf
+        return stump
 
-    
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         with warnings.catch_warnings():
