@@ -57,8 +57,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         not_comparison = ">" if not self.is_categorical else "!="
         rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
         if scaler is not None:
-            rounded_value = str(rule["threshold_scaled"]) if float_precision is None else (
-                round(rule["threshold_scaled"], float_precision))
+            NotImplementedError()
         rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}\t{rule['samples']}"
         rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
         rule["graphviz_rule"] = {
