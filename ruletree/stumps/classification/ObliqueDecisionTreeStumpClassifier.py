@@ -20,7 +20,8 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBa
         self.n_orientations = n_orientations
 
         if oblique_split_type == 'householder':
-            self.oblique_split = ObliqueHouseHolderSplit(pca=self.pca,
+            self.oblique_split = ObliqueHouseHolderSplit(ml_task=MODEL_TYPE_CLF,
+                                                         pca=self.pca,
                                                          max_oblique_features=self.max_oblique_features,
                                                          tau=self.tau,
                                                          **kwargs)
