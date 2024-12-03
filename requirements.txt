@@ -8,3 +8,6 @@ tqdm
 progress-table
 pygraphviz
 graphviz>=0.20.3
+jax
+jax-scipy-spatial
+psutil
