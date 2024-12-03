@@ -76,18 +76,18 @@ class RuleTree(RuleTreeBase, ABC):
     def _get_random_stump(self, X):
         val = random.random()
 
-        supported_stumps = self._filter_types(self.base_stumps)
+        supported_stumps = self._filter_types(X)
 
-        for p, clf in self.base_stumps:
+        for p, clf in supported_stumps:
             if val <= p:
                 return sklearn.clone(clf)
 
     def _filter_types(self, X):
-        if len(X) == 2:
+        if len(X.shape) == 2:
             data_type = DATA_TYPE_TABULAR
-        elif len(X) == 3:
+        elif len(X.shape) == 3:
             data_type = DATA_TYPE_TS
-        elif len(X) == 4:
+        elif len(X.shape) == 4:
             data_type = DATA_TYPE_IMAGE
         else:
             raise TypeError(f"Invalid data type for shape {X.shape}")
