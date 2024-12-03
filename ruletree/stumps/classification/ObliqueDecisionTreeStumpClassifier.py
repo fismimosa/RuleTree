@@ -49,7 +49,7 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBa
 
     def apply(self, X):
         X_transform = self.oblique_split.transform(X[:, self.num_pre_transformed])
-        return super().apply(X_transform)
+        return super().apply_sk(X_transform) #otherwise we need to "personalize" the apply function
 
     def get_params(self, deep=True):
         return {
@@ -61,7 +61,73 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBa
         }
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
-        raise NotImplementedError()
+        
+         rule = {
+             "feature_idx": self.feature_original[0], #list of feats
+             "threshold": self.threshold_original[0], #thr
+             "coefficients" : self.coefficients, #coefficients
+             "is_categorical": self.is_categorical,
+             "samples": self.n_node_samples[0]
+         }
+         
+         #round coefficients here
+         rule['coefficients'] = [
+                                str(coeff) if float_precision is None else round(float(coeff), float_precision) 
+                                for coeff in rule['coefficients']
+                                ]
+         
+         feat_name = " + ".join(f"{coeff} * X_{idx}" for coeff, idx in zip(rule['coefficients'], rule['feature_idx']))
+        
+         if columns_names is not None:
+             feat_name = "_".join(columns_names[idx] for idx in self.feature_original[0]) #check this for feat names
+         rule["feature_name"] = feat_name
+         
+         if scaler is not None:
+             #TODO
+             raise NotImplementedError()
+             pass
+         
+         comparison = "<=" if not self.is_categorical else "="
+         not_comparison = ">" if not self.is_categorical else "!="
+         rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
+         
+         if scaler is not None:
+             #TODO
+             raise NotImplementedError()
+             pass
+         
+         rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}\t{rule['samples']}"
+         rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
+         rule["graphviz_rule"] = {
+             "label": f"{feat_name} {comparison} {rounded_value}",
+         }
+         
+         rule["not_textual_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
+         rule["not_blob_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
+         rule["not_graphviz_rule"] = {
+             "label": f"{feat_name} {not_comparison} {rounded_value}"
+         }
 
-    def node_to_dict(self, col_names):
-        raise NotImplementedError()
+         return rule
+
+   
+        
+    def node_to_dict(self):
+        rule = self.get_rule(float_precision=None)
+
+        rule["stump_type"] = self.__class__.__name__
+        rule["samples"] = self.n_node_samples[0]
+        rule["impurity"] = self.tree_.impurity[0]
+
+        rule["args"] = {
+            "is_oblique": self.is_oblique,
+            "is_pivotal": self.is_pivotal,
+            "unique_val_enum": self.unique_val_enum,
+            "coefficients": self.coefficients,
+        } | self.kwargs
+
+        rule["split"] = {
+            "args": {}
+        }
+
+        return rule
