@@ -21,6 +21,7 @@ class ObliqueHouseHolderSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         **kwargs
     ):
         super(RuleTreeBaseSplit, RuleTreeBaseSplit).__init__(ml_task)
+        self.ml_task = ml_task
 
         self.kwargs = kwargs
         self.pca = pca
