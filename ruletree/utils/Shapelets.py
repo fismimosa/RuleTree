@@ -8,6 +8,8 @@ from jax import numpy as jnp
 from jax import jit
 from jax import scipy as jscipy
 from jax import random
+from jax._src.lax.control_flow import fori_loop
+from jax._src.lax.slicing import dynamic_slice_in_dim
 
 from numba import jit as numba_jit
 try:
@@ -18,6 +20,8 @@ except ImportError:
 from jax_scipy_spatial.distance import braycurtis, canberra, chebyshev, cityblock, correlation, cosine, euclidean, \
     hamming, jaccard, minkowski, russellrao, sqeuclidean
 
+from jax.lax import cond
+
 from scipy.spatial import distance
 import psutil
 import os
@@ -27,6 +31,10 @@ from sklearn.base import TransformerMixin
 def jensenshannon(XA, XB):
     m = (XA+XB)/2
     return jnp.sqrt((jscipy.special.kl_div(XA, m) + jscipy.special.kl_div(XB, m))/2)
+
+def rolling_window(a: jnp.ndarray, window: int):
+  idx = jnp.arange(len(a) - window + 1)[:, None] + jnp.arange(window)[None, :]
+  return a[idx]
 
 _distance_map = {
     "braycurtis": braycurtis,
@@ -94,21 +102,33 @@ class Shapelet(TransformerMixin):
 
 @jit
 def _best_fit_jax_for(timeseries: jnp.ndarray, shapelets: jnp.ndarray):
-    res = jnp.zeros((timeseries.shape[0], shapelets.shape[0]), dtype=jnp.float32)
     positions = timeseries.shape[-1] - shapelets.shape[-1]
-    d = Shapelet()._get_distance()
 
     for ts_idx, ts in enumerate(timeseries[:, 0, :]):
         for shapelet_idx, shapelet in enumerate(shapelets[:, 0, :]):
-            dist_vector = np.zeros((positions,), dtype=jnp.float32)
-            for start in range(positions + 1):
-                dist_vector[start:start+1] = d(timeseries[ts_idx:ts_idx+1, 0, start:start + shapelets.shape[-1]],
-                                       shapelets[shapelet_idx:shapelet_idx+1, 0, :])
-            res[ts_idx, shapelet_idx] = jnp.argmin(dist_vector)
+            fori_loop(0,
+                      positions,  # ts, shape, best_value
+                      inner_loop,
+                      (ts, shapelet, jnp.inf)
+                      )
 
-    return res
+@jit
+def inner_loop(idx, data):
+    ts, shapelet, best_value = data
+    d = Shapelet(n_jobs=-1)._get_distance()
+    ts_sub = dynamic_slice_in_dim(ts, idx, shapelet.shape[0])
+    new_value = d(ts_sub, shapelet)
 
-@numba_jit
+    return cond(
+        new_value < best_value,
+        lambda _: (ts, shapelet, best_value),
+        lambda _: (ts, shapelet, best_value),
+        None,
+    )
+
+
+
+#@numba_jit
 def _best_fit_classic_for(timeseries: np.ndarray, shapelets: np.ndarray):
     res = np.zeros((timeseries.shape[0], shapelets.shape[0]), dtype=np.float32)
     positions = timeseries.shape[-1] - shapelets.shape[-1]
@@ -116,7 +136,7 @@ def _best_fit_classic_for(timeseries: np.ndarray, shapelets: np.ndarray):
     for ts_idx, ts in enumerate(timeseries[:, 0, :]):
         for shapelet_idx, shapelet in enumerate(shapelets[:, 0, :]):
             dist_vector = np.zeros((positions,), dtype=np.float32)
-            for start in range(positions + 1):
+            for start in range(positions):
                 dist_vector[start] = distance.euclidean(ts[start:start + shapelets.shape[-1]], shapelet)
             res[ts_idx, shapelet_idx] = np.argmin(dist_vector)
 
@@ -127,14 +147,14 @@ def _best_fit_classic_for(timeseries: np.ndarray, shapelets: np.ndarray):
 
 if __name__ == '__main__':
     random.key(42)
-    X = np.random.rand(10000, 1, 1000).astype(np.float32)
+    X = np.random.rand(1000, 1, 1000).astype(np.float32)
     shapelets = np.random.rand(100, 1, 50).astype(np.float32)
 
-    st = Shapelet(n_jobs=1)
+    st = Shapelet(n_jobs=-1)
 
-    """start = time.time()
+    start = time.time()
     jax_res = _best_fit_jax_for(X, shapelets)
-    print("JAX_TIME", round(time.time()-start, 6))"""
+    print("JAX_TIME", round(time.time()-start, 6))
 
     start = time.time()
     classic_res = _best_fit_classic_for(X, shapelets)
