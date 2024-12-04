@@ -16,7 +16,7 @@ class ObliqueBivariateSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             n_orientations=10,  # number of orientations to generate
             **kwargs
     ):
-        super(RuleTreeBaseSplit, self).__init__(ml_task)
+        super(RuleTreeBaseSplit, RuleTreeBaseSplit).__init__(ml_task)
 
         self.kwargs = kwargs
         self.ml_task = ml_task

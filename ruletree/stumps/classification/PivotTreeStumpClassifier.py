@@ -24,7 +24,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
             candidate_names = self.pivot_split.get_candidates_names()
             super().fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
 
-            self.feature_original = [f'{candidate_names[self.tree_.feature[0]]}_P', -2, -2]
+            self.feature_original = [f'{candidate_names[self.tree_.feature[0]]}', -2, -2]
             self.threshold_original = self.tree_.threshold
             self.is_pivotal = True
 
@@ -32,13 +32,65 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
 
     def apply(self, X):
         X_transformed = self.pivot_split.transform(X[:, self.num_pre_transformed], self.distance_measure)
-        return super().apply(X_transformed)
+        return super().apply_sk(X_transformed)
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
-        raise NotImplementedError()
+        rule = {
+            "feature_idx": self.feature_original[0],
+            "threshold": self.threshold_original[0],
+            "coefficients" : self.coefficients,
+            "is_categorical": self.is_categorical,
+            "samples": self.n_node_samples[0]
+        }
 
-    def node_to_dict(self, col_names):
-        raise NotImplementedError()
+        feat_name = f"P_{rule['feature_idx']}"
+        if columns_names is not None:
+            #feat_names should not be useful for pivot tree
+            #feat_name = columns_names[self.feature_original[0]]
+            feat_name = None
+        rule["feature_name"] = feat_name
+
+        if scaler is not None:
+            NotImplementedError()
+
+        comparison = "<=" if not self.is_categorical else "="
+        not_comparison = ">" if not self.is_categorical else "!="
+        rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
+        if scaler is not None:
+            NotImplementedError()
+        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}\t{rule['samples']}"
+        rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
+        rule["graphviz_rule"] = {
+            "label": f"{feat_name} {comparison} {rounded_value}",
+        }
+
+        rule["not_textual_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
+        rule["not_blob_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
+        rule["not_graphviz_rule"] = {
+            "label": f"{feat_name} {not_comparison} {rounded_value}"
+        }
+
+        return rule
+
+    def node_to_dict(self):
+        rule = self.get_rule(float_precision=None)
+
+        rule["stump_type"] = self.__class__.__name__
+        rule["samples"] = self.n_node_samples[0]
+        rule["impurity"] = self.tree_.impurity[0]
+
+        rule["args"] = {
+            "is_oblique": self.is_oblique,
+            "is_pivotal": self.is_pivotal,
+            "unique_val_enum": self.unique_val_enum,
+            "coefficients": self.coefficients,
+        } | self.kwargs
+
+        rule["split"] = {
+            "args": {}
+        }
+
+        return rule
 
     def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
         raise NotImplementedError()

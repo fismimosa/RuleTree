@@ -20,7 +20,7 @@ class ObliqueHouseHolderSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         tau=1e-4,
         **kwargs
     ):
-        super(RuleTreeBaseSplit, self).__init__(ml_task)
+        super(RuleTreeBaseSplit, RuleTreeBaseSplit).__init__(ml_task)
 
         self.kwargs = kwargs
         self.pca = pca

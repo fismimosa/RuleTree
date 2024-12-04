@@ -203,7 +203,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                         self.is_categorical = True
                         self.n_node_samples = X.shape[0]
 
-
+     
     def apply(self, X, check_input=False):
         if not self.is_categorical:
             y_pred = (np.ones(X.shape[0]) * 2)
@@ -218,4 +218,19 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             y_pred[X_feature == self.threshold_original[0]] = 1
 
             return y_pred
+
+    def apply_sk(self, X, check_input=False): ##this implements the apply of the sklearn DecisionTreeClassifier
+        if not self.is_categorical:
+            return super().apply(X[:, self.numerical])
+            
+        else:
+            y_pred = np.ones(X.shape[0]) * 2
+            X_feature = X[:, self.feature_original[0]]
+            y_pred[X_feature == self.threshold_original[0]] = 1
+
+            return y_pred
+
+
+
+    
         
