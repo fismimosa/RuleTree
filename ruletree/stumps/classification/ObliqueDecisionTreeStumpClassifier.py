@@ -18,15 +18,16 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBa
         self.max_oblique_features = max_oblique_features
         self.tau = tau
         self.n_orientations = n_orientations
+        self.oblique_split_type = oblique_split_type
 
-        if oblique_split_type == 'householder':
+        if self.oblique_split_type == 'householder':
             self.oblique_split = ObliqueHouseHolderSplit(ml_task=MODEL_TYPE_CLF,
                                                          pca=self.pca,
                                                          max_oblique_features=self.max_oblique_features,
                                                          tau=self.tau,
                                                          **kwargs)
 
-        if oblique_split_type == 'bivariate':
+        if self.oblique_split_type == 'bivariate':
             self.oblique_split = ObliqueBivariateSplit(ml_task=MODEL_TYPE_CLF, n_orientations=self.n_orientations, **kwargs)
 
     def fit(self, X, y, sample_weight=None, check_input=True):
@@ -54,6 +55,7 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBa
     def get_params(self, deep=True):
         return {
             **self.kwargs,
+            'oblique_split_type' : self.oblique_split_type,
             'max_oblique_features': self.max_oblique_features,
             'pca': self.pca,
             'tau': self.tau,
