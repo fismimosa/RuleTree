@@ -248,6 +248,25 @@ class RuleTree(RuleTreeBase, ABC):
         return RuleTreeBaseStump
 
     @classmethod
+    def _get_tree_paths(cls, current_node):
+        if current_node.is_leaf():
+            return [[current_node.node_id]]
+                
+        if current_node.node_l:  
+            left_paths = cls._get_tree_paths(current_node.node_l)
+            right_paths = cls._get_tree_paths(current_node.node_r)
+            
+            for path in left_paths:
+                path.append(current_node.node_id) 
+                
+            for path in right_paths:
+                path.append(current_node.node_id)
+                
+            paths = left_paths + right_paths
+            
+        return paths
+
+    @classmethod
     def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
         names = lambda x: f"X_{x}"
         names_pivots = lambda x: f"P_{x}"
