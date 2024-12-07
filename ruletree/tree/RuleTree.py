@@ -287,19 +287,9 @@ class RuleTree(RuleTreeBase, ABC):
     
         return d, i
 
-    @classmethod
-    def _get_prediction_probas(cls, current_node, probas=None):
-        if probas is None:
-            probas = []
-    
-        if current_node.prediction_probability is not None:
-            probas.append(current_node.prediction_probability)
-           
-        if current_node.node_l:
-            cls._get_prediction_probas(current_node.node_l, probas)
-            cls._get_prediction_probas(current_node.node_r, probas)
-        
-        return probas
+    @abstractmethod
+    def _get_prediction_probas(self, current_node, probas=None):
+        pass
 
     def _tree_value(self):
         probas = self._get_prediction_probas(self.root)
