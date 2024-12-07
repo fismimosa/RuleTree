@@ -2,6 +2,7 @@ from random import random
 import numpy as np
 import sklearn.base
 from sklearn.ensemble import BaggingClassifier
+from ruletree.utils.data_utils import _iterative_mean
 
 from ruletree import RuleTreeClassifier
 from ruletree.base.RuleTreeBase import RuleTreeBase
