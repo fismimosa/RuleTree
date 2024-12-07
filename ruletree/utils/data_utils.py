@@ -8,6 +8,18 @@ from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
+def _iterative_mean(iter, current_mean, x):
+    """
+    Iteratively calculates mean using
+    http://www.heikohoffmann.de/htmlthesis/node134.html
+    :param iter: non-negative integer, iteration
+    :param current_mean: numpy array, current value of mean
+    :param x: numpy array, new value to be added to mean
+    :return: numpy array, updated mean
+    """
+    return current_mean + ((x - current_mean) / (iter + 1))
+
+
 def preprocessing(X, feature_names_r, is_cat_feat, data_encoder=None, numerical_scaler=None):
     X = np.copy(X)
     if data_encoder is not None:
