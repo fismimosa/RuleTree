@@ -247,6 +247,8 @@ class RuleTree(RuleTreeBase, ABC):
     def _get_stumps_base_class(self):
         return RuleTreeBaseStump
 
+    
+
     @classmethod
     def _get_tree_paths(cls, current_node):
         if current_node.is_leaf():
@@ -265,7 +267,42 @@ class RuleTree(RuleTreeBase, ABC):
             paths = left_paths + right_paths
             
         return paths
+    
+    @classmethod
+    def _get_prediction_probas(cls, current_node, probas=None):
+        if probas is None:
+            probas = []
+    
+        if current_node.prediction_probability is not None:
+            probas.append(current_node.prediction_probability)
+        
+    
+        if current_node.node_l:
+            cls._get_prediction_probas(current_node.node_l, probas)
+            cls._get_prediction_probas(current_node.node_r, probas)
+        
+        return probas
 
+    def _tree_value(self):
+        probas = self._get_prediction_probas(self.root)
+        return np.array(probas).reshape(-1, 1, len(probas[0]))
+    
+    def _feature(self, current_node, feats=None):
+        if feats is None:
+            feats = []
+        
+        if current_node.is_leaf():
+            feats.append(-2)
+        else:
+            feats.append(current_node.stump.feature_original[0])
+            self._feature(current_node.node_l, feats)
+            self._feature(current_node.node_r, feats)
+        
+        return feats
+
+    def _tree_feature(self):
+        return self._feature(self.root)
+        
     @classmethod
     def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
         names = lambda x: f"X_{x}"
