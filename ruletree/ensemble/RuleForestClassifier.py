@@ -118,6 +118,58 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                          verbose=self.verbose)
 
         return super().fit(X, y, sample_weight=sample_weight, **kwargs)
+     
+    def local_interpretation(self, X, joint_contribution = False):
+        
+        if joint_contribution:
+            biases = []
+            contributions = []
+            predictions = []
+            
+            for tree in self.estimators_:
+                pred, bias, contribution = tree.local_interpretation(X, joint_contribution=joint_contribution)
+                biases.append(bias)
+                contributions.append(contribution)
+                predictions.append(pred)
+                
+            total_contributions = []
+            
+            for i in range(len(X)):
+                contr = {}
+                for j, dct in enumerate(contributions):
+                    for k in set(dct[i]).union(set(contr.keys())):
+                        contr[k] = (contr.get(k, 0)*j + dct[i].get(k,0) ) / (j+1)
+
+                total_contributions.append(contr)    
+                
+            for i, item in enumerate(contribution):
+                total_contributions[i]
+                sm = sum([v for v in contribution[i].values()])
+                    
+
+            
+            return (np.mean(predictions, axis=0), np.mean(biases, axis=0),
+                total_contributions)
+        else:
+            mean_pred = None
+            mean_bias = None
+            mean_contribution = None
+            
+            for i, tree in enumerate(self.estimators_):
+                pred, bias, contribution = tree.local_interpretation(X)
+                
+                if i < 1: # first iteration
+                    mean_bias = bias
+                    mean_contribution = contribution
+                    mean_pred = pred
+                else:
+                    mean_bias = _iterative_mean(i, mean_bias, bias)
+                    mean_contribution = _iterative_mean(i, mean_contribution, contribution)
+                    mean_pred = _iterative_mean(i, mean_pred, pred)
+
+            return mean_pred, mean_bias, mean_contribution
+
+        
 
 class RuleTreeClassifier_choosing_splitter_randomly(RuleTreeClassifier):
     def __init__(self, splitter, **kwargs):
