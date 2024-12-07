@@ -24,7 +24,7 @@ class RuleTree(RuleTreeBase, ABC):
                  min_samples_split,
                  max_depth,
                  prune_useless_leaves,
-                 base_stump, #isinstance of RuleTreeBaseStump, list of instances of RuleTreeBaseStump,
+                 base_stumps, #isinstance of RuleTreeBaseStump, list of instances of RuleTreeBaseStump,
                                 # list of tuple (probability, RuleTreeBaseStump) where sum(probabilities)==1
                  stump_selection, # ['random', 'best']
                  random_state,
