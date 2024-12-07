@@ -91,6 +91,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
 
                 gain = get_info_gain(stump)
                 info_gains.append(gain)
+                
+                clfs.append(stump)
 
             stump = clfs[np.argmax(info_gains)]
         else:
