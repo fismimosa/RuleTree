@@ -1,28 +1,13 @@
 import time
-import typing
-from functools import partial
-
-import jax
 import numpy as np
-from jax import numpy as jnp
+from jax import numpy as jnp, pmap
 from jax import jit
 from jax import scipy as jscipy
 from jax import random
-from jax._src.lax.control_flow import fori_loop
-from jax._src.lax.slicing import dynamic_slice_in_dim
 
-from numba import jit as numba_jit
-try:
-  from jax._src.numpy.util import implements
-except ImportError:
-  from jax._src.numpy.util import _wraps as implements  # for jax < 0.4.25
+from fastdist import fastdist
 
-from jax_scipy_spatial.distance import braycurtis, canberra, chebyshev, cityblock, correlation, cosine, euclidean, \
-    hamming, jaccard, minkowski, russellrao, sqeuclidean
-
-from jax.lax import cond
-
-from scipy.spatial import distance
+from numba import jit as numba_jit, prange
 import psutil
 import os
 from sklearn.base import TransformerMixin
@@ -35,32 +20,6 @@ def jensenshannon(XA, XB):
 def rolling_window(a: jnp.ndarray, window: int):
   idx = jnp.arange(len(a) - window + 1)[:, None] + jnp.arange(window)[None, :]
   return a[idx]
-
-_distance_map = {
-    "braycurtis": braycurtis,
-    "canberra": canberra,
-    "chebyshev": chebyshev,
-    "cityblock": cityblock,
-    "correlation": correlation,
-    "cosine": cosine,
-    "dice": None, # dissimilarity between boolean 1-D arrays
-    "euclidean": euclidean,
-    "hamming": hamming,
-    "jaccard": jaccard,
-    "jensenshannon": jensenshannon,
-    "kulczynski1": None, # dissimilarity between boolean 1-D arrays
-    "mahalanobis": None,
-    "matching": hamming,
-    "minkowski": minkowski,
-    "rogerstanimoto": None,  # dissimilarity between boolean 1-D arrays
-    "russellrao": russellrao,
-    "seuclidean": None,
-    "sokalmichener": None,  # dissimilarity between boolean 1-D arrays
-    "sokalsneath": None,  # dissimilarity between boolean 1-D arrays
-    "sqeuclidean": sqeuclidean,
-    "yule": None,  # dissimilarity between boolean 1-D arrays
-}
-
 
 class Shapelet(TransformerMixin):
     def __init__(self, n_shapelets=100, sliding_window=50, selection='random', save_results=True, distance='euclidean',
@@ -79,17 +38,10 @@ class Shapelet(TransformerMixin):
         self.n_jobs = n_jobs
 
         random.key(random_state)
-        os.environ["XLA_FLAGS"] = "--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads="+str(n_jobs)
+        os.environ["XLA_FLAGS"] = "--xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=" + str(n_jobs)
         os.environ["OPENBLAS_NUM_THREADS"] = str(n_jobs)
         os.environ["MKL_NUM_THREADS"] = str(n_jobs)
         os.environ["OMP_NUM_THREAD"] = str(n_jobs)
-
-    def _get_distance(self):
-        if self.distance not in _distance_map or _distance_map[self.distance] is None:
-            raise NotImplemented(f"Distance {self.distance} is not implemented (see: jax_scipy_spatial)")
-
-        return _distance_map[self.distance]
-
 
     def fit(self, X, y=None, **fit_params):
         # X.shape = (n_records, n_signals, n_obs)
@@ -100,45 +52,30 @@ class Shapelet(TransformerMixin):
     def transform(self, X, y=None, **transform_params):
         pass
 
-@jit
-def _best_fit_jax_for(timeseries: jnp.ndarray, shapelets: jnp.ndarray):
-    positions = timeseries.shape[-1] - shapelets.shape[-1]
 
-    for ts_idx, ts in enumerate(timeseries[:, 0, :]):
-        for shapelet_idx, shapelet in enumerate(shapelets[:, 0, :]):
-            fori_loop(0,
-                      positions,  # ts, shape, best_value
-                      inner_loop,
-                      (ts, shapelet, jnp.inf)
-                      )
-
-@jit
-def inner_loop(idx, data):
-    ts, shapelet, best_value = data
-    d = Shapelet(n_jobs=-1)._get_distance()
-    ts_sub = dynamic_slice_in_dim(ts, idx, shapelet.shape[0])
-    new_value = d(ts_sub, shapelet)
-
-    return cond(
-        new_value < best_value,
-        lambda _: (ts, shapelet, best_value),
-        lambda _: (ts, shapelet, best_value),
-        None,
-    )
-
-
-
-#@numba_jit
 def _best_fit_classic_for(timeseries: np.ndarray, shapelets: np.ndarray):
     res = np.zeros((timeseries.shape[0], shapelets.shape[0]), dtype=np.float32)
-    positions = timeseries.shape[-1] - shapelets.shape[-1]
+    w = shapelets.shape[-1]
 
     for ts_idx, ts in enumerate(timeseries[:, 0, :]):
+        ts_sw = np.lib.stride_tricks.sliding_window_view(ts, w)
+        tmp = ts_sw[:, np.newaxis] - shapelets[:, 0, :]
+        tmp = np.sum(tmp**2, axis=2)
+        res[ts_idx, :] = tmp.min(axis=0)
+
+    return res
+
+@numba_jit(parallel=True)
+def _best_fit_classic_for2(timeseries: np.ndarray, shapelets: np.ndarray):
+    res = np.zeros((timeseries.shape[0], shapelets.shape[0]), dtype=np.float32)
+    w = shapelets.shape[-1]
+
+    for ts_idx in prange(timeseries.shape[0]):
+        ts = timeseries[ts_idx, 0, :]
+        ts_sw = np.lib.stride_tricks.sliding_window_view(ts, w)
         for shapelet_idx, shapelet in enumerate(shapelets[:, 0, :]):
-            dist_vector = np.zeros((positions,), dtype=np.float32)
-            for start in range(positions):
-                dist_vector[start] = distance.euclidean(ts[start:start + shapelets.shape[-1]], shapelet)
-            res[ts_idx, shapelet_idx] = np.argmin(dist_vector)
+            distance_matrix = np.sum((ts_sw - shapelet) ** 2, axis=1) ** .5
+            res[ts_idx, shapelet_idx] = np.min(distance_matrix)
 
     return res
 
@@ -147,15 +84,19 @@ def _best_fit_classic_for(timeseries: np.ndarray, shapelets: np.ndarray):
 
 if __name__ == '__main__':
     random.key(42)
-    X = np.random.rand(1000, 1, 1000).astype(np.float32)
+    X = np.random.rand(10000, 1, 1000).astype(np.float32)
     shapelets = np.random.rand(100, 1, 50).astype(np.float32)
 
-    st = Shapelet(n_jobs=-1)
+    _best_fit_classic_for(X, shapelets)
+    _best_fit_classic_for2(X, shapelets)
+
+    st = Shapelet(n_jobs=1)
 
     start = time.time()
-    jax_res = _best_fit_jax_for(X, shapelets)
+    jax_res = _best_fit_classic_for(X, shapelets)
     print("JAX_TIME", round(time.time()-start, 6))
 
+
     start = time.time()
-    classic_res = _best_fit_classic_for(X, shapelets)
+    classic_res = _best_fit_classic_for2(X, shapelets)
     print("Classic_TIME", round(time.time()-start, 6))
