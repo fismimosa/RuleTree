@@ -18,7 +18,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stump: RegressorMixin | list = None,
+                 base_stumps: RegressorMixin | list = None,
                  stump_selection:str='random',
                  random_state=None,
 
@@ -35,8 +35,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  oblique_split_type =  'householder',
                  force_oblique = False
                  ):
-        if base_stump is None:
-            base_stump = DecisionTreeStumpRegressor(
+        if base_stumps is None:
+            base_stumps = DecisionTreeStumpRegressor(
                 max_depth=1,
                 criterion=criterion,
                 splitter=splitter,
@@ -54,7 +54,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
-                         base_stump=base_stump,
+                         base_stumps=base_stumps,
                          stump_selection=stump_selection,
                          random_state=random_state)
 
