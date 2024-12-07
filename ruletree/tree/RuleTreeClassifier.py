@@ -181,6 +181,26 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
     def _get_stumps_base_class(self):
         return ClassifierMixin
+
+    def local_interpretation(self, X, joint_contribution = False):
+        leaves, paths, leaf_to_path, values = super().local_interpretation(X = X,
+                                                                           joint_contribution = joint_contribution)
+        normalizer = values.sum(axis=1)[:, np.newaxis]
+        normalizer[normalizer == 0.0] = 1.0
+        values /= normalizer
+
+        biases = np.tile(values[paths[0][0]], (X.shape[0], 1))
+        line_shape = (X.shape[1], self.n_classes_)
+        
+        return super().eval_contributions(
+                                        leaves=leaves,
+                                        paths=paths,
+                                        leaf_to_path=leaf_to_path,
+                                        values=values,
+                                        biases=biases,
+                                        line_shape=line_shape,
+                                        joint_contribution=joint_contribution
+                                    )
     
     @classmethod
     def complete_tree(cls, node, X, y, n_classes_):
