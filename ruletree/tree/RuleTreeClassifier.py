@@ -24,7 +24,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stump: ClassifierMixin | list = None,
+                 base_stumps: ClassifierMixin | list = None,
                  stump_selection: str = 'random',
                  random_state=None,
 
@@ -41,8 +41,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  distance_measure = None
                  
                  ):
-        if base_stump is None:
-            base_stump = DecisionTreeStumpClassifier(
+        if base_stumps is None:
+            base_stumps = DecisionTreeStumpClassifier(
                                 max_depth=1,
                                 criterion=criterion,
                                 splitter=splitter,
