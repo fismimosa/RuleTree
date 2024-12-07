@@ -61,7 +61,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
-                         base_stump=base_stump,
+                         base_stumps=base_stumps,
                          stump_selection=stump_selection,
                          random_state=random_state)
 
