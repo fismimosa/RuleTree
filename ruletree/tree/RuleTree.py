@@ -247,16 +247,17 @@ class RuleTree(RuleTreeBase, ABC):
     def _get_stumps_base_class(self):
         return RuleTreeBaseStump
 
-    
-
-    @classmethod
-    def _get_tree_paths(cls, current_node):
+    def _get_tree_paths(self, current_node = None):
         if current_node.is_leaf():
             return [[current_node.node_id]]
+        
+        if current_node is None:
+            current_node = self.root
                 
+
         if current_node.node_l:  
-            left_paths = cls._get_tree_paths(current_node.node_l)
-            right_paths = cls._get_tree_paths(current_node.node_r)
+            left_paths = self._get_tree_paths(current_node.node_l)
+            right_paths = self._get_tree_paths(current_node.node_r)
             
             for path in left_paths:
                 path.append(current_node.node_id) 
@@ -268,6 +269,24 @@ class RuleTree(RuleTreeBase, ABC):
             
         return paths
     
+    def _node_dict(self, current_node=None, d=None, i=0):
+        if d is None:
+            d = {}
+            
+        if current_node is None:
+            current_node = self.root
+    
+        # Assign an index to the current node
+        if current_node.node_id not in d:
+            d[current_node.node_id] = i
+            i += 1
+    
+        if not current_node.is_leaf():
+            i = self._node_dict(current_node.node_l, d, i)[-1]
+            i = self._node_dict(current_node.node_r, d, i)[-1]
+    
+        return d, i
+
     @classmethod
     def _get_prediction_probas(cls, current_node, probas=None):
         if probas is None:
@@ -275,8 +294,7 @@ class RuleTree(RuleTreeBase, ABC):
     
         if current_node.prediction_probability is not None:
             probas.append(current_node.prediction_probability)
-        
-    
+           
         if current_node.node_l:
             cls._get_prediction_probas(current_node.node_l, probas)
             cls._get_prediction_probas(current_node.node_r, probas)
@@ -285,24 +303,99 @@ class RuleTree(RuleTreeBase, ABC):
 
     def _tree_value(self):
         probas = self._get_prediction_probas(self.root)
-        return np.array(probas).reshape(-1, 1, len(probas[0]))
-    
-    def _feature(self, current_node, feats=None):
+        if isinstance(probas[0], (list, np.ndarray)):
+            return np.array(probas).reshape(-1, 1, len(probas[0]))
+        else:
+            return np.array(probas).reshape(-1, 1, 1)
+            
+    def _tree_feature(self, current_node = None, feats=None):
         if feats is None:
             feats = []
+            
+        if current_node is None:
+            current_node = self.root
         
         if current_node.is_leaf():
             feats.append(-2)
         else:
             feats.append(current_node.stump.feature_original[0])
-            self._feature(current_node.node_l, feats)
-            self._feature(current_node.node_r, feats)
+            self._tree_feature(current_node.node_l, feats = feats)
+            self._tree_feature(current_node.node_r, feats = feats)
         
         return feats
-
-    def _tree_feature(self):
-        return self._feature(self.root)
+    
+    def local_interpretation(self, X, joint_contribution = False):
         
+        node_dict = self._node_dict()[0] #-> Turn 'R': 0, 'Rl' : 1, 'Rr' :2 and so on
+
+        leaves = np.array([node_dict[x] for x in self.apply(X)])
+        paths = [[node_dict[x] for x in path] for path in self._get_tree_paths(self.root)]
+        
+        for path in paths:
+            path.reverse()
+        
+        leaf_to_path = {}
+        
+        for path in paths:
+            leaf_to_path[path[-1]] = path
+            
+        values = self._tree_value().squeeze(axis = 1)
+        
+        return leaves, paths, leaf_to_path, values
+        
+    
+    def eval_contributions(self, 
+                           leaves, 
+                           paths, 
+                           leaf_to_path, 
+                           values, 
+                           biases,
+                           line_shape,
+                           joint_contribution = False):
+        
+        direct_prediction = values[leaves]
+        values_list = list(values)
+        feature_index = list(self._tree_feature())
+        
+        contributions = []
+        if joint_contribution:
+            for row, leaf in enumerate(leaves):
+                path = leaf_to_path[leaf]
+                
+                
+                path_features = set()
+                contributions.append({})
+                for i in range(len(path) - 1):
+                    path_features.add(feature_index[path[i]])
+                    contrib = values_list[path[i+1]] - \
+                             values_list[path[i]]
+                    #path_features.sort()
+                    contributions[row][tuple(sorted(path_features))] = \
+                        contributions[row].get(tuple(sorted(path_features)), 0) + contrib
+            return direct_prediction, biases, contributions
+        
+        else:
+            unique_leaves = np.unique(leaves)
+            unique_contributions = {}
+            
+            for row, leaf in enumerate(unique_leaves):
+                for path in paths:
+                    if leaf == path[-1]:
+                        break
+                
+                contribs = np.zeros(line_shape)
+                for i in range(len(path) - 1):
+                    
+                    contrib = values_list[path[i+1]] - \
+                             values_list[path[i]]
+                    contribs[feature_index[path[i]]] += contrib
+                unique_contributions[leaf] = contribs
+                
+            for row, leaf in enumerate(leaves):
+                contributions.append(unique_contributions[leaf])
+
+            return direct_prediction, biases, np.array(contributions)
+
     @classmethod
     def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
         names = lambda x: f"X_{x}"
