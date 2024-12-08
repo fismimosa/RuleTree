@@ -28,7 +28,7 @@ def main():
     print()
     print(clf_rule.print_rules(clf_rule.get_rules()))
 
-    Source(clf_rule.export_graphviz(columns_names=df.columns[:-1]).to_string()).view()
+    clf_rule.export_graphviz(columns_names=df.columns[:-1])
 
     clf_rule.to_dict("dizionario.json")
     clf_rule2 = RuleTree.from_dict("dizionario.json")
@@ -40,7 +40,7 @@ def main():
     print()
     print(clf_rule2.print_rules(clf_rule2.get_rules()))
 
-    Source(clf_rule2.export_graphviz(columns_names=df.columns[:-1]).to_string()).view()
+    clf_rule2.export_graphviz(columns_names=df.columns[:-1])
 
     #clf_rule.root.export_graphviz().write_png("output.png")
 

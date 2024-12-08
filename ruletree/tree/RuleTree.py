@@ -5,10 +5,12 @@ import random
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from importlib.metadata import pass_none
 from itertools import count
 
 import numpy as np
 import sklearn
+from graphviz import Source
 from sklearn import tree
 
 from ruletree.base.RuleTreeBase import RuleTreeBase
@@ -527,7 +529,7 @@ class RuleTree(RuleTreeBase, ABC):
             "min_samples_split": self.min_samples_split,
             "max_depth": self.max_depth,
             "prune_useless_leaves": self.prune_useless_leaves,
-            "base_stump": None,
+            "base_stumps": None,
             "stump_selection": self.stump_selection,
             "random_state": self.random_state,
         }
@@ -577,6 +579,10 @@ class RuleTree(RuleTreeBase, ABC):
 
         return tree
 
-    def export_graphviz(self, columns_names=None, scaler=None, float_precision=3):
-        return self.root.export_graphviz(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
+    def export_graphviz(self, columns_names=None, scaler=None, float_precision=3, filename:str|None=None):
+        dot = self.root.export_graphviz(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
+        if filename is None:
+            return Source(dot.to_string()).view()
+        else:
+            Source(dot.to_string()).render(filename=filename)
 

@@ -172,7 +172,7 @@ class RuleTreeNode:
 
         rule = self.stump.get_rule(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
 
-        graph.add_node(self.node_id, **rule["graphviz_rule"])
+        graph.add_node(self.node_id, **rule["graphviz_rule"], shape="box", margin="1.5", fixedsize="true", width="2", height="1.33")
 
         if self.node_l is not None:
             graph = self.node_l.export_graphviz(graph, columns_names, scaler, float_precision)
