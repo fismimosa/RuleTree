@@ -153,6 +153,9 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
     def _get_stumps_base_class(self):
         return RegressorMixin
 
+    def _get_prediction_probas(self, current_node = None, probas=None):
+        raise NotImplementedError()
+
 
 class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
