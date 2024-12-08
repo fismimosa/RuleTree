@@ -40,7 +40,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.max_depth = max_depth
         self.prune_useless_leaves = prune_useless_leaves
 
-        self.base_stumps = base_stump
+        self.base_stumps = base_stumps
         self.stump_selection = stump_selection
 
         self.random_state = random_state

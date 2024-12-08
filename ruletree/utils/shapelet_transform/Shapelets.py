@@ -18,7 +18,7 @@ from sklearn_extra.cluster import KMedoids
 from ruletree.utils.shapelet_transform.matrix_to_vector_distances import euclidean, sqeuclidean, cosine, cityblock
 
 
-class Shapelet(TransformerMixin):
+class Shapelets(TransformerMixin):
     __distances = {
         'euclidean': euclidean,
         'sqeuclidean': sqeuclidean,
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     y_train = df_train['target'].values
     y_test = df_test['target'].values
 
-    st = Shapelet(n_shapelets=10, selection='random', mi_n_neighbors=100, n_jobs=-1, distance='cityblock') #euclidean, sqeuclidean, cosine, cityblock
+    st = Shapelets(n_shapelets=10, selection='random', mi_n_neighbors=100, n_jobs=-1, distance='cityblock') #euclidean, sqeuclidean, cosine, cityblock
 
     X_train_transform = st.fit_transform(X_train, y_train)
     X_test_transform = st.transform(X_test)
