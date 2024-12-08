@@ -24,7 +24,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stump: ClassifierMixin | list = None,
+                 base_stumps: ClassifierMixin | list = None,
                  stump_selection: str = 'random',
                  random_state=None,
 
@@ -41,8 +41,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  distance_measure = None
                  
                  ):
-        if base_stump is None:
-            base_stump = DecisionTreeStumpClassifier(
+        if base_stumps is None:
+            base_stumps = DecisionTreeStumpClassifier(
                                 max_depth=1,
                                 criterion=criterion,
                                 splitter=splitter,
@@ -61,7 +61,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
-                         base_stump=base_stump,
+                         base_stumps=base_stumps,
                          stump_selection=stump_selection,
                          random_state=random_state)
 
@@ -181,6 +181,42 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
     def _get_stumps_base_class(self):
         return ClassifierMixin
+
+    def _get_prediction_probas(self, current_node = None, probas=None):
+        if probas is None:
+            probas = []
+            
+        if current_node is None:
+            current_node = self.root
+        
+        if current_node.prediction is not None:
+            probas.append(current_node.prediction_probability)
+           
+        if current_node.node_l:
+            self._get_prediction_probas(current_node.node_l, probas)
+            self._get_prediction_probas(current_node.node_r, probas)
+        
+        return probas
+
+    def local_interpretation(self, X, joint_contribution = False):
+        leaves, paths, leaf_to_path, values = super().local_interpretation(X = X,
+                                                                           joint_contribution = joint_contribution)
+        normalizer = values.sum(axis=1)[:, np.newaxis]
+        normalizer[normalizer == 0.0] = 1.0
+        values /= normalizer
+
+        biases = np.tile(values[paths[0][0]], (X.shape[0], 1))
+        line_shape = (X.shape[1], self.n_classes_)
+        
+        return super().eval_contributions(
+                                        leaves=leaves,
+                                        paths=paths,
+                                        leaf_to_path=leaf_to_path,
+                                        values=values,
+                                        biases=biases,
+                                        line_shape=line_shape,
+                                        joint_contribution=joint_contribution
+                                    )
     
     @classmethod
     def complete_tree(cls, node, X, y, n_classes_):

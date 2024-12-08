@@ -18,7 +18,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stump: RegressorMixin | list = None,
+                 base_stumps: RegressorMixin | list = None,
                  stump_selection:str='random',
                  random_state=None,
 
@@ -35,8 +35,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  oblique_split_type =  'householder',
                  force_oblique = False
                  ):
-        if base_stump is None:
-            base_stump = DecisionTreeStumpRegressor(
+        if base_stumps is None:
+            base_stumps = DecisionTreeStumpRegressor(
                 max_depth=1,
                 criterion=criterion,
                 splitter=splitter,
@@ -54,7 +54,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
-                         base_stump=base_stump,
+                         base_stumps=base_stumps,
                          stump_selection=stump_selection,
                          random_state=random_state)
 
@@ -91,6 +91,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
 
                 gain = get_info_gain(stump)
                 info_gains.append(gain)
+                
+                clfs.append(stump)
 
             stump = clfs[np.argmax(info_gains)]
         else:
@@ -119,3 +121,40 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
 
     def _get_stumps_base_class(self):
         return RegressorMixin
+        
+    def _get_prediction_probas(self, current_node = None, probas=None):
+        if probas is None:
+            probas = []
+            
+        if current_node is None:
+            current_node = self.root
+        
+    
+        if current_node.prediction is not None:
+            probas.append(current_node.prediction)
+           
+        if current_node.node_l:
+            self._get_prediction_probas(current_node.node_l, probas)
+            self._get_prediction_probas(current_node.node_r, probas)
+        
+        return probas
+    
+    
+    def local_interpretation(self, X, joint_contribution = False):
+        leaves, paths, leaf_to_path, values = super().local_interpretation(X = X,
+                                                                           joint_contribution = joint_contribution)
+        
+        values = values.squeeze(axis=1)
+        biases = np.full(X.shape[0], values[paths[0][0]])
+        line_shape = X.shape[1]
+        
+        return super().eval_contributions(
+                                        leaves=leaves,
+                                        paths=paths,
+                                        leaf_to_path=leaf_to_path,
+                                        values=values,
+                                        biases=biases,
+                                        line_shape=line_shape,
+                                        joint_contribution=joint_contribution
+                                    )
+
