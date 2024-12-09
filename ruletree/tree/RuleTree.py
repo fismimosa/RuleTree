@@ -317,17 +317,31 @@ class RuleTree(RuleTreeBase, ABC):
         
         return feats
         
-    def _compute_importances(self, current_node=None, importances=None):
+    
+   
+   
+     def _compute_importances(self, current_node=None, importances=None):
        if importances is None:
            importances = np.zeros(self.n_features, dtype=np.float64)
 
        if current_node is None:
            current_node = self.root
-        
 
        if not current_node.is_leaf():
+           #following the implementation of https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/tree/_tree.pyx#L1251
            feature = current_node.stump.feature_original[0]
-           info_gain = get_info_gain_alt(current_node.stump) ##change this
+           
+           imp_parent, imp_child_l, imp_child_r = current_node.stump.tree_.impurity
+           n_parent, n_child_l, n_child_r = current_node.stump.tree_.weighted_n_node_samples
+           
+           info_gain = (
+               n_parent * imp_parent
+               - n_child_l * imp_child_l
+               - n_child_r * imp_child_r
+           )
+           
+           info_gain 
+           
            importances[feature] += info_gain
 
            # Recur for left and right children
