@@ -390,6 +390,25 @@ class RuleTree(RuleTreeBase, ABC):
 
     @classmethod
     def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
+        #columns_names now included in stump get_rule(), should we keep it here?
+        #ndigits/float precision included in stump get_rule(), should we keep it here?
+      
+        indentation = "".join(["|   " for _ in range(indent)])
+        
+        if rules["is_leaf"]:
+            pred = rules['prediction']
+            print(f"{indentation} output: "
+                  f"{pred if type(pred) in [np.str_, np.string_, str] else round(pred, ndigits=ndigits)}")
+            
+        else:
+            print(f"{indentation}|--- {rules['textual_rule']}")
+            cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
+            print(f"{indentation}|--- {rules['not_textual_rule']}")
+            cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
+    
+    
+    @classmethod
+    def print_rules_old(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
         names = lambda x: f"X_{x}"
         names_pivots = lambda x: f"P_{x}"
 
