@@ -7,6 +7,7 @@ import pygraphviz as pgv
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
+from ruletree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
 
 
 class RuleTreeNode:
@@ -157,7 +158,7 @@ class RuleTreeNode:
             graph = pgv.AGraph(name="RuleTree")
 
         if self.is_leaf():
-            graph.add_node(self.node_id, label=self.prediction)
+            graph.add_node(self.node_id, label=self.prediction, **GRAPHVIZ_DEFAULT_NODE_LEAF)
             if self.parent is not None:
                 graph.add_edge(self.parent.node_id, self.node_id)
 
@@ -165,7 +166,7 @@ class RuleTreeNode:
 
         rule = self.stump.get_rule(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
 
-        graph.add_node(self.node_id, **rule["graphviz_rule"], shape="box", margin="1.5", fixedsize="true", width="2", height="1.33")
+        graph.add_node(self.node_id, **(GRAPHVIZ_DEFAULT_NODE_SPLIT | rule["graphviz_rule"]))
 
         if self.node_l is not None:
             graph = self.node_l.export_graphviz(graph, columns_names, scaler, float_precision)

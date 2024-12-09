@@ -103,7 +103,7 @@ class Shapelets(TransformerMixin):
 
         if self.n_shapelets_for_selection == 'stratified':
             classes, n_candidate_per_class = np.unique(
-                resample(y, stratify=y, random_state=self.random_state), return_counts=True)
+                resample(y, stratify=y, random_state=self.random_state, n_samples=int(len(y)**.5)), return_counts=True)
         n_candidate_per_class = [max(1, round(self.n_shapelets_for_selection/n_classes)) for _ in classes]
 
 
@@ -111,14 +111,15 @@ class Shapelets(TransformerMixin):
             X_class = X[y == classe]
             for _ in n_candidate_per_class:
                 ts_idx = random.randint(0, len(X_class) - 1)
-                start = random.randint(0, len(X_class.shape[-1]) - self.sliding_window)
+                start = random.randint(0, X_class.shape[-1] - self.sliding_window)
                 stop = start + self.sliding_window
                 candidate_shapelets.append(np.copy(X_class[ts_idx, :, start:stop]))
 
         return np.array(candidate_shapelets)
 
     def __fit_selection_random(self, candidate_shapelets: np.ndarray, X, y):
-        return candidate_shapelets[np.random.choice(candidate_shapelets.shape[0], size=self.n_shapelets, replace=False)]
+        n_shapelets = min(self.n_shapelets, candidate_shapelets.shape[0])
+        return candidate_shapelets[np.random.choice(candidate_shapelets.shape[0], size=n_shapelets, replace=False)]
 
     def __fit_selection_mutual_info(self, candidate_shapelets: np.ndarray, X, y, mutual_info_fun):
         if y is None:

@@ -1,8 +1,10 @@
 import inspect
 import io
+import random
 import warnings
 import tempfile
 import numpy as np
+import psutil
 from numba import UnsupportedError
 
 from matplotlib import pyplot as plt
@@ -14,11 +16,11 @@ from ruletree.utils.shapelet_transform.Shapelets import Shapelets
 
 
 class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
-    def __init__(self, n_shapelets=100,
-                 n_shapelets_for_selection=np.inf, #int, inf, or 'stratified'
-                 n_ts_for_selection_per_class=np.inf, #int, inf
+    def __init__(self, n_shapelets=psutil.cpu_count(logical=False)*2,
+                 n_shapelets_for_selection=500, #int, inf, or 'stratified'
+                 n_ts_for_selection_per_class=100, #int, inf
                  sliding_window=50,
-                 selection='random', #random, mi_clf, mi_reg, cluster
+                 selection='mi_clf', #random, mi_clf, mi_reg, cluster
                  distance='euclidean',
                  mi_n_neighbors = 100,
                  random_state=42, n_jobs=1,
@@ -53,6 +55,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         }
 
     def fit(self, X, y, sample_weight=None, check_input=True):
+        random.seed(self.random_state)
         if sample_weight is not None:
             raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")
 
@@ -63,11 +66,11 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
                             selection=self.selection,
                             distance=self.distance,
                             mi_n_neighbors=self.mi_n_neighbors,
-                            random_state=self.random_state,
+                            random_state=random.randint(0, 10**10),
                             n_jobs=self.n_jobs
                             )
 
-        return super().fit(self.st.fit_transform(X), y, sample_weight=sample_weight, check_input=check_input)
+        return super().fit(self.st.fit_transform(X), y=y, sample_weight=sample_weight, check_input=check_input)
 
     def apply(self, X, check_input=False):
         return super().apply(self.st.transform(X), check_input=check_input)
@@ -94,9 +97,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         shape = self.st.shapelets[self.feature_original[0], 0]
 
-        temp_dir = tempfile.TemporaryDirectory(prefix="RuleTree_", delete=False)
-        with tempfile.TemporaryFile(dir=temp_dir.name,
-                                    delete_on_close=False, delete=False,
+        with tempfile.TemporaryFile(delete_on_close=False, delete=False,
                                     suffix=".png",
                                     mode="wb") as temp_file:
             plt.figure(figsize=(2, 1))
@@ -114,7 +115,11 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
             "imagescale": "true",
             "imagepos": "bc",
             "label": f"{rule["feature_name"]} {comparison} {rounded_value}",
-            "labelloc": "t"
+            "labelloc": "t",
+            "fixedsize": "true",
+            "width": "2",
+            "height": "1.33",
+            "shape": "none"
         }
 
         rule["not_textual_rule"] = f"{rule["feature_name"]} {not_comparison} {rounded_value}"
@@ -124,7 +129,11 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
             "imagescale": "true",
             "label": f"{rule["feature_name"]} {not_comparison} {rounded_value}",
             "imagepos": "bc",
-            "labelloc": "t"
+            "labelloc": "t",
+            "fixedsize": "true",
+            "width": "2",
+            "height": "1.33",
+            "shape": "none"
         }
 
         return rule
