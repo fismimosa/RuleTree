@@ -136,8 +136,10 @@ class Shapelets(TransformerMixin):
                                  n_jobs=self.n_jobs,
                                  n_neighbors=min(dist.shape[0], self.mi_n_neighbors),
                                  discrete_features=False)
-
-        return candidate_shapelets[np.argpartition(scores, -self.n_shapelets)[-self.n_shapelets:]]
+        if len(candidate_shapelets) == self.n_shapelets:
+            return candidate_shapelets
+        return candidate_shapelets[np.argpartition(scores, -min(scores.shape[0], self.n_shapelets))\
+            [-min(scores.shape[0], self.n_shapelets):]]
 
     def __fit_selection_cluster(self, candidate_shapelets, X, y):
         old_n_threads = numba.get_num_threads()

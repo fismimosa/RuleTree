@@ -66,11 +66,11 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
                             selection=self.selection,
                             distance=self.distance,
                             mi_n_neighbors=self.mi_n_neighbors,
-                            random_state=random.randint(0, 10**10),
+                            random_state=random.randint(0, 2**32-1),
                             n_jobs=self.n_jobs
                             )
 
-        return super().fit(self.st.fit_transform(X), y=y, sample_weight=sample_weight, check_input=check_input)
+        return super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
 
     def apply(self, X, check_input=False):
         return super().apply(self.st.transform(X), check_input=check_input)
@@ -106,7 +106,6 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
             plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
             plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
             plt.close()
-            print(temp_file.name)
 
         rule["textual_rule"] = f"{rule["feature_name"]} {comparison} {rounded_value}\t{rule['samples']}"
         rule["blob_rule"] = f"{rule["feature_name"]} {comparison} {rounded_value}"
