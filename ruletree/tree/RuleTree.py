@@ -110,6 +110,7 @@ class RuleTree(RuleTreeBase, ABC):
     def fit(self, X: np.array, y: np.array = None, **kwargs):
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
+        self.n_features = X.shape[1]
         self._set_stump()
 
         idx = np.arange(X.shape[0])
