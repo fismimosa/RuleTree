@@ -316,7 +316,39 @@ class RuleTree(RuleTreeBase, ABC):
             self._tree_feature(current_node.node_r, feats = feats)
         
         return feats
-    
+        
+    def _compute_importances(self, current_node=None, importances=None):
+       if importances is None:
+           importances = np.zeros(self.n_features, dtype=np.float64)
+
+       if current_node is None:
+           current_node = self.root
+        
+
+       if not current_node.is_leaf():
+           feature = current_node.stump.feature_original[0]
+           info_gain = get_info_gain_alt(current_node.stump) ##change this
+           importances[feature] += info_gain
+
+           # Recur for left and right children
+           self._compute_importances(current_node.node_l, importances)
+           self._compute_importances(current_node.node_r, importances)
+
+       return importances 
+   
+    def compute_feature_importances(self, normalize=True):
+        
+        importances = self._compute_importances()
+        root_weighted_samples = self.root.stump.tree_.weighted_n_node_samples[0]
+        importances /= root_weighted_samples
+        
+        if normalize:
+            total = np.sum(importances)
+            if total > 0.0:
+                importances /= total
+
+        return importances
+        
     def local_interpretation(self, X, joint_contribution = False):
         
         node_dict = self._node_dict()[0] #-> Turn 'R': 0, 'Rl' : 1, 'Rr' :2 and so on
