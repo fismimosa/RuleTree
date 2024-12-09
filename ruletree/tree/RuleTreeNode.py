@@ -94,7 +94,7 @@ class RuleTreeNode:
             "node_id": self.node_id,
             "is_leaf": self.is_leaf(),
             "prediction": self.prediction,
-            "prediction_probability": self.prediction_probability if type(self.prediction_probability) == float else self.prediction_probability.tolist(),
+            "prediction_probability": self.prediction_probability if isinstance(self.prediction_probability, float) else self.prediction_probability.tolist(),
             "prediction_classes_": self.classes.tolist(),
             "left_node": self.node_l.node_id if self.node_l is not None else None,
             "right_node": self.node_r.node_id if self.node_r is not None else None,
@@ -116,15 +116,8 @@ class RuleTreeNode:
         if info_dict['is_leaf'] == True:
             return node
 
-        if "Classifier" in info_dict['stump_type']:
-            stump_type = "classification"
-        elif "Regressor" in info_dict['stump_type']:
-            stump_type = "regression"
-        else:
-            raise ValueError("Unknown stump type: "+str(info_dict['stump_type']))
-
-        import_path = f"ruletree.stumps.{stump_type}.{info_dict['stump_type']}"
-        class_c = getattr(importlib.import_module(import_path), info_dict['stump_type'])
+        import_path = info_dict['stump_type']
+        class_c = getattr(importlib.import_module(import_path), info_dict['stump_type'].split('.')[-1])
         
         node.stump = class_c.dict_to_node(info_dict)
         

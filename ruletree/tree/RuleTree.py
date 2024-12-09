@@ -537,7 +537,7 @@ class RuleTree(RuleTreeBase, ABC):
         warnings.warn("As for now base_stump is not serializable")
 
         dictionary = {
-            "tree_type": self.__class__.__name__,
+            "tree_type": self.__class__.__module__,
             "args": args,
             "classes_": self.classes_.tolist(),
             "n_classes_": self.n_classes_,
@@ -561,7 +561,7 @@ class RuleTree(RuleTreeBase, ABC):
         with open(filename, 'r') as f:
             dictionary = json.load(f)
 
-        class_c = getattr(importlib.import_module(f"ruletree.tree.{dictionary['tree_type']}"), dictionary['tree_type'])
+        class_c = getattr(importlib.import_module(dictionary['tree_type']), dictionary['tree_type'].split('.')[-1])
         tree = class_c(**dictionary['args'])
         tree.classes_ = dictionary['classes_']
         tree.n_classes_ = dictionary['n_classes_']
