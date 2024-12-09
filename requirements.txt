@@ -12,3 +12,4 @@ graphviz>=0.20.3
 numba
 psutil
 setuptools
+matplotlib
