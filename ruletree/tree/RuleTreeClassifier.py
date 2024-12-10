@@ -95,23 +95,28 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
         if self.stump_selection == 'random':
             stump = self._get_random_stump(X)
-            stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+            
+            if stump.__class__.__module__.split('.')[-1] in ['PivotTreeStumpClassifier','MultiplePivotTreeStumpClassifier']:
+                if self.distance_matrix is None:
+                    self.distance_matrix = pairwise_distances(X[idx], metric = self.distance_measure)
+                stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
+                          distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
+            else:
+                stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+                
         elif self.stump_selection == 'best':
             clfs = []
             info_gains = []
             for _, stump in self._filter_types(X):
-                
-                
                 stump = sklearn.clone(stump)
-                if isinstance(stump, (PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)):
+                
+                if stump.__class__.__module__.split('.')[-1] in ['PivotTreeStumpClassifier','MultiplePivotTreeStumpClassifier']:
                     if self.distance_matrix is None:
                         self.distance_matrix = pairwise_distances(X[idx], metric = self.distance_measure)
-                    stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, distance_measure = self.distance_measure,
-                            sample_weight=None if sample_weight is None else sample_weight[idx]) 
-                  
+                    stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
+                              distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
                 else:
                     stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
-
             
                 gain = get_info_gain(stump)
                 info_gains.append(gain)
