@@ -94,7 +94,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
     def node_to_dict(self):
         rule = self.get_rule(float_precision=None)
 
-        rule["stump_type"] = self.__class__.__name__
+        rule["stump_type"] = self.__class__.__module__
         rule["samples"] = self.n_node_samples[0]
         rule["impurity"] = self.tree_.impurity[0]
 
