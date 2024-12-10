@@ -3,10 +3,11 @@ from typing import Self
 
 import numpy as np
 from sklearn import tree
-import pygraphviz as pgv
+#import pygraphviz as pgv
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
+from ruletree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
 from ruletree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
 
 
@@ -107,7 +108,7 @@ class RuleTreeNode:
         return node_as_dict
 
     @classmethod
-    def dict_to_node(cls, info_dict):
+    def dict_to_node(cls, info_dict, X = None):
         node = RuleTreeNode(node_id = info_dict['node_id'],
                             prediction = info_dict['prediction'],
                             prediction_probability = info_dict['prediction_probability'],
@@ -118,9 +119,10 @@ class RuleTreeNode:
             return node
 
         import_path = info_dict['stump_type']
+        print(import_path)
         class_c = getattr(importlib.import_module(import_path), info_dict['stump_type'].split('.')[-1])
         
-        node.stump = class_c.dict_to_node(info_dict)
+        node.stump = class_c.dict_to_node(info_dict, X)
         
 
         return node
