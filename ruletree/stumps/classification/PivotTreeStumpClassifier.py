@@ -4,6 +4,9 @@ from ruletree.stumps.splitters.PivotSplit import PivotSplit
 from ruletree.utils import MODEL_TYPE_CLF
 from sklearn.metrics.pairwise import pairwise_distances
 import numpy as np
+import copy
+import warnings
+
 
 
 class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
@@ -31,6 +34,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
             
             self.distance_measure = distance_measure
             self.X_split_instance = self.pivot_split.X_candidates[self.tree_.feature[0]]
+        
             
         
         return self
@@ -47,12 +51,13 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         
         y_pred = (np.ones(X_transformed.shape[0]) * 2)
         X_feature = X_transformed[:,  0]
-        y_pred[X_feature <= self.tree_.threshold[0]] = 1
+        y_pred[X_feature <= self.threshold_original[0]] = 1
         
         return y_pred
         
         #return super().apply_sk(X_transformed)
-
+        
+        
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         rule = {
             "feature_idx": self.feature_original[0],
@@ -97,19 +102,62 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         rule["stump_type"] = self.__class__.__module__
         rule["samples"] = self.n_node_samples[0]
         rule["impurity"] = self.tree_.impurity[0]
-
+     
+      
         rule["args"] = {
             "is_oblique": self.is_oblique,
             "is_pivotal": self.is_pivotal,
             "unique_val_enum": self.unique_val_enum,
             "coefficients": self.coefficients,
+            "num_pre_transformed" : self.num_pre_transformed,
+            "cat_pre_transformed" : self.cat_pre_transformed,
+            
+            "distance_measure" : self.distance_measure #adding this for PT
+            
         } | self.kwargs
 
         rule["split"] = {
             "args": {}
         }
+        
 
         return rule
+    
+    @classmethod
+    def dict_to_node(cls, node_dict, X = None):
+        self = cls()
+        self.feature_original = np.zeros(3, dtype=int)
+        self.threshold_original = np.zeros(3)
+        self.n_node_samples = np.zeros(3, dtype=int)
+
+
+
+        self.feature_original[0] = node_dict["feature_idx"]
+        self.threshold_original[0] = node_dict["threshold"]
+        self.n_node_samples[0] = node_dict["samples"]
+        self.is_categorical = node_dict["is_categorical"]
+
+        args = copy.deepcopy(node_dict["args"])
+        self.is_oblique = args.pop("is_oblique")
+        self.is_pivotal = args.pop("is_pivotal")
+        self.unique_val_enum = args.pop("unique_val_enum")
+        self.coefficients = args.pop("coefficients")
+        self.kwargs = args
+        
+        self.distance_measure = args.pop("distance_measure")
+        self.num_pre_transformed = args.pop("num_pre_transformed")
+        self.cat_pre_transformed = args.pop("cat_pre_transformed")
+        
+        #X acts as a reference dataset for the instance id
+        if X is not None:
+            self.X_split_instance = X[int(node_dict["feature_idx"])]
+        
+      
+        
+        ##
+    
+
+        return self
 
     def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
         raise NotImplementedError()
