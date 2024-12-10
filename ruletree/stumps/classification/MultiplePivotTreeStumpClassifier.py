@@ -2,14 +2,15 @@ from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from ruletree.stumps.splitters.MultiplePivotSplit import MultiplePivotSplit
 from ruletree.utils import MODEL_TYPE_CLF
+from sklearn.metrics.pairwise import pairwise_distances
+import numpy as np
 
 
 class MultiplePivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
-    def __init__(self, distance_matrix=None, distance_measure='euclidean', **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.multi_pivot_split = MultiplePivotSplit(ml_task=MODEL_TYPE_CLF, **kwargs)
-        self.distance_matrix = distance_matrix
-        self.distance_measure = distance_measure
+        self.distance_measure = None
 
     def fit(self, X, y, distance_matrix, distance_measure, idx, sample_weight=None, check_input=True):
         self.feature_analysis(X, y)
@@ -19,18 +20,31 @@ class MultiplePivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBase
         if len(self.numerical) > 0:
             self.multi_pivot_split.fit(X[:, self.numerical], y, distance_matrix, distance_measure, idx,
                                        sample_weight=sample_weight, check_input=check_input)
-            X_transform = self.multi_pivot_split.transform(X[:, self.numerical])
+            X_transform = self.multi_pivot_split.transform(X[:, self.numerical], distance_measure)
             candidate_names = self.multi_pivot_split.get_candidates_names()
             super().fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
 
             self.feature_original = [(candidate_names[0], candidate_names[1]), -2, -2]
             self.threshold_original = self.tree_.threshold
             self.is_pivotal = True
+            self.distance_measure = distance_measure
 
         return self
 
     def apply(self, X):
+        #dist_to_p0 = pairwise_distances(X, self.best_tup[0].reshape(1, -1), metric=distance_measure).flatten()
+        #dist_to_p1 = pairwise_distances(X, self.best_tup[1].reshape(1, -1), metric=distance_measure).flatten()
+        #dist_binary = np.where(dist_to_p0 < dist_to_p1, 0, 1).reshape(-1, 1)
+        
+        #we need to assign self.best_tup[0], self.best_tup[1] to self.multi_pivot_split
+        
+        
         X_transformed = self.multi_pivot_split.transform(X[:, self.num_pre_transformed], self.distance_measure)
+        y_pred = (np.ones(X_transformed.shape[0]) * 2)
+        X_feature = X_transformed[:, self.tree_.feature[0]]
+        y_pred[X_feature <= self.tree_.threshold[0]] = 1
+        return y_pred
+        
         return super().apply_sk(X_transformed)
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
