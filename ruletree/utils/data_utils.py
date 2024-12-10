@@ -161,7 +161,7 @@ def get_info_gain(clf: DecisionTreeClassifier | DecisionTreeRegressor):
     if len(clf.tree_.impurity) == 1:#no_split
         return 0 # TODO: check
     imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
-    n_parent, n_child_l, n_child_r = clf.tree_.n_node_samples
+    n_parent, n_child_l, n_child_r = clf.tree_.weighted_n_node_samples  ##n_node_samples 
     return _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_child_r)
 
 def _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_child_r):
@@ -172,7 +172,7 @@ def get_gain_ratio(clf: DecisionTreeClassifier | DecisionTreeRegressor):
     if len(clf.tree_.impurity) == 1:#no_split
         return 0 # TODO: check
     imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
-    n_parent, n_child_l, n_child_r = clf.tree_.n_node_samples
+    n_parent, n_child_l, n_child_r = clf.tree_.weighted_n_node_samples  #n_node_samples
     gain_split = imp_parent - imp_child_l * (n_child_l / n_parent) - imp_child_r * (n_child_r / n_parent)
     split_info = (n_child_l / n_parent)*math.log2(n_child_l / n_parent) +\
                  (n_child_r / n_parent)*math.log2(n_child_r / n_parent)
