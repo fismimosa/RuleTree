@@ -2,6 +2,7 @@ from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from ruletree.stumps.splitters.PivotSplit import PivotSplit
 from ruletree.utils import MODEL_TYPE_CLF
+from sklearn.metrics.pairwise import pairwise_distances
 import numpy as np
 
 
@@ -10,13 +11,13 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         super().__init__(**kwargs)
         self.pivot_split = PivotSplit(ml_task=MODEL_TYPE_CLF, **kwargs)
         self.distance_measure = None
+        self.split_instance = None
 
     def fit(self, X, y, distance_matrix, distance_measure, idx, sample_weight=None, check_input=True):
         self.feature_analysis(X, y)
         self.num_pre_transformed = self.numerical
         self.cat_pre_transformed = self.categorical
-        best_info_gain = -float('inf')
-
+       
         if len(self.numerical) > 0:
             self.pivot_split.fit(X[:, self.numerical], y, distance_matrix, distance_measure, idx,
                                  sample_weight=sample_weight, check_input=check_input)
@@ -29,13 +30,23 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
             self.is_pivotal = True
             
             self.distance_measure = distance_measure
+            self.X_split_instance = self.pivot_split.X_candidates[self.tree_.feature[0]]
+            
         
         return self
 
     def apply(self, X):
-        X_transformed = self.pivot_split.transform(X[:, self.num_pre_transformed], self.distance_measure)
+        #X_transformed = self.pivot_split.transform(X[:, self.num_pre_transformed], self.distance_measure)
+        #y_pred = (np.ones(X_transformed.shape[0]) * 2)
+        #X_feature = X_transformed[:, self.tree_.feature[0]]
+        #y_pred[X_feature <= self.tree_.threshold[0]] = 1
+        
+        X_transformed = pairwise_distances(X[:, self.num_pre_transformed], 
+                                           self.X_split_instance.reshape(1, -1),
+                                           metric=self.distance_measure)
+        
         y_pred = (np.ones(X_transformed.shape[0]) * 2)
-        X_feature = X_transformed[:, self.tree_.feature[0]]
+        X_feature = X_transformed[:,  0]
         y_pred[X_feature <= self.tree_.threshold[0]] = 1
         
         return y_pred
