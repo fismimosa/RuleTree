@@ -20,18 +20,18 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             ml_task,
             **kwargs
     ):
-        super(RuleTreeBaseSplit, self).__init__(ml_task)
+        super(RuleTreeBaseSplit, RuleTreeBaseSplit).__init__(ml_task)
         self.kwargs = kwargs
-        self.distance_measure = None
         self.X_candidates = None
         self.is_categorical = False
+        self.ml_task = ml_task
 
         self.discriminative_names = None
         self.descriptive_names = None
         self.candidates_names = None
         self.is_pivotal = False
 
-    @abstractmethod
+    #@abstractmethod
     def get_base_model(self):
         if self.ml_task == MODEL_TYPE_CLF:
             return DecisionTreeClassifier(**self.kwargs)
@@ -89,7 +89,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         self.descriptive_names = idx[local_descriptives]
         self.candidates_names = idx[local_candidates]
 
-    def transform(self, X, distance_measure='euclidean'):
+    def transform(self, X, distance_measure):
         return pairwise_distances(X, self.X_candidates, metric=distance_measure)
 
     def get_candidates_names(self):
