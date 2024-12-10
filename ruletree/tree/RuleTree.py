@@ -320,7 +320,7 @@ class RuleTree(RuleTreeBase, ABC):
     
    
    
-     def _compute_importances(self, current_node=None, importances=None):
+    def _compute_importances(self, current_node=None, importances=None):
        if importances is None:
            importances = np.zeros(self.n_features, dtype=np.float64)
 
