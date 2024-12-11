@@ -107,13 +107,13 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
             plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
             plt.close()
 
-        rule["textual_rule"] = f"{rule["feature_name"]} {comparison} {rounded_value}\t{rule['samples']}"
-        rule["blob_rule"] = f"{rule["feature_name"]} {comparison} {rounded_value}"
+        rule["textual_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}\t{rule['samples']}"
+        rule["blob_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}"
         rule["graphviz_rule"] = {
             "image": f'{temp_file.name}',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"{rule["feature_name"]} {comparison} {rounded_value}",
+            "label": f"{rule['feature_name']} {comparison} {rounded_value}",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
@@ -121,12 +121,12 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
             "shape": "none"
         }
 
-        rule["not_textual_rule"] = f"{rule["feature_name"]} {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{rule["feature_name"]} {not_comparison} {rounded_value}"
+        rule["not_textual_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
+        rule["not_blob_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
         rule["not_graphviz_rule"] = {
             "image": f'{temp_file.name}',
             "imagescale": "true",
-            "label": f"{rule["feature_name"]} {not_comparison} {rounded_value}",
+            "label": f"{rule['feature_name']} {not_comparison} {rounded_value}",
             "imagepos": "bc",
             "labelloc": "t",
             "fixedsize": "true",
