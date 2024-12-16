@@ -41,6 +41,9 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         kwargs["max_depth"] = 1
 
+        if selection not in ['random', 'mi_clf', 'cluster']:
+            raise ValueError("'selection' must be 'random', 'mi_clf' or 'cluster'")
+
         super().__init__(**kwargs)
 
         kwargs |= {
