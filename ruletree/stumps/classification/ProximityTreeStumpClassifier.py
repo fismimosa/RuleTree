@@ -238,7 +238,7 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         return rule
 
     @classmethod
-    def dict_to_node(cls, node_dict, X):
+    def dict_to_node(cls, node_dict, X=None):
         self = cls(
             n_shapelets=node_dict["n_shapelets"],
             n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],

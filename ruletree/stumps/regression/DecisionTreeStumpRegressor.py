@@ -36,7 +36,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
         return rule
 
-    def dict_to_node(self, node_dict):
+    def dict_to_node(self, node_dict, X=None):
         self.feature_original = np.zeros(3)
         self.threshold_original = np.zeros(3)
 

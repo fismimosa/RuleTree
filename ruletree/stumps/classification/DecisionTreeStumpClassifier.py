@@ -73,7 +73,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         return rule
 
     @classmethod
-    def dict_to_node(cls, node_dict):
+    def dict_to_node(cls, node_dict, X=None):
         self = cls()
         self.feature_original = np.zeros(3, dtype=int)
         self.threshold_original = np.zeros(3)
