@@ -172,10 +172,10 @@ class RuleTreeNode:
 
         if self.node_l is not None:
             graph = self.node_l.export_graphviz(graph, columns_names, scaler, float_precision)
-            graph.add_edge(self.node_id, self.node_l.node_id, color="green")
+            graph.add_edge(self.node_id, self.node_l.node_id, color="#2ca02c")
         if self.node_r is not None:
             graph = self.node_r.export_graphviz(graph, columns_names, scaler, float_precision)
-            graph.add_edge(self.node_id, self.node_r.node_id, color="red")
+            graph.add_edge(self.node_id, self.node_r.node_id, color="#d62728")
 
         return graph
 
