@@ -1,0 +1,4 @@
+from .DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
+from .ObliqueDecisionTreeStumpRegressor import ObliqueDecisionTreeStumpRegressor
+from .ProximityTreeStumpRegressor import ProximityTreeStumpRegressor
+from .ShapeletTreeStumpRegressor import ShapeletTreeStumpRegressor
