@@ -19,8 +19,8 @@ with open(path.join(here, "requirements.txt"), encoding="utf-8") as f:
 
 setup(
     name="RuleTree",
-    python_requires='>3.11.0',
-    version="0.0.1",
+    python_requires='>3.12.0',
+    version="0.0.2-4",
     license="BSD-Clause-2",
     description="Package description",
     url="https://github.com/riccotti/RuleTree",

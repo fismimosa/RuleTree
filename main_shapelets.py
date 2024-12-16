@@ -1,7 +1,5 @@
 import pandas as pd
 import scipy
-import numpy as np
-from graphviz import Source
 from sklearn.metrics import classification_report
 
 from RuleTree import RuleTreeClassifier
