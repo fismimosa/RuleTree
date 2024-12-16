@@ -3,7 +3,7 @@ from typing import Self
 
 import numpy as np
 from sklearn import tree
-#import pygraphviz as pgv
+import pygraphviz as pgv
 
 from ruletree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier

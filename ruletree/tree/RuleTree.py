@@ -98,7 +98,7 @@ class RuleTree(RuleTreeBase, ABC):
 
         if len(compatible_stumps) == 0:
             raise TypeError(f"No compatible stumps found for "
-                            f"shape {X.shape}.\r\n{[x.__name__ for x in self.base_stumps]}")
+                            f"shape {X.shape}.\r\n{[x.__name__ for _, x in self.base_stumps]}")
 
         p_total = sum([x for x, _ in compatible_stumps])
         if p_total < 1:

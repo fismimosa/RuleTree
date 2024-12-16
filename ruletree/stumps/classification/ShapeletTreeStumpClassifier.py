@@ -1,10 +1,11 @@
+import copy
 import inspect
 import io
 import random
 import warnings
-import tempfile
 import numpy as np
 import psutil
+import tempfile312
 from numba import UnsupportedError
 
 from matplotlib import pyplot as plt
@@ -97,9 +98,10 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         shape = self.st.shapelets[self.feature_original[0], 0]
 
-        with tempfile.TemporaryFile(delete_on_close=False, delete=False,
-                                    suffix=".png",
-                                    mode="wb") as temp_file:
+        with tempfile312.NamedTemporaryFile(delete_on_close=False,
+                                            delete=False,
+                                            suffix=".png",
+                                            mode="wb") as temp_file:
             plt.figure(figsize=(2, 1))
             plt.plot([i for i in range(shape.shape[0])], shape)
             plt.axis('off')
@@ -138,7 +140,104 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         return rule
 
     def node_to_dict(self):
-        raise NotImplementedError()
+        rule = super().node_to_dict() | {
+            'stump_type': self.__class__.__module__,
+            "feature_idx": self.feature_original[0],
+            "threshold": self.threshold_original[0],
+            "is_categorical": self.is_categorical,
+            "samples": self.n_node_samples[0]
+        }
 
-    def dict_to_node(self, node_dict):
-        raise NotImplementedError()
+        rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
+
+        comparison = "<="
+        not_comparison = ">"
+        rounded_value = rule["threshold"]
+
+        rule["textual_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}\t{rule['samples']}"
+        rule["blob_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}"
+        rule["graphviz_rule"] = {
+            "image": f'None',
+            "imagescale": "true",
+            "imagepos": "bc",
+            "label": f"{rule['feature_name']} {comparison} {rounded_value}",
+            "labelloc": "t",
+            "fixedsize": "true",
+            "width": "2",
+            "height": "1.33",
+            "shape": "none"
+        }
+
+        rule["not_textual_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
+        rule["not_blob_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
+        rule["not_graphviz_rule"] = {
+            "image": f'{None}',
+            "imagescale": "true",
+            "label": f"{rule['feature_name']} {not_comparison} {rounded_value}",
+            "imagepos": "bc",
+            "labelloc": "t",
+            "fixedsize": "true",
+            "width": "2",
+            "height": "1.33",
+            "shape": "none"
+        }
+
+        # shapelet transform stuff
+        rule["shapelets"] = self.st.shapelets.tolist()
+        rule["n_shapelets"] = self.st.n_shapelets
+        rule["n_shapelets_for_selection"] = self.st.n_shapelets_for_selection
+        rule["n_ts_for_selection_per_class"] = self.st.n_ts_for_selection_per_class
+        rule["sliding_window"] = self.st.sliding_window
+        rule["selection"] = self.st.selection
+        rule["distance"] = self.st.distance
+        rule["mi_n_neighbors"] = self.st.mi_n_neighbors
+        rule["random_state"] = self.st.random_state
+        rule["n_jobs"] = self.st.n_jobs
+
+        return rule
+
+    @classmethod
+    def dict_to_node(cls, node_dict, X):
+        self = cls(
+            n_shapelets=node_dict["n_shapelets"],
+            n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],
+            n_ts_for_selection_per_class=node_dict["n_ts_for_selection_per_class"],
+            sliding_window=node_dict["sliding_window"],
+            selection=node_dict["selection"],
+            distance=node_dict["distance"],
+            mi_n_neighbors=node_dict["mi_n_neighbors"],
+            random_state=node_dict["random_state"],
+            n_jobs=node_dict["n_jobs"]
+        )
+
+        self.st = Shapelets(
+            n_shapelets=node_dict["n_shapelets"],
+            n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],
+            n_ts_for_selection_per_class=node_dict["n_ts_for_selection_per_class"],
+            sliding_window=node_dict["sliding_window"],
+            selection=node_dict["selection"],
+            distance=node_dict["distance"],
+            mi_n_neighbors=node_dict["mi_n_neighbors"],
+            random_state=node_dict["random_state"],
+            n_jobs=node_dict["n_jobs"]
+        )
+
+        self.st.shapelets = np.array(node_dict["shapelets"])
+
+        self.feature_original = np.zeros(3, dtype=int)
+        self.threshold_original = np.zeros(3)
+        self.n_node_samples = np.zeros(3, dtype=int)
+
+        self.feature_original[0] = node_dict["feature_idx"]
+        self.threshold_original[0] = node_dict["threshold"]
+        self.n_node_samples[0] = node_dict["samples"]
+        self.is_categorical = node_dict["is_categorical"]
+
+        args = copy.deepcopy(node_dict["args"])
+        self.is_oblique = args.pop("is_oblique")
+        self.is_pivotal = args.pop("is_pivotal")
+        self.unique_val_enum = args.pop("unique_val_enum")
+        self.coefficients = args.pop("coefficients")
+        self.kwargs = args
+
+        return self

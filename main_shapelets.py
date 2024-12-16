@@ -26,5 +26,12 @@ if __name__ == "__main__":
     dt.fit(X_train, y_train)
     y_pred = dt.predict(X_test)
     print(classification_report(y_test, y_pred))
-
     dt.export_graphviz()
+
+
+    dt.to_dict("dizionario_shapelets.json")
+    dt2 = dt.from_dict("dizionario_shapelets.json")
+
+    y_pred = dt2.predict(X_test)
+    print(classification_report(y_test, y_pred))
+    dt2.export_graphviz()

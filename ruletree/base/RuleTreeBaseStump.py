@@ -14,8 +14,9 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     def node_to_dict(self):
         pass
 
+    @classmethod
     @abstractmethod
-    def dict_to_node(self, node_dict):
+    def dict_to_node(self, node_dict, X):
         pass
 
     @staticmethod
