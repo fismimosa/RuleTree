@@ -20,8 +20,11 @@ if __name__ == "__main__":
     y_test = df_test['target'].values
 
     dt = RuleTreeClassifier(
-        max_depth=2,
-        base_stumps=[ProximityTreeStumpClassifier(selection='cluster')]
+        max_depth=5,
+        base_stumps=[
+            ProximityTreeStumpClassifier(selection='cluster'),
+            ShapeletTreeStumpClassifier(selection='mi_clf'),
+        ]
     )
 
     dt.fit(X_train, y_train)
@@ -35,4 +38,5 @@ if __name__ == "__main__":
 
     y_pred = dt2.predict(X_test)
     print(classification_report(y_test, y_pred))
+    dt2.root.simplify()
     dt2.export_graphviz()

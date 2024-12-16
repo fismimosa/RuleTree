@@ -122,7 +122,6 @@ class ProximityTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         comparison = "<="
         not_comparison = ">"
-        rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
 
         f = self.feature_original[0]
         shapes_idx = None
@@ -149,32 +148,34 @@ class ProximityTreeStumpRegressor(DecisionTreeStumpRegressor):
             plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
             plt.close()
 
-        rule["textual_rule"] = f"TODO"
-        rule["blob_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}"
+        rule["textual_rule"] = f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)"
+        rule["blob_rule"] = f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)"
         rule["graphviz_rule"] = {
             "image": f'{temp_file.name}',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"TODO",
+            "label": f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
             "height": "1.33",
-            "shape": "none"
+            "shape": "none",
+            "fontsize": "8",
         }
 
-        rule["not_textual_rule"] = f"inverse TODO"
-        rule["not_blob_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
+        rule["not_textual_rule"] = f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)"
+        rule["not_blob_rule"] = f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)"
         rule["not_graphviz_rule"] = {
             "image": f'{temp_file.name}',
             "imagescale": "true",
-            "label": f"inverse TODO",
+            "label": f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)",
             "imagepos": "bc",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
             "height": "1.33",
-            "shape": "none"
+            "shape": "none",
+            "fontsize": "8",
         }
 
         return rule
@@ -192,34 +193,35 @@ class ProximityTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         comparison = "<="
         not_comparison = ">"
-        rounded_value = rule["threshold"]
 
-        rule["textual_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}\t{rule['samples']}"
-        rule["blob_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}"
+        rule["textual_rule"] = f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)"
+        rule["blob_rule"] = f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)"
         rule["graphviz_rule"] = {
             "image": f'None',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"{rule['feature_name']} {comparison} {rounded_value}",
+            "label": f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
             "height": "1.33",
-            "shape": "none"
+            "shape": "none",
+            "fontsize": "8",
         }
 
-        rule["not_textual_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
+        rule["not_textual_rule"] = f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)"
+        rule["not_blob_rule"] = f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)"
         rule["not_graphviz_rule"] = {
             "image": f'{None}',
             "imagescale": "true",
-            "label": f"{rule['feature_name']} {not_comparison} {rounded_value}",
+            "label": f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)",
             "imagepos": "bc",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
             "height": "1.33",
-            "shape": "none"
+            "shape": "none",
+            "fontsize": "8",
         }
 
         # shapelet transform stuff
