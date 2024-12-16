@@ -4,13 +4,13 @@ import numpy as np
 from graphviz import Source
 from sklearn.metrics import classification_report
 
-from ruletree import RuleTreeClassifier
-from ruletree.stumps.classification.ProximityTreeStumpClassifier import ProximityTreeStumpClassifier
-from ruletree.stumps.classification.ShapeletTreeStumpClassifier import ShapeletTreeStumpClassifier
+from RuleTree import RuleTreeClassifier
+from RuleTree.stumps.classification.ProximityTreeStumpClassifier import ProximityTreeStumpClassifier
+from RuleTree.stumps.classification.ShapeletTreeStumpClassifier import ShapeletTreeStumpClassifier
 
 if __name__ == "__main__":
-    df_train = pd.DataFrame(scipy.io.arff.loadarff('ruletree/utils/shapelet_transform/test_dataset/CBF/CBF_TRAIN.arff')[0])
-    df_test = pd.DataFrame(scipy.io.arff.loadarff('ruletree/utils/shapelet_transform/test_dataset/CBF/CBF_TEST.arff')[0])
+    df_train = pd.DataFrame(scipy.io.arff.loadarff('RuleTree/utils/shapelet_transform/test_dataset/CBF/CBF_TRAIN.arff')[0])
+    df_test = pd.DataFrame(scipy.io.arff.loadarff('RuleTree/utils/shapelet_transform/test_dataset/CBF/CBF_TEST.arff')[0])
     df_train.target = df_train.target.astype(int)
     df_test.target = df_test.target.astype(int)
 

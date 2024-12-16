@@ -17,15 +17,15 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from progress_table import ProgressTable
 
 from competitors.kmeanstree import KMeansTree
-from ruletree import RuleTreeClassifier, RuleTreeClusterClassifier
-from ruletree import RuleTreeCluster
-from ruletree import RuleTreeRegressor
+from RuleTree import RuleTreeClassifier, RuleTreeClusterClassifier
+from RuleTree import RuleTreeCluster
+from RuleTree import RuleTreeRegressor
 from benchmark.config import dataset_target_clu
-from ruletree import RuleForestClassifier
-from ruletree import RuleForestRegressor
-from ruletree import RuleTreeAdaBoostClassifier
-from ruletree import RuleTreeAdaBoostRegressor
-from ruletree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
+from RuleTree import RuleForestClassifier
+from RuleTree import RuleForestRegressor
+from RuleTree import RuleTreeAdaBoostClassifier
+from RuleTree import RuleTreeAdaBoostRegressor
+from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 
 def test_clf(max_depth=4):
