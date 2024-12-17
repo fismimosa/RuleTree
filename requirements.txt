@@ -7,7 +7,6 @@ category_encoders
 threadpoolctl
 tqdm
 progress-table
-pygraphviz
 graphviz>=0.20.3
 numba
 psutil

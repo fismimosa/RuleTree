@@ -8,6 +8,7 @@ from numba import UnsupportedError
 
 from matplotlib import pyplot as plt
 
+from RuleTree.stumps.classification import ShapeletTreeStumpClassifier
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.utils.define import DATA_TYPE_TS
 from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
@@ -80,125 +81,10 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         return data_type in [DATA_TYPE_TS]
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: int | None = 3):
-        rule = {
-            "feature_idx": self.feature_original[0],
-            "threshold": self.threshold_original[0],
-            "is_categorical": self.is_categorical,
-            "samples": self.n_node_samples[0]
-        }
-
-        rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
-
-        if scaler is not None:
-            raise UnsupportedError(f"Scaler not supported for {self.__class__.__name__}")
-
-        comparison = "<="
-        not_comparison = ">"
-        rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
-
-        shape = self.st.shapelets[self.feature_original[0], 0]
-
-        with tempfile312.NamedTemporaryFile(delete_on_close=False,
-                                            delete=False,
-                                            suffix=".png",
-                                            mode="wb") as temp_file:
-            plt.figure(figsize=(2, 1))
-            plt.plot([i for i in range(shape.shape[0])], shape)
-            plt.axis('off')
-            plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-            plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
-            plt.close()
-
-        rule["textual_rule"] = f"{self.distance}(TS, shp) {comparison} {rounded_value}\t{rule['samples']}"
-        rule["blob_rule"] = f"{self.distance}(TS, shp) {comparison} {rounded_value}"
-        rule["graphviz_rule"] = {
-            "image": f'{temp_file.name}',
-            "imagescale": "true",
-            "imagepos": "bc",
-            "label": f"{self.distance}(TS, shp) {comparison} {rounded_value}",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
-        }
-
-        rule["not_textual_rule"] = f"{self.distance}(TS, shp) {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{self.distance}(TS, shp) {not_comparison} {rounded_value}"
-        rule["not_graphviz_rule"] = {
-            "image": f'{temp_file.name}',
-            "imagescale": "true",
-            "label": f"{self.distance}(TS, shp) {not_comparison} {rounded_value}",
-            "imagepos": "bc",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
-        }
-
-        return rule
+        return ShapeletTreeStumpClassifier.get_rule(self, columns_names, scaler, float_precision)
 
     def node_to_dict(self):
-        rule = super().node_to_dict() | {
-            'stump_type': self.__class__.__module__,
-            "feature_idx": self.feature_original[0],
-            "threshold": self.threshold_original[0],
-            "is_categorical": self.is_categorical,
-            "samples": self.n_node_samples[0]
-        }
-
-        rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
-
-        comparison = "<="
-        not_comparison = ">"
-        rounded_value = rule["threshold"]
-
-        rule["textual_rule"] = f"{self.distance}(TS, shp) {comparison} {rounded_value}\t{rule['samples']}"
-        rule["blob_rule"] = f"{self.distance}(TS, shp) {comparison} {rounded_value}"
-        rule["graphviz_rule"] = {
-            "image": f'None',
-            "imagescale": "true",
-            "imagepos": "bc",
-            "label": f"{self.distance}(TS, shp) {comparison} {rounded_value}",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
-        }
-
-        rule["not_textual_rule"] = f"{self.distance}(TS, shp) {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{self.distance}(TS, shp) {not_comparison} {rounded_value}"
-        rule["not_graphviz_rule"] = {
-            "image": f'{None}',
-            "imagescale": "true",
-            "label": f"{self.distance}(TS, shp) {not_comparison} {rounded_value}",
-            "imagepos": "bc",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
-        }
-
-        # shapelet transform stuff
-        rule["shapelets"] = self.st.shapelets.tolist()
-        rule["n_shapelets"] = self.st.n_shapelets
-        rule["n_shapelets_for_selection"] = self.st.n_shapelets_for_selection
-        rule["n_ts_for_selection_per_class"] = self.st.n_ts_for_selection_per_class
-        rule["sliding_window"] = self.st.sliding_window
-        rule["selection"] = self.st.selection
-        rule["distance"] = self.st.distance
-        rule["mi_n_neighbors"] = self.st.mi_n_neighbors
-        rule["random_state"] = self.st.random_state
-        rule["n_jobs"] = self.st.n_jobs
-
-        return rule
+        return ShapeletTreeStumpClassifier.node_to_dict(self)
 
     @classmethod
     def dict_to_node(cls, node_dict, X=None):

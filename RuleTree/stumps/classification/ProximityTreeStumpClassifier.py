@@ -142,19 +142,22 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
             shape = self.st.shapelets[shapes_idx[1], 0]
             plt.plot([i for i in range(shape.shape[0])], shape, color="tab:red", alpha=0.7)
             plt.ylim(*self.y_lims)
-
-            plt.axis('off')
+            plt.xlim(0, shape.shape[0])
+            plt.gca().tick_params(axis='both', which='both', length=2, labelsize=6)
+            plt.gca().spines['right'].set_color('none')
+            plt.gca().spines['top'].set_color('none')
+            #plt.gca().spines['bottom'].set_position('zero')
             plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
             plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
             plt.close()
 
-        rule["textual_rule"] = f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)"
-        rule["blob_rule"] = f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)"
+        rule["textual_rule"] = f"{self.distance}(TS, green_shp)\n{comparison} {self.distance}(TS, red_shp)"
+        rule["blob_rule"] = f"{self.distance}(TS, green_shp)\n{comparison} {self.distance}(TS, red_shp)"
         rule["graphviz_rule"] = {
             "image": f'{temp_file.name}',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)",
+            "label": f"{self.distance}(TS, green_shp)\n\u2264 {self.distance}(TS, red_shp)",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
@@ -163,12 +166,12 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
             "fontsize": "8",
         }
 
-        rule["not_textual_rule"] = f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)"
-        rule["not_blob_rule"] = f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)"
+        rule["not_textual_rule"] = f"{self.distance}(TS, green_shp)\n{not_comparison} {self.distance}(TS, red_shp)"
+        rule["not_blob_rule"] = f"{self.distance}(TS, green_shp)\n{not_comparison} {self.distance}(TS, red_shp)"
         rule["not_graphviz_rule"] = {
             "image": f'{temp_file.name}',
             "imagescale": "true",
-            "label": f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)",
+            "label": f"{self.distance}(TS, green_shp)\n{not_comparison} {self.distance}(TS, red_shp)",
             "imagepos": "bc",
             "labelloc": "t",
             "fixedsize": "true",
@@ -194,13 +197,13 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         comparison = "<="
         not_comparison = ">"
 
-        rule["textual_rule"] = f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)"
-        rule["blob_rule"] = f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)"
+        rule["textual_rule"] = f"{self.distance}(TS, green_shp)\n{comparison} {self.distance}(TS, red_shp)"
+        rule["blob_rule"] = f"{self.distance}(TS, green_shp)\n{comparison} {self.distance}(TS, red_shp)"
         rule["graphviz_rule"] = {
             "image": f'None',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"{self.distance}(TS, green_shp)\r\n{comparison} {self.distance}(TS, red_shp)",
+            "label": f"{self.distance}(TS, green_shp)\n{comparison} {self.distance}(TS, red_shp)",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
@@ -209,12 +212,12 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
             "fontsize": "8",
         }
 
-        rule["not_textual_rule"] = f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)"
-        rule["not_blob_rule"] = f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)"
+        rule["not_textual_rule"] = f"{self.distance}(TS, green_shp)\n{not_comparison} {self.distance}(TS, red_shp)"
+        rule["not_blob_rule"] = f"{self.distance}(TS, green_shp)\n{not_comparison} {self.distance}(TS, red_shp)"
         rule["not_graphviz_rule"] = {
             "image": f'{None}',
             "imagescale": "true",
-            "label": f"{self.distance}(TS, green_shp)\r\n{not_comparison} {self.distance}(TS, red_shp)",
+            "label": f"{self.distance}(TS, green_shp)\n{not_comparison} {self.distance}(TS, red_shp)",
             "imagepos": "bc",
             "labelloc": "t",
             "fixedsize": "true",

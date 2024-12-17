@@ -85,13 +85,13 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}\t{rule['samples']}"
         rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
         rule["graphviz_rule"] = {
-            "label": f"{feat_name} {comparison} {rounded_value}",
+            "label": f"{feat_name} {'\u2264' if not self.is_categorical else '='} {rounded_value}",
         }
 
         rule["not_textual_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
         rule["not_blob_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
         rule["not_graphviz_rule"] = {
-            "label": f"{feat_name} {not_comparison} {rounded_value}"
+            "label": f"{feat_name} {'>' if not self.is_categorical else '\u2260'} {rounded_value}"
         }
 
         return rule

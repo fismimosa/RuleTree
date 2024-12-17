@@ -1,13 +1,10 @@
 import importlib
 from typing import Self
 
+import graphviz
 import numpy as np
-from sklearn import tree
-import pygraphviz as pgv
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
-from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
 from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
 
 
@@ -157,25 +154,23 @@ class RuleTreeNode:
     def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
 
         if graph is None:
-            graph = pgv.AGraph(name="RuleTree")
+            graph = graphviz.Digraph(name="RuleTree")#pgv.AGraph(name="RuleTree")
 
         if self.is_leaf():
-            graph.add_node(self.node_id, label=self.prediction, **GRAPHVIZ_DEFAULT_NODE_LEAF)
-            if self.parent is not None:
-                graph.add_edge(self.parent.node_id, self.node_id)
+            graph.node(self.node_id, label=f"{self.prediction}", **GRAPHVIZ_DEFAULT_NODE_LEAF)
 
             return graph
 
         rule = self.stump.get_rule(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
 
-        graph.add_node(self.node_id, **(GRAPHVIZ_DEFAULT_NODE_SPLIT | rule["graphviz_rule"]))
+        graph.node(self.node_id, **(GRAPHVIZ_DEFAULT_NODE_SPLIT | rule["graphviz_rule"]))
 
         if self.node_l is not None:
             graph = self.node_l.export_graphviz(graph, columns_names, scaler, float_precision)
-            graph.add_edge(self.node_id, self.node_l.node_id, color="#2ca02c")
+            graph.edge(self.node_id, self.node_l.node_id, color="#2ca02c")
         if self.node_r is not None:
             graph = self.node_r.export_graphviz(graph, columns_names, scaler, float_precision)
-            graph.add_edge(self.node_id, self.node_r.node_id, color="#d62728")
+            graph.edge(self.node_id, self.node_r.node_id, color="#d62728")
 
         return graph
 

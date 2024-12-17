@@ -5,13 +5,13 @@ import random
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from importlib.metadata import pass_none
 from itertools import count
 
 import numpy as np
 import sklearn
 from graphviz import Source
 from sklearn import tree
+from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
@@ -648,7 +648,8 @@ class RuleTree(RuleTreeBase, ABC):
     def export_graphviz(self, columns_names=None, scaler=None, float_precision=3, filename:str|None=None):
         dot = self.root.export_graphviz(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
         if filename is None:
-            return Source(dot.to_string()).view()
+            dot.render(directory=TemporaryDirectory(delete=False).name, view=True)
+            return dot
         else:
-            Source(dot.to_string()).render(filename=filename)
+            Source(dot).render(filename=filename)
 

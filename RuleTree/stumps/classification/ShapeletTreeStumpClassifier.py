@@ -59,6 +59,8 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         }
 
     def fit(self, X, y, sample_weight=None, check_input=True):
+        self.y_lims = [X.min(), X.max()]
+
         random.seed(self.random_state)
         if sample_weight is not None:
             raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")
@@ -77,6 +79,8 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         return super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
 
     def apply(self, X, check_input=False):
+        self.y_lims = [min(self.y_lims[0], X.min()), min(self.y_lims[1], X.max())]
+
         return super().apply(self.st.transform(X), check_input=check_input)
 
     def supports(self, data_type):
@@ -107,8 +111,13 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
                                             mode="wb") as temp_file:
             plt.figure(figsize=(2, 1))
             plt.plot([i for i in range(shape.shape[0])], shape)
-            plt.axis('off')
             plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+            plt.ylim(*self.y_lims)
+            plt.xlim(0, shape.shape[0])
+            plt.gca().tick_params(axis='both', which='both', length=2, labelsize=6)
+            plt.gca().spines['right'].set_color('none')
+            plt.gca().spines['top'].set_color('none')
+            #plt.gca().spines['bottom'].set_position('zero')
             plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
             plt.close()
 
@@ -118,7 +127,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
             "image": f'{temp_file.name}',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"{self.distance}(TS, shp) {comparison} {rounded_value}",
+            "label": f"{self.distance}(TS, shp) \u2264 {rounded_value}",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
@@ -200,6 +209,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         rule["mi_n_neighbors"] = self.st.mi_n_neighbors
         rule["random_state"] = self.st.random_state
         rule["n_jobs"] = self.st.n_jobs
+        rule["y_lims"] = self.y_lims
 
         return rule
 
@@ -239,6 +249,8 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         self.threshold_original[0] = node_dict["threshold"]
         self.n_node_samples[0] = node_dict["samples"]
         self.is_categorical = node_dict["is_categorical"]
+
+        self.y_lims = node_dict["y_lims"]
 
         args = copy.deepcopy(node_dict["args"])
         self.is_oblique = args.pop("is_oblique")
