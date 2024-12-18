@@ -135,6 +135,8 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             y_pred = np.ones(X.shape[0], dtype=int) * 2
             X_feature = X[:, self.feature_original[0]]
             y_pred[X_feature <= self.threshold_original[0]] = 1
+            
+            return y_pred
         else:
             y_pred = np.ones(X.shape[0], dtype=int) * 2
             X_feature = X[:, self.feature_original[0]]
