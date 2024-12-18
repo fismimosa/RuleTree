@@ -79,22 +79,24 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
     def get_params(self, deep=True):
         return self.kwargs
-
-    def fit(self, X, y, **kwargs):
+    
+    def feature_analysis(self, X, y):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
+
+    def fit(self, X, y, sample_weight=None, check_input=True):
+        self.feature_analysis(X, y)
         best_info_gain = -float('inf')
 
         if len(self.numerical) > 0:
-            super().fit(X[:, self.numerical], y, **kwargs)
+            super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
             self.feature_original = self.tree_.feature
             self.threshold_original = self.tree_.threshold
+            self.n_node_samples = self.tree_.n_node_samples
             best_info_gain = get_info_gain(self)
-
+            
         self._fit_cat(X, y, best_info_gain)
-
-
 
         return self
 
