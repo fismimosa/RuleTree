@@ -71,7 +71,7 @@ class RuleTreeNode:
     def get_depth(self):
         return len(self.node_id) - 1
 
-    def get_rule(self, column_names=None, scaler=None):
+    def get_rule(self, columns_names=None, scaler=None):
         rule = {
             "node_id": self.node_id,
             "is_leaf": self.is_leaf(),
@@ -83,7 +83,7 @@ class RuleTreeNode:
         }
     
         if not self.is_leaf():
-            rule |= self.stump.get_rule(columns_names=column_names, scaler=scaler)
+            rule |= self.stump.get_rule(columns_names=columns_names, scaler=scaler)
     
         return rule
     
