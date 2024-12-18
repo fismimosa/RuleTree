@@ -214,8 +214,8 @@ class RuleTree(RuleTreeBase, ABC):
 
             return labels, leaves, proba
 
-    def get_rules(self):
-        return self.root.get_rule()
+    def get_rules(self, columns_names = None):
+        return self.root.get_rule(columns_names = columns_names)
 
     def make_leaf(self, node: RuleTreeNode) -> RuleTreeNode:
         return node
