@@ -78,8 +78,8 @@ class RuleTreeNode:
             "prediction": self.prediction,
             "prediction_probability": self.prediction_probability,
             "prediction_classes_": self.classes,
-            "left_node": self.node_l.get_rule() if self.node_l is not None else None,
-            "right_node": self.node_r.get_rule() if self.node_r is not None else None,
+            "left_node": self.node_l.get_rule(columns_names = columns_names, scaler = scaler) if self.node_l is not None else None,
+            "right_node": self.node_r.get_rule(columns_names = columns_names, scaler = scaler) if self.node_r is not None else None,
         }
     
         if not self.is_leaf():
