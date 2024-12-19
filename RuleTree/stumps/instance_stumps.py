@@ -43,7 +43,7 @@ def dt_stump_call(random_state = 42):
 
 
 def obl_stump_call(random_state = 42, 
-                   oblique_split_type = 'euclidean',
+                   oblique_split_type = 'householder',
                    pca=None,
                    max_oblique_features=2,
                    tau=1e-4,
@@ -71,7 +71,7 @@ def obl_stump_call(random_state = 42,
     return obl_stump
 
 def obl_pt_stump_call(random_state = 42, 
-                   oblique_split_type = 'euclidean',
+                   oblique_split_type = 'householder',
                    pca=None,
                    max_oblique_features=2,
                    tau=1e-4,
