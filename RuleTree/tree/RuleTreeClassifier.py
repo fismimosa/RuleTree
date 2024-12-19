@@ -7,6 +7,7 @@ from sklearn.base import ClassifierMixin
 
 from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
 from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
+from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
@@ -96,7 +97,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         if self.stump_selection == 'random':
             stump = self._get_random_stump(X)
             
-            if stump.__class__.__module__.split('.')[-1] in ['PivotTreeStumpClassifier','MultiplePivotTreeStumpClassifier']:
+            if stump.__class__.__module__.split('.')[-1] in ['PivotTreeStumpClassifier','MultiplePivotTreeStumpClassifier','ObliquePivotTreeStumpClassifier']:
                 if self.distance_matrix is None:
                     self.distance_matrix = pairwise_distances(X[idx], metric = self.distance_measure)
                 stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
@@ -110,7 +111,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             for _, stump in self._filter_types(X):
                 stump = sklearn.clone(stump)
                 
-                if stump.__class__.__module__.split('.')[-1] in ['PivotTreeStumpClassifier','MultiplePivotTreeStumpClassifier']:
+                if stump.__class__.__module__.split('.')[-1] in ['PivotTreeStumpClassifier','MultiplePivotTreeStumpClassifier','ObliquePivotTreeStumpClassifier']:
                     if self.distance_matrix is None:
                         self.distance_matrix = pairwise_distances(X[idx], metric = self.distance_measure)
                     stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
