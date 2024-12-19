@@ -8,10 +8,7 @@ from RuleTree import RuleTreeClassifier
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from sklearn.base import ClassifierMixin
 
-from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
-from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
-from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
-
+from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
     def __init__(self,
@@ -36,7 +33,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                  custom_estimator:sklearn.base.ClassifierMixin=None,
                  n_jobs=None,
                  random_state=None,
-                 base_stump = None,
+                 base_stumps = None,
                  distance_matrix = None,
                  distance_measure = None,
                  stump_selection = 'best',
@@ -63,7 +60,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
         self.n_jobs = n_jobs
         self.random_state = random_state
         self.verbose = verbose
-        self.base_stump = base_stump
+        self.base_stumps = base_stumps
         self.distance_matrix = distance_matrix
         self.distance_measure = distance_measure
         self.stump_selection= stump_selection
@@ -81,13 +78,38 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
 
         base_estimator = RuleTreeClassifier if self.custom_estimator is None else self.custom_estimator
         splitter = .5 if self.splitter == 'hybrid_forest' else self.splitter
+        
         if type(splitter) is float:
             base_estimator = RuleTreeClassifier_choosing_splitter_randomly
             
-        if self.base_stump is not None:
-            if any(isinstance(clf, (PivotTreeStumpClassifier, ObliquePivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier)) for clf in self.base_stump):
-                base_estimator = ForestEstimatorPivotClassifier
-
+        if self.base_stumps is None:
+            self.base_stumps = [DecisionTreeStumpClassifier(
+                                max_depth=1,
+                                criterion=self.criterion,
+                                splitter=self.splitter,
+                                min_samples_split=self.min_samples_split,
+                                min_samples_leaf = self.min_samples_leaf,
+                                min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                                max_features=self.max_features,
+                                random_state=self.random_state,
+                                min_impurity_decrease=self.min_impurity_decrease,
+                                class_weight=self.class_weight,
+                                ccp_alpha=self.ccp_alpha,
+                              #  monotonic_cst = self.monotonic_cst
+                                )]
+        
+        else:
+            for stump in self.base_stumps:
+                if stump.__class__.__module__.split('.')[-1] in [
+                    'PivotTreeStumpClassifier',
+                    'MultiplePivotTreeStumpClassifier',
+                    'ObliquePivotTreeStumpClassifier'
+                ]:
+                    base_estimator = ForestEstimatorPivotClassifier
+                    break
+                
+            
+     
         super().__init__(estimator=base_estimator(criterion=self.criterion,
                                                   max_depth=self.max_depth,
                                                   min_samples_split=self.min_samples_split,
@@ -100,7 +122,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                                                   ccp_alpha=self.ccp_alpha,
                                                   prune_useless_leaves=self.prune_useless_leaves,
                                                   splitter=self.splitter,
-                                                  base_stump = self.base_stump,
+                                                  base_stumps = self.base_stumps,
                                                   distance_measure = self.distance_measure,
                                                   distance_matrix = self.distance_matrix,
                                                   stump_selection= self.stump_selection
@@ -187,7 +209,7 @@ class ForestEstimatorPivotClassifier(RuleTreeClassifier):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stump: ClassifierMixin | list = None,
+                 base_stumps: ClassifierMixin | list = None,
                  stump_selection: str = 'random',
                  random_state=None,
 
@@ -209,7 +231,7 @@ class ForestEstimatorPivotClassifier(RuleTreeClassifier):
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
-                         base_stump=base_stump,
+                         base_stumps=base_stumps,
                          stump_selection=stump_selection,
                          random_state=random_state)
 
