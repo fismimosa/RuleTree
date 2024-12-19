@@ -66,18 +66,24 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             local_idx_label = local_idx[idx_label]
             sub_matrix_label = sub_matrix[:, idx_label]
 
-            disc_id = self.compute_discriminative(sub_matrix_label, y, sample_weight=sample_weight,
+            disc_id = self.compute_discriminative(sub_matrix_label, y, 
+                                                  sample_weight=sample_weight,
                                                   check_input=check_input)
-            disc_idx = local_idx_label[disc_id]
 
             desc_id = self.compute_descriptive(sub_matrix_label[idx_label])
             desc_idx = local_idx_label[desc_id]
+            
+            print(disc_id, 'discid')
+            if disc_id == -2: #if no split performed, do not add anything
+                local_discriminatives += []
+            else:   
+                disc_idx = local_idx_label[disc_id]
+                if isinstance(disc_idx, (list, np.ndarray)):
+                    local_discriminatives += disc_idx.flatten().tolist() if isinstance(disc_idx, np.ndarray) else list(
+                        disc_idx)
+                else:
+                    local_discriminatives += [disc_idx]
 
-            if isinstance(disc_idx, (list, np.ndarray)):
-                local_discriminatives += disc_idx.flatten().tolist() if isinstance(disc_idx, np.ndarray) else list(
-                    disc_idx)
-            else:
-                local_discriminatives += [disc_idx]
 
             local_descriptives += [desc_idx]
 
