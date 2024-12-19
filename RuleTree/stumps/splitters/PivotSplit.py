@@ -73,7 +73,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             desc_id = self.compute_descriptive(sub_matrix_label[idx_label])
             desc_idx = local_idx_label[desc_id]
             
-            print(disc_id, 'discid')
+           
             if disc_id == -2: #if no split performed, do not add anything
                 local_discriminatives += []
             else:   
