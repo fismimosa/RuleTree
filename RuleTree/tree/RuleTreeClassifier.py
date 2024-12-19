@@ -94,12 +94,18 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
+        
+        pivots_list = ['PivotTreeStumpClassifier',
+                        'MultiplePivotTreeStumpClassifier',
+                        'ObliquePivotTreeStumpClassifier']
+        
+    
         if self.stump_selection == 'random':
             stump = self._get_random_stump(X)
             
-            if stump.__class__.__module__.split('.')[-1] in ['PivotTreeStumpClassifier','MultiplePivotTreeStumpClassifier','ObliquePivotTreeStumpClassifier']:
-                if self.distance_matrix is None:
-                    self.distance_matrix = pairwise_distances(X[idx], metric = self.distance_measure)
+            
+            if stump.__class__.__module__.split('.')[-1] in pivots_list:
+                
                 stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
                           distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
             else:
@@ -111,9 +117,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             for _, stump in self._filter_types(X):
                 stump = sklearn.clone(stump)
                 
-                if stump.__class__.__module__.split('.')[-1] in ['PivotTreeStumpClassifier','MultiplePivotTreeStumpClassifier','ObliquePivotTreeStumpClassifier']:
-                    if self.distance_matrix is None:
-                        self.distance_matrix = pairwise_distances(X[idx], metric = self.distance_measure)
+                if stump.__class__.__module__.split('.')[-1] in pivots_list:
+                    
                     stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
                               distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
                 else:
@@ -149,8 +154,23 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             samples=len(y[idx]),
         )
 
-    def fit(self, X: np.array, y: np.array=None, sample_weight=None, **kwargs):
+    def fit(self, X: np.array, y: np.array = None, sample_weight=None, **kwargs):
+        # Check and initialize the distance matrix if needed
+        if self.distance_matrix is None:
+            for stump in self.base_stumps:
+                # Check if the class name matches the specified list
+                if stump.__class__.__module__.split('.')[-1] in [
+                    'PivotTreeStumpClassifier',
+                    'MultiplePivotTreeStumpClassifier',
+                    'ObliquePivotTreeStumpClassifier'
+                ]:
+                    # Compute the distance matrix
+                    self.distance_matrix = pairwise_distances(X, metric=self.distance_measure)
+                    break  # Distance matrix is initialized, no need to continue
+    
+        # Call the parent class's fit method
         super().fit(X, y, sample_weight=sample_weight, **kwargs)
+
 
     def predict_proba(self, X: np.ndarray):
         labels, leaves, proba = self._predict(X, self.root)
