@@ -90,6 +90,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         local_candidates = local_descriptives + local_discriminatives
 
         self.X_candidates = X[local_candidates]
+        self.y_candidates = y[local_candidates]
 
         self.discriminative_names = idx[local_discriminatives]
         self.descriptive_names = idx[local_descriptives]
