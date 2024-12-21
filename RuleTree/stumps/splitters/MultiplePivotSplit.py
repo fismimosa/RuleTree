@@ -23,6 +23,8 @@ class MultiplePivotSplit(PivotSplit):
         two_tuples = list(itertools.combinations(range(0, len(self.X_candidates)), 2))
 
         for tup in two_tuples:
+            if len(set(self.y_candidates[np.array(tup)])) == 1:
+                continue
             disc = self.get_base_model()
             p1, p2 = self.X_candidates[np.array(tup)]
             name_p1, name_p2 = self.candidates_names[np.array(tup)]
