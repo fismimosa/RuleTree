@@ -135,6 +135,25 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
         return stump
 
+    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
+        if self.distance_measure is not None:
+            medoids = []
+            sub_matrix = None
+            for label in set(y[idx]):
+                idx_local_label = np.where(y[idx] == label)[0]
+                idx_label = idx[idx_local_label]
+                X_class_points = X[idx_label]
+                
+                if self.distance_matrix is not None:
+                    sub_matrix = self.distance_matrix[idx_label][:,idx_label]
+                else:
+                    sub_matrix = pairwise_distances(X_class_points, metric=self.distance_measure)
+                total_distances = sub_matrix.sum(axis=1)
+                medoid_index = idx_label[total_distances.argmin()]
+                medoids += [medoid_index]
+                
+            return medoids
+            
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         prediction = calculate_mode(y[idx])
         predict_proba = np.zeros((len(self.classes_), ))
