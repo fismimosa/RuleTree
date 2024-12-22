@@ -93,7 +93,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray, sample_weight=None, **kwargs) -> tree:
+    def make_split(self, X: np.ndarray, y, idx: np.ndarray, medoids_index = None, sample_weight=None, **kwargs) -> tree:
         
         pivots_list = ['PivotTreeStumpClassifier',
                         'MultiplePivotTreeStumpClassifier',
@@ -106,7 +106,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             
             if stump.__class__.__module__.split('.')[-1] in pivots_list:
                 
-                stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
+                stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx,
+                         
                           distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
             else:
                 stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
@@ -120,6 +121,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 if stump.__class__.__module__.split('.')[-1] in pivots_list:
                     
                     stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
+                      
                               distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
                 else:
                     stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
@@ -135,25 +137,6 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
         return stump
 
-    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
-        if self.distance_measure is not None:
-            medoids = []
-            sub_matrix = None
-            for label in set(y[idx]):
-                idx_local_label = np.where(y[idx] == label)[0]
-                idx_label = idx[idx_local_label]
-                X_class_points = X[idx_label]
-                
-                if self.distance_matrix is not None:
-                    sub_matrix = self.distance_matrix[idx_label][:,idx_label]
-                else:
-                    sub_matrix = pairwise_distances(X_class_points, metric=self.distance_measure)
-                total_distances = sub_matrix.sum(axis=1)
-                medoid_index = idx_label[total_distances.argmin()]
-                medoids += [medoid_index]
-                
-            return medoids
-            
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         prediction = calculate_mode(y[idx])
         predict_proba = np.zeros((len(self.classes_), ))
@@ -173,6 +156,25 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             samples=len(y[idx]),
         )
 
+    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
+        if self.distance_measure is not None:
+            medoids = []
+            sub_matrix = None
+            for label in set(y[idx]):
+                idx_local_label = np.where(y[idx] == label)[0]
+                idx_label = idx[idx_local_label]
+                X_class_points = X[idx_label]
+                
+                if self.distance_matrix is not None:
+                    sub_matrix = self.distance_matrix[idx_label][:,idx_label]
+                else:
+                    sub_matrix = pairwise_distances(X_class_points, metric=self.distance_measure)
+                total_distances = sub_matrix.sum(axis=1)
+                medoid_index = idx_label[total_distances.argmin()]
+                medoids += [medoid_index]
+                
+            return medoids
+             
     def fit(self, X: np.array, y: np.array = None, sample_weight=None, **kwargs):
         # Check and initialize the distance matrix if needed
         if self.distance_matrix is None:
@@ -185,9 +187,10 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 ]:
                     # Compute the distance matrix
                     self.distance_matrix = pairwise_distances(X, metric=self.distance_measure)
+                
                     break  # Distance matrix is initialized, no need to continue
     
-        # Call the parent class's fit method
+        
         super().fit(X, y, sample_weight=sample_weight, **kwargs)
 
 
@@ -223,7 +226,57 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                                                                                                          current_node.node_r)
 
             return labels, leaves, proba
+        
+    def get_pivots(self, current_node=None, pivot_dicts=None):
+   
+        stump_split_map = {
+            'PivotTreeStumpClassifier': 'pivot_split',
+            'MultiplePivotTreeStumpClassifier': 'multi_pivot_split',
+            'ObliquePivotTreeStumpClassifier': 'obl_pivot_split',
+        }
+        
+        
+        # Initialize pivot_dicts if not provided
+        if pivot_dicts is None:
+            pivot_dicts = {}
+        
+        # Start from root if current_node is not provided
+        if current_node is None:
+            current_node = self.root
+        
+        # Process current node
+        if not current_node.is_leaf():
+            stump_name = current_node.stump.__class__.__module__.split('.')[-1]
+            used = current_node.stump.feature_original[0]
+            if stump_split_map[stump_name] == 'pivot_split':
+                used = [int(used)]
+            if stump_split_map[stump_name] == 'multi_pivot_split':
+                used = list(used)
+            if stump_split_map[stump_name] == 'obl_pivot_split':
+                used = [int(x) for x in used]
+            
+            if stump_name in stump_split_map:
+                split_obj = getattr(current_node.stump, stump_split_map[stump_name])
+                pivot_dicts[current_node.node_id] = {
+                    'discriminatives': split_obj.get_discriminative_names(),
+                    'descriptives': split_obj.get_descriptive_names(),
+                    'candidates': split_obj.get_candidates_names(),
+                    'used' : used
+                }
+        else:
+            pivot_dicts[current_node.node_id]  = {'descriptives' : current_node.medoids_index}
+            
+        
+        # Recurse into child nodes if they exist
+        if current_node.node_l:
+            self.get_pivots(current_node.node_l, pivot_dicts)
+            self.get_pivots(current_node.node_r, pivot_dicts)
+        
+        return pivot_dicts
 
+        
+        
+        
     def _get_stumps_base_class(self):
         return ClassifierMixin
 
