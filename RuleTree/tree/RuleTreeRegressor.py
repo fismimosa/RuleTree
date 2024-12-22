@@ -100,7 +100,10 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
 
         return stump
 
-
+   
+    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
+        pass
+        
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
