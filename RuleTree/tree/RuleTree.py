@@ -106,7 +106,10 @@ class RuleTree(RuleTreeBase, ABC):
 
         return compatible_stumps
 
-
+    @abstractmethod
+    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
+        pass
+        
     def fit(self, X: np.array, y: np.array = None, **kwargs):
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
@@ -122,6 +125,8 @@ class RuleTree(RuleTreeBase, ABC):
         nbr_curr_nodes = 0
         while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
             idx, current_node = self.queue_pop()
+
+            current_node.medoids = self.compute_medoids(X, y, idx=idx, **kwargs)
 
             if len(idx) < self.min_samples_split:
                 self.make_leaf(current_node)
