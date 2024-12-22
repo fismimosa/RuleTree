@@ -9,9 +9,8 @@ from itertools import count
 
 import numpy as np
 import sklearn
-from graphviz import Source
+#from graphviz import Source
 from sklearn import tree
-from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
@@ -105,11 +104,13 @@ class RuleTree(RuleTreeBase, ABC):
             compatible_stumps = [(p/p_total, x) for p, x in compatible_stumps]
 
         return compatible_stumps
+    
+
 
     @abstractmethod
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         pass
-        
+    
     def fit(self, X: np.array, y: np.array = None, **kwargs):
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
@@ -125,26 +126,29 @@ class RuleTree(RuleTreeBase, ABC):
         nbr_curr_nodes = 0
         while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
             idx, current_node = self.queue_pop()
-
-            current_node.medoids = self.compute_medoids(X, y, idx=idx, **kwargs)
-
+            
+            
             if len(idx) < self.min_samples_split:
                 self.make_leaf(current_node)
+                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 nbr_curr_nodes += 1
                 continue
 
             if nbr_curr_nodes + len(self.queue) + 1 >= self.max_leaf_nodes:
                 self.make_leaf(current_node)
+                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 nbr_curr_nodes += 1
                 continue
 
             if self.max_depth is not None and current_node.get_depth() >= self.max_depth:
                 self.make_leaf(current_node)
+                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 nbr_curr_nodes += 1
                 continue
 
             if self.check_additional_halting_condition(y=y, curr_idx=idx):
                 self.make_leaf(current_node)
+                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 nbr_curr_nodes += 1
                 continue
 
@@ -153,6 +157,7 @@ class RuleTree(RuleTreeBase, ABC):
 
             if self.is_split_useless(X=X, clf=clf, idx=idx):
                 self.make_leaf(current_node)
+                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 nbr_curr_nodes += 1
                 continue
 
