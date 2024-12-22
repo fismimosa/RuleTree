@@ -121,7 +121,10 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                 best_clf = clf
 
         return best_clf
-
+        
+    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
+        pass
+        
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
         return RuleTreeNode(
             node_id=node_id,
