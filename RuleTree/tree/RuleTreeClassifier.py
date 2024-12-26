@@ -18,7 +18,6 @@ from RuleTree.utils.utils_decoding import set_node_children , simplify_decode
 from sklearn.metrics import pairwise_distances
 
 
-
 class RuleTreeClassifier(RuleTree, ClassifierMixin):
     def __init__(self,
                  max_leaf_nodes=float('inf'),
@@ -31,7 +30,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
                  criterion='gini',
                  splitter='best',
-                 min_samples_leaf=1,
+                 min_samples_leaf=1, 
                  min_weight_fraction_leaf=0.0,
                  max_features=None,
                  min_impurity_decrease=0.0,
@@ -97,14 +96,15 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         
         pivots_list = ['PivotTreeStumpClassifier',
                         'MultiplePivotTreeStumpClassifier',
-                        'ObliquePivotTreeStumpClassifier']
+                        'ObliquePivotTreeStumpClassifier',
+                        'MultipleObliquePivotTreeStumpClassifier']
         
     
         if self.stump_selection == 'random':
             stump = self._get_random_stump(X)
-            
-            
+        
             if stump.__class__.__module__.split('.')[-1] in pivots_list:
+                
                 
                 stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx,
                          
@@ -183,7 +183,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 if stump.__class__.__module__.split('.')[-1] in [
                     'PivotTreeStumpClassifier',
                     'MultiplePivotTreeStumpClassifier',
-                    'ObliquePivotTreeStumpClassifier'
+                    'ObliquePivotTreeStumpClassifier',
+                    'MultipleObliquePivotTreeStumpClassifier'
                 ]:
                     # Compute the distance matrix
                     self.distance_matrix = pairwise_distances(X, metric=self.distance_measure)
@@ -233,6 +234,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             'PivotTreeStumpClassifier': 'pivot_split',
             'MultiplePivotTreeStumpClassifier': 'multi_pivot_split',
             'ObliquePivotTreeStumpClassifier': 'obl_pivot_split',
+            'MultipleObliquePivotTreeStumpClassifier' : 'multi_oblique_pivot_split'
         }
         
         
@@ -245,27 +247,37 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             current_node = self.root
         
         # Process current node
-        if not current_node.is_leaf():
+        if current_node.stump is not None:
+            
             stump_name = current_node.stump.__class__.__module__.split('.')[-1]
             used = current_node.stump.feature_original[0]
             if stump_split_map[stump_name] == 'pivot_split':
                 used = [int(used)]
             if stump_split_map[stump_name] == 'multi_pivot_split':
                 used = list(used)
+            if stump_split_map[stump_name] == 'multi_oblique_pivot_split':
+                used = list(used)
             if stump_split_map[stump_name] == 'obl_pivot_split':
                 used = [int(x) for x in used]
             
+            
             if stump_name in stump_split_map:
                 split_obj = getattr(current_node.stump, stump_split_map[stump_name])
-                pivot_dicts[current_node.node_id] = {
-                    'discriminatives': split_obj.get_discriminative_names(),
-                    'descriptives': split_obj.get_descriptive_names(),
-                    'candidates': split_obj.get_candidates_names(),
-                    'used' : used
-                }
+                if not current_node.is_leaf():
+                    pivot_dicts[current_node.node_id] = {
+                            'discriminatives': split_obj.get_discriminative_names(),
+                            'descriptives': split_obj.get_descriptive_names(),
+                            'candidates': split_obj.get_candidates_names(),
+                            'used' : used
+                        }
+                else:
+                    pivot_dicts[current_node.node_id]  = {'descriptives' : split_obj.get_descriptive_names()}
+                        
+        
         else:
-            pivot_dicts[current_node.node_id]  = {'descriptives' : current_node.medoids_index}
-            
+            if current_node.is_leaf():
+                pivot_dicts[current_node.node_id]  = {'descriptives' : current_node.medoids_index}
+                
         
         # Recurse into child nodes if they exist
         if current_node.node_l:
