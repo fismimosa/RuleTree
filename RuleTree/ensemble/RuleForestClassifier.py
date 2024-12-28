@@ -28,6 +28,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                  max_samples=None,
                  max_features=1.0,
                  bootstrap=True,
+                 bootstrap_features = True,
                  oob_score=False,
                  warm_start=False,
                  custom_estimator:sklearn.base.ClassifierMixin=None,
@@ -54,6 +55,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
         self.max_samples = max_samples
         self.max_features = max_features
         self.bootstrap = bootstrap
+        self.bootstrap_features = bootstrap_features
         self.oob_score = oob_score
         self.warm_start = warm_start
         self.custom_estimator = custom_estimator
@@ -64,11 +66,13 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
         self.distance_matrix = distance_matrix
         self.distance_measure = distance_measure
         self.stump_selection= stump_selection
+    
                
 
-    def fit(self, X:np.ndarray, y:np.ndarray, sample_weight=None, **kwargs):
+    def fit(self, X: np.ndarray, y:np.ndarray, sample_weight=None, **kwargs):
         if self.max_features is None:
             self.max_features = X.shape[1]
+            
 
         if type(self.max_features) is str:
             if self.max_features == "sqrt":
@@ -103,8 +107,10 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                 if stump.__class__.__module__.split('.')[-1] in [
                     'PivotTreeStumpClassifier',
                     'MultiplePivotTreeStumpClassifier',
-                    'ObliquePivotTreeStumpClassifier'
+                    'ObliquePivotTreeStumpClassifier',
+                    'MultipleObliquePivotTreeStumpClassifier'
                 ]:
+                    
                     base_estimator = ForestEstimatorPivotClassifier
                     break
                 
@@ -132,7 +138,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                          max_samples=X.shape[0] if self.max_samples is None else self.max_samples,
                          max_features=self.max_features,
                          bootstrap=self.bootstrap,
-                         bootstrap_features=True,
+                         bootstrap_features=self.bootstrap_features,
                          oob_score=self.oob_score,
                          warm_start=self.warm_start,
                          n_jobs=self.n_jobs,
