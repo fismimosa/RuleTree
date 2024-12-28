@@ -193,6 +193,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
     
         
         super().fit(X, y, sample_weight=sample_weight, **kwargs)
+        if self.distance_matrix is not None:
+            self.distance_matrix = None #remove to save space when training many estimators
 
 
     def predict_proba(self, X: np.ndarray):
