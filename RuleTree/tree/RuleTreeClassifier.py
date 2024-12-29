@@ -329,6 +329,32 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                                         line_shape=line_shape,
                                         joint_contribution=joint_contribution
                                     )
+
+
+    def get_balanced_stumps(self, current_node=None, stumps=None, p=0.2):
+        if stumps is None:
+            stumps = {}
+    
+        if current_node is None:
+            current_node = self.root
+            
+        if not current_node.is_leaf() and current_node.node_l is not None :
+            if current_node.balance_score > p:
+                
+                rt = self.__class__()
+                rt.classes_ = self.classes_
+                
+                rt.root = current_node
+                rt.root.node_l.make_leaf()
+                rt.root.node_r.make_leaf()
+                stumps[current_node.node_id] = rt
+                
+                
+                self.get_balanced_stumps(current_node=current_node.node_l, stumps=stumps, p=p)
+                self.get_balanced_stumps(current_node=current_node.node_r, stumps=stumps, p=p)
+
+        return stumps
+
     
     @classmethod
     def complete_tree(cls, node, X, y, n_classes_):
