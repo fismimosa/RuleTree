@@ -4,6 +4,7 @@ import numpy as np
 import sklearn
 from sklearn import tree
 from sklearn.base import ClassifierMixin
+import copy
 
 from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
 from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
@@ -188,6 +189,10 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 ]:
                     # Compute the distance matrix
                     self.distance_matrix = pairwise_distances(X, metric=self.distance_measure)
+                    #print(X[0][0])
+                    #print('compute dist')
+                    #print(self.distance_matrix.shape)
+                    
                 
                     break  # Distance matrix is initialized, no need to continue
     
@@ -229,6 +234,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                                                                                                          current_node.node_r)
 
             return labels, leaves, proba
+        
         
     def get_pivots(self, current_node=None, pivot_dicts=None):
    
@@ -329,32 +335,64 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                                         line_shape=line_shape,
                                         joint_contribution=joint_contribution
                                     )
+   
 
-
+    
     def get_balanced_stumps(self, current_node=None, stumps=None, p=0.2):
         if stumps is None:
             stumps = {}
-    
         if current_node is None:
             current_node = self.root
             
-        if not current_node.is_leaf() and current_node.node_l is not None :
+        if not current_node.is_leaf():
             if current_node.balance_score > p:
-                
-                rt = self.__class__()
-                rt.classes_ = self.classes_
-                
-                rt.root = current_node
-                rt.root.node_l.make_leaf()
-                rt.root.node_r.make_leaf()
-                stumps[current_node.node_id] = rt
-                
-                
+                stumps[current_node.node_id] = (current_node, current_node.balance_score)
                 self.get_balanced_stumps(current_node=current_node.node_l, stumps=stumps, p=p)
                 self.get_balanced_stumps(current_node=current_node.node_r, stumps=stumps, p=p)
-
+                
         return stumps
+    
+    def stumps_to_trees(self, balanced_nodes):
+        trees = {}
+      
+        for k, v in balanced_nodes.items():
+            rt = self.__class__()
+            rt.classes_ = self.classes_
+            
+            node = copy.deepcopy(v[0])
+            node_l = copy.deepcopy(node.node_l)
+            node_r = copy.deepcopy(node.node_r)
+                        
+            feat = tuple(node.stump.feature_original[0])  # Ensure it's a tuple
 
+            thr = (node.stump.threshold_original[0],)
+                        
+            #print(feat)
+            #print(thr)
+            
+            
+            rt.root = node
+            rt.root.node_l = node_l
+            rt.root_node_r = node_r
+            
+            rt.root.node_l.make_leaf()
+            rt.root.node_r.make_leaf()
+            
+            rt.root.node_id, rt.root.node_l.node_id, rt.root.node_r.node_id = 'R', 'Rl', 'Rr'
+            
+            
+            #print('ids', rt.root.node_id, rt.root.node_l.node_id)
+            
+            trees[(feat, thr)] = rt
+            
+        return trees
+            
+        
+        
+    
+    
+
+        
     
     @classmethod
     def complete_tree(cls, node, X, y, n_classes_):
