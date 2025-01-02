@@ -154,6 +154,10 @@ class RuleTree(RuleTreeBase, ABC):
 
             clf = self.make_split(X, y, idx=idx, **kwargs)
             labels = clf.apply(X[idx])
+            
+            global_labels = clf.apply(X)
+            current_node.balance_score_global = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
+            current_node.balance_score = current_node.balance_score_global
 
             if self.is_split_useless(X=X, clf=clf, idx=idx):
                 self.make_leaf(current_node)
@@ -167,7 +171,17 @@ class RuleTree(RuleTreeBase, ABC):
             current_node.node_l = self.prepare_node(y, idx_l, current_node.node_id + "l", )
             current_node.node_r = self.prepare_node(y, idx_r, current_node.node_id + "r", )
             current_node.node_l.parent, current_node.node_r.parent = current_node, current_node
-            current_node.balance_score = (np.min(np.unique(labels, return_counts= True)[1]) / labels.shape[0])
+            
+            
+            #current_node.balance_score = (np.min(np.unique(labels, return_counts= True)[1]) / labels.shape[0])
+            
+            #global_labels = clf.apply(X)
+            #current_node.balance_score_global = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
+           
+            #current_node.balance_score = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
+           
+            
+            
 
             self.queue_push(current_node.node_l, idx_l)
             self.queue_push(current_node.node_r, idx_r)
@@ -327,9 +341,7 @@ class RuleTree(RuleTreeBase, ABC):
         
         return feats
         
-    
-   
-   
+
     def _compute_importances(self, current_node=None, importances=None):
        if importances is None:
            importances = np.zeros(self.n_features, dtype=np.float64)
@@ -445,6 +457,10 @@ class RuleTree(RuleTreeBase, ABC):
 
             return direct_prediction, biases, np.array(contributions)
 
+
+    
+    
+    
     @classmethod
     def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
         #columns_names now included in stump get_rule(), should we keep it here?
