@@ -363,7 +363,13 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_l = copy.deepcopy(node.node_l)
             node_r = copy.deepcopy(node.node_r)
                         
-            feat = tuple(node.stump.feature_original[0])  # Ensure it's a tuple
+    
+             try:
+                feat = tuple(node.stump.feature_original[0])  # Ensure it's a tuple 
+                
+            except:
+               
+                feat = (node.stump.feature_original[0],) 
 
             thr = (node.stump.threshold_original[0],)
                         
