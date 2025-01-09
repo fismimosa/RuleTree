@@ -132,3 +132,10 @@ dmypy.json
 .idea/
 *.pyc
 /results
+/venv_test/
+dizionario.json
+Source.gv
+Source.gv.pdf
+dizionario_shapelets.json
+RuleTree.gv
+test.png

@@ -135,7 +135,7 @@ class PCA(base.BaseEstimator, base.TransformerMixin):
             X_t=self.fit_transform(X)
 
         return  pd.DataFrame({index_comp:{ 
-                                        col_name: util._pearsonr(X_t[:,index_comp],X[:,index_col])
+                                        col_name: util._pearsonr(X_t[:, index_comp], X[:, index_col])
                                           for index_col,col_name in enumerate(col_names)  
                                                 }
                                                 for index_comp  in range(X_t.shape[1])})

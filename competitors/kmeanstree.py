@@ -31,7 +31,7 @@ class KMeansTree:
                  copy_x: bool = True,
 
                  max_depth: int = None,
-                 algorithm: str = 'auto',
+                 algorithm: str = 'lloyd',
                  splitter: str = 'best',
                  min_weight_fraction_leaf: int = 0.0,
                  max_features: int = None,
@@ -132,7 +132,7 @@ from sklearn.tree import export_text
 from sklearn.metrics import accuracy_score, normalized_mutual_info_score, mean_absolute_percentage_error, r2_score
 
 from sklearn.preprocessing import StandardScaler
-from ruletree import prepare_data, preprocessing
+from RuleTree.utils.data_utils import prepare_data, preprocessing
 
 
 def main():

@@ -1,7 +1,10 @@
 import numpy as np
+import pandas as pd
+from category_encoders import OrdinalEncoder
 
 from scipy import linalg
 from scipy.special import logsumexp
+from sklearn.compose import ColumnTransformer, make_column_selector
 
 
 def estimate_gaussian_covariances(X, nk, means, resp, reg_covar=1e-06):
@@ -28,7 +31,6 @@ def estimate_gaussian_covariances(X, nk, means, resp, reg_covar=1e-06):
 
 
 def estimate_parameters(X, resp, reg_covar=1e-06):
-
     nk = resp.sum(axis=0) + 10 * np.finfo(resp.dtype).eps
     means = np.dot(resp.T, X) / nk[:, np.newaxis]
     covariances = estimate_gaussian_covariances(X, nk, means, resp)
@@ -193,6 +195,13 @@ def bic(X, labels):
     bic : float
         The lower the better.
     """
+
+    if X.dtype == np.dtype('O'):
+        X = pd.DataFrame(X).infer_objects()
+        ct = ColumnTransformer([("cat", OrdinalEncoder(), make_column_selector(dtype_include="object"))],
+                               remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
+        X = ct.fit_transform(X)
+
     n_records = X.shape[0]
     n_components = len(np.unique(labels))
     bic_score = score(X, n_components, labels)
