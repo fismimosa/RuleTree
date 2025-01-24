@@ -178,8 +178,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
              
     def fit(self, X: np.array, y: np.array = None, sample_weight=None, **kwargs):
         # Check and initialize the distance matrix if needed
-        if self.distance_matrix is None:
-            for stump in self.base_stumps:
+        if self.distance_matrix is None and self.base_stumps is not None:
+            base_stumps = self.base_stumps if isinstance(self.base_stumps, list) else [self.base_stumps]
+            for stump in base_stumps:
                 # Check if the class name matches the specified list
                 if stump.__class__.__module__.split('.')[-1] in [
                     'PivotTreeStumpClassifier',

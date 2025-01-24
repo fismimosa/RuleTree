@@ -20,7 +20,7 @@ from competitors.kmeanstree import KMeansTree
 from RuleTree import RuleTreeClassifier, RuleTreeClusterClassifier
 from RuleTree import RuleTreeCluster
 from RuleTree import RuleTreeRegressor
-from benchmark.config import dataset_target_clu
+from benchmark.config import dataset_target_clu, dataset_target_clf
 from RuleTree import RuleForestClassifier
 from RuleTree import RuleForestRegressor
 from RuleTree import RuleTreeAdaBoostClassifier
@@ -45,13 +45,13 @@ def test_clf(max_depth=4):
 
             clf_rule = RuleTreeClassifier(max_depth=max_depth)
             clf_sklearn = DecisionTreeClassifier(max_depth=max_depth)
-            clf_forest_rule = RuleForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=1)
-            clf_forest_sklearn = RandomForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=1)
+            clf_forest_rule = RuleForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
+            clf_forest_sklearn = RandomForestClassifier(max_depth=max_depth, n_estimators=100, n_jobs=-1)
             clf_adaboost_rule = RuleTreeAdaBoostClassifier(n_estimators=100)
             clf_adaboost_sklearn = AdaBoostClassifier(estimator=DecisionTreeClassifier(max_depth=1), n_estimators=100)
 
-            X = df.iloc[:, :-1].values
-            y = df.iloc[:, -1].values
+            X = df.drop(columns=dataset_target_clf[dataset_name]).values
+            y = df[dataset_target_clf[dataset_name]].values
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
             df_onehot = pd.DataFrame(ct.fit_transform(df.iloc[:, :-1]), columns=ct.get_feature_names_out())
             X_onehot = df_onehot.to_numpy()
@@ -59,17 +59,17 @@ def test_clf(max_depth=4):
                                                                    stratify=y)
 
             res = dict()
-            for model, model_name in zip([  #clf_rule,
-                #clf_sklearn,
-                #clf_forest_rule,
-                #clf_forest_sklearn,
+            for model, model_name in zip([  clf_rule,
+                clf_sklearn,
+                clf_forest_rule,
+                clf_forest_sklearn,
                 clf_adaboost_rule,
                 clf_adaboost_sklearn
             ],
-                    [  #"rule",
-                        #"dt",
-                        #"forest_rule",
-                        #"forest_dt",
+                    [  "rule",
+                        "dt",
+                        "forest_rule",
+                        "forest_dt",
                         "adaboost_rule",
                         "adaboost_sklearn"
                     ]):
@@ -91,15 +91,17 @@ def test_clf(max_depth=4):
                     f1 = f1_score(y_test, model.predict(X_test), average='weighted')
                     #print(classification_report(y_test, model.predict(X_test)))
 
-                res[f"{model_name}_time"] = stop - start
+                #res[f"{model_name}_time"] = stop - start
                 res[f"{model_name}_f1"] = f1
 
             table.update_from_dict(res)
         except Exception as e:
-            table["error"] = str(e)
+            table["             error             "] = str(e)
             #raise e
 
         table.next_row()
+
+    table.close()
 
 
 def test_reg(max_depth=4):
@@ -178,7 +180,7 @@ def test_reg(max_depth=4):
                 else:
                     r2 = r2_score(y_test, model.predict(X_test))
 
-                res[f"{model_name}_time"] = stop - start
+                #res[f"{model_name}_time"] = stop - start
                 res[f"{model_name}_r2"] = r2
 
             table.update_from_dict(res)
@@ -187,6 +189,8 @@ def test_reg(max_depth=4):
             raise e
 
         table.next_row()
+
+    table.close()
 
 
 def test_clu(max_depth=4):
@@ -241,6 +245,8 @@ def test_clu(max_depth=4):
 
         table.next_row()
 
+    table.close()
+
 
 def test_clf_iris():
     df = pd.read_csv("datasets/CLF/iris.csv")
@@ -282,7 +288,7 @@ def test_clc_iris():
 
 if __name__ == "__main__":
     test_clf()
-    test_reg()
+    #test_reg()
     #test_clu()
 
     #test_clf_iris()

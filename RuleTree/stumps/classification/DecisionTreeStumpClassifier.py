@@ -130,7 +130,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
         if len(self.numerical) > 0:
             super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
-            self.feature_original = self.tree_.feature
+            self.feature_original = [self.numerical[x] if x != -2 else x for x in self.tree_.feature]
             self.threshold_original = self.tree_.threshold
             self.n_node_samples = self.tree_.n_node_samples
             best_info_gain = get_info_gain(self)

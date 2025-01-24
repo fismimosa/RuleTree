@@ -156,8 +156,8 @@ class RuleTree(RuleTreeBase, ABC):
             labels = clf.apply(X[idx])
             
            
-            name_clf = clf.__class__.__module__.split('.')[-1] 
-            print(name_clf)
+            name_clf = clf.__class__.__module__.split('.')[-1]
+            #print(name_clf)
             
             if name_clf in ['ObliqueDecisionTreeStumpClassifier',
                             'DecisionTreeStumpClassifier']:
