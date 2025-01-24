@@ -237,12 +237,17 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         
         
     def get_pivots(self, current_node=None, pivot_dicts=None):
+        
+        
    
         stump_split_map = {
             'PivotTreeStumpClassifier': 'pivot_split',
             'MultiplePivotTreeStumpClassifier': 'multi_pivot_split',
             'ObliquePivotTreeStumpClassifier': 'obl_pivot_split',
-            'MultipleObliquePivotTreeStumpClassifier' : 'multi_oblique_pivot_split'
+            'MultipleObliquePivotTreeStumpClassifier' : 'multi_oblique_pivot_split',
+        
+            'ObliqueDecisionTreeStumpClassifier' : 'oblique_split',
+            'DecisionTreeStumpClassifier' : 'univariate_split'
         }
         
         
@@ -253,6 +258,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         # Start from root if current_node is not provided
         if current_node is None:
             current_node = self.root
+            
         
         # Process current node
         if current_node.stump is not None:
@@ -270,17 +276,23 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             
             
             if stump_name in stump_split_map:
-                split_obj = getattr(current_node.stump, stump_split_map[stump_name])
-                if not current_node.is_leaf():
-                    pivot_dicts[current_node.node_id] = {
-                            'discriminatives': split_obj.get_discriminative_names(),
-                            'descriptives': split_obj.get_descriptive_names(),
-                            'candidates': split_obj.get_candidates_names(),
-                            'used' : used
-                        }
-                else:
-                    pivot_dicts[current_node.node_id]  = {'descriptives' : split_obj.get_descriptive_names()}
+                if stump_split_map[stump_name] in ['oblique_split', 'univariate_split']:
+                    pivot_dicts[current_node.node_id]  = {'descriptives' : current_node.medoids_index}
+                    
+                    
+                if stump_split_map[stump_name] in ['pivot_split','multi_pivot_split','multi_oblique_pivot_split','obl_pivot_split']:
+                    split_obj = getattr(current_node.stump, stump_split_map[stump_name])
+                    if not current_node.is_leaf():
+                        pivot_dicts[current_node.node_id] = {
+                                'discriminatives': split_obj.get_discriminative_names(),
+                                'descriptives': split_obj.get_descriptive_names(),
+                                'candidates': split_obj.get_candidates_names(),
+                                'used' : used
+                            }
+                    else:
+                        pivot_dicts[current_node.node_id]  = {'descriptives' : split_obj.get_descriptive_names()}
                         
+
         
         else:
             if current_node.is_leaf():
@@ -363,13 +375,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_l = copy.deepcopy(node.node_l)
             node_r = copy.deepcopy(node.node_r)
                         
-    
-             try:
-                feat = tuple(node.stump.feature_original[0])  # Ensure it's a tuple 
-                
-            except:
-               
-                feat = (node.stump.feature_original[0],) 
+            feat = tuple(node.stump.feature_original[0])  # Ensure it's a tuple
 
             thr = (node.stump.threshold_original[0],)
                         
