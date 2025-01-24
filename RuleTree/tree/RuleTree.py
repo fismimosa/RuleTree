@@ -155,6 +155,15 @@ class RuleTree(RuleTreeBase, ABC):
             clf = self.make_split(X, y, idx=idx, **kwargs)
             labels = clf.apply(X[idx])
             
+           
+            name_clf = clf.__class__.__module__.split('.')[-1] 
+            print(name_clf)
+            
+            if name_clf in ['ObliqueDecisionTreeStumpClassifier',
+                            'DecisionTreeStumpClassifier']:
+                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                
+                
             global_labels = clf.apply(X)
             current_node.balance_score_global = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
             current_node.balance_score = current_node.balance_score_global
