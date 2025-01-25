@@ -133,6 +133,9 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
 
     def apply(self, X, check_input=False):
+        if len(self.feature_original) < 3:
+            return np.ones(X.shape[0])
+
         if not self.is_categorical:
             y_pred = np.ones(X.shape[0], dtype=int) * 2
             X_feature = X[:, self.feature_original[0]]
