@@ -111,7 +111,11 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                          
                           distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
             else:
-                stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+                stump.fit(X=X,
+                          y=y,
+                          idx=idx,
+                          context = self,
+                          sample_weight=None if sample_weight is None else sample_weight[idx])
                 
         elif self.stump_selection == 'best':
             clfs = []
@@ -121,11 +125,18 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 
                 if stump.__class__.__module__.split('.')[-1] in pivots_list:
                     
-                    stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
-                      
-                              distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
+                    stump.fit(X=X[idx],
+                              y=y[idx],
+                              distance_matrix=self.distance_matrix[idx][:,idx],
+                              idx=idx,
+                              distance_measure=self.distance_measure,
+                              sample_weight=None if sample_weight is None else sample_weight[idx])
                 else:
-                    stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+                    stump.fit(X=X,
+                              y=y,
+                              idx=idx,
+                              context=self,
+                              sample_weight=None if sample_weight is None else sample_weight[idx])
             
                 gain = get_info_gain(stump)
                 info_gains.append(gain)

@@ -85,7 +85,12 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
 
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        if idx is None:
+            idx = slice(None)
+        X = X[idx]
+        y = y[idx]
+
         self.feature_analysis(X, y)
         best_info_gain = -float('inf')
 

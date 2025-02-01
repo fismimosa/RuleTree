@@ -83,7 +83,7 @@ class RuleTree(RuleTreeBase, ABC):
             if val <= p:
                 return sklearn.clone(clf)
 
-    def _filter_types(self, X):
+    def _filter_types(self, X) -> list[tuple[float, RuleTreeBaseStump]]:
         if len(X.shape) == 2:
             data_type = DATA_TYPE_TABULAR
         elif len(X.shape) == 3:

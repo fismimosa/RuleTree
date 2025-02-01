@@ -30,7 +30,12 @@ class ObliqueDecisionTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBa
         if self.oblique_split_type == 'bivariate':
             self.oblique_split = ObliqueBivariateSplit(ml_task=MODEL_TYPE_CLF, n_orientations=self.n_orientations, **kwargs)
 
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        if idx is None:
+            idx = slice(None)
+        X = X[idx]
+        y = y[idx]
+
         self.feature_analysis(X, y)
         self.num_pre_transformed = self.numerical
         self.cat_pre_transformed = self.categorical

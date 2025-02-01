@@ -16,12 +16,13 @@ from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeSt
 class RuleTreeCluster(RuleTree, ClusterMixin):
     def __init__(self,
                  n_components: int = 2,
-                 clus_impurity: str = 'bic',
+                 clus_impurity: str = 'r2',
                  bic_eps: float = .0,
                  max_leaf_nodes=float('inf'),
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
+                 base_stumps: RegressorMixin | list = None,
                  random_state=None,
 
                  criterion='squared_error',
@@ -33,25 +34,26 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                  ccp_alpha=0.0,
                  monotonic_cst=None
                  ):
-        base_stump = DecisionTreeStumpRegressor(
-            max_depth=1,
-            criterion=criterion,
-            splitter=splitter,
-            min_samples_split=min_samples_split,
-            min_samples_leaf=min_samples_leaf,
-            min_weight_fraction_leaf=min_weight_fraction_leaf,
-            max_features=max_features,
-            random_state=random_state,
-            min_impurity_decrease=min_impurity_decrease,
-            ccp_alpha=ccp_alpha,
-            monotonic_cst=monotonic_cst
-        )
+        if base_stumps is None:
+            base_stumps = DecisionTreeStumpRegressor(
+                max_depth=1,
+                criterion=criterion,
+                splitter=splitter,
+                min_samples_split=min_samples_split,
+                min_samples_leaf=min_samples_leaf,
+                min_weight_fraction_leaf=min_weight_fraction_leaf,
+                max_features=max_features,
+                random_state=random_state,
+                min_impurity_decrease=min_impurity_decrease,
+                ccp_alpha=ccp_alpha,
+                monotonic_cst=monotonic_cst
+            )
 
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
                          max_depth=max_depth,
                          prune_useless_leaves=prune_useless_leaves,
-                         base_stump=base_stump,
+                         base_stumps=base_stumps,
                          stump_selection='random',
                          random_state=random_state)
 
@@ -103,13 +105,20 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             principal_transform = light_famd.FAMD(n_components=n_components_split, random_state=self.random_state)
 
         y_pca = principal_transform.fit_transform(X[idx])
+        y_pca_all = np.zeros((X.shape[0], y_pca.shape[1]))
+        y_pca_all[idx] = y_pca
 
         best_clf = None
         best_score = float('inf')
         for i in range(n_components_split):
             clf = self._get_random_stump(y_pca)
 
-            clf.fit(X[idx], y_pca[:, i])
+            clf.fit(
+                X=X,
+                y=y_pca_all[:, i],
+                idx=idx,
+                context=self
+            )
             if self.clus_impurity == 'r2':
                 score = -1 * r2_score(clf.predict(X[idx]), y_pca[:, i])
             else:
@@ -130,6 +139,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             node_id=node_id,
             prediction=node_id,
             prediction_probability=-1,
+            classes=np.array(['NA']),
             parent=None,
             stump=None,
             node_l=None,

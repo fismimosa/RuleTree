@@ -242,6 +242,7 @@ def test_clu(max_depth=4):
             table["time_sklearn"] = end_sklearn - start_sklearn
         except Exception as e:
             table["error"] = str(e)
+            raise e
 
         table.next_row()
 
@@ -287,9 +288,9 @@ def test_clc_iris():
 
 
 if __name__ == "__main__":
-    test_clf()
+    #test_clf()
     #test_reg()
-    #test_clu()
+    test_clu()
 
     #test_clf_iris()
     #test_clc_iris()
