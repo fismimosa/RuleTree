@@ -119,11 +119,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
     def get_params(self, deep=True):
         return self.kwargs
-    
-    def feature_analysis(self, X, y):
-        dtypes = pd.DataFrame(X).infer_objects().dtypes
-        self.numerical = dtypes[dtypes != np.dtype('O')].index
-        self.categorical = dtypes[dtypes == np.dtype('O')].index
 
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
         if idx is None:

@@ -120,7 +120,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                 context=self
             )
             if self.clus_impurity == 'r2':
-                score = -1 * r2_score(clf.predict(X[idx]), y_pca[:, i])
+                score = -1 * r2_score(clf.apply(X[idx]), y_pca[:, i])
             else:
                 labels_i = clf.apply(X[idx]).astype(int)
                 score = bic(X[idx], (np.array(labels_i) - 1).tolist())

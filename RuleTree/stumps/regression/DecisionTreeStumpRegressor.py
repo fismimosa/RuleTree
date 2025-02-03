@@ -58,7 +58,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         self.threshold_original = None
         self.feature_original = None
 
-        self.__set_impurity_fun(kwargs['criterion'])
+        self.__set_impurity_fun(kwargs['criterion'] if 'criterion' in kwargs else "squared_error")
 
 
     def __set_impurity_fun(self, imp):
@@ -79,11 +79,6 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
     def get_params(self, deep=True):
         return self.kwargs
-    
-    def feature_analysis(self, X, y):
-        dtypes = pd.DataFrame(X).infer_objects().dtypes
-        self.numerical = dtypes[dtypes != np.dtype('O')].index
-        self.categorical = dtypes[dtypes == np.dtype('O')].index
 
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
         if idx is None:
