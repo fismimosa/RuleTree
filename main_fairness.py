@@ -58,10 +58,10 @@ def main():
                                                                                                  penalty="mfc",
                                                                                                  ideal_distribution=mfc_map
                                                                                                  ))
-    #RT.fit(df.values)
-    #fairRT_privacy.fit(df.values)
-    #fairRT_privacy_no_t.fit(df.values)
-    #fairRT_balance.fit(df.values)
+    RT.fit(df.values)
+    fairRT_privacy.fit(df.values)
+    fairRT_privacy_no_t.fit(df.values)
+    fairRT_balance.fit(df.values)
     fairRT_mfc.fit(df.values)
 
     RuleTree.print_rules(RT.get_rules())
