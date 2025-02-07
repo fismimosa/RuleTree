@@ -13,38 +13,7 @@ from tqdm.auto import tqdm
 from RuleTree import RuleTreeCluster
 from RuleTree.stumps.regression.FairTreeStumpRegressor import FairTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
-
-
-def fair_entropy(labels:np.ndarray, prot_attr=np.ndarray):
-    classes = np.unique(prot_attr)
-    labels_list = np.unique(labels)
-
-    entropy=0
-
-    for clu_id in labels_list:
-        cls, count = np.unique(prot_attr[labels == clu_id], return_counts=True)
-        min_cls = cls[np.argmin(count)]
-
-        Na = np.sum(labels == clu_id)
-        Nab = np.sum((labels==clu_id) & (prot_attr==min_cls))
-
-        entropy += Nab/Na * np.log2(Nab/Na)
-
-    return -entropy
-
-def balance(labels:np.ndarray, prot_attr=np.ndarray):
-    res = []
-
-    for pr_attr in np.unique(prot_attr):
-        r = np.sum(prot_attr == pr_attr)/len(labels)
-        for cl_id in np.unique(labels):
-            ra = np.sum((labels == cl_id) & (prot_attr == pr_attr))/np.sum(labels == cl_id)
-            rab= r/ra if ra != 0 else 0
-            rab_1 = 1/rab if rab != 0 else 1
-            res.append(min(rab, rab_1))
-
-
-    return min(res)
+from RuleTree.utils.fairness_metrics import balance
 
 
 def main():
