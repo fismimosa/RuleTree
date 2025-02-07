@@ -13,7 +13,7 @@ from tqdm.auto import tqdm
 from RuleTree import RuleTreeCluster
 from RuleTree.stumps.regression.FairTreeStumpRegressor import FairTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
-from RuleTree.utils.fairness_metrics import balance
+from RuleTree.utils.fairness_metrics import balance_metric
 
 
 def main():
@@ -27,29 +27,63 @@ def main():
 
     df["sex"] = LabelEncoder().fit_transform(df.sex)
 
-    kmeans = KMeans(n_clusters=2, random_state=42)#
+    kmeans = KMeans(n_clusters=4, random_state=42)#
     kmeans.fit(df.values)
 
-    RT = RuleTreeCluster(max_depth=1, bic_eps=.2)
-    fairRT = RuleTreeCluster(max_depth=1, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
-                                                                             k_anonymity=.26,
-                                                                             l_diversity=1,
-                                                                             t_closeness=.5,
-                                                                             strict=True
-                                                                             ))
-    RT.fit(df.values)
-    fairRT.fit(df.values)
+    RT = RuleTreeCluster(max_depth=2, bic_eps=.2)
+    fairRT_privacy = RuleTreeCluster(max_depth=1, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
+                                                                                                 penalty="privacy",
+                                                                                                 k_anonymity=.26,
+                                                                                                 l_diversity=1,
+                                                                                                 t_closeness=.5,
+                                                                                                 strict=True,
+                                                                                                 ))
+
+    fairRT_privacy_no_t = RuleTreeCluster(max_depth=2, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
+                                                                                                 penalty="privacy",
+                                                                                                 k_anonymity=.26,
+                                                                                                 l_diversity=1,
+                                                                                                 t_closeness=.5,
+                                                                                                 strict=True,
+                                                                                                use_t=False,
+                                                                                                 ))
+
+    fairRT_balance = RuleTreeCluster(max_depth=2, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
+                                                                                                 penalty="balance"
+                                                                                                 ))
+
+    len_unique_prot = len(np.unique(df.values[:, 3]))
+    mfc_map = {k: 1/len_unique_prot for k in np.unique(df.values[:, 3])}
+    fairRT_mfc = RuleTreeCluster(max_depth=2, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
+                                                                                                 penalty="mfc",
+                                                                                                 ideal_distribution=mfc_map
+                                                                                                 ))
+    #RT.fit(df.values)
+    #fairRT_privacy.fit(df.values)
+    #fairRT_privacy_no_t.fit(df.values)
+    #fairRT_balance.fit(df.values)
+    fairRT_mfc.fit(df.values)
+
     RuleTree.print_rules(RT.get_rules())
-    RuleTree.print_rules(fairRT.get_rules())
+    RuleTree.print_rules(fairRT_privacy.get_rules())
+    RuleTree.print_rules(fairRT_privacy_no_t.get_rules())
+    RuleTree.print_rules(fairRT_balance.get_rules())
+    RuleTree.print_rules(fairRT_mfc.get_rules())
 
     print("sil sk", silhouette_score(X=df.values, labels=kmeans.labels_), sep='\t')
     print("sil RT", silhouette_score(X=df.values, labels=RT.predict(df.values)), sep='\t')
-    print("sil fRT", silhouette_score(X=df.values, labels=fairRT.predict(df.values)), sep='\t')
+    print("sil fRTp", silhouette_score(X=df.values, labels=fairRT_privacy.predict(df.values)), sep='\t')
+    print("sil fRTp2", silhouette_score(X=df.values, labels=fairRT_privacy_no_t.predict(df.values)), sep='\t')
+    print("sil fRTb", silhouette_score(X=df.values, labels=fairRT_balance.predict(df.values)), sep='\t')
+    print("sil fRTm", silhouette_score(X=df.values, labels=fairRT_mfc.predict(df.values)), sep='\t')
 
-    print("bal dt", balance(labels=np.zeros((len(df), )), prot_attr=df.sex), sep='\t')
-    print("bal sk", balance(labels=kmeans.labels_, prot_attr=df.sex), sep='\t')
-    print("bal RT", balance(labels=RT.predict(df.values), prot_attr=df.sex), sep='\t')
-    print("bal fRT", balance(labels=fairRT.predict(df.values), prot_attr=df.sex), sep='\t')
+    print("bal dt", balance_metric(labels=np.zeros((len(df), )), prot_attr=df.sex), sep='\t')
+    print("bal sk", balance_metric(labels=kmeans.labels_, prot_attr=df.sex), sep='\t')
+    print("bal RT", balance_metric(labels=RT.predict(df.values), prot_attr=df.sex), sep='\t')
+    print("bal fRTp", balance_metric(labels=fairRT_privacy.predict(df.values), prot_attr=df.sex), sep='\t')
+    print("bal fRTp2", balance_metric(labels=fairRT_privacy_no_t.predict(df.values), prot_attr=df.sex), sep='\t')
+    print("bal fRTb", balance_metric(labels=fairRT_balance.predict(df.values), prot_attr=df.sex), sep='\t')
+    print("bal fRTm", balance_metric(labels=fairRT_mfc.predict(df.values), prot_attr=df.sex), sep='\t')
 
 
 def run(df, X, k, l, t, s):
@@ -57,11 +91,11 @@ def run(df, X, k, l, t, s):
                                                                                      k_anonymity=k,
                                                                                      l_diversity=l,
                                                                                      t_closeness=t,
-                                                                                     strict=s
+                                                                                     strict=s, n_jobs=1
                                                                                      ))
     fairRT.fit(X)
 
-    return silhouette_score(X, fairRT.predict(X)), balance(labels=fairRT.predict(X), prot_attr=df.sex)
+    return silhouette_score(X, fairRT.predict(X)), balance_metric(labels=fairRT.predict(X), prot_attr=df.sex)
 
 def main_multi():
     df = pd.read_csv('datasets/CLU/adult.csv')[["age", "fnlwgt", "education-num", "sex",

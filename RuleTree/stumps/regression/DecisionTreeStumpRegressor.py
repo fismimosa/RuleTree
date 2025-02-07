@@ -58,24 +58,26 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         self.threshold_original = None
         self.feature_original = None
 
-        self.__set_impurity_fun(kwargs['criterion'] if 'criterion' in kwargs else "squared_error")
+        self.impurity_fun = kwargs['criterion'] if 'criterion' in kwargs else "squared_error"
 
-
-    def __set_impurity_fun(self, imp):
+    @classmethod
+    def _get_impurity_fun(cls, imp):
         if imp == "squared_error":
-            self.impurity_fun = mean_squared_error
+            return mean_squared_error
         elif imp == "friedman_mse":
             raise Exception("not implemented") # TODO: implement
         elif imp == "absolute_error":
-            self.impurity_fun = mean_absolute_error
+            return mean_absolute_error
         elif imp == "poisson":
-            self.impurity_fun = mean_poisson_deviance
+            return mean_poisson_deviance
         else:
-            self.impurity_fun = imp
+            return imp
 
 
-    def __impurity_fun(self, **x):
-        return self.impurity_fun(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
+    @classmethod
+    def _impurity_fun(cls, impurity_fun, **x):
+        f = cls._get_impurity_fun(impurity_fun)
+        return f(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
 
     def get_params(self, deep=True):
         return self.kwargs
@@ -117,9 +119,9 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                         l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
                         r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
 
-                        info_gain = _get_info_gain(self.__impurity_fun(y_true=y, y_pred=curr_pred),
-                                                   self.__impurity_fun(y_true=y[X_split[:, 0]], y_pred=l_pred),
-                                                   self.__impurity_fun(y_true=y[~X_split[:, 0]], y_pred=r_pred),
+                        info_gain = _get_info_gain(self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+                                                   self._impurity_fun(self.impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
+                                                   self._impurity_fun(self.impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
                                                    len_x,
                                                    len_left,
                                                    len_x - len_left)

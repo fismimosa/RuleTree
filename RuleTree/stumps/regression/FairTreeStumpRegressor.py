@@ -3,6 +3,12 @@ import os
 import warnings
 
 import math
+from concurrent.futures.process import ProcessPoolExecutor
+
+import psutil
+from statsmodels.graphics.tukeyplot import results
+
+from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric, privacy_metric_all
 
 os.environ["COLUMNS"] = "1"
 
@@ -25,11 +31,21 @@ warnings.filterwarnings("ignore")
 
 class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
     def __init__(self,
-                 sensible_attribute:int,
-                 k_anonymity:int|float,
-                 l_diversity:int|float,
-                 t_closeness:float,
-                 strict:bool|float, #if True -> no unfair split, if False==DTRegressor, if float == penalization weight
+                 penalty:str=None,
+                 sensible_attribute:int=-1,
+                 penalization_weight: float = 0.6,
+
+                 ideal_distribution:dict=None,
+
+                 k_anonymity:int|float=2,
+                 l_diversity:int|float=2,
+                 t_closeness:float=.2,
+                 strict:bool=True, #if True -> no unfair split, if False==DTRegressor, if float == penalization weight
+                 use_t: bool = True,
+
+                 n_jobs:int=psutil.cpu_count(),
+                 #n_jobs:int=1,
+
                  **kwargs):
         super().__init__(**kwargs)
         self.is_categorical = False
@@ -38,28 +54,43 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         self.threshold_original = None
         self.feature_original = None
 
+        self.penalty = penalty
         self.sensible_attribute = sensible_attribute
+        self.penalization_weight = penalization_weight
+
+        self.ideal_distribution = ideal_distribution
+
         self.k_anonymity = k_anonymity
         self.l_diversity = l_diversity
         self.t_closeness = t_closeness
         self.strict = strict
+        self.use_t = use_t
 
+        self.n_jobs = n_jobs
+
+        self.kwargs["penalty"] = penalty
         self.kwargs["sensible_attribute"] = sensible_attribute
+        self.kwargs["penalization_weight"] = penalization_weight
+        self.kwargs["ideal_distribution"] = ideal_distribution
         self.kwargs["k_anonymity"] = k_anonymity
         self.kwargs["l_diversity"] = l_diversity
         self.kwargs["t_closeness"] = t_closeness
         self.kwargs["strict"] = strict
+        self.kwargs["n_jobs"] = n_jobs
 
-    def __impurity_fun(self, **x):
-        return self.impurity_fun(**x) if len(x["y_true"]) > 0 else 0  # TODO: check
+    def __check_fairness_hyper(self):
+        if self.penalty is not None:
+            assert self.sensible_attribute is not None
+            assert self.penalization_weight is not None
+            assert self.penalty in ["balance", "mfc", "privacy"]
+
+            if self.penalty == "mfc":
+                assert self.ideal_distribution is not None and isinstance(self.ideal_distribution, dict)
+            if self.penalty == "privacy":
+                assert None not in [self.k_anonymity, self.l_diversity, self.t_closeness, self.strict]
 
     def get_params(self, deep=True):
         return self.kwargs
-
-    def __admissible_split_fairness(self, X, X_bool):
-        return adm_split(X, X_bool, self.sensible_attribute, self.k_anonymity, self.l_diversity,
-                         self.t_closeness, self.strict)
-
 
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
         if idx is None:
@@ -74,48 +105,41 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         self.feature_analysis(X, y)
         best_info_gain = -float('inf')
 
-        for i in range(X.shape[1]):
-            for value in np.unique(X[:, i]):
-                if i in self.categorical:
-                    X_split = X[:, i:i + 1] == value
-                else:
-                    X_split = X[:, i:i + 1] <= value
+        processes = []
+        if self.n_jobs == 1:
+            for i in range(X.shape[1]):
+                values = np.unique(X[:, i])
+                n_values_per_core = max(1, len(values) // self.n_jobs)
+                for start_idx in range(0, len(values), n_values_per_core):
+                    processes.append(_inner_loop_best_split(X, y, i, values[start_idx:start_idx+n_values_per_core],
+                                                            self.categorical,self.impurity_fun, self.penalty,
+                                                            self.sensible_attribute,self.penalization_weight,
+                                                            self.ideal_distribution, self.k_anonymity, self.l_diversity,
+                                                            self.t_closeness, self.strict, self.use_t))
 
-                if np.sum(X_split)*np.sum(~X_split) == 0:
-                    continue
+        with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+            for i in range(X.shape[1]):
+                values = np.unique(X[:, i])
+                n_values_per_core = max(1, len(values)//self.n_jobs)
+                for start_idx in range(0, len(values), n_values_per_core):
+                    processes.append(
+                        executor.submit(_inner_loop_best_split, X, y, i,
+                                        values[start_idx:start_idx+n_values_per_core], self.categorical,
+                                        self.impurity_fun, self.penalty, self.sensible_attribute,
+                                        self.penalization_weight, self.ideal_distribution, self.k_anonymity,
+                                        self.l_diversity, self.t_closeness, self.strict, self.use_t)
+                    )
 
-                eval_split = self.__admissible_split_fairness(X, X_split)
-                #print(eval_split, balance(X_split, X[self.sensible_attribute]))
-                if self.strict and eval_split == -np.inf:
-                    continue
+            processes = [x.result() for x in processes]
 
-                len_left = np.sum(X_split)
-                curr_pred = np.ones((len(y),)) * np.mean(y)
-
-                with warnings.catch_warnings():
-                    warnings.simplefilter('ignore')
-                    l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
-                    r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
-
-                    info_gain = _get_info_gain(self.__impurity_fun(y_true=y, y_pred=curr_pred),
-                                               self.__impurity_fun(y_true=y[X_split[:, 0]], y_pred=l_pred),
-                                               self.__impurity_fun(y_true=y[~X_split[:, 0]], y_pred=r_pred),
-                                               len_x,
-                                               len_left,
-                                               len_x - len_left)
-
-                    info_gain = 1/(1 + np.exp(-info_gain))
-
-                    if type(eval_split) != bool:
-                        info_gain -= info_gain*eval_split
-
-                if info_gain > best_info_gain:
-                    best_info_gain = info_gain
-                    self.feature_original = [i, -2, -2]
-                    self.threshold_original = np.array([value, -2, -2])
-                    self.unique_val_enum = np.unique(X[:, i])
-                    self.is_categorical = i in self.categorical
-                    self.fitted_ = True
+        for info_gain, threshold, col_idx in processes:
+            if info_gain > best_info_gain:
+                best_info_gain = info_gain
+                self.feature_original = [col_idx, -2, -2]
+                self.threshold_original = np.array([threshold, -2, -2])
+                self.unique_val_enum = np.unique(X[:, col_idx])
+                self.is_categorical = col_idx in self.categorical
+                self.fitted_ = True
 
         return self
 
@@ -174,3 +198,70 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         self.__set_impurity_fun(args["criterion"])
 
+
+def _check_balance(labels:np.ndarray, prot_attr:np.ndarray):
+    return True, 1-balance_metric(labels, prot_attr)
+
+def _check_max_fairness_cost(labels:np.ndarray, prot_attr:np.ndarray, ideal_dist:dict):
+    return True, max_fairness_cost(labels, prot_attr, ideal_dist)
+
+def _check_privacy(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict, categorical, use_t):
+    can_split, k, l, t = privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict,
+                                        categorical)
+    if not use_t:
+        t = t_closeness
+
+    if not can_split:
+        return False, np.nan
+    return can_split, privacy_metric_all(k, k_anonymity, l, l_diversity, t, t_closeness)
+
+def _inner_loop_best_split(X:np.ndarray, y:np.ndarray, col_idx:int, thresholds:list, categorical:set, impurity_fun,
+                           penalty:str, sensible_attribute: int, penalization_weight: float, ideal_distribution: dict,
+                           k_anonymity, l_diversity, t_closeness, strict, use_t):
+    len_x = len(X)
+
+    best_info_gain = -np.inf
+    best_threshold = -1
+    for value in thresholds:
+        if col_idx in categorical:
+            X_split = X[:, col_idx:col_idx + 1] == value
+        else:
+            X_split = X[:, col_idx:col_idx + 1] <= value
+
+        if np.sum(X_split) * np.sum(~X_split) == 0:
+            continue
+
+        if penalty == "balance":
+            ok_to_split, penalty_value = _check_balance(X_split[:, 0], X[:, sensible_attribute])
+        elif penalty == "mfc":
+            ok_to_split, penalty_value = _check_max_fairness_cost(X_split[:, 0], X[:, sensible_attribute], ideal_distribution)
+        else:
+            ok_to_split, penalty_value = _check_privacy(X, X_split, sensible_attribute, k_anonymity, l_diversity,
+                                                        t_closeness, strict, categorical, use_t)
+        if not ok_to_split:
+            continue
+
+        len_left = np.sum(X_split)
+        curr_pred = np.ones((len(y),)) * np.mean(y)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
+            r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
+
+            info_gain = _get_info_gain(FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y, y_pred=curr_pred),
+                                       FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
+                                       FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
+                                       len_x,
+                                       len_left,
+                                       len_x - len_left)
+
+            info_gain = 1 / (1 + np.exp(-info_gain))
+
+            info_gain -= info_gain * (penalty_value*penalization_weight)
+
+        if info_gain > best_info_gain:
+            best_info_gain = info_gain
+            best_threshold = value
+
+    return best_info_gain, best_threshold, col_idx
