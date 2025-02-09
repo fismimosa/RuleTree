@@ -6,128 +6,98 @@ import psutil
 from progress_table import ProgressTable
 
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_score, fowlkes_mallows_score
 from sklearn.preprocessing import LabelEncoder
 from tqdm.auto import tqdm
 
 from RuleTree import RuleTreeCluster
 from RuleTree.stumps.regression.FairTreeStumpRegressor import FairTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
-from RuleTree.utils.fairness_metrics import balance_metric
+from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric
+
+def compute_measures(X, clu_id, target, prot_attr, ideal):
+    return [round(x, 3) for x in [
+        silhouette_score(X, clu_id, metric='euclidean'),
+        fowlkes_mallows_score(target, clu_id),
+        balance_metric(clu_id, prot_attr),
+        max_fairness_cost(clu_id, prot_attr, ideal),
+    ]]
 
 
 def main():
-    df = pd.read_csv('datasets/CLU/adult.csv')[["age", "fnlwgt", "education-num", "sex",
-                                                "capital-gain", "capital-loss", "hours-per-week"]].head(500)
+    df = pd.read_csv('datasets/CLF/titanic.csv').drop(columns=['PassengerId', 'Embarked', 'Cabin_letter'])
+    df = df[~df.Cabin_n.isin(['T', 'D'])]
+
+    df["Sex"] = LabelEncoder().fit_transform(df.Sex)
 
     min_perc = 1.
-    for s in df.sex.unique():
-        print(s, len(df[df.sex == s])/len(df))
-        min_perc = min(min_perc, len(df[df.sex == s])/len(df))
+    mfc_map = dict()
+    for s in df.Sex.unique():
+        print(s, len(df[df.Sex == s])/len(df), sep='\t')
+        mfc_map[s] = len(df[df.Sex == s])*1./len(df)
+        min_perc = min(min_perc, len(df[df.Sex == s])/len(df))
 
-    df["sex"] = LabelEncoder().fit_transform(df.sex)
+    print(mfc_map)
 
-    kmeans = KMeans(n_clusters=4, random_state=42)#
-    kmeans.fit(df.values)
+    X = df.drop(columns=["Survived"]).values.astype(float)
+    target = df["Survived"].values
+    prot_attr = df["Sex"].values
+
+    depth = 4
+    n_jobs=1 #Usare tutti e 512 rallenta
+
+    kmeans = KMeans(n_clusters=2**depth, random_state=42)#
 
     RT = RuleTreeCluster(max_depth=2, bic_eps=.2)
-    fairRT_privacy = RuleTreeCluster(max_depth=1, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
-                                                                                                 penalty="privacy",
-                                                                                                 k_anonymity=.26,
-                                                                                                 l_diversity=1,
-                                                                                                 t_closeness=.5,
-                                                                                                 strict=True,
+    fairRT_privacy = RuleTreeCluster(max_depth=depth, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=1,
+                                                                                                     penalty="privacy",
+                                                                                                     k_anonymity=.9*min_perc,
+                                                                                                     l_diversity=1,
+                                                                                                     t_closeness=.0,
+                                                                                                     strict=True,
+                                                                                                     n_jobs=n_jobs
                                                                                                  ))
 
-    fairRT_privacy_no_t = RuleTreeCluster(max_depth=2, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
-                                                                                                 penalty="privacy",
-                                                                                                 k_anonymity=.26,
-                                                                                                 l_diversity=1,
-                                                                                                 t_closeness=.5,
-                                                                                                 strict=True,
-                                                                                                use_t=False,
+    fairRT_privacy_no_t = RuleTreeCluster(max_depth=depth, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=1,
+                                                                                                          penalty="privacy",
+                                                                                                          k_anonymity=.9*min_perc,
+                                                                                                          l_diversity=1,
+                                                                                                          t_closeness=.0,
+                                                                                                          strict=True,
+                                                                                                          use_t=False,
+                                                                                                          n_jobs=n_jobs,
                                                                                                  ))
 
-    fairRT_balance = RuleTreeCluster(max_depth=2, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
-                                                                                                 penalty="balance"
+    fairRT_balance = RuleTreeCluster(max_depth=depth, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=1,
+                                                                                                     penalty="balance",
+                                                                                                     n_jobs=n_jobs
                                                                                                  ))
 
-    len_unique_prot = len(np.unique(df.values[:, 3]))
-    mfc_map = {k: 1/len_unique_prot for k in np.unique(df.values[:, 3])}
-    fairRT_mfc = RuleTreeCluster(max_depth=2, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
+
+    fairRT_mfc = RuleTreeCluster(max_depth=depth, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=1,
                                                                                                  penalty="mfc",
-                                                                                                 ideal_distribution=mfc_map
+                                                                                                 ideal_distribution=mfc_map,
+                                                                                                 n_jobs=n_jobs
                                                                                                  ))
-    RT.fit(df.values)
-    fairRT_privacy.fit(df.values)
-    fairRT_privacy_no_t.fit(df.values)
-    fairRT_balance.fit(df.values)
-    fairRT_mfc.fit(df.values)
+    print(*["\t", "sil", "fms", "bal", "mfc"], sep='\t\t')
+    kmeans.fit(X)
+    print("sk-kmeans", *compute_measures(X, kmeans.labels_, target, prot_attr, mfc_map), sep='\t\t')
 
-    RuleTree.print_rules(RT.get_rules())
-    RuleTree.print_rules(fairRT_privacy.get_rules())
-    RuleTree.print_rules(fairRT_privacy_no_t.get_rules())
-    RuleTree.print_rules(fairRT_balance.get_rules())
-    RuleTree.print_rules(fairRT_mfc.get_rules())
+    RT.fit(X)
+    print("RuleTree", *compute_measures(X, RT.predict(X), target, prot_attr, mfc_map), sep='\t\t')
 
-    print("sil sk", silhouette_score(X=df.values, labels=kmeans.labels_), sep='\t')
-    print("sil RT", silhouette_score(X=df.values, labels=RT.predict(df.values)), sep='\t')
-    print("sil fRTp", silhouette_score(X=df.values, labels=fairRT_privacy.predict(df.values)), sep='\t')
-    print("sil fRTp2", silhouette_score(X=df.values, labels=fairRT_privacy_no_t.predict(df.values)), sep='\t')
-    print("sil fRTb", silhouette_score(X=df.values, labels=fairRT_balance.predict(df.values)), sep='\t')
-    print("sil fRTm", silhouette_score(X=df.values, labels=fairRT_mfc.predict(df.values)), sep='\t')
+    fairRT_privacy.fit(X)
+    print("fRT privacy", *compute_measures(X, fairRT_privacy.predict(X), target, prot_attr, mfc_map), sep='\t\t')
 
-    print("bal dt", balance_metric(labels=np.zeros((len(df), )), prot_attr=df.sex), sep='\t')
-    print("bal sk", balance_metric(labels=kmeans.labels_, prot_attr=df.sex), sep='\t')
-    print("bal RT", balance_metric(labels=RT.predict(df.values), prot_attr=df.sex), sep='\t')
-    print("bal fRTp", balance_metric(labels=fairRT_privacy.predict(df.values), prot_attr=df.sex), sep='\t')
-    print("bal fRTp2", balance_metric(labels=fairRT_privacy_no_t.predict(df.values), prot_attr=df.sex), sep='\t')
-    print("bal fRTb", balance_metric(labels=fairRT_balance.predict(df.values), prot_attr=df.sex), sep='\t')
-    print("bal fRTm", balance_metric(labels=fairRT_mfc.predict(df.values), prot_attr=df.sex), sep='\t')
+    fairRT_privacy_no_t.fit(X)
+    print("fRT pri_no_t", *compute_measures(X, fairRT_privacy_no_t.predict(X), target, prot_attr, mfc_map), sep='\t\t')
 
+    fairRT_balance.fit(X)
+    print("fRT balance", *compute_measures(X, fairRT_balance.predict(X), target, prot_attr, mfc_map), sep='\t\t')
 
-def run(df, X, k, l, t, s):
-    fairRT = RuleTreeCluster(max_depth=1, bic_eps=.2, base_stumps=FairTreeStumpRegressor(sensible_attribute=3,
-                                                                                     k_anonymity=k,
-                                                                                     l_diversity=l,
-                                                                                     t_closeness=t,
-                                                                                     strict=s, n_jobs=1
-                                                                                     ))
-    fairRT.fit(X)
+    fairRT_mfc.fit(X)
+    print("fRT mfc eq_dt", *compute_measures(X, fairRT_mfc.predict(X), target, prot_attr, mfc_map), sep='\t\t')
 
-    return silhouette_score(X, fairRT.predict(X)), balance_metric(labels=fairRT.predict(X), prot_attr=df.sex)
-
-def main_multi():
-    df = pd.read_csv('datasets/CLU/adult.csv')[["age", "fnlwgt", "education-num", "sex",
-                                                "capital-gain", "capital-loss", "hours-per-week"]].head(500)
-
-    df["sex"] = LabelEncoder().fit_transform(df.sex)
-
-    min_perc = 1.
-    for s in df.sex.unique():
-        print(s, len(df[df.sex == s]) / len(df))
-        min_perc = min(min_perc, len(df[df.sex == s]) / len(df))
-
-    k_values = np.arange(0, min_perc, .02)
-    X=df.values
-    l=1
-    t_values=np.arange(0, 1., .05)
-    s=True
-
-    results = []
-    with ProcessPoolExecutor(max_workers=psutil.cpu_count()) as pool:
-        for t in tqdm(t_values, position=0, leave=True):
-            for k in tqdm(k_values, position=1, leave=False):
-                results.append(pool.submit(run, X, k, l, t, s))
-
-    res = []
-    for t in tqdm(t_values, position=0, leave=True):
-        for k, result in zip(tqdm(k_values, position=1, leave=False), results):
-            result = result.result()
-            res.append((k, l, t, s, result[0], result[1]))
-            print(f"k={k}: Silhouette Score={result[0]}, Balance={result[1]}")
-
-    pd.DataFrame(res, columns=['k', 'l', 't', 's', 'sil', 'bal']).to_csv("res_fair.csv", index=False)
 
 if __name__ == '__main__':
     main()

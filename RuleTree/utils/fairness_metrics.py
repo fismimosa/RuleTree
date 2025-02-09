@@ -30,13 +30,13 @@ def max_fairness_cost(labels:np.ndarray, prot_attr:np.ndarray, ideal_dist:dict):
 
             pab = (np.sum((prot_attr == pr_attr) & (labels == cl_id))/np.sum(labels == cl_id))
 
-            sums[cl_id] += np.abs(pab - ideal_dist[pr_attr])/n_prot_attr
+            sums[cl_id] += (np.abs(pab - ideal_dist[pr_attr])/n_prot_attr)
 
     return max(sums.values())
 
 
 
-def privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict, categorical):
+def privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict, categorical, use_t):
     X_bool = X_bool.copy().reshape(-1)
 
     k_left, k_right = compute_k_anonimity(X, X_bool, sensible_attribute)
@@ -52,12 +52,15 @@ def privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_cl
     if strict and (k < k_anonymity or l < l_diversity):
         return False, k, l, np.nan
 
+    if not use_t:
+        return True, k, l, np.nan
+
     t_left, t_right = compute_t_closeness(X, X_bool, sensible_attribute, categorical)
     t = max(t_left, t_right)
 
     # print('\t', t_left, '\t', t_right)
     if strict and t > t_closeness:
-        return k, l, t
+        return False, k, l, t
 
     k = min(k_left, k_right)
     l = min(l_left, l_right)
@@ -65,9 +68,9 @@ def privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_cl
     return True, k, l, t
 
 
-def privacy_metric_all(k, k_thr, l, l_thr, t, t_thr): #the higher the better
-    return 1- sum([
-        1 if k >= k_thr else (k_thr-k)/k_thr,
-        1 if l >= l_thr else (l_thr-l)/l_thr,
-        1 if t < t_thr else (t-t_thr)/t_thr,
-    ])/3
+def privacy_metric_all(k, k_thr, l, l_thr, t, t_thr):
+    return [
+        0 if k >= k_thr else (k_thr-k)/k_thr,
+        0 if l >= l_thr else (l_thr-l)/l_thr,
+        0 if t <= t_thr else t,
+    ]

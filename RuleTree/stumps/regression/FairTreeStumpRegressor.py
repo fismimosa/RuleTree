@@ -33,7 +33,7 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
     def __init__(self,
                  penalty:str=None,
                  sensible_attribute:int=-1,
-                 penalization_weight: float = 0.6,
+                 penalization_weight: float = 0.3,
 
                  ideal_distribution:dict=None,
 
@@ -43,7 +43,7 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
                  strict:bool=True, #if True -> no unfair split, if False==DTRegressor, if float == penalization weight
                  use_t: bool = True,
 
-                 n_jobs:int=psutil.cpu_count(),
+                 n_jobs:int=psutil.cpu_count(logical=False),
                  #n_jobs:int=1,
 
                  **kwargs):
@@ -76,6 +76,7 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         self.kwargs["l_diversity"] = l_diversity
         self.kwargs["t_closeness"] = t_closeness
         self.kwargs["strict"] = strict
+        self.kwargs["use_t"] = use_t
         self.kwargs["n_jobs"] = n_jobs
 
     def __check_fairness_hyper(self):
@@ -104,33 +105,51 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         self.feature_analysis(X, y)
         best_info_gain = -float('inf')
+        self.feature_original = [-2]
 
         processes = []
-        if self.n_jobs == 1:
-            for i in range(X.shape[1]):
-                values = np.unique(X[:, i])
-                n_values_per_core = max(1, len(values) // self.n_jobs)
-                for start_idx in range(0, len(values), n_values_per_core):
-                    processes.append(_inner_loop_best_split(X, y, i, values[start_idx:start_idx+n_values_per_core],
-                                                            self.categorical,self.impurity_fun, self.penalty,
-                                                            self.sensible_attribute,self.penalization_weight,
-                                                            self.ideal_distribution, self.k_anonymity, self.l_diversity,
-                                                            self.t_closeness, self.strict, self.use_t))
 
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
             for i in range(X.shape[1]):
-                values = np.unique(X[:, i])
-                n_values_per_core = max(1, len(values)//self.n_jobs)
-                for start_idx in range(0, len(values), n_values_per_core):
-                    processes.append(
-                        executor.submit(_inner_loop_best_split, X, y, i,
-                                        values[start_idx:start_idx+n_values_per_core], self.categorical,
-                                        self.impurity_fun, self.penalty, self.sensible_attribute,
-                                        self.penalization_weight, self.ideal_distribution, self.k_anonymity,
-                                        self.l_diversity, self.t_closeness, self.strict, self.use_t)
-                    )
+                if i == self.sensible_attribute:
+                    continue
+                sorted_arr = np.hstack([X, y.reshape(-1, 1)])
+                sorted_arr = sorted_arr[:, [i, -1]][np.lexsort((X[:, -1], X[:, i]))]
+                unique_sorted_array = np.unique(sorted_arr, axis=0)
+                if i not in self.categorical:
+                    values = [
+                        (np.mean(unique_sorted_array[j - 1:j + 1, 0]))
+                        for j in range(1, len(unique_sorted_array))
+                        if unique_sorted_array[j - 1, 1] != unique_sorted_array[j, 1]
+                           and  unique_sorted_array[j - 1, 0] != unique_sorted_array[j, 0]
+                    ] # elimino tutti i threshold "duplicati" (np.unique(threshold)) + i threshold dove il primo record
+                      # a destra ha la stessa "classe" (output regressore) del record a sinistra
+                      # possiamo farlo anche nel caso del protected attribute? non penso
 
-            processes = [x.result() for x in processes]
+                    n_values_per_core = max(10, len(values) // self.n_jobs)
+
+
+                    for start_idx in range(0, len(values), n_values_per_core):
+                        if self.n_jobs == 1:
+                            processes.append(_inner_loop_best_split(X, y, i,
+                                                                    values[start_idx:start_idx+n_values_per_core],
+                                                                    self.categorical, self.impurity_fun, self.penalty,
+                                                                    self.sensible_attribute, self.penalization_weight,
+                                                                    self.ideal_distribution, self.k_anonymity,
+                                                                    self.l_diversity, self.t_closeness, self.strict,
+                                                                    self.use_t)
+                                             )
+                        else:
+                            processes.append(
+                                executor.submit(_inner_loop_best_split, X, y, i,
+                                                values[start_idx:start_idx+n_values_per_core], self.categorical,
+                                                self.impurity_fun, self.penalty, self.sensible_attribute,
+                                                self.penalization_weight, self.ideal_distribution, self.k_anonymity,
+                                                self.l_diversity, self.t_closeness, self.strict, self.use_t)
+                            )
+
+            if self.n_jobs != 1:
+                processes = [x.result() for x in processes]
 
         for info_gain, threshold, col_idx in processes:
             if info_gain > best_info_gain:
@@ -207,13 +226,13 @@ def _check_max_fairness_cost(labels:np.ndarray, prot_attr:np.ndarray, ideal_dist
 
 def _check_privacy(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict, categorical, use_t):
     can_split, k, l, t = privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict,
-                                        categorical)
+                                        categorical, use_t)
     if not use_t:
         t = t_closeness
 
     if not can_split:
         return False, np.nan
-    return can_split, privacy_metric_all(k, k_anonymity, l, l_diversity, t, t_closeness)
+    return can_split, np.max(privacy_metric_all(k, k_anonymity, l, l_diversity, t, t_closeness))#/3
 
 def _inner_loop_best_split(X:np.ndarray, y:np.ndarray, col_idx:int, thresholds:list, categorical:set, impurity_fun,
                            penalty:str, sensible_attribute: int, penalization_weight: float, ideal_distribution: dict,
@@ -234,7 +253,7 @@ def _inner_loop_best_split(X:np.ndarray, y:np.ndarray, col_idx:int, thresholds:l
         if penalty == "balance":
             ok_to_split, penalty_value = _check_balance(X_split[:, 0], X[:, sensible_attribute])
         elif penalty == "mfc":
-            ok_to_split, penalty_value = _check_max_fairness_cost(X_split[:, 0], X[:, sensible_attribute], ideal_distribution)
+             ok_to_split, penalty_value = _check_max_fairness_cost(X_split[:, 0], X[:, sensible_attribute], ideal_distribution)
         else:
             ok_to_split, penalty_value = _check_privacy(X, X_split, sensible_attribute, k_anonymity, l_diversity,
                                                         t_closeness, strict, categorical, use_t)
