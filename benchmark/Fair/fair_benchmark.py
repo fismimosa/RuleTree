@@ -11,11 +11,28 @@ from RuleTree import RuleTreeCluster
 from RuleTree.stumps.regression.FairTreeStumpRegressor import FairTreeStumpRegressor
 from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost
 from benchmark.Fair.FairHyper import get_hyperparameters
-from benchmark.Fair.FairReaders import readTitanic
+from benchmark.Fair.FairReaders import read_titanic, read_bank_marital, read_bank_housing, read_bank_default, \
+    read_bank_education, read_bank_age, read_taiwan_credit_marriage, read_taiwan_credit_age, read_taiwan_credit_sex, \
+    read_taiwan_credit_education, read_diabetes_race, read_diabetes_age, read_diabetes_gender
 
-datasets = {
-    "titanic": readTitanic
-}
+datasets = dict([
+    read_titanic(),
+
+    read_bank_marital(),
+    read_bank_housing(),
+    read_bank_default(),
+    read_bank_education(),
+    read_bank_age(),
+
+    read_taiwan_credit_education(),
+    read_taiwan_credit_marriage(),
+    read_taiwan_credit_age(),
+    read_taiwan_credit_sex(),
+
+    read_diabetes_age(),
+    read_diabetes_gender(),
+    read_diabetes_race(),
+])
 
 
 def compute_measures(X, clu_id, target, prot_attr, ideal):
@@ -68,9 +85,7 @@ def run(hyper, dataset_name, df:pd.DataFrame):
 
 
 def main():
-    for dataset_name, dataset_loader in datasets.items():
-        df = dataset_loader()
-
+    for dataset_name, df in datasets.items():
         processes = []
         dataframes = []
 

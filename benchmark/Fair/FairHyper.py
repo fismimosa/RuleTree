@@ -3,17 +3,18 @@ from itertools import product
 import pandas as pd
 from numba.cuda.cudadrv.nvrtc import nvrtc_program
 
-from benchmark.Fair.FairReaders import readTitanic
+from benchmark.Fair.FairReaders import read_titanic
 
 depth = [1, 2, 3, 4, 5]
 n_clus = [2**x for x in depth]
+n_jobs = 8
 
 hyper_params_FairStump = [
     {
         "method": ["FairRT_privacy"],
         "sensible_attribute": [0],
         "penalization_weight": [.1, .3, .5, .7, .9],
-        "n_jobs": [8],
+        "n_jobs": [n_jobs],
 
         "penalty": ["privacy"],
         "k_anonymity": [.8, .9, .95],  # da moltiplicare per il dataset
@@ -27,7 +28,7 @@ hyper_params_FairStump = [
         "method": ["FairRT_balance"],
         "sensible_attribute": [0],
         "penalization_weight": [.1, .3, .5, .7, .9],
-        "n_jobs": [8],
+        "n_jobs": [n_jobs],
 
         "penalty": ["balance"],
     },
@@ -36,7 +37,7 @@ hyper_params_FairStump = [
         "method": ["FairRT_mfc"],
         "sensible_attribute": [0],
         "penalization_weight": [.1, .3, .5, .7, .9],
-        "n_jobs": [8],
+        "n_jobs": [n_jobs],
 
         "penalty": ["mfc"],
         "ideal_distribution": ['equal', 'dataset'], # to fix
@@ -101,7 +102,7 @@ def get_hyperparameters(df: pd.DataFrame):
 
 
 if __name__ == "__main__":
-    df = readTitanic()
+    _, df = read_titanic()
     hyper_final = get_hyperparameters(df)
 
     print(len(hyper_final))
