@@ -5,15 +5,14 @@ from numba.cuda.cudadrv.nvrtc import nvrtc_program
 
 from benchmark.Fair.FairReaders import read_titanic
 
-depth = [1, 2, 3, 4, 5]
-n_clus = [2**x for x in depth]
+n_clus = [2, 4, 8, 16]
 n_jobs = 8
 
 hyper_params_FairStump = [
     {
         "method": ["FairRT_privacy"],
         "sensible_attribute": [0],
-        "penalization_weight": [.1, .3, .5, .7, .9],
+        "penalization_weight": [.2, .5, .8],
         "n_jobs": [n_jobs],
 
         "penalty": ["privacy"],
@@ -36,7 +35,7 @@ hyper_params_FairStump = [
     {
         "method": ["FairRT_mfc"],
         "sensible_attribute": [0],
-        "penalization_weight": [.1, .3, .5, .7, .9],
+        "penalization_weight": [.2, .5, .8],
         "n_jobs": [n_jobs],
 
         "penalty": ["mfc"],
@@ -46,24 +45,25 @@ hyper_params_FairStump = [
 
 
 hyper_params_list = ([
-                        {
-                            "base_method": ['FRT'],
-                            "bic_eps": [.0, .05, .1, .2],
-                            "max_depth": depth,
-                        }|x for x in hyper_params_FairStump
-                    ] +
-                     [
-                         {
-                            "base_method": ['RT'],
-                            "bic_eps": [.0, .05, .1, .2],
-                            "max_depth": depth,
-                        },
+
                         {
                             "base_method": ['kmeans'],
                             "n_clusters": n_clus,
                             "random_state": [42],
-                        }
-                     ])
+                        },
+                        {
+                            "base_method": ['RT'],
+                            "bic_eps": [.0, .1, .2],
+                            "max_leaf_nodes": n_clus,
+                        },
+                     ] + [
+                        {
+                            "base_method": ['FRT'],
+                            "bic_eps": [.0, .1, .2],
+                            "max_leaf_nodes": n_clus,
+                        }|x for x in hyper_params_FairStump
+                     ]
+)
 
 
 def get_hyperparameters(df: pd.DataFrame):
