@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas.core.dtypes.common import is_object_dtype
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
@@ -116,9 +117,14 @@ def _read_diabetes(encode=True):
     if encode:
         df.age = LabelEncoder().fit_transform(df.age)
         df.gender = LabelEncoder().fit_transform(df.gender)
-        for col_names in df.columns:
+        for col_names in list(df.columns):
+            if not is_object_dtype(df[col_names]):
+                continue
+
             if len(df[col_names].unique()) == 2:
                 df[col_names] = LabelEncoder().fit_transform(df[col_names])
+            if len(df[col_names].unique()) > 10 or len(df[col_names].unique()) <= 1:
+                df = df.drop(columns=col_names)
 
         ct = ColumnTransformer([("cat", OneHotEncoder(), make_column_selector(dtype_include="object"))],
                                remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0,
@@ -225,21 +231,21 @@ def read_taiwan_credit_sex(encode=True):
     .astype("float"))
 
 if __name__ == "__main__":
-    dataset_name, df = read_titanic()
+    """dataset_name, df = read_titanic()
     
     dataset_name, df = read_bank_age()
     dataset_name, df = read_bank_default()
     dataset_name, df = read_bank_education()
     dataset_name, df = read_bank_housing()
-    dataset_name, df = read_bank_marital()
+    dataset_name, df = read_bank_marital()"""
 
     dataset_name, df = read_diabetes_age()
-    dataset_name, df = read_diabetes_gender()
-    dataset_name, df = read_diabetes_race()
+    #dataset_name, df = read_diabetes_gender()
+    #dataset_name, df = read_diabetes_race()
 
-    dataset_name, df = read_taiwan_credit_age()
+    """dataset_name, df = read_taiwan_credit_age()
     dataset_name, df = read_taiwan_credit_education()
     dataset_name, df = read_taiwan_credit_marriage()
-    dataset_name, df = read_taiwan_credit_sex()
+    dataset_name, df = read_taiwan_credit_sex()"""
 
     print(df)
