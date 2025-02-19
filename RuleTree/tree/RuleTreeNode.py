@@ -107,6 +107,8 @@ class RuleTreeNode:
 
     @classmethod
     def dict_to_node(cls, info_dict, X = None):
+        assert 'stump_type' in info_dict
+
         node = RuleTreeNode(node_id = info_dict['node_id'],
                             prediction = info_dict['prediction'],
                             prediction_probability = info_dict['prediction_probability'],

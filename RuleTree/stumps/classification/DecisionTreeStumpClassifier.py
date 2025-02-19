@@ -76,20 +76,25 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
     @classmethod
     def dict_to_node(cls, node_dict, X=None):
         self = cls()
+
+        assert 'feature_idx' in node_dict
+        assert 'threshold' in node_dict
+        assert 'is_categorical' in node_dict
+
         self.feature_original = np.zeros(3, dtype=int)
         self.threshold_original = np.zeros(3)
         self.n_node_samples = np.zeros(3, dtype=int)
 
         self.feature_original[0] = node_dict["feature_idx"]
         self.threshold_original[0] = node_dict["threshold"]
-        self.n_node_samples[0] = node_dict["samples"]
+        self.n_node_samples[0] = node_dict.get("samples", np.nan)
         self.is_categorical = node_dict["is_categorical"]
 
-        args = copy.deepcopy(node_dict["args"])
-        self.is_oblique = args.pop("is_oblique")
-        self.is_pivotal = args.pop("is_pivotal")
-        self.unique_val_enum = args.pop("unique_val_enum")
-        self.coefficients = args.pop("coefficients")
+        args = copy.deepcopy(node_dict.get("args", dict()))
+        self.is_oblique = args.pop("is_oblique", False)
+        self.is_pivotal = args.pop("is_pivotal", False)
+        self.unique_val_enum = args.pop("unique_val_enum", np.nan)
+        self.coefficients = args.pop("coefficients", np.nan)
         self.kwargs = args
 
         return self

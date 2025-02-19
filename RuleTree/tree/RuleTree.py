@@ -662,10 +662,12 @@ class RuleTree(RuleTreeBase, ABC):
         with open(filename, 'r') as f:
             dictionary = json.load(f)
 
+        assert 'tree_type' in dictionary
+
         class_c = getattr(importlib.import_module(dictionary['tree_type']), dictionary['tree_type'].split('.')[-1])
         tree = class_c(**dictionary['args'])
-        tree.classes_ = dictionary['classes_']
-        tree.n_classes_ = dictionary['n_classes_']
+        tree.classes_ = dictionary.get('classes_', np.nan)
+        tree.n_classes_ = dictionary.get('n_classes_', np.nan)
 
         nodes = {node["node_id"]: RuleTreeNode.dict_to_node(node) for node in dictionary['nodes']}
 

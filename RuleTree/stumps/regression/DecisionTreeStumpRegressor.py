@@ -37,15 +37,19 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         return rule
 
     def dict_to_node(self, node_dict, X=None):
+        assert 'feature_idx' in node_dict
+        assert 'threshold' in node_dict
+        assert 'is_categorical' in node_dict
+
         self.feature_original = np.zeros(3)
         self.threshold_original = np.zeros(3)
 
-        self.feature_original[0] = node_dict["feature_original"]
+        self.feature_original[0] = node_dict["feature_idx"]
         self.threshold_original[0] = node_dict["threshold"]
         self.is_categorical = node_dict["is_categorical"]
 
-        args = copy.deepcopy(node_dict["args"])
-        self.unique_val_enum = args.pop("unique_val_enum")
+        args = copy.deepcopy(node_dict.get("args", dict()))
+        self.unique_val_enum = args.pop("unique_val_enum", np.nan)
         self.kwargs = args
 
         self.__set_impurity_fun(args["criterion"])
