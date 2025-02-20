@@ -1,3 +1,11 @@
+import os
+from benchmark.Fair.FairHyper import n_jobs
+
+os.environ["OMP_NUM_THREADS"] = f"{n_jobs}"
+os.environ["OPENBLAS_NUM_THREADS"] = f"{n_jobs}"
+
+
+import hashlib
 import os.path
 import time
 from concurrent.futures import ProcessPoolExecutor
@@ -5,7 +13,7 @@ from copy import copy
 
 import pandas as pd
 import psutil
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import MinMaxScaler
 from threadpoolctl import threadpool_limits
 from tqdm.auto import tqdm
@@ -16,7 +24,8 @@ from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost
 from benchmark.Fair.FairHyper import get_hyperparameters, n_jobs
 from benchmark.Fair.FairReaders import read_titanic, read_bank_marital, read_bank_housing, read_bank_default, \
     read_bank_education, read_bank_age, read_taiwan_credit_marriage, read_taiwan_credit_age, read_taiwan_credit_sex, \
-    read_taiwan_credit_education, read_diabetes_race, read_diabetes_age, read_diabetes_gender
+    read_taiwan_credit_education, read_diabetes_race, read_diabetes_age, read_diabetes_gender, read_compass_race, \
+    read_compass_sex, read_compass_age
 from benchmark.evaluation_utils import evaluate_clu_sup, evaluate_clu_unsup, evaluate_expl
 
 datasets = dict([
@@ -36,6 +45,10 @@ datasets = dict([
     read_diabetes_age(),
     read_diabetes_gender(),
     read_diabetes_race(),
+
+    read_compass_race(),
+    read_compass_sex(),
+    read_compass_age(),
 ])
 
 
@@ -55,8 +68,11 @@ def compute_measures(X, clu_id, target, prot_attr, ideal, model):
 
 def run(hyper, dataset_name, df:pd.DataFrame):
     filename = dataset_name+'|'+'|'.join([f'{x}' for x in hyper.values()])+'.csv'
+    filename_hash = dataset_name+'|'+hashlib.md5('|'.join([f'{x}' for x in hyper.values()]).encode()).hexdigest()+'.csv'
     if os.path.exists("res_tmp/"+filename):
         return pd.read_csv("res_tmp/"+filename)
+    if os.path.exists(filename_hash):
+        return pd.read_csv("res_tmp/"+filename_hash)
 
     scores = copy(hyper)
 
@@ -75,6 +91,8 @@ def run(hyper, dataset_name, df:pd.DataFrame):
         model = RuleTreeCluster(**hyper)
     elif base_method == "kmeans":
         model = KMeans(**hyper)
+    elif base_method == "DB":
+        model = DBSCAN(n_jobs=n_jobs, **hyper)
     else:
         bic_eps = hyper["bic_eps"]
         del hyper["bic_eps"]
@@ -94,7 +112,10 @@ def run(hyper, dataset_name, df:pd.DataFrame):
     scores |= {'time': end-start} | compute_measures(X, model.predict(X), target, prot_attr, mfc_dataset, model)
     scores["dataset"] = dataset_name
     df = pd.DataFrame.from_dict([scores])
-    df.to_csv("res_tmp/"+filename, index=False)
+    try:
+        df.to_csv("res_tmp/"+filename, index=False)
+    except Exception as e:
+        df.to_csv("res_tmp/"+filename_hash, index=False)
 
     return df
 

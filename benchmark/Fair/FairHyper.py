@@ -5,8 +5,8 @@ from numba.cuda.cudadrv.nvrtc import nvrtc_program
 
 from benchmark.Fair.FairReaders import read_titanic
 
-n_clus = [2, 4, 8, 16]
-n_jobs = 8
+n_clus = [2]#[2, 4, 8, 16]
+n_jobs = 16
 
 hyper_params_FairStump = [
     {
@@ -56,6 +56,11 @@ hyper_params_list = ([
                             "bic_eps": [.0, .1, .2],
                             "max_leaf_nodes": n_clus,
                         },
+                         {
+                             "base_method": ['DB'],
+                             "eps": [.1, .25, .5, .75, 1.],
+                             "metric": ["euclidean", "cosine", "correlation"]
+                         }
                      ] + [
                         {
                             "base_method": ['FRT'],
