@@ -57,7 +57,12 @@ class ProximityTreeStumpRegressor(DecisionTreeStumpRegressor):
             "n_jobs": n_jobs,
         }
 
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        if idx is None:
+            idx = slice(None)
+        X = X[idx]
+        y = y[idx]
+
         self.y_lims = [X.min(), X.max()]
 
         random.seed(self.random_state)

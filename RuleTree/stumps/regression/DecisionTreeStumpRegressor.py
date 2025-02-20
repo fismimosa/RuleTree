@@ -37,15 +37,19 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         return rule
 
     def dict_to_node(self, node_dict, X=None):
+        assert 'feature_idx' in node_dict
+        assert 'threshold' in node_dict
+        assert 'is_categorical' in node_dict
+
         self.feature_original = np.zeros(3)
         self.threshold_original = np.zeros(3)
 
-        self.feature_original[0] = node_dict["feature_original"]
+        self.feature_original[0] = node_dict["feature_idx"]
         self.threshold_original[0] = node_dict["threshold"]
         self.is_categorical = node_dict["is_categorical"]
 
-        args = copy.deepcopy(node_dict["args"])
-        self.unique_val_enum = args.pop("unique_val_enum")
+        args = copy.deepcopy(node_dict.get("args", dict()))
+        self.unique_val_enum = args.pop("unique_val_enum", np.nan)
         self.kwargs = args
 
         self.__set_impurity_fun(args["criterion"])
@@ -58,40 +62,42 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         self.threshold_original = None
         self.feature_original = None
 
-        self.__set_impurity_fun(kwargs['criterion'])
+        self.impurity_fun = kwargs['criterion'] if 'criterion' in kwargs else "squared_error"
 
-
-    def __set_impurity_fun(self, imp):
+    @classmethod
+    def _get_impurity_fun(cls, imp):
         if imp == "squared_error":
-            self.impurity_fun = mean_squared_error
+            return mean_squared_error
         elif imp == "friedman_mse":
             raise Exception("not implemented") # TODO: implement
         elif imp == "absolute_error":
-            self.impurity_fun = mean_absolute_error
+            return mean_absolute_error
         elif imp == "poisson":
-            self.impurity_fun = mean_poisson_deviance
+            return mean_poisson_deviance
         else:
-            self.impurity_fun = imp
+            return imp
 
 
-    def __impurity_fun(self, **x):
-        return self.impurity_fun(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
+    @classmethod
+    def _impurity_fun(cls, impurity_fun, **x):
+        f = cls._get_impurity_fun(impurity_fun)
+        return f(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
 
     def get_params(self, deep=True):
         return self.kwargs
-    
-    def feature_analysis(self, X, y):
-        dtypes = pd.DataFrame(X).infer_objects().dtypes
-        self.numerical = dtypes[dtypes != np.dtype('O')].index
-        self.categorical = dtypes[dtypes == np.dtype('O')].index
 
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        if idx is None:
+            idx = slice(None)
+        X = X[idx]
+        y = y[idx]
+
         self.feature_analysis(X, y)
         best_info_gain = -float('inf')
 
         if len(self.numerical) > 0:
             super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
-            self.feature_original = self.tree_.feature
+            self.feature_original = [self.numerical[x] if x != -2 else x for x in self.tree_.feature]
             self.threshold_original = self.tree_.threshold
             self.n_node_samples = self.tree_.n_node_samples
             best_info_gain = get_info_gain(self)
@@ -117,9 +123,9 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                         l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
                         r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
 
-                        info_gain = _get_info_gain(self.__impurity_fun(y_true=y, y_pred=curr_pred),
-                                                   self.__impurity_fun(y_true=y[X_split[:, 0]], y_pred=l_pred),
-                                                   self.__impurity_fun(y_true=y[~X_split[:, 0]], y_pred=r_pred),
+                        info_gain = _get_info_gain(self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+                                                   self._impurity_fun(self.impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
+                                                   self._impurity_fun(self.impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
                                                    len_x,
                                                    len_left,
                                                    len_x - len_left)
@@ -133,6 +139,9 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
 
     def apply(self, X, check_input=False):
+        if len(self.feature_original) < 3:
+            return np.ones(X.shape[0])
+
         if not self.is_categorical:
             y_pred = np.ones(X.shape[0], dtype=int) * 2
             X_feature = X[:, self.feature_original[0]]

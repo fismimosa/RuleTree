@@ -111,7 +111,11 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                          
                           distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
             else:
-                stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+                stump.fit(X=X,
+                          y=y,
+                          idx=idx,
+                          context = self,
+                          sample_weight=None if sample_weight is None else sample_weight[idx])
                 
         elif self.stump_selection == 'best':
             clfs = []
@@ -121,11 +125,18 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 
                 if stump.__class__.__module__.split('.')[-1] in pivots_list:
                     
-                    stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx, 
-                      
-                              distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
+                    stump.fit(X=X[idx],
+                              y=y[idx],
+                              distance_matrix=self.distance_matrix[idx][:,idx],
+                              idx=idx,
+                              distance_measure=self.distance_measure,
+                              sample_weight=None if sample_weight is None else sample_weight[idx])
                 else:
-                    stump.fit(X[idx], y[idx], sample_weight=None if sample_weight is None else sample_weight[idx])
+                    stump.fit(X=X,
+                              y=y,
+                              idx=idx,
+                              context=self,
+                              sample_weight=None if sample_weight is None else sample_weight[idx])
             
                 gain = get_info_gain(stump)
                 info_gains.append(gain)
@@ -178,8 +189,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
              
     def fit(self, X: np.array, y: np.array = None, sample_weight=None, **kwargs):
         # Check and initialize the distance matrix if needed
-        if self.distance_matrix is None:
-            for stump in self.base_stumps:
+        if self.distance_matrix is None and self.base_stumps is not None:
+            base_stumps = self.base_stumps if isinstance(self.base_stumps, list) else [self.base_stumps]
+            for stump in base_stumps:
                 # Check if the class name matches the specified list
                 if stump.__class__.__module__.split('.')[-1] in [
                     'PivotTreeStumpClassifier',
@@ -200,6 +212,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         super().fit(X, y, sample_weight=sample_weight, **kwargs)
         if self.distance_matrix is not None:
             self.distance_matrix = None #remove to save space when training many estimators
+
+        return self
 
 
     def predict_proba(self, X: np.ndarray):
@@ -237,12 +251,17 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         
         
     def get_pivots(self, current_node=None, pivot_dicts=None):
+        
+        
    
         stump_split_map = {
             'PivotTreeStumpClassifier': 'pivot_split',
             'MultiplePivotTreeStumpClassifier': 'multi_pivot_split',
             'ObliquePivotTreeStumpClassifier': 'obl_pivot_split',
-            'MultipleObliquePivotTreeStumpClassifier' : 'multi_oblique_pivot_split'
+            'MultipleObliquePivotTreeStumpClassifier' : 'multi_oblique_pivot_split',
+        
+            'ObliqueDecisionTreeStumpClassifier' : 'oblique_split',
+            'DecisionTreeStumpClassifier' : 'univariate_split'
         }
         
         
@@ -253,6 +272,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         # Start from root if current_node is not provided
         if current_node is None:
             current_node = self.root
+            
         
         # Process current node
         if current_node.stump is not None:
@@ -270,17 +290,23 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             
             
             if stump_name in stump_split_map:
-                split_obj = getattr(current_node.stump, stump_split_map[stump_name])
-                if not current_node.is_leaf():
-                    pivot_dicts[current_node.node_id] = {
-                            'discriminatives': split_obj.get_discriminative_names(),
-                            'descriptives': split_obj.get_descriptive_names(),
-                            'candidates': split_obj.get_candidates_names(),
-                            'used' : used
-                        }
-                else:
-                    pivot_dicts[current_node.node_id]  = {'descriptives' : split_obj.get_descriptive_names()}
+                if stump_split_map[stump_name] in ['oblique_split', 'univariate_split']:
+                    pivot_dicts[current_node.node_id]  = {'descriptives' : current_node.medoids_index}
+                    
+                    
+                if stump_split_map[stump_name] in ['pivot_split','multi_pivot_split','multi_oblique_pivot_split','obl_pivot_split']:
+                    split_obj = getattr(current_node.stump, stump_split_map[stump_name])
+                    if not current_node.is_leaf():
+                        pivot_dicts[current_node.node_id] = {
+                                'discriminatives': split_obj.get_discriminative_names(),
+                                'descriptives': split_obj.get_descriptive_names(),
+                                'candidates': split_obj.get_candidates_names(),
+                                'used' : used
+                            }
+                    else:
+                        pivot_dicts[current_node.node_id]  = {'descriptives' : split_obj.get_descriptive_names()}
                         
+
         
         else:
             if current_node.is_leaf():
@@ -363,13 +389,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_l = copy.deepcopy(node.node_l)
             node_r = copy.deepcopy(node.node_r)
                         
-    
-             try:
-                feat = tuple(node.stump.feature_original[0])  # Ensure it's a tuple 
-                
-            except:
-               
-                feat = (node.stump.feature_original[0],) 
+            feat = tuple(node.stump.feature_original[0])  # Ensure it's a tuple
 
             thr = (node.stump.threshold_original[0],)
                         

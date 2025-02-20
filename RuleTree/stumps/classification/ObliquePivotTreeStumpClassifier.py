@@ -15,7 +15,8 @@ class ObliquePivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseS
                  n_orientations=10,
                  **kwargs):
         super().__init__(**kwargs)
-        
+        super().__init__(**kwargs)
+
         self.distance_measure = None
         self.pca = pca
         self.max_oblique_features = max_oblique_features

@@ -9,8 +9,8 @@ from itertools import count
 
 import numpy as np
 import sklearn
-#from graphviz import Source
 from sklearn import tree
+from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
@@ -83,7 +83,7 @@ class RuleTree(RuleTreeBase, ABC):
             if val <= p:
                 return sklearn.clone(clf)
 
-    def _filter_types(self, X):
+    def _filter_types(self, X) -> list[tuple[float, RuleTreeBaseStump]]:
         if len(X.shape) == 2:
             data_type = DATA_TYPE_TABULAR
         elif len(X.shape) == 3:
@@ -155,6 +155,15 @@ class RuleTree(RuleTreeBase, ABC):
             clf = self.make_split(X, y, idx=idx, **kwargs)
             labels = clf.apply(X[idx])
             
+           
+            name_clf = clf.__class__.__module__.split('.')[-1]
+            #print(name_clf)
+            
+            if name_clf in ['ObliqueDecisionTreeStumpClassifier',
+                            'DecisionTreeStumpClassifier']:
+                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                
+                
             global_labels = clf.apply(X)
             current_node.balance_score_global = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
             current_node.balance_score = current_node.balance_score_global
@@ -653,10 +662,12 @@ class RuleTree(RuleTreeBase, ABC):
         with open(filename, 'r') as f:
             dictionary = json.load(f)
 
+        assert 'tree_type' in dictionary
+
         class_c = getattr(importlib.import_module(dictionary['tree_type']), dictionary['tree_type'].split('.')[-1])
-        tree = class_c(**dictionary['args'])
-        tree.classes_ = dictionary['classes_']
-        tree.n_classes_ = dictionary['n_classes_']
+        tree = class_c(**dictionary.get('args', dict()))
+        tree.classes_ = dictionary.get('classes_', np.nan)
+        tree.n_classes_ = dictionary.get('n_classes_', np.nan)
 
         nodes = {node["node_id"]: RuleTreeNode.dict_to_node(node) for node in dictionary['nodes']}
 
@@ -677,5 +688,5 @@ class RuleTree(RuleTreeBase, ABC):
             dot.render(directory=TemporaryDirectory(delete=False).name, view=True)
             return dot
         else:
-            Source(dot).render(filename=filename)
+            dot.render(filename=filename)
 

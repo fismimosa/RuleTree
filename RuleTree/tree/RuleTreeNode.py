@@ -107,11 +107,16 @@ class RuleTreeNode:
 
     @classmethod
     def dict_to_node(cls, info_dict, X = None):
+        assert 'node_id' in info_dict
+        assert 'is_leaf' in info_dict
+        if not info_dict['is_leaf']:
+            assert 'stump_type' in info_dict
+
         node = RuleTreeNode(node_id = info_dict['node_id'],
-                            prediction = info_dict['prediction'],
-                            prediction_probability = info_dict['prediction_probability'],
+                            prediction = info_dict.get('prediction', np.nan),
+                            prediction_probability = info_dict.get('prediction_probability', [np.nan]),
                             parent = None,
-                            classes=info_dict['prediction_classes_'],)
+                            classes=info_dict.get('prediction_classes_', np.nan))
         
         if info_dict['is_leaf'] == True:
             return node

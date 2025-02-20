@@ -56,7 +56,12 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
             "n_jobs": n_jobs,
         }
 
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        if idx is None:
+            idx = slice(None)
+        X = X[idx]
+        y = y[idx]
+
         random.seed(self.random_state)
         if sample_weight is not None:
             raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")

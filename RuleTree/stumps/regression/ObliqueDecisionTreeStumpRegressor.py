@@ -42,7 +42,12 @@ class ObliqueDecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump
     def get_params(self, deep=True):
         return self.kwargs
 
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        if idx is None:
+            idx = slice(None)
+        X = X[idx]
+        y = y[idx]
+
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = dtypes[dtypes != np.dtype('O')].index
         self.categorical = dtypes[dtypes == np.dtype('O')].index
