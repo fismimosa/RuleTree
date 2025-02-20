@@ -9,8 +9,8 @@ from itertools import count
 
 import numpy as np
 import sklearn
-#from graphviz import Source
 from sklearn import tree
+from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
@@ -665,7 +665,7 @@ class RuleTree(RuleTreeBase, ABC):
         assert 'tree_type' in dictionary
 
         class_c = getattr(importlib.import_module(dictionary['tree_type']), dictionary['tree_type'].split('.')[-1])
-        tree = class_c(**dictionary['args'])
+        tree = class_c(**dictionary.get('args', dict()))
         tree.classes_ = dictionary.get('classes_', np.nan)
         tree.n_classes_ = dictionary.get('n_classes_', np.nan)
 
@@ -688,5 +688,5 @@ class RuleTree(RuleTreeBase, ABC):
             dot.render(directory=TemporaryDirectory(delete=False).name, view=True)
             return dot
         else:
-            Source(dot).render(filename=filename)
+            dot.render(filename=filename)
 

@@ -213,6 +213,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         if self.distance_matrix is not None:
             self.distance_matrix = None #remove to save space when training many estimators
 
+        return self
+
 
     def predict_proba(self, X: np.ndarray):
         labels, leaves, proba = self._predict(X, self.root)

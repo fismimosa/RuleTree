@@ -87,7 +87,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
         self.feature_original[0] = node_dict["feature_idx"]
         self.threshold_original[0] = node_dict["threshold"]
-        self.n_node_samples[0] = node_dict.get("samples", np.nan)
+        self.n_node_samples[0] = node_dict.get("samples", -1)
         self.is_categorical = node_dict["is_categorical"]
 
         args = copy.deepcopy(node_dict.get("args", dict()))
