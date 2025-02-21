@@ -72,8 +72,12 @@ def ruletree_to_jakowski(json):
 
 def jakowski_to_ruletree(enc, prune=False):
     # TODO: the output is not pruned, yet the behaviour of the ruletree should be the same
+    es_tree = {
+        'tree_type': 'RuleTree.tree.RuleTreeClassifier',
+        'nodes': generate_node_list(deshift_jakowski_encoding(enc)),
+    }
     if not prune:
-        return deshift_jakowski_encoding(enc)
+        return es_tree
     else:
         raise NotImplementedError("Pruning is not implemented yet")
 
@@ -85,3 +89,26 @@ def deshift_jakowski_encoding(enc):
     enc_[1, enc_.shape[1]//2:] -= 1
     return enc_
 
+
+def generate_node_list(enc):
+    nodes = []
+    for pos, (feat, thr) in enumerate(enc.T):
+        if feat != thr and feat != -1: #not leaf
+            nodes.append({
+                'node_id': get_col(pos),
+                'stump_type': 'RuleTree.stumps.classification.DecisionTreeStumpClassifier',
+                'feature_idx': feat,
+                'threshold': thr,
+                'is_leaf': False,
+                'left_node': get_col(pos)+'l',
+                'right_node': get_col(pos)+'r',
+                'is_categorical': False,
+            })
+        else:
+            nodes.append({
+                'node_id': get_col(pos),
+                'prediction': thr,
+                'stump_type': '',
+                'is_leaf': True,
+            })
+    return nodes
