@@ -65,7 +65,23 @@ def json_to_jakowski_incomplete(json):
     return matrix
 
 
-def ruletree_to_jakowski_tree_encoder(json):
+def ruletree_to_jakowski(json):
     # converts the ruletree json to a jakowski matrix corresponding to a complete tree
     return jakowski_incomplete_to_jakowski_complete(json_to_jakowski_incomplete(json))
+
+
+def jakowski_to_ruletree(enc, prune=False):
+    # TODO: the output is not pruned, yet the behaviour of the ruletree should be the same
+    if not prune:
+        return deshift_jakowski_encoding(enc)
+    else:
+        raise NotImplementedError("Pruning is not implemented yet")
+
+
+def deshift_jakowski_encoding(enc):
+    # deshifts the feature_idx and the threshold of the jakowski matrix
+    enc_ = enc.copy()
+    enc_[0, :enc_.shape[1]//2] -= 1
+    enc_[1, enc_.shape[1]//2:] -= 1
+    return enc_
 
