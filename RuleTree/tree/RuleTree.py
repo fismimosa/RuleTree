@@ -621,7 +621,6 @@ class RuleTree(RuleTreeBase, ABC):
         
         return vector
 
-
     def to_dict(self, filename=None):
         node_list = [self.root]
 
@@ -659,8 +658,11 @@ class RuleTree(RuleTreeBase, ABC):
 
     @classmethod
     def from_dict(cls, filename):
-        with open(filename, 'r') as f:
-            dictionary = json.load(f)
+        if not isinstance(filename, dict):
+            with open(filename, 'r') as f:
+                dictionary = json.load(f)
+        else:
+            dictionary = filename
 
         assert 'tree_type' in dictionary
 
