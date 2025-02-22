@@ -184,6 +184,10 @@ def _read_taiwan_credit(encode=True):
     if encode:
         df.AGE_BINNED = LabelEncoder().fit_transform(df.AGE_BINNED)
 
+    if encode:
+        columns_to_increment = ["PAY_1", "PAY_2", "PAY_3", "PAY_4", "PAY_5", "PAY_6"]
+        df[columns_to_increment] = df[columns_to_increment] + 1
+
     return df
 
 def read_taiwan_credit_age(encode=True):
