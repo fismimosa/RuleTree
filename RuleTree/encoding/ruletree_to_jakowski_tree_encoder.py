@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from RuleTree.encoding.jakowski_utils import is_leaf_index, get_deepest_descendants, get_parent_index
+from RuleTree.encoding.jakowski_utils import is_leaf_index, get_deepest_descendants, get_parent_index, max_node_count
 
 
 def get_max_depth_from_json(json:dict):
@@ -19,13 +19,17 @@ def get_col(n):
     return "R" + label
 
 
-def jakowski_incomplete_to_jakowski_complete(enc):
+def jakowski_incomplete_to_jakowski_complete(enc, depth=None):
     # grows the incomplete jakowski matrix to a complete jakowski matrix
-    enc_ = enc.copy()
-    for i in range(enc.shape[1] // 2):  # for each internal node
+    if depth is None:
+        enc_ = enc.copy()
+    else:
+        enc_ = np.full((2, max_node_count(depth)), -1.0)
+        enc_[:, :enc.shape[1]] = enc
+    for i in range(enc_.shape[1] // 2):  # for each internal node
         # enc_[0, i] == -1 -> the node is a leaf in the incomplete tree
         # not is_leaf_index(i, enc_.shape[1]) -> the node is not a leaf in the complete tree
-        # not enc_[1, i] == -1 -> the node is a missing node in the incomplete tree
+        # not enc_[1, i] == -1 -> the node is not a missing node in the incomplete tree
         if enc_[0, i] == -1 and not is_leaf_index(i, enc_.shape[1]) and not enc_[1, i] == -1:
             # paste the class in the deepest descendants, i.e., the real leaves in the complete tree
             enc_[0, get_deepest_descendants(i, math.floor(math.log2(enc_.shape[1])))] = -1
@@ -65,9 +69,9 @@ def json_to_jakowski_incomplete(json):
     return matrix
 
 
-def ruletree_to_jakowski(json):
+def ruletree_to_jakowski(json, depth=None):
     # converts the ruletree json to a jakowski matrix corresponding to a complete tree
-    return jakowski_incomplete_to_jakowski_complete(json_to_jakowski_incomplete(json))
+    return jakowski_incomplete_to_jakowski_complete(json_to_jakowski_incomplete(json), depth=depth)
 
 
 def jakowski_to_ruletree(enc, prune=False):
@@ -93,7 +97,7 @@ def deshift_jakowski_encoding(enc):
 def generate_node_list(enc):
     nodes = []
     for pos, (feat, thr) in enumerate(enc.T):
-        if feat != thr and feat != -1: #not leaf
+        if feat != thr and feat != -1:  # not leaf
             nodes.append({
                 'node_id': get_col(pos),
                 'stump_type': 'RuleTree.stumps.classification.DecisionTreeStumpClassifier',
