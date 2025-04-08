@@ -35,7 +35,6 @@ jobs:
         run: |
           cd docs/_build/html/
           git init
-          touch .nojekyll
           git add -A
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -48,4 +47,12 @@ jobs:
           branch: gh-pages
           force: true
           directory: ./docs/_build/html
-      
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.TOKEN }}
+          publish_dir: _build/
+          force_orphan: true
