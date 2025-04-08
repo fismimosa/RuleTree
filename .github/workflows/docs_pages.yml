@@ -13,7 +13,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/chechout@v4
-        token: ${{ secrets.TOKEN }}
+        with:
+          token: ${{ secrets.TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
