@@ -16,7 +16,7 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
 
-      - name: Set up Python 
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -44,7 +44,7 @@ jobs:
       - name: Force push to destination branch
         uses: ad-m/github-push-action@master
         with:
-          github_token: $ {{ secrets.TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           branch: gh-pages
           force: true
           directory: ./docs/_build/html
