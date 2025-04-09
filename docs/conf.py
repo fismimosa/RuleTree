@@ -96,7 +96,7 @@ html_css_files = [
 ]
 
 html_theme_options = {
-    "repository_url": "https://github.com/fismimosa/RuleTree-dev",
+    "repository_url": "https://github.com/fismimosa/RuleTree",
     "use_repository_button": True,
     "use_issues_button": True,
     "use_download_button": True,
