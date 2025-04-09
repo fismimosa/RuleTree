@@ -10,6 +10,22 @@ from RuleTree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG, MODEL_TYPE_CLU
 
 
 class ObliqueBivariateSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
+    """
+    ObliqueBivariateSplit implements oblique splits using pairs of features.
+    
+    This approach finds optimal oblique decision boundaries by considering all pairs
+    of features and multiple orientations for each pair. It selects the feature pair
+    and orientation that provides the best split.
+    
+    Parameters
+    ----------
+    ml_task : str
+        The machine learning task type (classification, regression, or clustering).
+    n_orientations : int, default=10
+        Number of orientations to consider for each feature pair.
+    **kwargs : dict
+        Additional parameters to pass to the base model.
+    """
     def __init__(
             self,
             ml_task,
@@ -27,23 +43,60 @@ class ObliqueBivariateSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         self.feature_filters_matrix = None  # filter features matrix
         self.oblq_clf = None  # DecisionTreeClf/Reg used to find threshold of projected features
 
-        # self.best_w = None #best orientation to choose from
-        # self.best_b = None #best threshold/bias
-        # self.best_feats_pair = None #best feature pairs
-
         self.feats = None
         self.coeff = None
-        #self.threshold = None
 
     def generate_orientations(self, H):
+        """
+        Generates a matrix of orientations (angles) for projecting features.
+        
+        Parameters
+        ----------
+        H : int
+            Number of orientations to generate.
+        """
         angles = np.linspace(0, np.pi, H)  # np.pi is 180 degrees
         self.orientations_matrix = np.array([[np.cos(theta), np.sin(theta)] for theta in angles]).T
 
     def project_features(self, X, W):
+        """
+        Projects feature pairs onto different orientations.
+        
+        Parameters
+        ----------
+        X : array-like
+            Feature matrix with two columns (a feature pair).
+        W : array-like
+            Matrix of orientations to project onto.
+            
+        Returns
+        -------
+        array-like
+            Projected features.
+        """
         X_proj = X @ W
         return X_proj
 
     def best_threshold(self, X_proj, y, sample_weight=None, check_input=True):
+        """
+        Finds the best threshold for splitting the projected features.
+        
+        Parameters
+        ----------
+        X_proj : array-like
+            Projected feature matrix.
+        y : array-like
+            Target values.
+        sample_weight : array-like, optional
+            Sample weights.
+        check_input : bool, default=True
+            Whether to validate input.
+            
+        Returns
+        -------
+        tuple
+            (best_model, gain) for the best split.
+        """
         if self.ml_task == MODEL_TYPE_CLF:
             return self.__best_threshold_clf(X_proj, y, sample_weight, check_input)
         elif self.ml_task == MODEL_TYPE_REG:
@@ -52,6 +105,25 @@ class ObliqueBivariateSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             return self.__best_threshold_clu(X_proj, y, sample_weight, check_input)
 
     def __best_threshold_clf(self, X_proj, y, sample_weight=None, check_input=True):
+        """
+        Finds the best threshold for classification tasks.
+        
+        Parameters
+        ----------
+        X_proj : array-like
+            Projected feature matrix.
+        y : array-like
+            Target values.
+        sample_weight : array-like, optional
+            Sample weights.
+        check_input : bool, default=True
+            Whether to validate input.
+            
+        Returns
+        -------
+        tuple
+            (model, information_gain) for the best split.
+        """
         # for each orientation of the current feature pair,
         # find the best threshold with a DT
 
@@ -63,6 +135,25 @@ class ObliqueBivariateSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         return clf, gain_clf
 
     def __best_threshold_reg(self, X_proj, y, sample_weight=None, check_input=True):
+        """
+        Finds the best threshold for regression tasks.
+        
+        Parameters
+        ----------
+        X_proj : array-like
+            Projected feature matrix.
+        y : array-like
+            Target values.
+        sample_weight : array-like, optional
+            Sample weights.
+        check_input : bool, default=True
+            Whether to validate input.
+            
+        Returns
+        -------
+        tuple
+            (model, information_gain) for the best split.
+        """
         # for each orientation of the current feature pair,
         # find the best threshold with a DT
 
@@ -74,14 +165,70 @@ class ObliqueBivariateSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         return clf, gain_clf
 
     def __best_threshold_clu(self, X_proj, y, sample_weight=None, check_input=True):
+        """
+        Finds the best threshold for clustering tasks.
+        
+        Parameters
+        ----------
+        X_proj : array-like
+            Projected feature matrix.
+        y : array-like
+            Target values.
+        sample_weight : array-like, optional
+            Sample weights.
+        check_input : bool, default=True
+            Whether to validate input.
+            
+        Returns
+        -------
+        tuple
+            Not implemented for clustering tasks.
+        
+        Raises
+        ------
+        NotImplementedError
+            Always raises this exception as clustering is not implemented.
+        """
         raise NotImplementedError()
 
     def transform(self, X):
+        """
+        Projects input data onto the selected orientation.
+        
+        Parameters
+        ----------
+        X : array-like
+            Input feature matrix.
+            
+        Returns
+        -------
+        array-like
+            Projected features.
+        """
         i, j = self.feats
         X_proj = self.project_features(X[:, [i, j]], self.orientations_matrix)
         return X_proj
 
     def fit(self, X, y, sample_weight=None, check_input=True):
+        """
+        Fits the ObliqueBivariateSplit by finding the best feature pair and orientation.
+        
+        Parameters
+        ----------
+        X : array-like
+            Input feature matrix.
+        y : array-like
+            Target values.
+        sample_weight : array-like, optional
+            Sample weights.
+        check_input : bool, default=True
+            Whether to validate input.
+            
+        Returns
+        -------
+        self
+            The fitted splitter.
+        """
         self.n_features = X.shape[1]  # number of features
         self.generate_orientations(self.n_orientations)
         best_gain = -float('inf')
@@ -98,20 +245,7 @@ class ObliqueBivariateSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
                     self.oblq_clf = clf
                     best_gain = clf_gain
 
-                    # self.best_w = self.W[:, (clf.tree_.feature)[0]]
-                    # self.best_b = clf.tree_.threshold[0]
-                    # self.best_feats_pair = (i,j)
-
                     self.coeff = self.orientations_matrix[:, (clf.tree_.feature)[0]]
                     self.feats = [i, j]
-                    #self.threshold = clf.tree_.threshold[0]
 
         return self
-
-    #def predict(self, X):
-    #    X_proj = self.transform(X)
-    #    return self.oblq_clf.predict(X_proj)
-
-    #def apply(self, X):
-    #    X_proj = self.transform(X)
-    #    return self.oblq_clf.apply(X_proj)

@@ -18,6 +18,51 @@ from RuleTree.utils.shapelet_transform.matrix_to_vector_distances import euclide
 
 
 class Shapelets(TransformerMixin):
+    """
+    Shapelets transformer for time series classification.
+    
+    This class implements the shapelet transform method which transforms time series data
+    into a feature vector of distances between the time series and a set of shapelets.
+    Shapelets are discriminative subsequences extracted from the time series.
+    
+    The transformer follows scikit-learn's TransformerMixin interface (fit, transform).
+    
+    Parameters
+    ----------
+    n_shapelets : int, default=100
+        Number of shapelets to be used in the transformation.
+    
+    n_shapelets_for_selection : int or str, default=np.inf
+        Number of candidate shapelets to generate before selection.
+        If 'stratified', generates candidates based on class distribution.
+        If np.inf, generates all possible candidates.
+    
+    n_ts_for_selection_per_class : int, default=np.inf
+        Number of time series to use per class for shapelet candidates.
+    
+    sliding_window : int, default=50
+        Length of the shapelets to extract.
+    
+    selection : str, default='random'
+        Method used to select the final shapelets from candidates:
+        - 'random': random selection
+        - 'mi_clf': mutual information (classification)
+        - 'mi_reg': mutual information (regression)
+        - 'cluster': KMedoids clustering
+    
+    distance : str or callable, default='euclidean'
+        Distance metric to use for computing distances between shapelets and time series.
+        Options: 'euclidean', 'sqeuclidean', 'cosine', 'cityblock', or custom callable.
+    
+    mi_n_neighbors : int, default=100
+        Number of neighbors to use for mutual information calculation.
+    
+    random_state : int, default=42
+        Random seed for reproducibility.
+    
+    n_jobs : int, default=1
+        Number of parallel jobs. If -1, uses all available processors.
+    """
     __distances = {
         'euclidean': euclidean,
         'sqeuclidean': sqeuclidean,
@@ -58,12 +103,45 @@ class Shapelets(TransformerMixin):
         random.seed(random_state)
 
     def __get_distance(self):
+        """
+        Get the distance function based on the distance parameter.
+        
+        Returns
+        -------
+        callable
+            The distance function to use for computing shapelet distances.
+        """
         if isinstance(self.distance, str):
             return self.__distances[self.distance]
         return self.distance
 
 
     def fit(self, X, y=None, **fit_params):
+        """
+        Fit the Shapelets transformer on training data.
+        
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_signals, n_timepoints)
+            Training time series data.
+            Currently only supports n_signals=1 (univariate time series).
+        
+        y : array-like of shape (n_samples,), default=None
+            Target values for supervised learning.
+            
+        **fit_params : dict
+            Additional parameters passed to selection methods.
+            
+        Returns
+        -------
+        self : Shapelets
+            Returns self.
+            
+        Raises
+        ------
+        NotImplementedError
+            If multivariate time series are provided (n_signals > 1).
+        """
         # X.shape = (n_records, n_signals, n_obs)
         if X.shape[1] != 1:
             raise NotImplementedError("Multivariate TS are not supported (yet).")
@@ -85,6 +163,22 @@ class Shapelets(TransformerMixin):
 
 
     def __fit_partition(self, X, y):
+        """
+        Generate candidate shapelets from the time series data.
+        
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_signals, n_timepoints)
+            Time series data.
+            
+        y : array-like of shape (n_samples,), default=None
+            Target values.
+            
+        Returns
+        -------
+        array-like of shape (n_candidates, n_signals, shapelet_length)
+            Candidate shapelets extracted from the time series data.
+        """
         if y is None:
             y = np.zeros(X.shape[0])
 
@@ -117,10 +211,56 @@ class Shapelets(TransformerMixin):
         return np.array(candidate_shapelets)
 
     def __fit_selection_random(self, candidate_shapelets: np.ndarray, X, y):
+        """
+        Randomly select shapelets from candidates.
+        
+        Parameters
+        ----------
+        candidate_shapelets : array-like of shape (n_candidates, n_signals, shapelet_length)
+            Candidate shapelets.
+        
+        X : array-like of shape (n_samples, n_signals, n_timepoints)
+            Time series data (unused in random selection).
+            
+        y : array-like of shape (n_samples,)
+            Target values (unused in random selection).
+            
+        Returns
+        -------
+        array-like of shape (n_shapelets, n_signals, shapelet_length)
+            Randomly selected shapelets.
+        """
         n_shapelets = min(self.n_shapelets, candidate_shapelets.shape[0])
         return candidate_shapelets[np.random.choice(candidate_shapelets.shape[0], size=n_shapelets, replace=False)]
 
     def __fit_selection_mutual_info(self, candidate_shapelets: np.ndarray, X, y, mutual_info_fun):
+        """
+        Select shapelets using mutual information criteria.
+        
+        Parameters
+        ----------
+        candidate_shapelets : array-like of shape (n_candidates, n_signals, shapelet_length)
+            Candidate shapelets.
+            
+        X : array-like of shape (n_samples, n_signals, n_timepoints)
+            Time series data.
+            
+        y : array-like of shape (n_samples,)
+            Target values.
+            
+        mutual_info_fun : callable
+            Function to compute mutual information (either mutual_info_classif or mutual_info_regression).
+            
+        Returns
+        -------
+        array-like of shape (n_shapelets, n_signals, shapelet_length)
+            Shapelets selected based on mutual information.
+            
+        Raises
+        ------
+        UnsupportedError
+            If y is None (unsupervised tasks).
+        """
         if y is None:
             raise UnsupportedError("Mutual information is not suitable for unsupervised tasks.")
 
@@ -141,6 +281,30 @@ class Shapelets(TransformerMixin):
             [-min(scores.shape[0], self.n_shapelets):]]
 
     def __fit_selection_cluster(self, candidate_shapelets, X, y):
+        """
+        Select shapelets using KMedoids clustering.
+        
+        Parameters
+        ----------
+        candidate_shapelets : array-like of shape (n_candidates, n_signals, shapelet_length)
+            Candidate shapelets.
+            
+        X : array-like of shape (n_samples, n_signals, n_timepoints)
+            Time series data (unused in cluster selection).
+            
+        y : array-like of shape (n_samples,)
+            Target values (unused in cluster selection).
+            
+        Returns
+        -------
+        array-like of shape (n_shapelets, n_signals, shapelet_length)
+            Shapelets selected as medoids from clustering.
+            
+        Raises
+        ------
+        Exception
+            If scikit-learn-extra is not installed.
+        """
         old_n_threads = numba.get_num_threads()
         numba.set_num_threads(self.n_jobs)
         dist_matrix = _best_fit(candidate_shapelets, candidate_shapelets, self.__get_distance())
@@ -156,6 +320,29 @@ class Shapelets(TransformerMixin):
         return candidate_shapelets[clu.medoid_indices_]
 
     def transform(self, X, y=None, **transform_params):
+        """
+        Transform time series data into shapelet distance features.
+        
+        For each time series in X, computes the minimum distance to each shapelet,
+        resulting in a feature vector of length n_shapelets.
+        
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_signals, n_timepoints)
+            Time series data to transform.
+            
+        y : array-like of shape (n_samples,), default=None
+            Target values (unused in transformation).
+            
+        **transform_params : dict
+            Additional parameters (unused).
+            
+        Returns
+        -------
+        array-like of shape (n_samples, n_shapelets)
+            Transformed data, where each feature is the minimum distance between
+            a time series and a shapelet.
+        """
         old_n_threads = numba.get_num_threads()
         numba.set_num_threads(self.n_jobs)
         dist_matrix = _best_fit(X, self.shapelets, self.__get_distance())
@@ -165,6 +352,28 @@ class Shapelets(TransformerMixin):
 
 @jit(parallel=True)
 def _best_fit(timeseries: np.ndarray, shapelets: np.ndarray, distance):
+    """
+    Compute the minimum distance between time series and shapelets.
+    
+    For each time series and shapelet, computes the minimum distance between
+    the shapelet and all subsequences of the time series.
+    
+    Parameters
+    ----------
+    timeseries : array-like of shape (n_samples, n_signals, n_timepoints)
+        Time series data.
+        
+    shapelets : array-like of shape (n_shapelets, n_signals, shapelet_length)
+        Shapelets.
+        
+    distance : callable
+        Distance function to use.
+        
+    Returns
+    -------
+    array-like of shape (n_samples, n_shapelets)
+        Matrix of minimum distances between time series and shapelets.
+    """
     res = np.ones((timeseries.shape[0], shapelets.shape[0]), dtype=np.float32)*np.inf
     w = shapelets.shape[-1]
 
@@ -182,17 +391,6 @@ def _best_fit(timeseries: np.ndarray, shapelets: np.ndarray, distance):
 
 
 if __name__ == '__main__':
-    """random.seed(42)
-    X = np.random.rand(10000, 1, 500).astype(np.float32)
-    shapelets = np.random.rand(100, 1, 50).astype(np.float32)
-
-    st = Shapelet(n_jobs=-1)
-
-    numba.set_num_threads(1)
-    start = time.time()
-    res = _best_fit(X, shapelets, euclidean)
-    print(round(time.time()-start, 6))
-    print(res[:10])"""
     df_train = pd.DataFrame(scipy.io.arff.loadarff('test_dataset/CBF/CBF_TRAIN.arff')[0])
     df_test = pd.DataFrame(scipy.io.arff.loadarff('test_dataset/CBF/CBF_TEST.arff')[0])
     df_train.target = df_train.target.astype(int)
@@ -214,3 +412,4 @@ if __name__ == '__main__':
     y_pred = rf.predict(X_test_transform)
 
     print(classification_report(y_test, y_pred))
+

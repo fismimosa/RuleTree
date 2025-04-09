@@ -30,6 +30,7 @@ extensions = [
     'nbsphinx',
     'versionwarning.extension',
     'sphinx_last_updated_by_git',
+    'sphinx.ext.napoleon'
 ]
 
 templates_path = ['_templates']
@@ -48,6 +49,6 @@ html_theme_options = {
     "use_repository_button": True,
 }
 
-favicons = [
+favicons = [ 
     {"href": "icon.svg"},
 ]
