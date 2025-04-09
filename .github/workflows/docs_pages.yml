@@ -28,7 +28,7 @@ jobs:
       - name: make docs
         run: |
           make -C docs clean
-          sphinx-build -b html docs docs/_build/html
+          sphinx-build -b html docs _build/html
       - name: Init new repo in dist folder and commit generated files
         run: |
           cd docs/_build/html/
