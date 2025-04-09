@@ -19,7 +19,7 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
 
     This implementation extends scikit-learn's BaggingClassifier and adds functionalities specific to
     rule-based classifiers.
-    """
+    """ 
 
     def __init__(self,
                  n_estimators=100,
