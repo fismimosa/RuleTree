@@ -44,6 +44,21 @@ add_module_names = False  # Don't prefix members with module name
 autodoc_typehints = 'signature'  # Show type hints in signature
 autodoc_member_order = 'bysource'  # Preserve the order of members as in the source
 
+# NumPy-style table of contents configuration
+toc_object_entries = True  # Show objects (classes, functions) in TOC
+toc_object_entries_show_parents = "hide"  # Hide the parent module/class names
+
+# Configure autodoc defaults to control what gets documented
+autodoc_default_options = {
+    'members': True,  # Document all members
+    'undoc-members': True,  # Document members without docstrings
+    'show-inheritance': True,  # Show base classes
+    'inherited-members': False,  # Don't show inherited members by default
+    'member-order': 'bysource',  # Keep original source order
+    'special-members': '__init__',  # Document special methods like __init__
+    'private-members': False,  # Don't document _private members
+}
+
 # -- Options for Napoleon extension ------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html#configuration
 
@@ -75,5 +90,5 @@ html_theme_options = {
 }
 
 favicons = [ 
-    {"href": "icon.svg"},
+    {"href": "icon.png"},
 ]
