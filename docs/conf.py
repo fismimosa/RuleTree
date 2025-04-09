@@ -30,7 +30,13 @@ extensions = [
     'nbsphinx',
     'versionwarning.extension',
     'sphinx_last_updated_by_git',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    # Additional useful extensions
+    'sphinx.ext.intersphinx',  # Link to other projects' documentation
+    'sphinx.ext.mathjax',      # Better math support
+    'sphinx_design',           # Responsive web components
+    'sphinx.ext.autosummary',  # Generate summary tables
+    'sphinx_togglebutton',     # Add toggle buttons to content
 ]
 
 templates_path = ['_templates']
@@ -84,11 +90,72 @@ html_static_path = ['_static']
 html_title = "RuleTree Documentation"
 html_logo = "_static/logo.png"
 
+# Load custom CSS
+html_css_files = [
+    'custom.css',
+]
+
 html_theme_options = {
     "repository_url": "https://github.com/fismimosa/RuleTree-dev",
     "use_repository_button": True,
+    "use_issues_button": True,
+    "use_download_button": True,
+    "use_fullscreen_button": True,
+    "path_to_docs": "docs",
+    "show_navbar_depth": 2,
+    "show_toc_level": 2,
+    "announcement": "This project is in active development. API may change.",
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/fismimosa/RuleTree-dev",
+            "icon": "fa-brands fa-github",
+        }
+    ],
+    "logo": {
+        "image_light": "_static/logo.png",
+        "image_dark": "_static/logo_dark.png",  # Add dark mode logo if available
+    },
 }
 
-favicons = [ 
+# Favicon configuration
+favicons = [
     {"href": "icon.png"},
 ]
+
+# Intersphinx configuration to link to external documentation
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'pandas': ('https://pandas.pydata.org/docs/', None),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+}
+
+# Code block styling and copy button configuration
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
+copybutton_remove_prompts = True
+copybutton_line_continuation_character = "\\"
+
+# Custom sidebar templates
+html_sidebars = {
+    "**": ["sidebar-logo.html", "search-field.html", "sbt-sidebar-nav.html"]
+}
+
+# Enable autosectionlabel to make it easier to link to sections
+autosectionlabel_prefix_document = True
+
+# Enable autosummary features
+autosummary_generate = True
+
+# Set default content width (75% is often more readable than the default 100%)
+html_theme_options["max_width"] = "75%"
+
+# Add last updated timestamp to each page
+html_last_updated_fmt = "%b %d, %Y"
+
+# Enable the version warning banner for development versions
+versionwarning_messages = {
+    "latest": "You are viewing the latest development version.",
+}
+
