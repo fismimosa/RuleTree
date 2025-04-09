@@ -137,10 +137,6 @@ copybutton_prompt_is_regexp = True
 copybutton_remove_prompts = True
 copybutton_line_continuation_character = "\\"
 
-# Custom sidebar templates
-html_sidebars = {
-    "**": ["sidebar-logo.html", "search-field.html", "sbt-sidebar-nav.html"]
-}
 
 # Enable autosectionlabel to make it easier to link to sections
 autosectionlabel_prefix_document = True
@@ -154,8 +150,4 @@ html_theme_options["max_width"] = "75%"
 # Add last updated timestamp to each page
 html_last_updated_fmt = "%b %d, %Y"
 
-# Enable the version warning banner for development versions
-versionwarning_messages = {
-    "latest": "You are viewing the latest development version.",
-}
 
