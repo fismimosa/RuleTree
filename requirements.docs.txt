@@ -2,6 +2,7 @@ sphinx
 sphinx_rtd_theme
 mock
 sphinx-book-theme
+sphinx_design
 sphinx-favicon
 sphinx-prompt
 sphinx-copybutton
