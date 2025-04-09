@@ -1,3 +1,10 @@
+"""
+Module containing the RuleTree class.
+
+The RuleTree class implements a decision tree structure with additional functionality
+for handling custom stumps, feature importance computation, and local interpretation.
+"""
+
 import heapq
 import importlib
 import json
@@ -20,6 +27,22 @@ from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_
 
 
 class RuleTree(RuleTreeBase, ABC):
+    """
+    Base class for RuleTree models.
+
+    This class provides the core implementation of a RuleTree, including methods for
+    fitting, predicting, and exporting the tree structure. It supports custom stumps
+    and advanced features like feature importance computation and local interpretation.
+
+    Attributes:
+        max_leaf_nodes (int): Maximum number of leaf nodes in the tree.
+        min_samples_split (int): Minimum number of samples required to split a node.
+        max_depth (int): Maximum depth of the tree.
+        prune_useless_leaves (bool): Whether to prune leaves that do not contribute.
+        base_stumps (list): List of base stumps used for splitting.
+        stump_selection (str): Method for selecting stumps ('random' or 'best').
+        random_state (int): Random seed for reproducibility.
+    """
     def __init__(self,
                  max_leaf_nodes,
                  min_samples_split,
@@ -30,6 +53,18 @@ class RuleTree(RuleTreeBase, ABC):
                  stump_selection, # ['random', 'best']
                  random_state,
                  ):
+        """
+        Initialize the RuleTree.
+
+        Args:
+            max_leaf_nodes (int): Maximum number of leaf nodes.
+            min_samples_split (int): Minimum samples required to split a node.
+            max_depth (int): Maximum depth of the tree.
+            prune_useless_leaves (bool): Whether to prune useless leaves.
+            base_stumps (list): List of base stumps or their configurations.
+            stump_selection (str): Stump selection strategy ('random' or 'best').
+            random_state (int): Random seed for reproducibility.
+        """
         self.tiebreaker = count()
         self.root:RuleTreeNode = None
         self.queue = list()
@@ -48,7 +83,11 @@ class RuleTree(RuleTreeBase, ABC):
         random.seed(random_state)
 
     def _set_stump(self):
-        # base stump type checking
+        """
+        Set the base stumps for the RuleTree.
+
+        This method validates and processes the base stumps provided during initialization.
+        """
         class_to_check = self._get_stumps_base_class()
         _base_stump = []
         _p = []
@@ -75,6 +114,15 @@ class RuleTree(RuleTreeBase, ABC):
         self.base_stumps = [(p, stump) for p, stump in zip(np.cumsum(_p), _base_stump)]
 
     def _get_random_stump(self, X):
+        """
+        Get a random stump compatible with the input data.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+
+        Returns:
+            RuleTreeBaseStump: A randomly selected stump.
+        """
         val = random.random()
 
         supported_stumps = self._filter_types(X)
@@ -84,6 +132,15 @@ class RuleTree(RuleTreeBase, ABC):
                 return sklearn.clone(clf)
 
     def _filter_types(self, X) -> list[tuple[float, RuleTreeBaseStump]]:
+        """
+        Filter stumps based on the data type of the input.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+
+        Returns:
+            list[tuple[float, RuleTreeBaseStump]]: List of compatible stumps.
+        """
         if len(X.shape) == 2:
             data_type = DATA_TYPE_TABULAR
         elif len(X.shape) == 3:
@@ -106,12 +163,34 @@ class RuleTree(RuleTreeBase, ABC):
         return compatible_stumps
     
 
-
     @abstractmethod
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
+        """
+        Compute medoids for the given data.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+            y: Target labels.
+            idx (np.ndarray): Indices of the samples.
+            **kwargs: Additional arguments.
+
+        Returns:
+            np.ndarray: Medoids indices.
+        """
         pass
     
     def fit(self, X: np.array, y: np.array = None, **kwargs):
+        """
+        Fit the RuleTree to the provided data.
+
+        Args:
+            X (np.array): Feature matrix.
+            y (np.array): Target labels.
+            **kwargs: Additional arguments for fitting.
+
+        Returns:
+            RuleTree: The fitted RuleTree instance.
+        """
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
         self.n_features = X.shape[1]
@@ -203,16 +282,43 @@ class RuleTree(RuleTreeBase, ABC):
         return self
 
     def predict(self, X: np.ndarray):
+        """
+        Predict class labels for the input data.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+
+        Returns:
+            np.ndarray: Predicted class labels.
+        """
         labels, leaves, proba = self._predict(X, self.root)
 
         return labels
 
     def apply(self, X: np.ndarray):
+        """
+        Apply the RuleTree to the input data.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+
+        Returns:
+            np.ndarray: Leaf indices for each sample.
+        """
         labels, leaves, proba = self._predict(X, self.root)
 
         return leaves
 
     def predict_proba(self, X: np.ndarray):
+        """
+        Predict class probabilities for the input data.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+
+        Returns:
+            np.ndarray: Predicted class probabilities.
+        """
         labels, leaves, proba = self._predict(X, self.root)
         proba_matrix = np.zeros((X.shape[0], self.n_classes_))
         for classe in self.classes_:
@@ -221,6 +327,16 @@ class RuleTree(RuleTreeBase, ABC):
         return proba_matrix
 
     def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
+        """
+        Internal method for prediction.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+            current_node (RuleTreeNode): Current node in the tree.
+
+        Returns:
+            tuple: Predicted labels, leaf indices, and probabilities.
+        """
         if current_node.is_leaf():
             n = len(X)
             return np.array([current_node.prediction] * n), \
@@ -248,42 +364,135 @@ class RuleTree(RuleTreeBase, ABC):
             return labels, leaves, proba
 
     def get_rules(self, columns_names = None):
+        """
+        Get the rules of the RuleTree.
+
+        Args:
+            columns_names (list): Column names for the features.
+
+        Returns:
+            dict: Rules of the tree.
+        """
         return self.root.get_rule(columns_names = columns_names)
 
     def make_leaf(self, node: RuleTreeNode) -> RuleTreeNode:
+        """
+        Convert a node into a leaf.
+
+        Args:
+            node (RuleTreeNode): Node to be converted.
+
+        Returns:
+            RuleTreeNode: Leaf node.
+        """
         return node
 
     def queue_pop(self):
+        """
+        Pop an element from the queue.
+
+        Returns:
+            tuple: Index and current node.
+        """
         el = heapq.heappop(self.queue)
         return el[-2:]
 
     def check_additional_halting_condition(self, y, curr_idx: np.ndarray):
+        """
+        Check additional halting conditions for splitting.
+
+        Args:
+            y: Target labels.
+            curr_idx (np.ndarray): Current indices.
+
+        Returns:
+            bool: Whether to halt splitting.
+        """
         return False
 
     def _post_fit_fix(self):
+        """
+        Perform post-fit adjustments to the RuleTree.
+        """
         return
 
     @abstractmethod
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
+        """
+        Create a split in the RuleTree.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+            y: Target labels.
+            idx (np.ndarray): Indices of the samples.
+            **kwargs: Additional arguments.
+
+        Returns:
+            tree: Decision tree stump.
+        """
         pass
 
     @abstractmethod
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+        """
+        Prepare a node in the RuleTree.
+
+        Args:
+            y (np.ndarray): Target labels.
+            idx (np.ndarray): Indices of the samples.
+            node_id (str): Node identifier.
+
+        Returns:
+            RuleTreeNode: Prepared node.
+        """
         pass
 
     @abstractmethod
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
+        """
+        Push a node into the queue.
+
+        Args:
+            node (RuleTreeNode): Node to be pushed.
+            idx (np.ndarray): Indices of the samples.
+        """
         pass
 
     @abstractmethod
     def is_split_useless(self, X: np.ndarray, clf: tree, idx: np.ndarray):
+        """
+        Check if a split is useless.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+            clf (tree): Decision tree stump.
+            idx (np.ndarray): Indices of the samples.
+
+        Returns:
+            bool: Whether the split is useless.
+        """
         pass
 
     @abstractmethod
     def _get_stumps_base_class(self):
+        """
+        Get the base class for stumps.
+
+        Returns:
+            type: Base class for stumps.
+        """
         return RuleTreeBaseStump
 
     def _get_tree_paths(self, current_node = None):
+        """
+        Get all paths in the RuleTree.
+
+        Args:
+            current_node (RuleTreeNode): Current node in the tree.
+
+        Returns:
+            list: List of paths.
+        """
         if current_node.is_leaf():
             return [[current_node.node_id]]
         
@@ -306,6 +515,17 @@ class RuleTree(RuleTreeBase, ABC):
         return paths
     
     def _node_dict(self, current_node=None, d=None, i=0):
+        """
+        Create a dictionary mapping node IDs to indices.
+
+        Args:
+            current_node (RuleTreeNode): Current node in the tree.
+            d (dict): Dictionary to store mappings.
+            i (int): Current index.
+
+        Returns:
+            tuple: Dictionary and current index.
+        """
         if d is None:
             d = {}
             
@@ -325,9 +545,25 @@ class RuleTree(RuleTreeBase, ABC):
 
     @abstractmethod
     def _get_prediction_probas(self, current_node, probas=None):
+        """
+        Get prediction probabilities for the RuleTree.
+
+        Args:
+            current_node (RuleTreeNode): Current node in the tree.
+            probas (list): List to store probabilities.
+
+        Returns:
+            list: Prediction probabilities.
+        """
         pass
 
     def _tree_value(self):
+        """
+        Get the values of the RuleTree.
+
+        Returns:
+            np.ndarray: Tree values.
+        """
         probas = self._get_prediction_probas(self.root)
         if isinstance(probas[0], (list, np.ndarray)):
             return np.array(probas).reshape(-1, 1, len(probas[0]))
@@ -335,6 +571,16 @@ class RuleTree(RuleTreeBase, ABC):
             return np.array(probas).reshape(-1, 1, 1)
             
     def _tree_feature(self, current_node = None, feats=None):
+        """
+        Get the features used in the RuleTree.
+
+        Args:
+            current_node (RuleTreeNode): Current node in the tree.
+            feats (list): List to store features.
+
+        Returns:
+            list: Features used in the tree.
+        """
         if feats is None:
             feats = []
             
@@ -352,37 +598,55 @@ class RuleTree(RuleTreeBase, ABC):
         
 
     def _compute_importances(self, current_node=None, importances=None):
-       if importances is None:
-           importances = np.zeros(self.n_features, dtype=np.float64)
+        """
+        Compute feature importances for the RuleTree.
 
-       if current_node is None:
-           current_node = self.root
+        Args:
+            current_node (RuleTreeNode): Current node in the tree.
+            importances (np.ndarray): Array to store importances.
 
-       if not current_node.is_leaf():
-           #following the implementation of https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/tree/_tree.pyx#L1251
-           feature = current_node.stump.feature_original[0]
-           
-           imp_parent, imp_child_l, imp_child_r = current_node.stump.tree_.impurity
-           n_parent, n_child_l, n_child_r = current_node.stump.tree_.weighted_n_node_samples
-           
-           info_gain = (
-               n_parent * imp_parent
-               - n_child_l * imp_child_l
-               - n_child_r * imp_child_r
-           )
-           
-           info_gain 
-           
-           importances[feature] += info_gain
+        Returns:
+            np.ndarray: Feature importances.
+        """
+        if importances is None:
+            importances = np.zeros(self.n_features, dtype=np.float64)
 
-           # Recur for left and right children
-           self._compute_importances(current_node.node_l, importances)
-           self._compute_importances(current_node.node_r, importances)
+        if current_node is None:
+            current_node = self.root
 
-       return importances 
+        if not current_node.is_leaf():
+            #following the implementation of https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/tree/_tree.pyx#L1251
+            feature = current_node.stump.feature_original[0]
+           
+            imp_parent, imp_child_l, imp_child_r = current_node.stump.tree_.impurity
+            n_parent, n_child_l, n_child_r = current_node.stump.tree_.weighted_n_node_samples
+           
+            info_gain = (
+                n_parent * imp_parent
+                - n_child_l * imp_child_l
+                - n_child_r * imp_child_r
+            )
+           
+            info_gain 
+           
+            importances[feature] += info_gain
+
+            # Recur for left and right children
+            self._compute_importances(current_node.node_l, importances)
+            self._compute_importances(current_node.node_r, importances)
+
+        return importances 
    
     def compute_feature_importances(self, normalize=True):
-        
+        """
+        Compute feature importances based on information gain.
+
+        Args:
+            normalize (bool): Whether to normalize the importances.
+
+        Returns:
+            np.ndarray: Array of feature importances.
+        """
         importances = self._compute_importances()
         root_weighted_samples = self.root.stump.tree_.weighted_n_node_samples[0]
         importances /= root_weighted_samples
@@ -395,7 +659,16 @@ class RuleTree(RuleTreeBase, ABC):
         return importances
         
     def local_interpretation(self, X, joint_contribution = False):
-        
+        """
+        Perform local interpretation for the input data.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+            joint_contribution (bool): Whether to compute joint contributions.
+
+        Returns:
+            tuple: Direct predictions, biases, and contributions.
+        """
         node_dict = self._node_dict()[0] #-> Turn 'R': 0, 'Rl' : 1, 'Rr' :2 and so on
 
         leaves = np.array([node_dict[x] for x in self.apply(X)])
@@ -422,7 +695,21 @@ class RuleTree(RuleTreeBase, ABC):
                            biases,
                            line_shape,
                            joint_contribution = False):
-        
+        """
+        Evaluate contributions for the RuleTree.
+
+        Args:
+            leaves (np.ndarray): Leaf indices.
+            paths (list): List of paths.
+            leaf_to_path (dict): Mapping of leaves to paths.
+            values (np.ndarray): Tree values.
+            biases (np.ndarray): Biases.
+            line_shape (int): Shape of the feature matrix.
+            joint_contribution (bool): Whether to compute joint contributions.
+
+        Returns:
+            tuple: Direct predictions, biases, and contributions.
+        """
         direct_prediction = values[leaves]
         values_list = list(values)
         feature_index = list(self._tree_feature())
@@ -472,6 +759,15 @@ class RuleTree(RuleTreeBase, ABC):
     
     @classmethod
     def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
+        """
+        Print the rules of the RuleTree.
+
+        Args:
+            rules (dict): Rules of the tree.
+            columns_names (list): Column names for the features.
+            ndigits (int): Number of digits for rounding.
+            indent (int): Indentation level.
+        """
         #columns_names now included in stump get_rule(), should we keep it here?
         #ndigits/float precision included in stump get_rule(), should we keep it here?
       
@@ -491,6 +787,15 @@ class RuleTree(RuleTreeBase, ABC):
     
     @classmethod
     def print_rules_old(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
+        """
+        Print the rules of the RuleTree (old version).
+
+        Args:
+            rules (dict): Rules of the tree.
+            columns_names (list): Column names for the features.
+            ndigits (int): Number of digits for rounding.
+            indent (int): Indentation level.
+        """
         names = lambda x: f"X_{x}"
         names_pivots = lambda x: f"P_{x}"
 
@@ -573,7 +878,15 @@ class RuleTree(RuleTreeBase, ABC):
 
     @classmethod
     def decode_ruletree(cls, vector):
+        """
+        Decode a RuleTree from a vector representation.
 
+        Args:
+            vector (np.ndarray): Vector representation of the tree.
+
+        Returns:
+            dict: Mapping of indices to RuleTreeNode instances.
+        """
         #need to check if n_classes_ is actually necessary
         
         #n_classes_ = np.array([n_classes_], dtype=np.intp)
@@ -588,6 +901,12 @@ class RuleTree(RuleTreeBase, ABC):
         return idx_to_node
                             
     def encode_ruletree(self):
+        """
+        Encode the RuleTree into a vector representation.
+
+        Returns:
+            np.ndarray: Vector representation of the tree.
+        """
         nodes = (2 ** (self.max_depth + 1)) - 1
         vector = np.zeros((2, nodes), dtype=object)
         
@@ -623,6 +942,15 @@ class RuleTree(RuleTreeBase, ABC):
 
 
     def to_dict(self, filename=None):
+        """
+        Convert the RuleTree to a dictionary representation.
+
+        Args:
+            filename (str): File to save the dictionary.
+
+        Returns:
+            dict: Dictionary representation of the tree.
+        """
         node_list = [self.root]
 
         args = {
@@ -659,6 +987,15 @@ class RuleTree(RuleTreeBase, ABC):
 
     @classmethod
     def from_dict(cls, filename):
+        """
+        Create a RuleTree from a dictionary representation.
+
+        Args:
+            filename (str): File containing the dictionary.
+
+        Returns:
+            RuleTree: RuleTree instance.
+        """
         with open(filename, 'r') as f:
             dictionary = json.load(f)
 
@@ -683,10 +1020,23 @@ class RuleTree(RuleTreeBase, ABC):
         return tree
 
     def export_graphviz(self, columns_names=None, scaler=None, float_precision=3, filename:str|None=None):
+        """
+        Export the RuleTree to a Graphviz representation.
+
+        Args:
+            columns_names (list): Column names for the features.
+            scaler: Scaler for the features.
+            float_precision (int): Number of digits for rounding.
+            filename (str): File to save the Graphviz representation.
+
+        Returns:
+            graphviz.Digraph: Graphviz representation of the tree.
+        """
         dot = self.root.export_graphviz(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
         if filename is None:
             dot.render(directory=TemporaryDirectory(delete=False).name, view=True)
             return dot
         else:
             dot.render(filename=filename)
+
 

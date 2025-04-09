@@ -9,6 +9,24 @@ from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_
 
 
 class RuleTreeNode:
+    """
+    Represents a node in a Rule Tree.
+    
+    A Rule Tree node can be either a decision node with a splitting rule (stump) 
+    or a leaf node with a prediction. Each node contains information about its prediction,
+    its position in the tree hierarchy, and references to its child nodes.
+    
+    Attributes:
+        node_id (str): Unique identifier for the node
+        prediction: The predicted class or value
+        prediction_probability: Probability distribution across classes or confidence score
+        classes: Array of possible class labels
+        parent: Reference to parent node
+        stump: The splitting rule at this node (None for leaf nodes)
+        node_l: Left child node
+        node_r: Right child node
+        medoids_index: Index of medoid samples (optional)
+    """
 
     def __init__(self,
                  node_id: str,
@@ -20,6 +38,20 @@ class RuleTreeNode:
                  node_l: Self = None,
                  node_r: Self = None,
                  **kwargs):
+        """
+        Initialize a RuleTreeNode.
+        
+        Args:
+            node_id: Unique identifier for the node
+            prediction: The predicted class or value
+            prediction_probability: Probability distribution across classes or confidence score
+            classes: Array of possible class labels
+            parent: Reference to parent node (None for root)
+            stump: The splitting rule at this node (None for leaf nodes)
+            node_l: Left child node
+            node_r: Right child node
+            **kwargs: Additional attributes to be set on the node
+        """
         self.node_id = node_id
         self.prediction = prediction
         self.prediction_probability = prediction_probability
@@ -35,17 +67,45 @@ class RuleTreeNode:
             
         
     def is_leaf(self):
+        """
+        Check if this node is a leaf node.
+        
+        Returns:
+            bool: True if this is a leaf node (has no children), False otherwise
+        """
         return self.node_l is None and self.node_r is None
 
     def make_leaf(self):
+        """
+        Convert this node into a leaf node by removing its children.
+        
+        Returns:
+            Self: The modified node (now a leaf)
+        """
         self.node_l, self.node_r = None, None
         return self
 
     def simplify(self) -> Self:
+        """
+        Simplify the tree rooted at this node.
+        
+        Calls the internal _simplify method and returns the root node.
+        
+        Returns:
+            Self: The root of the simplified tree
+        """
         self._simplify()
         return self
 
     def _simplify(self):  # TODO: update
+        """
+        Internal method that simplifies the tree by pruning redundant nodes.
+        
+        Simplifies the tree by removing branches where all leaves have the same prediction.
+        
+        Returns:
+            set: A set of unique prediction values in this subtree
+        """
         if self.is_leaf():
             return {self.prediction}
         else:
@@ -58,9 +118,21 @@ class RuleTreeNode:
                 return all_pred
 
     def set_stump(self, stump:RuleTreeBaseStump):
+        """
+        Set the splitting rule (stump) for this node.
+        
+        Args:
+            stump: The RuleTreeBaseStump object representing the splitting rule
+        """
         self.stump = stump
 
     def get_possible_outputs(self) -> tuple[set, set]:  # TODO: update
+        """
+        Get all possible prediction values in the subtree.
+        
+        Returns:
+            tuple[set, set]: A tuple containing (leaf_predictions, internal_node_predictions)
+        """
         if self.is_leaf():
             return {self.prediction}, set()
         else:
@@ -70,9 +142,27 @@ class RuleTreeNode:
             return leaf_l | leaf_r, node_l | node_r | {self.prediction}
 
     def get_depth(self):
+        """
+        Get the depth of this node in the tree.
+        
+        The depth is calculated from the node_id length, which should encode the path.
+        
+        Returns:
+            int: The depth of this node
+        """
         return len(self.node_id) - 1
 
     def get_rule(self, columns_names=None, scaler=None):
+        """
+        Get a dictionary representation of the rule at this node and its subtree.
+        
+        Args:
+            columns_names: Optional list of feature column names for better rule interpretability
+            scaler: Optional scaler for transforming threshold values
+            
+        Returns:
+            dict: Dictionary containing the node information and its rule
+        """
         rule = {
             "node_id": self.node_id,
             "is_leaf": self.is_leaf(),
@@ -88,8 +178,15 @@ class RuleTreeNode:
     
         return rule
     
-
     def node_to_dict(self):
+        """
+        Convert this node to a dictionary representation for serialization.
+        
+        The dictionary includes all necessary information to reconstruct the node.
+        
+        Returns:
+            dict: Dictionary representation of the node
+        """
         node_as_dict ={
             "node_id": self.node_id,
             "is_leaf": self.is_leaf(),
@@ -107,6 +204,19 @@ class RuleTreeNode:
 
     @classmethod
     def dict_to_node(cls, info_dict, X = None):
+        """
+        Create a node from its dictionary representation.
+        
+        Args:
+            info_dict: Dictionary containing node information
+            X: Optional feature matrix that might be needed for stump reconstruction
+            
+        Returns:
+            RuleTreeNode: Reconstructed node
+            
+        Raises:
+            AssertionError: If required fields are missing in info_dict
+        """
         assert 'node_id' in info_dict
         assert 'is_leaf' in info_dict
         if not info_dict['is_leaf']:
@@ -127,13 +237,21 @@ class RuleTreeNode:
         
         node.stump = class_c.dict_to_node(info_dict, X)
         
-
         return node
     
-
-        
-                        
     def encode_node(self, index, parent, vector, stump, node_index=0):
+        """
+        Encode the tree into a vector representation.
+        
+        Used for model serialization in a compact format.
+        
+        Args:
+            index: Dictionary mapping node_id to array indices
+            parent: Array tracking parent-child relationships
+            vector: 2D array where node information will be stored
+            stump: The stump object reference
+            node_index: Current index in the encoding
+        """
         if self.is_leaf():
             vector[0][node_index] = -1
             vector[1][node_index] = self.prediction
@@ -156,15 +274,24 @@ class RuleTreeNode:
             node_l.encode_node(index, parent, vector, stump, 2 * node_index + 1)
             node_r.encode_node(index, parent, vector, stump, 2 * node_index + 2)
 
-
     def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
-
+        """
+        Generate a graphviz visualization of the tree.
+        
+        Args:
+            graph: Existing graphviz.Digraph object or None to create a new one
+            columns_names: Optional list of feature names for better visualization
+            scaler: Optional scaler for transforming threshold values
+            float_precision: Number of decimal places for floating point numbers
+            
+        Returns:
+            graphviz.Digraph: The graph visualization object
+        """
         if graph is None:
-            graph = graphviz.Digraph(name="RuleTree")#pgv.AGraph(name="RuleTree")
+            graph = graphviz.Digraph(name="RuleTree")
 
         if self.is_leaf():
             graph.node(self.node_id, label=f"{self.prediction}", **GRAPHVIZ_DEFAULT_NODE_LEAF)
-
             return graph
 
         rule = self.stump.get_rule(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
@@ -179,5 +306,3 @@ class RuleTreeNode:
             graph.edge(self.node_id, self.node_r.node_id, color="#d62728")
 
         return graph
-
-

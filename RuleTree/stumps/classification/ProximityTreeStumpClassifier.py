@@ -14,6 +14,35 @@ from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
 
 
 class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
+    """A decision stump classifier for time series data using shapelet-based proximity measures.
+
+    This classifier transforms time series data using shapelets (subsequences of time series)
+    and creates decision rules based on the distances between the input time series and
+    extracted shapelets.
+
+    Parameters
+    ----------
+    n_shapelets : int, default=cpu_count*2
+        The number of shapelets to be used for classification.
+    n_shapelets_for_selection : int or str, default=500
+        Number of shapelets to select or 'stratified' for stratified selection.
+    n_ts_for_selection_per_class : int, default=100
+        Number of time series per class to use for shapelet extraction.
+    sliding_window : int, default=50
+        The length of the sliding window used to extract shapelets from time series.
+    selection : str, default='mi_clf'
+        Method for shapelet selection. Options: 'random', 'mi_clf', 'cluster'.
+    distance : str, default='euclidean'
+        Distance metric used for comparing shapelets to time series.
+    mi_n_neighbors : int, default=100
+        Number of neighbors for mutual information calculation.
+    random_state : int, default=42
+        Seed for random number generation for reproducibility.
+    n_jobs : int, default=1
+        Number of parallel jobs to run for shapelet extraction.
+    **kwargs
+        Additional parameters for the base DecisionTreeStumpClassifier.
+    """
     def __init__(self,
                  n_shapelets=psutil.cpu_count(logical=False) * 2,
                  n_shapelets_for_selection=500,  # int, inf, or 'stratified'
@@ -57,6 +86,33 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         }
 
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        """Fit the ProximityTreeStumpClassifier on the training data.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_timepoints)
+            The time series data.
+        y : array-like of shape (n_samples,)
+            The target values.
+        idx : array-like or slice, default=None
+            Indices of the samples to be used for training.
+        context : object, default=None
+            Additional context information (not used).
+        sample_weight : array-like, default=None
+            Sample weights (not supported for this classifier).
+        check_input : bool, default=True
+            Whether to check the input parameters.
+
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+
+        Raises
+        ------
+        UnsupportedError
+            If sample_weight is provided.
+        """
         if idx is None:
             idx = slice(None)
         X = X[idx]
@@ -93,6 +149,20 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         return super().fit(X_bool, y=y, sample_weight=sample_weight, check_input=check_input)
 
     def apply(self, X, check_input=False):
+        """Apply the decision tree stump to X.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_timepoints)
+            The time series data to classify.
+        check_input : bool, default=False
+            Whether to check the input parameters.
+
+        Returns
+        -------
+        X_leaves : array-like of shape (n_samples,)
+            For each datapoint x in X, returns the leaf node it ends up in.
+        """
         self.y_lims = [min(self.y_lims[0], X.min()), min(self.y_lims[1], X.max())]
         X_dist = self.st.transform(X)
         actual_n_shapelets = X_dist.shape[1]
@@ -109,10 +179,45 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         return super().apply(X_bool, check_input=check_input)
 
     def supports(self, data_type):
+        """Check if the classifier supports the given data type.
+
+        Parameters
+        ----------
+        data_type : int
+            Data type identifier.
+
+        Returns
+        -------
+        bool
+            True if the data type is supported, False otherwise.
+        """
         return data_type in [DATA_TYPE_TS]
 
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: int | None = 3):
+        """Generate a human-readable rule representation of the decision stump.
+
+        Creates textual and visual representations of the shapelet-based decision rule.
+
+        Parameters
+        ----------
+        columns_names : list, default=None
+            Names of the features (not used for time series).
+        scaler : object, default=None
+            Scaler used for normalization (not supported for this classifier).
+        float_precision : int or None, default=3
+            Number of decimal places to use for floating-point values.
+
+        Returns
+        -------
+        dict
+            Dictionary containing textual and visual representations of the rule.
+
+        Raises
+        ------
+        UnsupportedError
+            If a scaler is provided.
+        """
         rule = {
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],
@@ -189,6 +294,15 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         return rule
 
     def node_to_dict(self):
+        """Convert the decision stump to a dictionary representation.
+
+        This method is used for model serialization.
+
+        Returns
+        -------
+        dict
+            Dictionary representing the decision stump, including shapelet information.
+        """
         rule = super().node_to_dict() | {
             'stump_type': self.__class__.__module__,
             "feature_idx": self.feature_original[0],

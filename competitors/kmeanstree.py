@@ -46,6 +46,7 @@ class KMeansTree:
                  random_state: int = None,
                  ):
 
+        self.accuracy_ = -1
         self.labels_as_tree_leaves = labels_as_tree_leaves
         self.max_nbr_values_cat = max_nbr_values_cat
 
@@ -91,37 +92,38 @@ class KMeansTree:
             else:  # infer y is categorical
                 self.clu_for_clf = True
 
-        with threadpool_limits(limits=self.n_jobs):
-            self.kmeans.fit(X)
-            self.dt.fit(X, self.kmeans.labels_)
-            if self.labels_as_tree_leaves:
-                self.labels_ = self.dt.apply(X)
-            else:
-                self.labels_ = self.dt.predict(X)
+        #with threadpool_limits(limits=self.n_jobs):
+        self.kmeans.fit(X)
+        self.dt.fit(X, self.kmeans.labels_)
+        self.accuracy_ = self.dt.score(X, self.kmeans.labels_)
+        if self.labels_as_tree_leaves:
+            self.labels_ = self.dt.apply(X)
+        else:
+            self.labels_ = self.dt.predict(X)
 
-            if self.clu_for_clf or self.clu_for_reg:
-                leaves_id = self.dt.apply(X)
-                self.leaf_val = dict()
-                for l in np.unique(leaves_id):
-                    pred = y[leaves_id == l]
-                    if len(pred) > 0:
-                        if self.clu_for_clf:
-                            self.leaf_val[l] = calculate_mode(pred)
-                        else:
-                            self.leaf_val[l] = np.mean(pred)
+        if self.clu_for_clf or self.clu_for_reg:
+            leaves_id = self.dt.apply(X)
+            self.leaf_val = dict()
+            for l in np.unique(leaves_id):
+                pred = y[leaves_id == l]
+                if len(pred) > 0:
+                    if self.clu_for_clf:
+                        self.leaf_val[l] = calculate_mode(pred)
+                    else:
+                        self.leaf_val[l] = np.mean(pred)
 
     def predict(self, X):
-        with threadpool_limits(limits=self.n_jobs):
+        #with threadpool_limits(limits=self.n_jobs):
 
-            if self.clu_for_clf or self.clu_for_reg:
-                leaves_id = self.dt.apply(X)
-                pred = [self.leaf_val[l] for l in leaves_id]
-                return pred
+        if self.clu_for_clf or self.clu_for_reg:
+            leaves_id = self.dt.apply(X)
+            pred = [self.leaf_val[l] for l in leaves_id]
+            return pred
 
-            if self.labels_as_tree_leaves:
-                return self.dt.apply(X)
-            else:
-                return self.dt.predict(X)
+        if self.labels_as_tree_leaves:
+            return self.dt.apply(X)
+        else:
+            return self.dt.predict(X)
 
     # TODO predict proba
 

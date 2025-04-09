@@ -1,0 +1,195 @@
+Calulating distance for iteration : 0
+
+Finished calc distance for iteration : 0
+
+Calulating Valuation for iteration : 0
+
+Finished Valuation for iteration : 0
+
+Finding clusters for iteration : 0
+
+Finished finding cluster for iteration : 0
+
+balance : 0.4956038870893105
+
+Fairness Error : 1.640868668946482e-05
+
+Clustering Objective/Cost 23067.52943424726
+
+Finished centroid updation for iteration : 0
+
+Iteration No: 0 : updated centroid are : ([0.35407, -0.33137, -0.1539, 0.85386, -0.1098], [0.65773, 0.14788, -0.41283, 0.60966, -0.0584], [-0.14001, -0.02621, -0.51322, 0.83944, -0.10795], [-0.80055, -0.02849, 0.48008, -0.33773, -0.11732], [0.02141, -0.02473, -0.60082, 0.79219, -0.10187], [-0.82037, -0.04138, -0.23577, -0.49057, -0.17041], [0.62351, -0.03579, 0.63885, -0.42437, -0.14742], [-0.8042, -0.04529, -0.1677, -0.53694, -0.18652], [0.10431, -0.02084, -0.73185, 0.66761, -0.08585], [-0.80891, -0.02509, 0.07985, -0.5727, -0.10333])
+Time for iteration : 0 is  9.015625
+
+-----------------------------Finished-----------------------------------------------
+
+Calulating distance for iteration : 1
+
+Finished calc distance for iteration : 1
+
+Calulating Valuation for iteration : 1
+
+Finished Valuation for iteration : 1
+
+Finding clusters for iteration : 1
+
+Finished finding cluster for iteration : 1
+
+balance : 0.4956038870893105
+
+Fairness Error : 1.640868668946482e-05
+
+Clustering Objective/Cost 23066.596158152803
+
+Finished centroid updation for iteration : 1
+
+Iteration No: 1 : updated centroid are : ([0.02141, -0.02473, -0.60082, 0.79219, -0.10187], [-0.80055, -0.02849, 0.48008, -0.33773, -0.11732], [0.62351, -0.03579, 0.63885, -0.42437, -0.14742], [-0.14001, -0.02621, -0.51322, 0.83944, -0.10795], [-0.82037, -0.04138, -0.23577, -0.49057, -0.17041], [0.35407, -0.33137, -0.1539, 0.85386, -0.1098], [-0.80891, -0.02509, 0.07985, -0.5727, -0.10333], [0.65773, 0.14788, -0.41283, 0.60966, -0.0584], [0.10431, -0.02084, -0.73185, 0.66761, -0.08585], [-0.8042, -0.04529, -0.1677, -0.53694, -0.18652])
+Time for iteration : 1 is  5.578125
+
+-----------------------------Finished-----------------------------------------------
+
+Calulating distance for iteration : 2
+
+Finished calc distance for iteration : 2
+
+Calulating Valuation for iteration : 2
+
+Finished Valuation for iteration : 2
+
+Finding clusters for iteration : 2
+
+Finished finding cluster for iteration : 2
+
+balance : 0.4956038870893105
+
+Fairness Error : 1.640868668946482e-05
+
+Clustering Objective/Cost 23067.165546102697
+
+Finished centroid updation for iteration : 2
+
+Iteration No: 2 : updated centroid are : ([-0.14001, -0.02621, -0.51322, 0.83944, -0.10795], [-0.80055, -0.02849, 0.48008, -0.33773, -0.11732], [0.02141, -0.02473, -0.60082, 0.79219, -0.10187], [0.10431, -0.02084, -0.73185, 0.66761, -0.08585], [0.35407, -0.33137, -0.1539, 0.85386, -0.1098], [0.62351, -0.03579, 0.63885, -0.42437, -0.14742], [-0.8042, -0.04529, -0.1677, -0.53694, -0.18652], [0.65773, 0.14788, -0.41283, 0.60966, -0.0584], [-0.80891, -0.02509, 0.07985, -0.5727, -0.10333], [-0.82037, -0.04138, -0.23577, -0.49057, -0.17041])
+Time for iteration : 2 is  6.453125
+
+-----------------------------Finished-----------------------------------------------
+
+Calulating distance for iteration : 3
+
+Finished calc distance for iteration : 3
+
+Calulating Valuation for iteration : 3
+
+Finished Valuation for iteration : 3
+
+Finding clusters for iteration : 3
+
+Finished finding cluster for iteration : 3
+
+balance : 0.4956038870893105
+
+Fairness Error : 1.640868668946482e-05
+
+Clustering Objective/Cost 23066.99770195471
+
+Finished centroid updation for iteration : 3
+
+Iteration No: 3 : updated centroid are : ([0.65773, 0.14788, -0.41283, 0.60966, -0.0584], [0.02141, -0.02473, -0.60082, 0.79219, -0.10187], [-0.82037, -0.04138, -0.23577, -0.49057, -0.17041], [0.10431, -0.02084, -0.73185, 0.66761, -0.08585], [-0.8042, -0.04529, -0.1677, -0.53694, -0.18652], [0.62351, -0.03579, 0.63885, -0.42437, -0.14742], [-0.80891, -0.02509, 0.07985, -0.5727, -0.10333], [0.35407, -0.33137, -0.1539, 0.85386, -0.1098], [-0.14001, -0.02621, -0.51322, 0.83944, -0.10795], [-0.80055, -0.02849, 0.48008, -0.33773, -0.11732])
+Time for iteration : 3 is  6.0
+
+-----------------------------Finished-----------------------------------------------
+
+Calulating distance for iteration : 4
+
+Finished calc distance for iteration : 4
+
+Calulating Valuation for iteration : 4
+
+Finished Valuation for iteration : 4
+
+Finding clusters for iteration : 4
+
+Finished finding cluster for iteration : 4
+
+balance : 0.4956038870893105
+
+Fairness Error : 1.640868668946482e-05
+
+Clustering Objective/Cost 23067.881276903747
+
+Finished centroid updation for iteration : 4
+
+Iteration No: 4 : updated centroid are : ([0.02141, -0.02473, -0.60082, 0.79219, -0.10187], [0.65773, 0.14788, -0.41283, 0.60966, -0.0584], [-0.8042, -0.04529, -0.1677, -0.53694, -0.18652], [-0.80055, -0.02849, 0.48008, -0.33773, -0.11732], [0.10431, -0.02084, -0.73185, 0.66761, -0.08585], [-0.14001, -0.02621, -0.51322, 0.83944, -0.10795], [-0.82037, -0.04138, -0.23577, -0.49057, -0.17041], [-0.80891, -0.02509, 0.07985, -0.5727, -0.10333], [0.35407, -0.33137, -0.1539, 0.85386, -0.1098], [0.62351, -0.03579, 0.63885, -0.42437, -0.14742])
+Time for iteration : 4 is  4.796875
+
+-----------------------------Finished-----------------------------------------------
+
+Calulating distance for iteration : 5
+
+Finished calc distance for iteration : 5
+
+Calulating Valuation for iteration : 5
+
+Finished Valuation for iteration : 5
+
+Finding clusters for iteration : 5
+
+Finished finding cluster for iteration : 5
+
+balance : 0.4956038870893105
+
+Fairness Error : 1.640868668946482e-05
+
+Clustering Objective/Cost 23067.838658301636
+
+Finished centroid updation for iteration : 5
+
+Iteration No: 5 : updated centroid are : ([-0.8042, -0.04529, -0.1677, -0.53694, -0.18652], [-0.14001, -0.02621, -0.51322, 0.83944, -0.10795], [0.65773, 0.14788, -0.41283, 0.60966, -0.0584], [-0.82037, -0.04138, -0.23577, -0.49057, -0.17041], [-0.80055, -0.02849, 0.48008, -0.33773, -0.11732], [0.10431, -0.02084, -0.73185, 0.66761, -0.08585], [0.62351, -0.03579, 0.63885, -0.42437, -0.14742], [0.35407, -0.33137, -0.1539, 0.85386, -0.1098], [-0.80891, -0.02509, 0.07985, -0.5727, -0.10333], [0.02141, -0.02473, -0.60082, 0.79219, -0.10187])
+Time for iteration : 5 is  4.234375
+
+-----------------------------Finished-----------------------------------------------
+
+Calulating distance for iteration : 6
+
+Finished calc distance for iteration : 6
+
+Calulating Valuation for iteration : 6
+
+Finished Valuation for iteration : 6
+
+Finding clusters for iteration : 6
+
+Finished finding cluster for iteration : 6
+
+balance : 0.4956038870893105
+
+Fairness Error : 1.640868668946482e-05
+
+Clustering Objective/Cost 23068.846141756385
+
+Finished centroid updation for iteration : 6
+
+Iteration No: 6 : updated centroid are : ([0.35407, -0.33137, -0.1539, 0.85386, -0.1098], [0.02141, -0.02473, -0.60082, 0.79219, -0.10187], [-0.14001, -0.02621, -0.51322, 0.83944, -0.10795], [-0.8042, -0.04529, -0.1677, -0.53694, -0.18652], [-0.80055, -0.02849, 0.48008, -0.33773, -0.11732], [-0.80891, -0.02509, 0.07985, -0.5727, -0.10333], [0.10431, -0.02084, -0.73185, 0.66761, -0.08585], [0.65773, 0.14788, -0.41283, 0.60966, -0.0584], [0.62351, -0.03579, 0.63885, -0.42437, -0.14742], [-0.82037, -0.04138, -0.23577, -0.49057, -0.17041])
+Time for iteration : 6 is  2.34375
+
+-----------------------------Finished-----------------------------------------------
+
+Calulating distance for iteration : 7
+
+Finished calc distance for iteration : 7
+
+Calulating Valuation for iteration : 7
+
+Finished Valuation for iteration : 7
+
+Finding clusters for iteration : 7
+
+Finished finding cluster for iteration : 7
+
+balance : 0.4956038870893105
+
+Fairness Error : 1.640868668946482e-05
+
+Clustering Objective/Cost 23067.560903258385
+
+Finished centroid updation for iteration : 7
+

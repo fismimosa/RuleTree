@@ -1,6 +1,13 @@
-# Only for ReadTheDocs
-numpy>=1.15.*
-scikit-learn>=0.21.*
-sphinx==1.7.5 # pyup: ignore
-sphinx_rtd_theme==0.4.1 # pyup: ignore
+sphinx
+sphinx_rtd_theme
 mock
+sphinx-book-theme
+sphinx-favicon
+sphinx-prompt
+sphinx-copybutton
+nbsphinx
+sphinx-version-warning
+sphinx-last-updated-by-git
+
+
+sphinx-autobuild

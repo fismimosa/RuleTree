@@ -5,7 +5,7 @@ from numba.cuda.cudadrv.nvrtc import nvrtc_program
 
 from benchmark.Fair.FairReaders import read_titanic
 
-n_clus = [2]#[2, 4, 8, 16]
+n_clus = [2, 4]#[2, 4, 8, 16]
 n_jobs = 16
 
 hyper_params_FairStump = [
@@ -59,7 +59,21 @@ hyper_params_list = ([
                          {
                              "base_method": ['DB'],
                              "eps": [.1, .25, .5, .75, 1.],
-                             "metric": ["euclidean", "cosine", "correlation"]
+                             "metric": ["euclidean"] #cosine and correlation unsupported for ball_tree. kd_tree bugged
+                         },
+                         #{
+                         #    "base_method": ['FRAC'],
+                         #    "K": n_clus,
+                         #},
+                         {
+                             "base_method": ['VFC'],
+                             "K": n_clus,
+                             "lmbda": [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
+                         },
+                        {
+                             "base_method": ['KMT'],
+                             "n_clusters": n_clus,
+                             "random_state": [42],
                          }
                      ] + [
                         {
