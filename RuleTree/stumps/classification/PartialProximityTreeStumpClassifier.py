@@ -9,45 +9,18 @@ from matplotlib import pyplot as plt
 from numba import UnsupportedError
 
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
-from RuleTree.utils.define import DATA_TYPE_TS
+from RuleTree.utils.define import DATA_TYPE_TS, DATA_TYPE_TABULAR
 from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
+from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
 
 
-class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
-    """A decision stump classifier for time series data using shapelet-based proximity measures.
-
-    This classifier transforms time series data using shapelets (subsequences of time series)
-    and creates decision rules based on the distances between the input time series and
-    extracted shapelets.
-
-    Parameters
-    ----------
-    n_shapelets : int, default=cpu_count*2
-        The number of shapelets to be used for classification.
-    n_shapelets_for_selection : int or str, default=500
-        Number of shapelets to select or 'stratified' for stratified selection.
-    n_ts_for_selection_per_class : int, default=100
-        Number of time series per class to use for shapelet extraction.
-    sliding_window : int, default=50
-        The length of the sliding window used to extract shapelets from time series.
-    selection : str, default='mi_clf'
-        Method for shapelet selection. Options: 'random', 'mi_clf', 'cluster'.
-    distance : str, default='euclidean'
-        Distance metric used for comparing shapelets to time series.
-    mi_n_neighbors : int, default=100
-        Number of neighbors for mutual information calculation.
-    random_state : int, default=42
-        Seed for random number generation for reproducibility.
-    n_jobs : int, default=1
-        Number of parallel jobs to run for shapelet extraction.
-    **kwargs
-        Additional parameters for the base DecisionTreeStumpClassifier.
-    """
+class PartialProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
     def __init__(self,
                  n_shapelets=psutil.cpu_count(logical=False) * 2,
                  n_shapelets_for_selection=500,  # int, inf, or 'stratified'
                  n_ts_for_selection_per_class=100,  # int, inf
-                 sliding_window=50,
+                 min_n_features=2,
+                 max_n_features='auto',  # auto-> sqrt(X.shape[1]), sqrt-> sqrt(X.shape[1]), all -> all features, int
                  selection='mi_clf',  # random, mi_clf, mi_reg, cluster
                  distance='euclidean',
                  mi_n_neighbors=100,
@@ -56,7 +29,8 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         self.n_shapelets = n_shapelets
         self.n_shapelets_for_selection = n_shapelets_for_selection
         self.n_ts_for_selection_per_class = n_ts_for_selection_per_class
-        self.sliding_window = sliding_window
+        self.min_n_features = min_n_features
+        self.max_n_features = max_n_features
         self.selection = selection
         self.distance = distance
         self.mi_n_neighbors = mi_n_neighbors
@@ -77,7 +51,8 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
             "n_shapelets": n_shapelets,
             "n_shapelets_for_selection": n_shapelets_for_selection,
             "n_ts_for_selection_per_class": n_ts_for_selection_per_class,
-            "sliding_window": sliding_window,
+            "min_n_features": min_n_features,
+            "max_n_features": max_n_features,
             "selection": selection,
             "distance": distance,
             "mi_n_neighbors": mi_n_neighbors,
@@ -86,33 +61,6 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         }
 
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
-        """Fit the ProximityTreeStumpClassifier on the training data.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_timepoints)
-            The time series data.
-        y : array-like of shape (n_samples,)
-            The target values.
-        idx : array-like or slice, default=None
-            Indices of the samples to be used for training.
-        context : object, default=None
-            Additional context information (not used).
-        sample_weight : array-like, default=None
-            Sample weights (not supported for this classifier).
-        check_input : bool, default=True
-            Whether to check the input parameters.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-
-        Raises
-        ------
-        UnsupportedError
-            If sample_weight is provided.
-        """
         if idx is None:
             idx = slice(None)
         X = X[idx]
@@ -124,25 +72,26 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         if sample_weight is not None:
             raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")
 
-        self.st = Shapelets(n_shapelets=self.n_shapelets,
-                            n_shapelets_for_selection=self.n_shapelets_for_selection,
-                            n_ts_for_selection_per_class=self.n_ts_for_selection_per_class,
-                            sliding_window=self.sliding_window,
-                            selection=self.selection,
-                            distance=self.distance,
-                            mi_n_neighbors=self.mi_n_neighbors,
-                            random_state=random.randint(0, 2**32-1),
-                            n_jobs=self.n_jobs
-                            )
+        self.st = TabularShapelets(n_shapelets=self.n_shapelets,
+                                   n_shapelets_for_selection=self.n_shapelets_for_selection,
+                                   n_ts_for_selection_per_class=self.n_ts_for_selection_per_class,
+                                   min_n_features=self.min_n_features,
+                                   max_n_features=self.max_n_features,
+                                   selection=self.selection,
+                                   distance=self.distance,
+                                   mi_n_neighbors=self.mi_n_neighbors,
+                                   random_state=random.randint(0, 2 ** 32 - 1),
+                                   n_jobs=self.n_jobs
+                                   )
 
         X_dist = self.st.fit_transform(X, y)
         actual_n_shapelets = X_dist.shape[1]
-        X_bool = np.zeros((X.shape[0], actual_n_shapelets*(actual_n_shapelets-1)), dtype=bool)
+        X_bool = np.zeros((X.shape[0], actual_n_shapelets * (actual_n_shapelets - 1)), dtype=bool)
 
         c = 0
 
         for i in range(actual_n_shapelets):
-            for j in range(i+1, actual_n_shapelets):
+            for j in range(i + 1, actual_n_shapelets):
                 X_bool[:, c] = X_dist[:, i] <= X_dist[:, j]
                 c += 1
 
@@ -175,49 +124,12 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
                 X_bool[:, c] = X_dist[:, i] <= X_dist[:, j]
                 c += 1
 
-
         return super().apply(X_bool, check_input=check_input)
 
     def supports(self, data_type):
-        """Check if the classifier supports the given data type.
-
-        Parameters
-        ----------
-        data_type : int
-            Data type identifier.
-
-        Returns
-        -------
-        bool
-            True if the data type is supported, False otherwise.
-        """
-        return data_type in [DATA_TYPE_TS]
-
+        return data_type in [DATA_TYPE_TABULAR]
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: int | None = 3):
-        """Generate a human-readable rule representation of the decision stump.
-
-        Creates textual and visual representations of the shapelet-based decision rule.
-
-        Parameters
-        ----------
-        columns_names : list, default=None
-            Names of the features (not used for time series).
-        scaler : object, default=None
-            Scaler used for normalization (not supported for this classifier).
-        float_precision : int or None, default=3
-            Number of decimal places to use for floating-point values.
-
-        Returns
-        -------
-        dict
-            Dictionary containing textual and visual representations of the rule.
-
-        Raises
-        ------
-        UnsupportedError
-            If a scaler is provided.
-        """
         rule = {
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],
@@ -256,7 +168,7 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
             plt.gca().tick_params(axis='both', which='both', length=2, labelsize=6)
             plt.gca().spines['right'].set_color('none')
             plt.gca().spines['top'].set_color('none')
-            #plt.gca().spines['bottom'].set_position('zero')
+            # plt.gca().spines['bottom'].set_position('zero')
             plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
             plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
             plt.close()

@@ -79,7 +79,7 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         super().__init__(**kwargs)
 
-        kwargs |= {
+        self.kwargs |= {
             "n_shapelets": n_shapelets,
             "n_shapelets_for_selection": n_shapelets_for_selection,
             "n_ts_for_selection_per_class": n_ts_for_selection_per_class,

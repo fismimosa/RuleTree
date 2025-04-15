@@ -271,10 +271,14 @@ class Shapelets(TransformerMixin):
         dist = _best_fit(X[idx_to_test], candidate_shapelets, self.__get_distance())
         numba.set_num_threads(old_n_threads)
 
-        scores = mutual_info_fun(dist, y,
-                                 n_jobs=self.n_jobs,
-                                 n_neighbors=min(dist.shape[0], self.mi_n_neighbors),
-                                 discrete_features=False)
+        labels, labels_count = np.unique(y, return_counts=True)
+        if np.sum(labels_count) == len(labels):
+            scores = np.zeros((len(labels), ))
+        else:
+            scores = mutual_info_fun(dist, y,
+                                     n_jobs=self.n_jobs,
+                                     n_neighbors=min(dist.shape[0], self.mi_n_neighbors),
+                                     discrete_features=False)
         if len(candidate_shapelets) == self.n_shapelets:
             return candidate_shapelets
         return candidate_shapelets[np.argpartition(scores, -min(scores.shape[0], self.n_shapelets))\
