@@ -108,7 +108,7 @@ class ObliqueHouseHolderSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         diff_w_means = np.sqrt(((I - self.dominant_ev) ** 2).sum(axis=1))
 
         if (diff_w_means > self.tau).sum() == 0:
-            print("No variance to explain.")
+            #print("No variance to explain.")
             return None
 
         idx_max_diff = np.argmax(diff_w_means)

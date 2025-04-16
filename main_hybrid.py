@@ -29,38 +29,27 @@ if __name__ == "__main__":
     for random_state in range(10):
         stumps = [
             PartialPivotTreeStumpClassifier(n_shapelets=10, max_n_features='all', n_jobs=10, random_state=random_state,
-                                            selection='mi_clf'),
+                                            selection='random'),
             PartialProximityTreeStumpClassifier(n_shapelets=10, max_n_features='all', n_jobs=10, random_state=random_state,
-                                                selection='mi_clf'),
-
-            #univariate
+                                                selection='random'),
             DecisionTreeStumpClassifier(max_depth=1, random_state=random_state),
-
-            #oblique householder
-            ObliqueDecisionTreeStumpClassifier(max_depth=1, random_state=random_state, 
+            ObliqueDecisionTreeStumpClassifier(max_depth=1, random_state=random_state,
                                                oblique_split_type='householder',
-                                                pca=None,
-                                                max_oblique_features=2,
-                                                tau=1e-4),
-            #pivot
+                                               pca=None,
+                                               max_oblique_features=2,
+                                               tau=1e-4),
             PivotTreeStumpClassifier(max_depth=1, random_state=random_state),
-
-            #pivot proximity
             MultiplePivotTreeStumpClassifier(max_depth=1, random_state=random_state),
-
-            #oblique pivot
-            ObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state, 
-                                              oblique_split_type='householder',
-                                               pca=None,
-                                               max_oblique_features=2,
-                                               tau=1e-4),
-            
-            #oblique pivot proximity
-            MultipleObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state, 
-                                               oblique_split_type='householder',
-                                               pca=None,
-                                               max_oblique_features=2,
-                                               tau=1e-4),
+            ObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state,
+                                            oblique_split_type='householder',
+                                            pca=None,
+                                            max_oblique_features=2,
+                                            tau=1e-4),
+            MultipleObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state,
+                                                    oblique_split_type='householder',
+                                                    pca=None,
+                                                    max_oblique_features=2,
+                                                    tau=1e-4),
         ]
 
         df = pd.read_csv("datasets/CLF/iris.csv")

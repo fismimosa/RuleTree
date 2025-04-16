@@ -110,7 +110,7 @@ class RuleTree(RuleTreeBase, ABC):
                     _p.append(_equal_p)
                     _base_stump.append(el)
 
-        assert sum(_p) == 1.
+        assert np.isclose(np.sum(_p), 1.)
         self.base_stumps = [(p, stump) for p, stump in zip(np.cumsum(_p), _base_stump)]
 
     def _get_random_stump(self, X):
