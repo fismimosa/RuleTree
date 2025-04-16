@@ -8,6 +8,23 @@ from RuleTree.stumps.classification import DecisionTreeStumpClassifier
 from RuleTree.stumps.classification.PartialPivotTreeStumpClassifier import PartialPivotTreeStumpClassifier
 from RuleTree.stumps.classification.PartialProximityTreeStumpClassifier import PartialProximityTreeStumpClassifier
 
+##previous stumps
+
+#oblique decision tree
+from RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier import ObliqueDecisionTreeStumpClassifier
+#pivot tree
+from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
+#oblique pivot tree
+from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
+
+#proximity pivot tree
+from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
+#oblique proximity pivot tree
+from RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier import MultipleObliquePivotTreeStumpClassifier
+
+
+
+
 if __name__ == "__main__":
     for random_state in range(10):
         stumps = [
@@ -15,7 +32,35 @@ if __name__ == "__main__":
                                             selection='mi_clf'),
             PartialProximityTreeStumpClassifier(n_shapelets=10, max_n_features='all', n_jobs=10, random_state=random_state,
                                                 selection='mi_clf'),
+
+            #univariate
             DecisionTreeStumpClassifier(max_depth=1, random_state=random_state),
+
+            #oblique householder
+            ObliqueDecisionTreeStumpClassifier(max_depth=1, random_state=random_state, 
+                                               oblique_split_type='householder',
+                                                pca=None,
+                                                max_oblique_features=2,
+                                                tau=1e-4),
+            #pivot
+            PivotTreeStumpClassifier(max_depth=1, random_state=random_state),
+
+            #pivot proximity
+            MultiplePivotTreeStumpClassifier(max_depth=1, random_state=random_state),
+
+            #oblique pivot
+            ObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state, 
+                                              oblique_split_type='householder',
+                                               pca=None,
+                                               max_oblique_features=2,
+                                               tau=1e-4),
+            
+            #oblique pivot proximity
+            MultipleObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state, 
+                                               oblique_split_type='householder',
+                                               pca=None,
+                                               max_oblique_features=2,
+                                               tau=1e-4),
         ]
 
         df = pd.read_csv("datasets/CLF/iris.csv")
@@ -27,7 +72,8 @@ if __name__ == "__main__":
             base_stumps=stumps,
             max_depth=5,
             stump_selection='best',
-            random_state=42
+            random_state=42,
+            distance_measure='euclidean' #added here metric for case-based splits
         )
         rt.fit(X_train, y_train)
 
