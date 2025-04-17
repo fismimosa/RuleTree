@@ -33,6 +33,7 @@ hyper_models = {
         'random_state': [42],
         'splitter': ['best'],
         'base_stumps': [[x] for x in available_stumps.keys()] + [list(available_stumps.keys())],
+        'distance_measure': ['euclidean']
     },
     'DT': {
         'max_depth': max_depth_trees,
@@ -115,11 +116,7 @@ def get_hyperparameters(df: pd.DataFrame):
                 yield model, hyper_dict, all_stump_hyper
 
 
-
-
 if __name__ == "__main__":
     _, df = read_titanic()
     for model, hyper_dict, hyper_stump_dict in get_hyperparameters(df):
         print(model, hyper_dict, hyper_stump_dict)
-
-
