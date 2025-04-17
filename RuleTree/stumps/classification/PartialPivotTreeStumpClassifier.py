@@ -17,20 +17,18 @@ from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
 
 class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
     def __init__(self, n_shapelets=psutil.cpu_count(logical=False)*2,
-                 n_shapelets_for_selection=500, #int, inf, or 'stratified'
-                 n_ts_for_selection_per_class=100, #int, inf
-                 min_n_features=2,
-                 max_n_features='auto',  # auto-> sqrt(X.shape[1]), sqrt-> sqrt(X.shape[1]), all -> all features, int
-                 selection='mi_clf', #random, mi_clf, mi_reg, cluster
+                 n_shapelets_for_selection=500,  #int, inf, or 'stratified'
+                 n_ts_for_selection=100,  #int, inf
+                 n_features_strategy=2,
+                 selection='mi_clf',  #random, mi_clf, mi_reg, cluster
                  distance='euclidean',
                  mi_n_neighbors=100,
                  random_state=42, n_jobs=1,
                  **kwargs):
         self.n_shapelets = n_shapelets
         self.n_shapelets_for_selection = n_shapelets_for_selection
-        self.n_ts_for_selection_per_class = n_ts_for_selection_per_class
-        self.min_n_features = min_n_features
-        self.max_n_features = max_n_features
+        self.n_ts_for_selection = n_ts_for_selection
+        self.n_features_strategy = n_features_strategy
         self.selection = selection
         self.distance = distance
         self.mi_n_neighbors = mi_n_neighbors
@@ -50,9 +48,8 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         self.kwargs |= {
             "n_shapelets": n_shapelets,
             "n_shapelets_for_selection": n_shapelets_for_selection,
-            "n_ts_for_selection_per_class": n_ts_for_selection_per_class,
-            "min_n_features": min_n_features,
-            "max_n_features": max_n_features,
+            "n_ts_for_selection": n_ts_for_selection,
+            "n_features_strategy": n_features_strategy,
             "selection": selection,
             "distance": distance,
             "mi_n_neighbors": mi_n_neighbors,
@@ -74,9 +71,8 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         self.st = TabularShapelets(n_shapelets=self.n_shapelets,
                                    n_shapelets_for_selection=self.n_shapelets_for_selection,
-                                   n_ts_for_selection_per_class=self.n_ts_for_selection_per_class,
-                                   min_n_features=self.min_n_features,
-                                   max_n_features=self.max_n_features,
+                                   n_ts_for_selection=self.n_ts_for_selection,
+                                   n_features_strategy=self.n_features_strategy,
                                    selection=self.selection,
                                    distance=self.distance,
                                    mi_n_neighbors=self.mi_n_neighbors,
@@ -210,7 +206,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         rule["shapelets"] = self.st.shapelets.tolist()
         rule["n_shapelets"] = self.st.n_shapelets
         rule["n_shapelets_for_selection"] = self.st.n_shapelets_for_selection
-        rule["n_ts_for_selection_per_class"] = self.st.n_ts_for_selection_per_class
+        rule["n_ts_for_selection_per_class"] = self.st.n_ts_for_selection
         rule["min_n_features"] = self.st.min_n_features
         rule["max_n_features"] = self.st.max_n_features
         rule["selection"] = self.st.selection
@@ -227,7 +223,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         self = cls(
             n_shapelets=node_dict["n_shapelets"],
             n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],
-            n_ts_for_selection_per_class=node_dict["n_ts_for_selection_per_class"],
+            n_ts_for_selection=node_dict["n_ts_for_selection_per_class"],
             sliding_window=node_dict["sliding_window"],
             selection=node_dict["selection"],
             distance=node_dict["distance"],
@@ -239,7 +235,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         self.st = TabularShapelets(
             n_shapelets=node_dict["n_shapelets"],
             n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],
-            n_ts_for_selection_per_class=node_dict["n_ts_for_selection_per_class"],
+            n_ts_for_selection=node_dict["n_ts_for_selection_per_class"],
             min_n_features=node_dict["min_n_features"],
             max_n_features=node_dict["max_n_features"],
             selection=node_dict["selection"],

@@ -1,16 +1,19 @@
 import math
 import os
+import traceback
+import warnings
 
+from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.model_selection import train_test_split
 
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier, \
-    PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier
+    PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier, ObliquePivotTreeStumpClassifier
 from RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier import \
     MultipleObliquePivotTreeStumpClassifier
 from RuleTree.stumps.classification.PartialPivotTreeStumpClassifier import PartialPivotTreeStumpClassifier
 from RuleTree.stumps.classification.PartialProximityTreeStumpClassifier import PartialProximityTreeStumpClassifier
 from benchmark.Hybrid.HybridHyper import get_hyperparameters, n_jobs
-from benchmark.Hybrid.HybridReaders import all_datasets
+from benchmark.Hybrid.HybridReaders import all_datasets, small_datasets
 
 n = 16
 
@@ -32,8 +35,7 @@ from tqdm.auto import tqdm
 
 from RuleTree import RuleTreeCluster, RuleTreeClassifier
 from benchmark.evaluation_utils import evaluate_expl, evaluate_clf
-
-datasets = dict([x() for x in all_datasets])
+warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
 
 
 def compute_measures(y_test, y_pred, model):
@@ -44,13 +46,14 @@ def compute_measures(y_test, y_pred, model):
 
 
 def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
-    filename_hash = dataset_name + '|'.join([
+    filename_hash = '|'.join([
+        dataset_name,
         method,
         hashlib.md5('|'.join([f'{x}' for x in hyper_dict.values()]).encode()).hexdigest(),
         hashlib.md5('|'.join([f'{x}' for x in hyper_stump_dict.values()]).encode()).hexdigest(),
     ]) + '.csv'
-    if os.path.exists(filename_hash):
-        return pd.read_csv("res_tmp/" + filename_hash)
+    if os.path.exists(f"res_tmp/{dataset_name}/{filename_hash}"):
+        return pd.read_csv(f"res_tmp/{dataset_name}/{filename_hash}")
 
     scores = copy(hyper_dict)
     scores |= copy(hyper_stump_dict)
@@ -69,6 +72,8 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
                 base_stumps.append(PartialProximityTreeStumpClassifier(**hyper_stump_dict[stump]))
             elif stump == "ObliqueDecisionTreeStumpClassifier":
                 base_stumps.append(ObliqueDecisionTreeStumpClassifier(**hyper_stump_dict[stump]))
+            elif stump == "ObliquePivotTreeStumpClassifier":
+                base_stumps.append(ObliquePivotTreeStumpClassifier(**hyper_stump_dict[stump]))
             elif stump == "PivotTreeStumpClassifier":
                 base_stumps.append(PivotTreeStumpClassifier(**hyper_stump_dict[stump]))
             elif stump == "MultiplePivotTreeStumpClassifier":
@@ -85,7 +90,7 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
     elif method == "DT":
         model = DecisionTreeStumpClassifier(**hyper_dict)
     else:
-        raise ValueError(f"Unknown base_method: {model}")
+        raise ValueError(f"Unknown base_method: {method}")
 
     start = time.time()
     model.fit(X_train, y_train)
@@ -103,7 +108,7 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
 
     df = pd.DataFrame.from_dict([scores])
     try:
-        df.to_csv("res_tmp/" + filename_hash, index=False)
+        df.to_csv(f"res_tmp/{dataset_name}/{filename_hash}", index=False)
     except Exception as e:
         raise e
 
@@ -111,23 +116,30 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
 
 
 def main():
-    for dataset_name, df in datasets.items():
-        processes = []
-        dataframes = []
+    datasets = dict([x() for x in small_datasets])
+    with ProcessPoolExecutor(max_workers=math.ceil(psutil.cpu_count(logical=True) / n_jobs)) as executor:
+        for dataset_name, df in datasets.items():
+            if not os.path.exists("res_tmp/"):
+                os.mkdir("res_tmp/")
+            if not os.path.exists("res_tmp/" + dataset_name):
+                os.mkdir("res_tmp/" + dataset_name)
 
-        single_t = True
+            processes = []
+            dataframes = []
 
-        if single_t:
-            for model, hyper_dict, hyper_stump_dict in tqdm(get_hyperparameters(df),
-                                                            desc=f"{dataset_name}: submitting experiments"):
-                processes.append(run(model, hyper_dict, hyper_stump_dict, dataset_name, df))
+            single_t = False
 
-            for process in tqdm(processes, desc=f"{dataset_name}: collecting results"):
-                dataframes.append(process)
+            if single_t:
+                for model, hyper_dict, hyper_stump_dict in tqdm(list(get_hyperparameters(df)),
+                                                                desc=f"{dataset_name}: submitting experiments"):
+                    processes.append(run(model, hyper_dict, hyper_stump_dict, dataset_name, df))
 
-        else:
-            with ProcessPoolExecutor(max_workers=math.ceil(psutil.cpu_count(logical=False)/n_jobs)) as executor:
-                for model, hyper_dict, hyper_stump_dict in tqdm(get_hyperparameters(df),
+                for process in tqdm(processes, desc=f"{dataset_name}: collecting results"):
+                    dataframes.append(process)
+
+            else:
+
+                for model, hyper_dict, hyper_stump_dict in tqdm(list(get_hyperparameters(df)),
                                                                 desc=f"{dataset_name}: submitting experiments"):
                     processes.append(executor.submit(run, model, hyper_dict, hyper_stump_dict, dataset_name, df))
 
@@ -136,9 +148,9 @@ def main():
                         res = process.result()
                         dataframes.append(res)
                     except Exception as e:
-                        print(e)
+                        traceback.print_exc()
 
-        pd.concat(dataframes, ignore_index=True).to_csv(f"hybrid_benchmark_{dataset_name}.csv", index=False)
+            pd.concat(dataframes, ignore_index=True).to_csv(f"hybrid_benchmark_{dataset_name}.csv", index=False)
 
 
 if __name__ == '__main__':

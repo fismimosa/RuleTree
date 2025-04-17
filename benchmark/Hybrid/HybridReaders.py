@@ -222,7 +222,12 @@ def read_wine(encode=True):
     return 'wine', df[list(columns) + [target_col]].rename(columns={target_col: 'y'}).astype("float")
 
 
-small_datasets = [read_iris, read_auction, read_home, read_diabetes, read_titanic]
+small_datasets = [read_iris,
+                  #read_auction,
+                  #read_home,
+                  #read_diabetes,
+                  #read_titanic
+                  ]
 
 
 medium_datasets = [read_wine, read_compass, read_vehicle, read_wdbc, read_ionosphere]
@@ -235,7 +240,7 @@ all_datasets = [read_titanic, read_bank, read_diabetes, read_taiwan_credit, read
                 read_fico, read_german_credit, read_home, read_ionosphere, read_iris, read_vehicle, read_wdbc,
                 read_wine]
 
-assert len(all_datasets) == len(small_datasets) + len(medium_datasets) + len(big_datasets)
+#assert len(all_datasets) == len(small_datasets) + len(medium_datasets) + len(big_datasets)
 
 if __name__ == "__main__":
     dataset_shapes = []

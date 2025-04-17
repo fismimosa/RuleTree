@@ -2,6 +2,7 @@ from itertools import product
 
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier, \
     PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier, ObliquePivotTreeStumpClassifier
@@ -11,7 +12,13 @@ from RuleTree.stumps.classification.PartialPivotTreeStumpClassifier import Parti
 from RuleTree.stumps.classification.PartialProximityTreeStumpClassifier import PartialProximityTreeStumpClassifier
 from benchmark.Hybrid.HybridReaders import read_titanic
 
-max_depth_trees = [2, 3, 10, None]
+max_depth_trees = [
+    1,
+    2,
+    3,
+    4,
+    #None
+]
 n_jobs = 16
 
 available_stumps = {
@@ -51,7 +58,7 @@ hyper_stumps = {
         'random_state': [42],
         'oblique_split_type': ['householder'],
         'pca': [None],
-        'max_oblique_features': [2, 3],
+        'max_oblique_features': [2],
         'tau': [1e-4],
     },
     'PivotTreeStumpClassifier': {
@@ -67,7 +74,7 @@ hyper_stumps = {
         'random_state': [42],
         'oblique_split_type': ['householder'],
         'pca': [None],
-        'max_oblique_features': [2, 3],
+        'max_oblique_features': [2],
         'tau': [1e-4],
     },
     'MultipleObliquePivotTreeStumpClassifier': {
@@ -75,22 +82,66 @@ hyper_stumps = {
         'random_state': [42],
         'oblique_split_type': ['householder'],
         'pca': [None],
-        'max_oblique_features': [2, 3],
+        'max_oblique_features': [2],
         'tau': [1e-4],
     },
     'PartialPivotTreeStumpClassifier': {
-        'n_shapelets': [5, 10, 100, np.inf],
-        'max_n_features': ['all', 'sqrt', 2, 3, 'half', 'n-1'],
+        'n_shapelets': [
+            10,
+            #np.inf
+        ],
+        'n_features_strategy': [
+            'n-1',
+            #'all'
+            'sqrt',
+            #'half',
+        ],
         'n_jobs': [n_jobs],
         'random_state': [42],
-        'selection': ['mi_clf', 'random', 'cluster'],
+        'selection': [
+            'mi_clf',
+            'random',
+            # 'cluster'
+        ],
+        'n_shapelets_for_selection': [
+            .1,
+            .5,
+            # np.inf
+        ],
+        'n_ts_for_selection': [
+            .1,
+            #.5,
+            np.inf
+        ],
     },
     'PartialProximityTreeStumpClassifier': {
-        'n_shapelets': [5, 10, 100, np.inf],
-        'max_n_features': ['all', 'sqrt', 2, 3, 5, 'half', 'n-1'],
+        'n_shapelets': [
+            10,
+            #np.inf
+        ],
+        'n_features_strategy': [
+            'n-1',
+            #'all',
+            'sqrt',
+            #'half',
+        ],
         'n_jobs': [n_jobs],
         'random_state': [42],
-        'selection': ['mi_clf', 'random', 'cluster'],
+        'selection': [
+            'mi_clf',
+            'random',
+            # 'cluster'
+        ],
+        'n_shapelets_for_selection': [
+            .1,
+            .5,
+            # np.inf
+        ],
+        'n_ts_for_selection': [
+            .1,
+            #.5,
+            np.inf
+        ],
     },
 }
 
@@ -102,21 +153,27 @@ def get_hyperparameters(df: pd.DataFrame):
         for hyper in product(*hyper_models[model].values()):
             hyper_dict = dict(zip(hyper_models[model].keys(), hyper))
             if model == 'RT':
-                all_stump_hyper = dict()
-                for stump in hyper_dict['base_stumps']:
-                    for hyper_stump in product(*hyper_stumps[stump].values()):
+                base_stumps = hyper_dict['base_stumps']
+                stump_hyper_lists = [
+                    list(product(*hyper_stumps[stump].values()))
+                    for stump in base_stumps
+                ]
+                for combo in product(*stump_hyper_lists):
+                    all_stump_hyper = dict()
+                    for stump, hyper_stump in zip(base_stumps, combo):
                         hyper_stump_dict = dict(zip(hyper_stumps[stump].keys(), hyper_stump))
-                        if 'max_n_features' in hyper_stump:
-                            if hyper_stump_dict['max_n_features'] == 'half':
-                                hyper_stump_dict['max_n_features'] = n_features // 2
-                            elif hyper_stump_dict['max_n_features'] == 'n-1':
-                                hyper_stump_dict['max_n_features'] = n_features - 1
-                        all_stump_hyper[stump] = hyper_stump_dict
+                        if 'n_features_strategy' in hyper_stump_dict:
+                            if hyper_stump_dict['n_features_strategy'] == 'half':
+                                hyper_stump_dict['n_features_strategy'] = n_features // 2
+                            elif hyper_stump_dict['n_features_strategy'] == 'n-1':
+                                hyper_stump_dict['n_features_strategy'] = n_features - 1
 
-                yield model, hyper_dict, all_stump_hyper
+                        all_stump_hyper[stump] = hyper_stump_dict
+                    yield model, hyper_dict, all_stump_hyper
+            elif model == 'DT':
+                return model, hyper_dict
 
 
 if __name__ == "__main__":
     _, df = read_titanic()
-    for model, hyper_dict, hyper_stump_dict in get_hyperparameters(df):
-        print(model, hyper_dict, hyper_stump_dict)
+    print(len(list(get_hyperparameters(df))))

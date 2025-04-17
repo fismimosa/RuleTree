@@ -1,4 +1,5 @@
 import random
+import warnings
 from itertools import combinations
 
 import numba
@@ -27,11 +28,10 @@ class TabularShapelets(TransformerMixin):
 
     def __init__(self,
                  n_shapelets=100,
-                 n_shapelets_for_selection=np.inf, #int, inf, or 'stratified'
-                 n_ts_for_selection_per_class=np.inf, #int, inf
-                 min_n_features=2,
-                 max_n_features='auto', #auto-> sqrt(X.shape[1]), sqrt-> sqrt(X.shape[1]), all -> all features, int
-                 selection='random', #random, mi_clf, mi_reg, cluster
+                 n_shapelets_for_selection=np.inf,  #int, inf, or 'stratified'
+                 n_ts_for_selection=np.inf,  #int, inf
+                 n_features_strategy=2, #auto-> sqrt(X.shape[1]), sqrt-> sqrt(X.shape[1]), all -> all features, int
+                 selection='random',  #random, mi_clf, mi_reg, cluster
                  distance='euclidean',
                  mi_n_neighbors = 100,
                  random_state=42, n_jobs=1):
@@ -49,9 +49,8 @@ class TabularShapelets(TransformerMixin):
 
         self.n_shapelets = n_shapelets
         self.n_shapelets_for_selection = n_shapelets_for_selection
-        self.n_ts_for_selection_per_class = n_ts_for_selection_per_class
-        self.min_n_features = min_n_features
-        self.max_n_features = max_n_features
+        self.n_ts_for_selection = n_ts_for_selection
+        self.n_features_strategy = n_features_strategy
         self.selection = selection
         self.distance = distance
         self.mi_n_neighbors = mi_n_neighbors
@@ -95,7 +94,26 @@ class TabularShapelets(TransformerMixin):
         """
         random.seed(self.random_state)
 
-        candidate_shapelets = self.__fit_partition(X, y)
+        n_ts = self.n_ts_for_selection
+        if type(self.n_ts_for_selection) is float:
+            if np.isinf(self.n_ts_for_selection):
+                n_ts = X.shape[0]
+            else:
+                n_ts = max(1, int(X.shape[0]*self.n_ts_for_selection))
+
+        candidate_shapelets = self.__fit_partition(X[np.random.choice(X.shape[0], min(n_ts, X.shape[0]),
+                                                                      replace=False)], y)
+
+        n_sh = self.n_shapelets_for_selection
+        if type(self.n_ts_for_selection) is float:
+            if np.isinf(self.n_ts_for_selection):
+                n_sh = candidate_shapelets.shape[0]
+            else:
+                n_sh = max(1, int(candidate_shapelets.shape[0] * self.n_ts_for_selection))
+
+        candidate_shapelets = candidate_shapelets[np.random.choice(candidate_shapelets.shape[0],
+                                                                   min(candidate_shapelets.shape[0], n_sh),
+                                                                   replace=False)]
 
         if self.selection == 'random':
             self.shapelets = self.__fit_selection_random(candidate_shapelets, X, y)
@@ -108,19 +126,35 @@ class TabularShapelets(TransformerMixin):
 
         return self
 
-    def __fit_partition(self, X, y):
-        max_n_features = -1
-        if self.max_n_features == 'auto':
-            max_n_features = int(np.sqrt(max_n_features))
-        elif self.max_n_features == 'sqrt':
-            max_n_features = int(np.sqrt(max_n_features))
-        elif self.max_n_features == 'all':
-            max_n_features = X.shape[1]
+    def _compute_n_features(self, X):
+        max_n_features = X.shape[1]
+        min_n_features = 2
+        if self.n_features_strategy == 'auto' or self.n_features_strategy == 'sqrt':
+            k = int(np.sqrt(max_n_features))
+            min_n_features = max_n_features - k
+        elif self.n_features_strategy == 'all':
+            pass
+        elif type(self.n_features_strategy) is tuple and len(self.n_features_strategy) == 2:
+            min_n_features = self.n_features_strategy[0]
+            max_n_features = self.n_features_strategy[1]
+        elif type(self.n_features_strategy) is float:
+            min_n_features = int(max_n_features * self.n_features_strategy)
+            max_n_features = min_n_features + 1
+        elif type(self.n_features_strategy) is int:
+            min_n_features = self.n_features_strategy
+            max_n_features = min_n_features + 1
         else:
-            max_n_features = self.max_n_features
+            raise Exception(f"Unsupported strategy '{type(self.n_features_strategy)}'")
+
+        assert min_n_features < max_n_features
+
+        return min_n_features, max_n_features
+
+    def __fit_partition(self, X, y):
+        min_n_features, max_n_features = self._compute_n_features(X)
 
         subsequences_index = []
-        for n_features in range(self.min_n_features, max_n_features):
+        for n_features in range(min_n_features, max_n_features):
             subsequences_index += list(combinations([i for i in range(X.shape[1])], n_features))
 
         res_data = []
@@ -129,7 +163,10 @@ class TabularShapelets(TransformerMixin):
             X_combination[:, combination] = X[:, combination]
             res_data.append(np.unique(X_combination, axis=0))
 
-        return np.vstack(res_data)
+        try:
+            return np.vstack(res_data)
+        except ValueError:
+            pass
 
     def __fit_selection_random(self, candidate_shapelets: np.ndarray, X, y):
         n_shapelets = min(self.n_shapelets, candidate_shapelets.shape[0])
@@ -163,15 +200,21 @@ class TabularShapelets(TransformerMixin):
     def __fit_selection_cluster(self, candidate_shapelets, X, y):
         old_n_threads = numba.get_num_threads()
         numba.set_num_threads(self.n_jobs)
-        dist_matrix = _compute_distance(candidate_shapelets, candidate_shapelets, self.__get_distance())
+        try:
+            dist_matrix = _compute_distance(np.nan_to_num(candidate_shapelets), candidate_shapelets, self.__get_distance())
+        except MemoryError as e:
+            raise e
         numba.set_num_threads(old_n_threads)
 
-        try:
-            from sklearn_extra.cluster import KMedoids
-            clu = KMedoids(n_clusters=self.n_shapelets, random_state=self.random_state, metric='precomputed')
-        except Exception as e:
-            raise Exception(f"Please install scikit-learn-extra [{e}]")
-        clu.fit(dist_matrix)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            try:
+                from sklearn_extra.cluster import KMedoids
+                clu = KMedoids(n_clusters=min(candidate_shapelets.shape[0], self.n_shapelets),
+                               random_state=self.random_state, metric='precomputed', )
+            except Exception as e:
+                raise Exception(f"Please install scikit-learn-extra [{e}]")
+            clu.fit(dist_matrix)
 
         return candidate_shapelets[clu.medoid_indices_]
 
