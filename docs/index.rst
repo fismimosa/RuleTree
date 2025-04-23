@@ -12,8 +12,12 @@ documentation for details.
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: API reference:
 
-   modules
+   RuleTree.base
+   RuleTree.ensemble
+   RuleTree.stumps
+   RuleTree.tree
+   RuleTree.utils
 

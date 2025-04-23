@@ -275,6 +275,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             prediction=node_id,
             prediction_probability=-1,
             classes=np.array(['NA']),
+            features=self.n_features,
             parent=None,
             stump=None,
             node_l=None,
@@ -373,24 +374,6 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
         """
         return
 
-    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
-        """
-        Predict class label for X using the trained classification tree.
-        
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features)
-            Input data.
-        current_node : RuleTreeNode
-            Current node in the tree traversal.
-            
-        Returns
-        -------
-        ndarray
-            Predicted class labels.
-        """
-        return RuleTreeClassifier._predict(self, X, current_node)
-
 
 class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
     """
@@ -422,28 +405,23 @@ class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
         return RuleTreeRegressor.prepare_node(self, y, idx, node_id)
 
     def _post_fit_fix(self):
-        """
-        Perform post-fitting operations for regression.
-        
-        For regression, no additional post-processing is needed.
-        """
-        return
+        possible_labels, inner_nodes = self.root.get_possible_outputs()
+        all_outputs = list(possible_labels) + list(inner_nodes)
+        if type(next(iter(all_outputs))) is str and not hasattr(self, 'label_encoder'):
+            self.label_encoder = {k: all_outputs.index(k) for k in set(all_outputs)}
+            self.__labels_obj_to_int(self.root)
 
-    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
-        """
-        Predict regression value for X using the trained regression tree.
-        
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features)
-            Input data.
-        current_node : RuleTreeNode
-            Current node in the tree traversal.
-            
-        Returns
-        -------
-        ndarray
-            Predicted continuous values.
-        """
-        return RuleTreeRegressor._predict(self, X, current_node)
+    def __labels_obj_to_int(self, node: RuleTreeNode):
+        node.prediction = self.label_encoder[node.prediction]
 
+        if node.is_leaf():
+            return
+
+        self.__labels_obj_to_int(node.node_l)
+        self.__labels_obj_to_int(node.node_r)
+
+    def _get_stumps_base_class(self):
+        return RegressorMixin
+
+    def _get_prediction_probas(self, current_node = None, probas=None):
+        raise NotImplementedError()

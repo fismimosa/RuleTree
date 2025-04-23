@@ -97,7 +97,7 @@ def test_clf(max_depth=4):
             table.update_from_dict(res)
         except Exception as e:
             table["             error             "] = str(e)
-            #raise e
+            raise e
 
         table.next_row()
 
@@ -288,9 +288,9 @@ def test_clc_iris():
 
 
 if __name__ == "__main__":
-    #test_clf()
+    test_clf()
     #test_reg()
-    test_clu()
+    #test_clu()
 
     #test_clf_iris()
     #test_clc_iris()

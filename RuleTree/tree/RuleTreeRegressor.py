@@ -1,5 +1,6 @@
 import heapq
 import warnings
+from pyexpat import features
 
 import numpy as np
 import sklearn
@@ -280,7 +281,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             node_l=None,
             node_r=None,
             samples=len(y[idx]),
-            classes=self.classes_
+            classes=self.classes_,
+            features=self.n_features,
         )
 
     def _get_stumps_base_class(self):

@@ -144,9 +144,6 @@ autosectionlabel_prefix_document = True
 # Enable autosummary features
 autosummary_generate = True
 
-# Set default content width (75% is often more readable than the default 100%)
-html_theme_options["max_width"] = "75%"
-
 # Add last updated timestamp to each page
 html_last_updated_fmt = "%b %d, %Y"
 
