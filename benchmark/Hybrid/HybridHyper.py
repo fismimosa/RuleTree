@@ -17,7 +17,13 @@ max_depth_trees = [
     2,
     3,
     4,
-    #None
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    None
 ]
 n_jobs = 16
 
@@ -39,7 +45,7 @@ hyper_models = {
         'stump_selection': ['best', 'random'],
         'random_state': [42],
         'splitter': ['best'],
-        'base_stumps': [[x] for x in available_stumps.keys()] + [list(available_stumps.keys())],
+        'base_stumps': [[x] for x in available_stumps.keys()] + [list(available_stumps.keys())] + [list(available_stumps.keys())[:-2]],
         'distance_measure': ['euclidean']
     },
     'DT': {
@@ -88,59 +94,61 @@ hyper_stumps = {
     'PartialPivotTreeStumpClassifier': {
         'n_shapelets': [
             10,
-            #np.inf
+            np.inf
         ],
         'n_features_strategy': [
             'n-1',
+            'n-2',
             #'all'
-            'sqrt',
+            #'sqrt',
             #'half',
         ],
         'n_jobs': [n_jobs],
         'random_state': [42],
         'selection': [
-            'mi_clf',
+            #'mi_clf',
             'random',
-            # 'cluster'
+            'cluster'
         ],
         'n_shapelets_for_selection': [
             .1,
-            .5,
+            #.5,
             # np.inf
         ],
         'n_ts_for_selection': [
             .1,
             #.5,
-            np.inf
+            #np.inf
         ],
     },
     'PartialProximityTreeStumpClassifier': {
         'n_shapelets': [
             10,
-            #np.inf
+            np.inf
         ],
         'n_features_strategy': [
             'n-1',
+            'n-2',
             #'all',
-            'sqrt',
+            #'sqrt',
             #'half',
         ],
         'n_jobs': [n_jobs],
         'random_state': [42],
         'selection': [
-            'mi_clf',
+            #'mi_clf',
             'random',
-            # 'cluster'
+            'cluster'
         ],
         'n_shapelets_for_selection': [
             .1,
-            .5,
-            # np.inf
+            #.5,
+            #np.inf
         ],
         'n_ts_for_selection': [
             .1,
             #.5,
-            np.inf
+            #np.inf
         ],
     },
 }
@@ -167,6 +175,8 @@ def get_hyperparameters(df: pd.DataFrame):
                                 hyper_stump_dict['n_features_strategy'] = n_features // 2
                             elif hyper_stump_dict['n_features_strategy'] == 'n-1':
                                 hyper_stump_dict['n_features_strategy'] = n_features - 1
+                            elif hyper_stump_dict['n_features_strategy'] == 'n-2':
+                                hyper_stump_dict['n_features_strategy'] = n_features - 2
 
                         all_stump_hyper[stump] = hyper_stump_dict
                     yield model, hyper_dict, all_stump_hyper

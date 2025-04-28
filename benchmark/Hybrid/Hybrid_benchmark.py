@@ -1,5 +1,6 @@
 import math
 import os
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import traceback
 import warnings
 
@@ -13,7 +14,7 @@ from RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier impo
 from RuleTree.stumps.classification.PartialPivotTreeStumpClassifier import PartialPivotTreeStumpClassifier
 from RuleTree.stumps.classification.PartialProximityTreeStumpClassifier import PartialProximityTreeStumpClassifier
 from benchmark.Hybrid.HybridHyper import get_hyperparameters, n_jobs
-from benchmark.Hybrid.HybridReaders import all_datasets, small_datasets
+from benchmark.Hybrid.HybridReaders import all_datasets, small_datasets, medium_datasets, big_datasets
 
 n = 16
 
@@ -33,8 +34,9 @@ import pandas as pd
 import psutil
 from tqdm.auto import tqdm
 
-from RuleTree import RuleTreeCluster, RuleTreeClassifier
+from RuleTree import RuleTreeClassifier
 from benchmark.evaluation_utils import evaluate_expl, evaluate_clf
+
 warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
 
 
@@ -46,6 +48,8 @@ def compute_measures(y_test, y_pred, model):
 
 
 def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
+    hyper_dict = copy(hyper_dict)
+
     filename_hash = '|'.join([
         dataset_name,
         method,
@@ -65,6 +69,8 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
 
     if method == "RT":
         base_stumps = []
+        if 'base_stumps' not in hyper_dict:
+            print()
         for stump in hyper_dict["base_stumps"]:
             if stump == "PartialPivotTreeStumpClassifier":
                 base_stumps.append(PartialPivotTreeStumpClassifier(**hyper_stump_dict[stump]))
@@ -93,7 +99,10 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
         raise ValueError(f"Unknown base_method: {method}")
 
     start = time.time()
-    model.fit(X_train, y_train)
+    try:
+        model.fit(X_train, y_train)
+    except:
+        return pd.DataFrame()
     end = time.time()
 
     if method in ['DT', 'RT']:
@@ -116,8 +125,13 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
 
 
 def main():
-    datasets = dict([x() for x in small_datasets])
-    with ProcessPoolExecutor(max_workers=math.ceil(psutil.cpu_count(logical=True) / n_jobs)) as executor:
+    datasets = dict([x() for x in small_datasets + medium_datasets + big_datasets])
+    n_process = math.ceil(psutil.cpu_count(logical=True) / n_jobs)
+    print(n_process)
+
+    n_process = 6
+
+    with ProcessPoolExecutor(max_workers=n_process) as executor:
         for dataset_name, df in datasets.items():
             if not os.path.exists("res_tmp/"):
                 os.mkdir("res_tmp/")

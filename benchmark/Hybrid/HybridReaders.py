@@ -2,10 +2,10 @@ import pandas as pd
 from pandas.core.dtypes.common import is_object_dtype
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from ucimlrepo import fetch_ucirepo
 
 
 def read_titanic(encode=True):
-    sensible_col = 'Sex'
     target_col = 'Survived'
     df = pd.read_csv('../../datasets/CLF/titanic.csv').drop(columns=['Embarked', 'PassengerId'])
 
@@ -18,10 +18,9 @@ def read_titanic(encode=True):
 
         df = pd.DataFrame(ct.fit_transform(df), columns=ct.get_feature_names_out())
 
-    columns = set(df.columns.tolist()) - {sensible_col, target_col}
+    columns = set(df.columns.tolist()) - {target_col}
 
-    return 'titanic', df[[sensible_col] + list(columns) + [target_col]].rename(columns={target_col: 'y'}).astype(
-        "float")
+    return 'titanic', df[list(columns) + [target_col]].rename(columns={target_col: 'y'}).astype("float")
 
 
 def read_bank(encode=True):
@@ -221,24 +220,104 @@ def read_wine(encode=True):
 
     return 'wine', df[list(columns) + [target_col]].rename(columns={target_col: 'y'}).astype("float")
 
+def read_breast(encode=True):
+    breast_cancer_wisconsin_diagnostic = fetch_ucirepo(id=17)
 
-small_datasets = [read_iris,
-                  #read_auction,
-                  #read_home,
-                  #read_diabetes,
-                  #read_titanic
-                  ]
+    X = breast_cancer_wisconsin_diagnostic.data.features.copy()
+    y = breast_cancer_wisconsin_diagnostic.data.targets
+
+    if encode:
+        y = LabelEncoder().fit_transform(y.values.ravel())
+
+    X['y'] = y
+
+    return 'breast', X.astype("float")
+
+def read_page(encode=True):
+    page_blocks_classification = fetch_ucirepo(id=78)
+
+    X = page_blocks_classification.data.features.copy()
+    y = page_blocks_classification.data.targets
+
+    X['y'] = y
+
+    return 'page', X.astype("float")
+
+def read_sonar(encode=True):
+    connectionist_bench_sonar_mines_vs_rocks = fetch_ucirepo(id=151)
+
+    X = connectionist_bench_sonar_mines_vs_rocks.data.features.copy()
+    y = connectionist_bench_sonar_mines_vs_rocks.data.targets
+
+    if encode:
+        y = LabelEncoder().fit_transform(y.values.ravel())
+
+    X['y'] = y
+
+    return 'sonar', X.astype("float")
 
 
-medium_datasets = [read_wine, read_compass, read_vehicle, read_wdbc, read_ionosphere]
+def read_vertebral(encode=True):
+    vertebral_column = fetch_ucirepo(id=212)
+
+    X = vertebral_column.data.features.copy()
+    y = vertebral_column.data.targets
+
+    if encode:
+        y = LabelEncoder().fit_transform(y.values.ravel())
+
+    X['y'] = y
+
+    return 'vertebral', X.astype("float")
 
 
-big_datasets = [read_bank, read_taiwan_credit, read_fico, read_german_credit, read_adult]
+def read_heloc(encode=True):
+    target_col = 'RiskPerformance'
+    df = pd.read_csv("../../datasets/CLF/heloc.csv")
+
+    if encode:
+        df[target_col] = LabelEncoder().fit_transform(df[target_col])
+
+    columns = set(df.columns.tolist()) - {target_col}
+
+    return 'heloc', df[list(columns) + [target_col]].rename(columns={target_col: 'y'}).astype("float")
 
 
-all_datasets = [read_titanic, read_bank, read_diabetes, read_taiwan_credit, read_compass, read_adult, read_auction,
-                read_fico, read_german_credit, read_home, read_ionosphere, read_iris, read_vehicle, read_wdbc,
-                read_wine]
+small_datasets = [
+    read_iris,
+    read_home,
+    read_diabetes,
+    read_titanic,
+    read_vertebral,
+]
+
+
+medium_datasets = [
+    read_auction,
+    read_compass,
+    read_wdbc,
+    read_ionosphere,
+    read_breast,
+    read_heloc,
+    #read_vehicle,
+    #read_page,
+    #read_wine,
+    read_sonar,
+]
+
+
+big_datasets = [
+    #read_bank,
+    #read_taiwan_credit,
+    read_fico,
+    read_german_credit,
+    read_adult
+]
+
+
+all_datasets = [read_breast, read_heloc, read_titanic, read_bank, read_diabetes, read_taiwan_credit, read_compass,
+                read_adult, read_auction, read_fico, read_german_credit, read_home, read_ionosphere, read_iris,
+                read_vehicle, read_wdbc, read_wine, read_page, read_sonar, read_vertebral]
 
 #assert len(all_datasets) == len(small_datasets) + len(medium_datasets) + len(big_datasets)
 

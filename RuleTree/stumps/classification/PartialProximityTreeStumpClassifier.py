@@ -49,7 +49,7 @@ class PartialProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
             "n_shapelets": n_shapelets,
             "n_shapelets_for_selection": n_shapelets_for_selection,
             "n_ts_for_selection": n_ts_for_selection,
-            "min_n_features": n_features_strategy,
+            "n_features_strategy": n_features_strategy,
             "selection": selection,
             "distance": distance,
             "mi_n_neighbors": mi_n_neighbors,
@@ -82,6 +82,10 @@ class PartialProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         X_dist = self.st.fit_transform(X, y)
         actual_n_shapelets = X_dist.shape[1]
+
+        if actual_n_shapelets < 2:
+            raise ValueError(f"Hyperparameter led to n_shapelets={actual_n_shapelets}, it should be at least 2")
+
         X_bool = np.zeros((X.shape[0], actual_n_shapelets * (actual_n_shapelets - 1)), dtype=bool)
 
         c = 0

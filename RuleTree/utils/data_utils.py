@@ -285,8 +285,11 @@ def get_info_gain(clf: DecisionTreeClassifier | DecisionTreeRegressor):
     float
         Information gain achieved by the split
     """
-    if len(clf.tree_.impurity) == 1:#no_split
-        return 0 # TODO: check
+    try:
+        if len(clf.tree_.impurity) == 1:#no_split
+            return 0 # TODO: check
+    except:
+        pass
     imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
     n_parent, n_child_l, n_child_r = clf.tree_.weighted_n_node_samples  ##n_node_samples 
     return _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_child_r)

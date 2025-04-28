@@ -33,7 +33,6 @@ class RuleTreeNode:
                  prediction: int | str | float,
                  prediction_probability: np.ndarray | float,
                  classes: np.ndarray,
-                 features: np.ndarray,
                  parent: Self | None,
                  stump: RuleTreeBaseStump = None,
                  node_l: Self = None,
@@ -57,7 +56,6 @@ class RuleTreeNode:
         self.prediction = prediction
         self.prediction_probability = prediction_probability
         self.classes = classes
-        self.features = features
         self.parent = parent
         self.stump = stump
         self.node_l = node_l
@@ -171,7 +169,6 @@ class RuleTreeNode:
             "prediction": self.prediction,
             "prediction_probability": self.prediction_probability,
             "prediction_classes_": self.classes,
-            "features": self.features,
             "left_node": self.node_l.get_rule(columns_names = columns_names, scaler = scaler) if self.node_l is not None else None,
             "right_node": self.node_r.get_rule(columns_names = columns_names, scaler = scaler) if self.node_r is not None else None,
         }
@@ -196,7 +193,6 @@ class RuleTreeNode:
             "prediction": self.prediction,
             "prediction_probability": self.prediction_probability if isinstance(self.prediction_probability, float) else self.prediction_probability.tolist(),
             "prediction_classes_": self.classes.tolist(),
-            "features": self.features,
             "left_node": self.node_l.node_id if self.node_l is not None else None,
             "right_node": self.node_r.node_id if self.node_r is not None else None,
         }
@@ -230,8 +226,7 @@ class RuleTreeNode:
                             prediction = info_dict.get('prediction', np.nan),
                             prediction_probability = info_dict.get('prediction_probability', [np.nan]),
                             parent = None,
-                            classes=info_dict.get('prediction_classes_', np.nan),
-                            features=info_dict.get('features', np.nan),)
+                            classes=info_dict.get('prediction_classes_', np.nan))
         
         if info_dict['is_leaf'] == True:
             return node
@@ -311,97 +306,3 @@ class RuleTreeNode:
             graph.edge(self.node_id, self.node_r.node_id, color="#d62728")
 
         return graph
-
-    def predict(self, X: np.ndarray, prediction_step=np.inf):
-        """
-        Predict labels, leaf indices, and probabilities for the given input data.
-
-        This method traverses the tree recursively to make predictions for each sample
-        in the input feature matrix. It stops at leaf nodes or when the specified
-        `prediction_step` depth is reached.
-
-        Parameters
-        ----------
-        X : np.ndarray
-            Feature matrix of shape (n_samples, n_features).
-        prediction_step : int, optional
-            Maximum depth to traverse for prediction. Defaults to np.inf.
-
-        Returns
-        -------
-        tuple
-            A tuple containing:
-            - np.ndarray: Predicted labels for each sample.
-            - np.ndarray: Leaf node IDs corresponding to each sample.
-            - np.ndarray: Predicted probabilities for each sample.
-        """
-        if self.is_leaf() or prediction_step < 1:
-            n = len(X)
-            return np.array([self.prediction] * n), \
-                np.array([self.node_id] * n), \
-                np.array(np.array([self.prediction_probability] * n).reshape(n, -1))
-
-        else:
-            labels, leaves, proba = (
-                np.full(len(X), fill_value=-1,
-                        dtype=object if type(self.prediction) is str else type(self.prediction)),
-                np.zeros(len(X), dtype=object),
-                np.ones((
-                    len(X),
-                    1 if type(self.prediction_probability) in [float, int] else len(self.prediction_probability)
-                ), dtype=float) * -1
-            )
-
-            labels_clf = self.stump.apply(X)
-            X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
-            if X_l.shape[0] != 0:
-                labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = (
-                    self.node_l.predict(X_l, prediction_step - 1))
-            if X_r.shape[0] != 0:
-                labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = (
-                    self.node_r.predict(X_r, prediction_step - 1))
-
-            return labels, leaves, proba
-
-    def get_predicates(self) -> dict:
-        """
-        Get the predicates (conditions) for the stump at this node in depth-first order.
-
-        Returns:
-            dict: dictionary of predicates of the stump and its children in the form node_id: RuleTreeNode
-        """
-        if self.is_leaf():
-            return dict()
-        else:
-            return {self.node_id: self} | self.node_l.get_predicates() | self.node_r.get_predicates()
-
-    def get_node_by_id(self, node_id: str) -> Self | None:
-        """
-        Get a node by its ID in the tree.
-
-        Args:
-            node_id: The ID of the node to search for.
-
-        Returns:
-            RuleTreeNode: The node with the specified ID or None if not found.
-        """
-        if self.node_id == node_id:
-            return self
-        elif self.is_leaf():
-            return None
-        elif self.node_l is not None:
-            return self.node_l.get_node_by_id(node_id)
-        elif self.node_r is not None:
-            return self.node_r.get_node_by_id(node_id)
-
-    def get_leaf_nodes(self) -> dict[str: Self]:
-        """
-        Get all leaf nodes in the tree.
-
-        Returns:
-            dict: A dictionary of all leaf nodes in the tree.
-        """
-        if self.is_leaf():
-            return {self.node_id: self}
-        else:
-            return self.node_l.get_leaf_nodes() | self.node_r.get_leaf_nodes()

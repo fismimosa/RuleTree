@@ -33,7 +33,7 @@ class TabularShapelets(TransformerMixin):
                  n_features_strategy=2, #auto-> sqrt(X.shape[1]), sqrt-> sqrt(X.shape[1]), all -> all features, int
                  selection='random',  #random, mi_clf, mi_reg, cluster
                  distance='euclidean',
-                 mi_n_neighbors = 100,
+                 mi_n_neighbors = 3,
                  random_state=42, n_jobs=1):
         super().__init__()
 
@@ -99,7 +99,7 @@ class TabularShapelets(TransformerMixin):
             if np.isinf(self.n_ts_for_selection):
                 n_ts = X.shape[0]
             else:
-                n_ts = max(1, int(X.shape[0]*self.n_ts_for_selection))
+                n_ts = max(2, int(X.shape[0]*self.n_ts_for_selection))
 
         candidate_shapelets = self.__fit_partition(X[np.random.choice(X.shape[0], min(n_ts, X.shape[0]),
                                                                       replace=False)], y)
@@ -109,7 +109,7 @@ class TabularShapelets(TransformerMixin):
             if np.isinf(self.n_ts_for_selection):
                 n_sh = candidate_shapelets.shape[0]
             else:
-                n_sh = max(1, int(candidate_shapelets.shape[0] * self.n_ts_for_selection))
+                n_sh = max(2, int(candidate_shapelets.shape[0] * self.n_ts_for_selection))
 
         candidate_shapelets = candidate_shapelets[np.random.choice(candidate_shapelets.shape[0],
                                                                    min(candidate_shapelets.shape[0], n_sh),
@@ -189,7 +189,7 @@ class TabularShapelets(TransformerMixin):
             scores = np.zeros((len(labels), ))
         else:
             scores = mutual_info_fun(dist, y,
-                                     n_jobs=1,
+                                     n_jobs=self.n_jobs,
                                      n_neighbors=min(dist.shape[0], self.mi_n_neighbors),
                                      discrete_features=False)
         if len(candidate_shapelets) == self.n_shapelets:
@@ -230,7 +230,6 @@ class TabularShapelets(TransformerMixin):
 @jit(parallel=True)
 def _compute_distance(X: np.ndarray, shapelets: np.ndarray, distance):
     res = np.ones((X.shape[0], shapelets.shape[0]), dtype=np.float32) * np.inf
-    w = shapelets.shape[-1]
 
     for idx, shapelet in enumerate(shapelets):
         cols = np.where(np.isfinite(shapelet))[0]
