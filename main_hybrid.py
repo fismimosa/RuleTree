@@ -31,10 +31,10 @@ if __name__ == "__main__":
     random_state = 42
 
     stumps = [
-        PartialPivotTreeStumpClassifier(n_shapelets=np.inf, max_n_features='all', n_jobs=10, random_state=random_state,
-                                        selection='mi_clf'),
-        PartialProximityTreeStumpClassifier(n_shapelets=np.inf, max_n_features='all', n_jobs=10, random_state=random_state,
-                                            selection='mi_clf'),
+        PartialPivotTreeStumpClassifier(n_shapelets=np.inf, n_features_strategy='all', n_jobs=10,
+                                        random_state=random_state, selection='mi_clf'),
+        PartialProximityTreeStumpClassifier(n_shapelets=np.inf, n_features_strategy='all', n_jobs=10,
+                                            random_state=random_state, selection='mi_clf'),
         DecisionTreeStumpClassifier(max_depth=1, random_state=random_state),
         ObliqueDecisionTreeStumpClassifier(max_depth=1, random_state=random_state,
                                            oblique_split_type='householder',
