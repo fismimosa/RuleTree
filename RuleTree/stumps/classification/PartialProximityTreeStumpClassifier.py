@@ -7,6 +7,7 @@ import psutil
 import tempfile312
 from matplotlib import pyplot as plt
 from numba import UnsupportedError
+from tqdm.auto import tqdm
 
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.utils.define import DATA_TYPE_TS, DATA_TYPE_TABULAR
@@ -17,21 +18,23 @@ from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
 class PartialProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
     def __init__(self,
                  n_shapelets=psutil.cpu_count(logical=False) * 2,
-                 n_shapelets_for_selection=500,  # int, inf, or 'stratified'
                  n_ts_for_selection=100,  # int, inf
                  n_features_strategy=2,
-                 selection='mi_clf',  # random, mi_clf, mi_reg, cluster
+                 selection='random',  # random, mi_clf, mi_reg, cluster
                  distance='euclidean',
-                 mi_n_neighbors=100,
+                 proximity_on_same_features=True,
+                 scaler=None,
+                 use_combination=True,
                  random_state=42, n_jobs=1,
                  **kwargs):
         self.n_shapelets = n_shapelets
-        self.n_shapelets_for_selection = n_shapelets_for_selection
         self.n_ts_for_selection = n_ts_for_selection
         self.n_features_strategy = n_features_strategy
         self.selection = selection
         self.distance = distance
-        self.mi_n_neighbors = mi_n_neighbors
+        self.proximity_on_same_features = proximity_on_same_features
+        self.scaler = scaler
+        self.use_combination = use_combination
         self.random_state = random_state
         self.n_jobs = n_jobs
 
@@ -40,62 +43,96 @@ class PartialProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         kwargs["max_depth"] = 1
 
-        if selection not in ['random', 'mi_clf', 'cluster']:
-            raise ValueError("'selection' must be 'random', 'mi_clf' or 'cluster'")
+        if selection not in ["random", "cluster", "all"]:
+            raise ValueError("'selection' must be 'random', 'all' or 'cluster'")
 
         super().__init__(**kwargs)
 
         self.kwargs |= {
             "n_shapelets": n_shapelets,
-            "n_shapelets_for_selection": n_shapelets_for_selection,
             "n_ts_for_selection": n_ts_for_selection,
             "n_features_strategy": n_features_strategy,
             "selection": selection,
             "distance": distance,
-            "mi_n_neighbors": mi_n_neighbors,
+            "proximity_on_same_features": proximity_on_same_features,
+            "scaler": scaler,
             "random_state": random_state,
+            "use_combination": use_combination,
             "n_jobs": n_jobs,
         }
 
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        if self.scaler is not None:
+            self.scaler.fit(X)
+
         if idx is None:
             idx = slice(None)
-        X = X[idx]
-        y = y[idx]
 
         self.y_lims = [X.min(), X.max()]
 
+        X = X[idx]
+        y = y[idx]
+        if self.scaler is not None:
+            X = self.scaler.transform(X)
+
         random.seed(self.random_state)
         if sample_weight is not None:
-            raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")
+            pass
+            #warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
 
         self.st = TabularShapelets(n_shapelets=self.n_shapelets,
-                                   n_shapelets_for_selection=self.n_shapelets_for_selection,
                                    n_ts_for_selection=self.n_ts_for_selection,
                                    n_features_strategy=self.n_features_strategy,
                                    selection=self.selection,
                                    distance=self.distance,
-                                   mi_n_neighbors=self.mi_n_neighbors,
+                                   use_combination=self.use_combination,
                                    random_state=random.randint(0, 2 ** 32 - 1),
                                    n_jobs=self.n_jobs
                                    )
 
         X_dist = self.st.fit_transform(X, y)
+        X_bool, i_idx, j_idx = self._get_proximity_matrix(X_dist)
+
+        X_bool, X_bool_idx = np.unique(X_bool, axis=1, return_index=True)
+        #tqdm.write(f'Size reduced by {round((X_bool_shape[1] - X_bool.shape[1])/X_bool_shape[1]*100, 2)}%')
+
+        super().fit(X_bool, y, context=context, sample_weight=sample_weight)
+        if not hasattr(self, 'tree_') or self.tree_.feature[0] == -2:
+            raise ValueError("No split found")
+            #raise Exception("No split found")
+        selected_pair = X_bool_idx[self.tree_.feature[0]]
+        shapelet1_idx = i_idx[selected_pair]
+        shapelet2_idx = j_idx[selected_pair]
+
+        self.st._optimize_memory(np.array([shapelet1_idx, shapelet2_idx]))
+        X_bool2, _, _ = self._get_proximity_matrix(self.st.transform(X, y))
+
+        super().fit(X_bool2, y=y, sample_weight=sample_weight, check_input=check_input)
+
+        return self
+
+    def _get_proximity_matrix(self, X_dist):
         actual_n_shapelets = X_dist.shape[1]
+
+        nan_masks = np.isnan(self.st.shapelets)  # shape: (n_shapelets, len_shapelet)
+        same_index = (nan_masks[:, None] == nan_masks).all(axis=2)
+        self.same_index = same_index
 
         if actual_n_shapelets < 2:
             raise ValueError(f"Hyperparameter led to n_shapelets={actual_n_shapelets}, it should be at least 2")
 
-        X_bool = np.zeros((X.shape[0], actual_n_shapelets * (actual_n_shapelets - 1)), dtype=bool)
+        tri_indices = np.triu_indices(actual_n_shapelets, k=1)
+        if self.proximity_on_same_features:
+            same_index_flat = self.same_index[tri_indices]
+            i_idx = tri_indices[0][same_index_flat]
+            j_idx = tri_indices[1][same_index_flat]
 
-        c = 0
+            X_bool = np.less_equal(X_dist[:, i_idx], X_dist[:, j_idx])
+        else:
+            i_idx, j_idx = tri_indices
+            X_bool = np.less_equal(X_dist[:, i_idx], X_dist[:, j_idx])
 
-        for i in range(actual_n_shapelets):
-            for j in range(i + 1, actual_n_shapelets):
-                X_bool[:, c] = X_dist[:, i] <= X_dist[:, j]
-                c += 1
-
-        return super().fit(X_bool, y=y, sample_weight=sample_weight, check_input=check_input)
+        return X_bool, i_idx, j_idx
 
     def apply(self, X, check_input=False):
         """Apply the decision tree stump to X.
@@ -112,17 +149,15 @@ class PartialProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
         X_leaves : array-like of shape (n_samples,)
             For each datapoint x in X, returns the leaf node it ends up in.
         """
+        if self.scaler is not None:
+            X = self.scaler.transform(X)
+
         self.y_lims = [min(self.y_lims[0], X.min()), min(self.y_lims[1], X.max())]
         X_dist = self.st.transform(X)
         actual_n_shapelets = X_dist.shape[1]
-        X_bool = np.zeros((X.shape[0], actual_n_shapelets * (actual_n_shapelets - 1)), dtype=bool)
 
-        c = 0
-
-        for i in range(actual_n_shapelets):
-            for j in range(i + 1, actual_n_shapelets):
-                X_bool[:, c] = X_dist[:, i] <= X_dist[:, j]
-                c += 1
+        i_idx, j_idx = np.triu_indices(actual_n_shapelets, k=1)
+        X_bool = (X_dist[:, i_idx] <= X_dist[:, j_idx])
 
         return super().apply(X_bool, check_input=check_input)
 

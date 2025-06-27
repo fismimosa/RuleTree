@@ -220,7 +220,8 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                                 )]
         
         else:
-            for stump in self.base_stumps:
+            pass
+            """for stump in self.base_stumps:
                 if stump.__class__.__module__.split('.')[-1] in [
                     'PivotTreeStumpClassifier',
                     'MultiplePivotTreeStumpClassifier',
@@ -229,38 +230,51 @@ class RuleForestClassifier(BaggingClassifier, RuleTreeBase):
                 ]:
                     
                     base_estimator = ForestEstimatorPivotClassifier
-                    break
+                    break"""
                 
             
      
-        super().__init__(estimator=base_estimator(criterion=self.criterion,
-                                                  max_depth=self.max_depth,
-                                                  min_samples_split=self.min_samples_split,
-                                                  min_samples_leaf=self.min_samples_leaf,
-                                                  min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-                                                  min_impurity_decrease=self.min_impurity_decrease,
-                                                  random_state=self.random_state,
-                                                  max_leaf_nodes=self.max_leaf_nodes,
-                                                  class_weight=self.class_weight,
-                                                  ccp_alpha=self.ccp_alpha,
-                                                  prune_useless_leaves=self.prune_useless_leaves,
-                                                  splitter=self.splitter,
-                                                  base_stumps = self.base_stumps,
-                                                  distance_measure = self.distance_measure,
-                                                  distance_matrix = self.distance_matrix,
-                                                  stump_selection= self.stump_selection
-                        
-                                                  ),
-                         n_estimators=self.n_estimators,
-                         max_samples=X.shape[0] if self.max_samples is None else self.max_samples,
-                         max_features=self.max_features,
-                         bootstrap=self.bootstrap,
-                         bootstrap_features=self.bootstrap_features,
-                         oob_score=self.oob_score,
-                         warm_start=self.warm_start,
-                         n_jobs=self.n_jobs,
-                         random_state=self.random_state,
-                         verbose=self.verbose)
+        if self.custom_estimator is None:
+            super().__init__(estimator=base_estimator(criterion=self.criterion,
+                                                      max_depth=self.max_depth,
+                                                      min_samples_split=self.min_samples_split,
+                                                      min_samples_leaf=self.min_samples_leaf,
+                                                      min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+                                                      min_impurity_decrease=self.min_impurity_decrease,
+                                                      random_state=self.random_state,
+                                                      max_leaf_nodes=self.max_leaf_nodes,
+                                                      class_weight=self.class_weight,
+                                                      ccp_alpha=self.ccp_alpha,
+                                                      prune_useless_leaves=self.prune_useless_leaves,
+                                                      splitter=self.splitter,
+                                                      base_stumps = self.base_stumps,
+                                                      distance_measure = self.distance_measure,
+                                                      distance_matrix = self.distance_matrix,
+                                                      stump_selection= self.stump_selection
+
+                                                      ),
+                             n_estimators=self.n_estimators,
+                             max_samples=X.shape[0] if self.max_samples is None else self.max_samples,
+                             max_features=self.max_features,
+                             bootstrap=self.bootstrap,
+                             bootstrap_features=self.bootstrap_features,
+                             oob_score=self.oob_score,
+                             warm_start=self.warm_start,
+                             n_jobs=self.n_jobs,
+                             random_state=self.random_state,
+                             verbose=self.verbose)
+        else:
+            super().__init__(estimator=base_estimator,
+                             n_estimators=self.n_estimators,
+                             max_samples=X.shape[0] if self.max_samples is None else self.max_samples,
+                             max_features=self.max_features,
+                             bootstrap=self.bootstrap,
+                             bootstrap_features=self.bootstrap_features,
+                             oob_score=self.oob_score,
+                             warm_start=self.warm_start,
+                             n_jobs=self.n_jobs,
+                             random_state=self.random_state,
+                             verbose=self.verbose)
 
         return super().fit(X, y, sample_weight=sample_weight, **kwargs)
      

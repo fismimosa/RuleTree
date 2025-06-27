@@ -211,7 +211,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
             "image": f'{temp_file.name}',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"{self.distance}(TS, shp) \u2264 {rounded_value}",
+            "label": f"{self.distance}(TS, shp) <= {rounded_value}",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",

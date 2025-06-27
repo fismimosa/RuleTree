@@ -267,7 +267,7 @@ class ProximityTreeStumpClassifier(DecisionTreeStumpClassifier):
             "image": f'{temp_file.name}',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"{self.distance}(TS, green_shp)\n\u2264 {self.distance}(TS, red_shp)",
+            "label": f"{self.distance}(TS, green_shp)\n <= {self.distance}(TS, red_shp)",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",

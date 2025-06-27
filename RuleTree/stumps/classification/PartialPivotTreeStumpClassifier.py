@@ -17,21 +17,21 @@ from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
 
 class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
     def __init__(self, n_shapelets=psutil.cpu_count(logical=False)*2,
-                 n_shapelets_for_selection=500,  #int, inf, or 'stratified'
                  n_ts_for_selection=100,  #int, inf
                  n_features_strategy=2,
-                 selection='mi_clf',  #random, mi_clf, mi_reg, cluster
+                 selection='random',  #random, mi_clf, mi_reg, cluster
                  distance='euclidean',
-                 mi_n_neighbors=100,
+                 scaler = None,
+                 use_combination=True,
                  random_state=42, n_jobs=1,
                  **kwargs):
         self.n_shapelets = n_shapelets
-        self.n_shapelets_for_selection = n_shapelets_for_selection
         self.n_ts_for_selection = n_ts_for_selection
         self.n_features_strategy = n_features_strategy
         self.selection = selection
         self.distance = distance
-        self.mi_n_neighbors = mi_n_neighbors
+        self.scaler = scaler
+        self.use_combination = use_combination
         self.random_state = random_state
         self.n_jobs = n_jobs
 
@@ -40,49 +40,64 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         kwargs["max_depth"] = 1
 
-        if selection not in ['random', 'mi_clf', 'cluster']:
-            raise ValueError("'selection' must be 'random', 'mi_clf' or 'cluster'")
+        if selection not in ["random", "cluster", "all"]:
+            raise ValueError("'selection' must be 'random', 'all' or 'cluster'")
 
         super().__init__(**kwargs)
 
         self.kwargs |= {
             "n_shapelets": n_shapelets,
-            "n_shapelets_for_selection": n_shapelets_for_selection,
             "n_ts_for_selection": n_ts_for_selection,
             "n_features_strategy": n_features_strategy,
             "selection": selection,
             "distance": distance,
-            "mi_n_neighbors": mi_n_neighbors,
+            "scaler": scaler,
+            "use_combination": use_combination,
             "random_state": random_state,
             "n_jobs": n_jobs,
         }
 
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        if self.scaler is not None:
+            self.scaler.fit(X)
+
         if idx is None:
             idx = slice(None)
-        X = X[idx]
-        y = y[idx]
 
         self.y_lims = [X.min(), X.max()]
 
+        X = X[idx]
+        y = y[idx]
+        if self.scaler is not None:
+            X = self.scaler.transform(X)
+
         random.seed(self.random_state)
         if sample_weight is not None:
-            raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")
+            pass
+             #warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
 
         self.st = TabularShapelets(n_shapelets=self.n_shapelets,
-                                   n_shapelets_for_selection=self.n_shapelets_for_selection,
                                    n_ts_for_selection=self.n_ts_for_selection,
                                    n_features_strategy=self.n_features_strategy,
                                    selection=self.selection,
                                    distance=self.distance,
-                                   mi_n_neighbors=self.mi_n_neighbors,
                                    random_state=random.randint(0, 2**32-1),
+                                   use_combination=self.use_combination,
                                    n_jobs=self.n_jobs
                                    )
 
-        return super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
+        super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
+        selected_shape = self.tree_.feature[0]
+        if selected_shape == -2:
+            raise ValueError("No split found")
+        self.st._optimize_memory(np.array([selected_shape]))
+        super().fit(self.st.transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
+
+        return self
 
     def apply(self, X, check_input=False):
+        if self.scaler is not None:
+            X = self.scaler.transform(X)
         self.y_lims = [min(self.y_lims[0], X.min()), min(self.y_lims[1], X.max())]
 
         return super().apply(self.st.transform(X), check_input=check_input)
@@ -131,7 +146,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
             "image": f'{temp_file.name}',
             "imagescale": "true",
             "imagepos": "bc",
-            "label": f"{self.distance}(PP, shp) \u2264 {rounded_value}",
+            "label": f"{self.distance}(PP, shp) <= {rounded_value}",
             "labelloc": "t",
             "fixedsize": "true",
             "width": "2",
