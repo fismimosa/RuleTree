@@ -8,6 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.exceptions import NoSplitFoundWarning
 
 from RuleTree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
 
@@ -25,8 +26,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
     Attributes:
         is_categorical (bool): Whether the selected split is categorical.
-        is_oblique (bool): Whether the stump uses oblique splits (linear combinations of features).
-        is_pivotal (bool): Whether the stump uses pivotal splits.
         kwargs (dict): Additional arguments passed to DecisionTreeClassifier.
         unique_val_enum (array): Unique values for categorical features.
         threshold_original (array): Split threshold values.
@@ -69,7 +68,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],
             "is_categorical": self.is_categorical,
-            "samples": self.n_node_samples[0]
         }
 
         feat_name = f"X_{rule['feature_idx']}"
@@ -89,7 +87,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         if scaler is not None:
             rounded_value = str(rule["threshold_scaled"]) if float_precision is None else (
                 round(rule["threshold_scaled"], float_precision))
-        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}\t{rule['samples']}"
+        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}"
         rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
         rule["graphviz_rule"] = {
             "label": f"{feat_name} {'<=' if not self.is_categorical else '='} {rounded_value}",
@@ -114,7 +112,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             dict: A dictionary containing the node's attributes and metadata with the following keys:
                 - All fields from the get_rule() method
                 - stump_type: The fully qualified class name
-                - samples: Number of samples at the node
                 - impurity: Node impurity value
                 - args: Dictionary with constructor arguments and parameters
                 - split: Dictionary with split information
@@ -122,12 +119,9 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         rule = self.get_rule(float_precision=None)
 
         rule["stump_type"] = self.__class__.__module__
-        rule["samples"] = self.n_node_samples[0]
-        rule["impurity"] = self.tree_.impurity[0]
+        rule["impurity"] = self.impurity
 
         rule["args"] = {
-            "is_oblique": self.is_oblique,
-            "is_pivotal": self.is_pivotal,
             "unique_val_enum": self.unique_val_enum,
             "coefficients": self.coefficients,
         } | self.kwargs
@@ -166,18 +160,15 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
         self.feature_original = np.zeros(3, dtype=int)
         self.threshold_original = np.zeros(3)
-        self.n_node_samples = np.zeros(3, dtype=int)
 
         self.feature_original[0] = node_dict["feature_idx"]
         self.threshold_original[0] = node_dict["threshold"]
-        self.n_node_samples[0] = node_dict.get("samples", -1)
         self.is_categorical = node_dict["is_categorical"]
 
         args = copy.deepcopy(node_dict.get("args", {}))
-        self.is_oblique = args.pop("is_oblique", False)
-        self.is_pivotal = args.pop("is_pivotal", False)
         self.unique_val_enum = args.pop("unique_val_enum", np.nan)
         self.coefficients = args.pop("coefficients", np.nan)
+        self.impurity = args.pop("impurity", np.nan)
         self.kwargs = args
 
         return self
@@ -200,9 +191,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         super().__init__(**kwargs)
 
         self.is_categorical = None
-        self.is_oblique = False
-        self.is_pivotal = False
-
 
         self.kwargs = kwargs
         self.unique_val_enum = None
@@ -258,6 +246,14 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         X = X[idx]
         y = y[idx]
 
+        len_x = len(X)
+
+        class_weight = None
+        if self.class_weight == "balanced":
+            class_weight = {}
+            for class_label in np.unique(y):
+                class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
+
         self.feature_analysis(X, y)
         best_info_gain = -float('inf')
 
@@ -265,8 +261,17 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
             self.feature_original = [self.numerical[x] if x != -2 else x for x in self.tree_.feature]
             self.threshold_original = self.tree_.threshold
-            self.n_node_samples = self.tree_.n_node_samples
             best_info_gain = get_info_gain(self)
+
+            # no split
+            if len(self.feature_original) == 1:
+                raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
+
+            self.impurity = [
+                self.impurity_fun(y, sample_weight, class_weight),
+                self.impurity_fun(y[X[:, self.feature_original[0]] <= self.threshold_original[0]], None, class_weight),
+                self.impurity_fun(y[X[:, self.feature_original[0]] > self.threshold_original[0]], None, class_weight)
+            ]
 
         self._fit_cat(X, y, best_info_gain)
 
@@ -340,7 +345,11 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                         self.threshold_original = np.array([value, -2, -2])
                         self.unique_val_enum = np.unique(X[:, i])
                         self.is_categorical = True
-                        self.n_node_samples = X.shape[0]
+                        self.impurity = [
+                            self.impurity_fun(y, sample_weight, class_weight),
+                            self.impurity_fun(y[X_split[:, 0]], None, class_weight),
+                            self.impurity_fun(y[~X_split[:, 0]], None, class_weight)
+                        ]
 
 
     def apply(self, X, check_input=False):
@@ -360,3 +369,21 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             y_pred[X_feature == self.threshold_original[0]] = 1
 
             return y_pred
+
+    def update_statistics(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        X = X[idx]
+        y = y[idx]
+
+        len_x = len(X)
+
+        class_weight = None
+        if self.class_weight == "balanced":
+            class_weight = {}
+            for class_label in np.unique(y):
+                class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
+
+        self.impurity = [
+            self.impurity_fun(y, sample_weight, class_weight),
+            self.impurity_fun(y[X[:, self.feature_original[0]] <= self.threshold_original[0]], None, class_weight),
+            self.impurity_fun(y[X[:, self.feature_original[0]] > self.threshold_original[0]], None, class_weight)
+        ]

@@ -1,0 +1,2 @@
+class NoSplitFoundWarning(RuntimeWarning):
+    pass

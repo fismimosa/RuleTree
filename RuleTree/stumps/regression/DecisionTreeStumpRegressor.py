@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisso
 from sklearn.tree import DecisionTreeRegressor
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 from RuleTree.utils.data_utils import get_info_gain, _get_info_gain
@@ -67,8 +68,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         rule = self.get_rule(float_precision=None)
 
         rule["stump_type"] = self.__class__.__name__
-        rule["samples"] = self.tree_.n_node_samples[0]
-        rule["impurity"] = self.tree_.impurity[0]
+        rule["impurity"] = self.impurity
 
         rule["args"] = {
                            "unique_val_enum": self.unique_val_enum,
@@ -108,6 +108,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
         args = copy.deepcopy(node_dict.get("args", {}))
         self.unique_val_enum = args.pop("unique_val_enum", np.nan)
+        self.impurity = args.pop("impurity", np.nan)
         self.kwargs = args
 
         self.__set_impurity_fun(args["criterion"])
@@ -243,6 +244,21 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             self.threshold_original = self.tree_.threshold
             self.n_node_samples = self.tree_.n_node_samples
             best_info_gain = get_info_gain(self)
+
+            #no split
+            if len(self.feature_original) == 1:
+                raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
+
+            curr_pred = np.ones((len(y),)) * np.mean(y)
+            idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
+            idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
+            l_pred = np.ones((len(y[idx_l]),)) * np.mean(y[idx_l])
+            r_pred = np.ones((len(y[idx_r]),)) * np.mean(y[idx_r])
+            self.impurity = [
+                self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+                self._impurity_fun(self.impurity_fun, y_true=y[idx_l], y_pred=l_pred),
+                self._impurity_fun(self.impurity_fun, y_true=y[idx_r], y_pred=r_pred),
+            ]
             
         self._fit_cat(X, y, best_info_gain)
 
@@ -287,6 +303,11 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                         self.threshold_original = np.array([value, -2, -2])
                         self.unique_val_enum = np.unique(X[:, i])
                         self.is_categorical = True
+                        self.impurity = [
+                            self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+                            self._impurity_fun(self.impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
+                            self._impurity_fun(self.impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
+                        ]
 
 
     def apply(self, X, check_input=False):
@@ -320,3 +341,18 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             y_pred[X_feature == self.threshold_original[0]] = 1
 
             return y_pred
+
+    def update_statistics(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        X = X[idx]
+        y = y[idx]
+
+        curr_pred = np.ones((len(y),)) * np.mean(y)
+        idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
+        idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
+        l_pred = np.ones((len(y[idx_l]),)) * np.mean(y[idx_l])
+        r_pred = np.ones((len(y[idx_r]),)) * np.mean(y[idx_r])
+        self.impurity = [
+            self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+            self._impurity_fun(self.impurity_fun, y_true=y[idx_l], y_pred=l_pred),
+            self._impurity_fun(self.impurity_fun, y_true=y[idx_r], y_pred=r_pred),
+        ]

@@ -1,6 +1,6 @@
 import heapq
 import warnings
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 import sklearn
@@ -214,7 +214,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
         """
         pass
 
-    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Prepare a node with prediction information.
         
@@ -237,6 +237,14 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             prediction = float(np.mean(y[idx]))
             prediction_std = float(np.std(y[idx]))
 
+        if node is not None:
+            node.prediction = prediction
+            node.predict_proba = prediction_std
+            node.classes = self.classes_
+            node.samples = len(y[idx])
+
+            return node
+
         return RuleTreeNode(
             node_id=node_id,
             prediction=prediction,
@@ -246,7 +254,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             node_l=None,
             node_r=None,
             samples=len(y[idx]),
-            classes=self.classes_
+            classes=self.classes_,
+            n_features=self.n_features,
         )
 
     def _get_stumps_base_class(self):

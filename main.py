@@ -2,11 +2,11 @@ import pickle
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import f1_score, mean_squared_error
+from sklearn.metrics import f1_score, mean_squared_error, silhouette_score
 from sklearn.preprocessing import LabelEncoder
 
 from benchmark.competitors.kmeanstree import KMeansTree
-from RuleTree import RuleTreeClassifier, RuleTreeClusterClassifier, RuleTreeRegressor
+from RuleTree import RuleTreeClassifier, RuleTreeClusterClassifier, RuleTreeRegressor, RuleTreeCluster
 
 
 def test_clf_iris():
@@ -53,6 +53,18 @@ def test_clc_home():
     f1_rule = f1_score(y_test, clf_rule.predict(X_test), average='weighted')
 
     print(f"F1: {f1_rule}")
+
+
+def test_clu_iris():
+    df = pd.read_csv("datasets/CLF/iris.csv")
+    X = df.iloc[:, :-1].values
+    clu_rule = RuleTreeCluster()
+
+    clu_rule.fit(X)
+
+    silhouette = silhouette_score(X, clu_rule.predict(X), random_state=42)
+
+    print(f"Silhouette: {silhouette}")
 
 
 def test_clf_iris_incremental():
@@ -110,8 +122,9 @@ def test_reg_iris_incremental():
 
 
 if __name__ == "__main__":
-    #test_clf_iris()
-    #test_clc_home()
-    #test_reg_iris()
-    #test_clf_iris_incremental()
+    test_clf_iris()
+    test_clc_home()
+    test_reg_iris()
+    test_clu_iris()
+    test_clf_iris_incremental()
     test_reg_iris_incremental()

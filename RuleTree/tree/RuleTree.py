@@ -22,6 +22,7 @@ from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
+from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.data_utils import json_numpy_encoder
@@ -196,7 +197,6 @@ class RuleTree(RuleTreeBase, ABC):
         self._set_stump()
 
         idx = np.arange(X.shape[0])
-
         if self.root is None:
             self.root = self.prepare_node(y, idx, "R")
             self.queue_push(self.root, idx)
@@ -236,10 +236,18 @@ class RuleTree(RuleTreeBase, ABC):
             try:
                 clf = self.make_split(X, y, idx=idx, **kwargs)
                 labels = clf.apply(X[idx])
+            except NoSplitFoundWarning:
+                self.make_leaf(current_node)
+                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                nbr_curr_nodes += 1
+                continue
             except (ValueError, AttributeError, IndexError) as e:
                 self.make_leaf(current_node)
                 current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 nbr_curr_nodes += 1
+                warning = RuntimeWarning(*e.args)
+                warning.with_traceback(e.__traceback__)
+                warnings.warn(warning)
                 continue
 
            
@@ -287,7 +295,7 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Predicted class labels.
         """
-        labels, _, _ = self._predict(X, self.root)
+        labels, _, _ = self.root.predict(X)
 
         return labels
 
@@ -301,9 +309,23 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Leaf indices for each sample.
         """
-        _, leaves, _ = self._predict(X, self.root)
+        _, leaves, _ = self.root.predict(X)
 
         return leaves
+
+    def update_statistics(self, X: np.ndarray, y: np.ndarray):
+        self.classes_ = np.unique(y)
+        self.n_classes_ = len(self.classes_)
+        self.n_features = X.shape[1]
+
+        self._update_statistics(X, y, self.root, np.arange(X.shape[0]))
+
+    def _update_statistics(self, X: np.ndarray, y: np.ndarray, node: RuleTreeNode, idx: np.ndarray):
+        if node is None:
+            return
+
+
+
 
     def predict_proba(self, X: np.ndarray):
         """
@@ -315,49 +337,12 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        labels, _, proba = self._predict(X, self.root)
+        labels, _, proba = self.root.predict(X)
         proba_matrix = np.zeros((X.shape[0], self.n_classes_))
         for classe in self.classes_:
             proba_matrix[labels == classe, self.classes_ == classe] = proba[labels == classe]
 
         return proba_matrix
-
-    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
-        """
-        Internal method for prediction.
-
-        Args:
-            X (np.ndarray): Feature matrix.
-            current_node (RuleTreeNode): Current node in the tree.
-
-        Returns:
-            tuple: Predicted labels, leaf indices, and probabilities.
-        """
-        if current_node.is_leaf():
-            n = len(X)
-            return np.array([current_node.prediction] * n), \
-                np.array([current_node.node_id] * n), \
-                np.array([current_node.prediction_probability] * n)
-
-        else:
-            labels, leaves, proba = (
-                np.full(len(X), fill_value=-1,
-                        dtype=object if type(current_node.prediction) is str else type(current_node.prediction)),
-                np.zeros(len(X), dtype=object),
-                np.ones(len(X), dtype=float) * -1
-            )
-
-            clf = current_node.stump
-            labels_clf = clf.apply(X)
-            X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
-            if X_l.shape[0] != 0:
-                labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = self._predict(X_l,
-                                                                                                         current_node.node_l)
-            if X_r.shape[0] != 0:
-                labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = self._predict(X_r,
-                                                                                                         current_node.node_r)
-
-            return labels, leaves, proba
 
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """
@@ -461,7 +446,7 @@ class RuleTree(RuleTreeBase, ABC):
         pass
 
     @abstractmethod
-    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Prepare a node in the RuleTree.
 
@@ -904,5 +889,35 @@ class RuleTree(RuleTreeBase, ABC):
             return dot
         else:
             dot.render(filename=filename)
+
+    def get_predicates(self):
+        """
+        Get the predicates (conditions) for the stump in the tree in depth-first order.
+
+        Returns:
+            dict: dictionary of predicates used in the tree in the form node_id: RuleTreeNode
+        """
+        return self.root.get_predicates()
+
+    def get_node_by_id(self, node_id):
+        """
+        Get a node by its ID.
+
+        Args:
+            node_id (str): Node identifier.
+
+        Returns:
+            RuleTreeNode: RuleTreeNode instance.
+        """
+        return self.root.get_node_by_id(node_id)
+
+    def get_leaf_nodes(self):
+        """
+        Get all leaf nodes in the RuleTree.
+
+        Returns:
+            list: List of leaf nodes.
+        """
+        return self.root.get_leaf_nodes()
 
 

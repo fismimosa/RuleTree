@@ -7,7 +7,7 @@ functionality, including methods for handling class probabilities and medoid com
 
 import heapq
 import traceback
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 import sklearn
@@ -171,7 +171,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
         return stump
 
-    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Prepare a node with predictions and probabilities.
 
@@ -188,12 +188,21 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         for i, classe in enumerate(self.classes_):
             predict_proba[i] = sum(np.where(y[idx] == classe, 1, 0)) / len(y[idx])
 
+        if node is not None:
+            node.prediction = prediction
+            node.predict_proba = predict_proba
+            node.classes = self.classes_
+            node.samples = len(y[idx])
+
+            return node
+
 
         return RuleTreeNode(
             node_id=node_id,
             prediction=prediction,
             prediction_probability=predict_proba,
             classes = self.classes_,
+            n_features=self.n_features,
             parent=None,
             stump=None,
             node_l=None,
@@ -229,52 +238,11 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        _, _, proba = self._predict(X, self.root)
+        _, _, proba = self.root.predict(X)
 
         return proba
 
 
-    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
-        """
-        Recursive helper method for prediction.
-
-        Args:
-            X (np.ndarray): Feature matrix.
-            current_node (RuleTreeNode): Current node in the tree.
-
-        Returns:
-            tuple: Predicted labels, leaves, and probabilities.
-        """
-        if current_node.is_leaf():
-            n = len(X)
-            return np.array([current_node.prediction] * n), \
-                np.array([current_node.node_id] * n), \
-                np.zeros((len(X), len(self.classes_)), dtype=float) + current_node.prediction_probability
-
-        else:
-            labels, leaves, proba = (
-                np.full(len(X), fill_value=-1,
-                        dtype=object if type(current_node.prediction) is str else type(current_node.prediction)),
-                np.zeros(len(X), dtype=object),
-                np.ones((len(X), len(self.classes_)), dtype=float) * -1
-            )
-
-
-            clf = current_node.stump
-            labels_clf = clf.apply(X)
-
-            X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
-
-            if X_l.shape[0] != 0:
-                labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = self._predict(X_l,
-                                                                                                         current_node.node_l)
-            if X_r.shape[0] != 0:
-                labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = self._predict(X_r,
-                                                                                                         current_node.node_r)
-
-            return labels, leaves, proba
-        
-        
     def get_pivots(self, current_node=None, pivot_dicts=None):
         """
         Retrieve pivot information from the tree.

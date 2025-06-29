@@ -25,6 +25,10 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     """
 
     @abstractmethod
+    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        pass
+
+    @abstractmethod
     def get_rule(self, columns_names:list=None, scaler:TransformerMixin=None, float_precision: Optional[int] = 3) -> dict:
         """
         Abstract method to generate a rule based on the model's learned parameters.
@@ -92,3 +96,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             bool: True if supported, False otherwise.
         """
         return data_type in [DATA_TYPE_TABULAR]
+
+    @staticmethod
+    def update_statistics(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        # TODO document why this method is empty
+        pass

@@ -254,7 +254,7 @@ def prepare_data(X_original, max_nbr_values, max_nbr_values_cat, feature_names_o
 
     return X, features, maps
 
-def calculate_mode(x: np.ndarray):
+def calculate_mode(x: np.ndarray) -> Union[int, float, str]:
     """
     Calculate the mode (most frequent value) of an array.
     
