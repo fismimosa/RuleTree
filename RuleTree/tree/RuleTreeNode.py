@@ -1,7 +1,6 @@
 import importlib
 from typing import Union, Optional
 
-import graphviz
 import numpy as np
 from sklearn.base import TransformerMixin
 
@@ -197,7 +196,7 @@ class RuleTreeNode:
             "prediction": self.prediction,
             "prediction_probability": self.prediction_probability if isinstance(self.prediction_probability, float) else self.prediction_probability.tolist(),
             "prediction_classes_": self.classes.tolist(),
-            "n_features": self.n_features.tolist(),
+            "n_features": self.n_features,
             "left_node": self.node_l.node_id if self.node_l is not None else None,
             "right_node": self.node_r.node_id if self.node_r is not None else None,
         }
@@ -293,6 +292,11 @@ class RuleTreeNode:
         Returns:
             graphviz.Digraph: The graph visualization object
         """
+        try:
+            import graphviz
+        except ImportError:
+            raise ImportError('Please install graphviz to visualize tree.')
+
         if graph is None:
             graph = graphviz.Digraph(name="RuleTree")
 

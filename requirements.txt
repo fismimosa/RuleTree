@@ -6,7 +6,6 @@ category_encoders
 threadpoolctl
 tqdm
 progress-table
-graphviz>=0.20.3
 numba
 psutil
 setuptools

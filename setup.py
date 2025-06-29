@@ -19,7 +19,7 @@ with open(path.join(here, "requirements.txt"), encoding="utf-8") as f:
 
 setup(
     name="RuleTree",
-    python_requires='>=3.12.0',
+    python_requires='>=3.9.0',
     version="0.0.4-2",
     license="BSD-Clause-2",
     description="Package description",

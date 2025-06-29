@@ -2,7 +2,6 @@ import copy
 import warnings
 
 import numpy as np
-import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
 
@@ -70,9 +69,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         rule["stump_type"] = self.__class__.__name__
         rule["impurity"] = self.impurity
 
-        rule["args"] = {
-                           "unique_val_enum": self.unique_val_enum,
-                       } | self.kwargs
+        rule["args"] |= self.kwargs
 
         rule["split"] = {
             "args": {}
@@ -107,7 +104,6 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         self.is_categorical = node_dict["is_categorical"]
 
         args = copy.deepcopy(node_dict.get("args", {}))
-        self.unique_val_enum = args.pop("unique_val_enum", np.nan)
         self.impurity = args.pop("impurity", np.nan)
         self.kwargs = args
 
@@ -128,7 +124,6 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         super().__init__(**kwargs)
         self.is_categorical = False
         self.kwargs = kwargs
-        self.unique_val_enum = None
         self.threshold_original = None
         self.feature_original = None
 
@@ -301,7 +296,6 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                         best_info_gain = info_gain
                         self.feature_original = [i, -2, -2]
                         self.threshold_original = np.array([value, -2, -2])
-                        self.unique_val_enum = np.unique(X[:, i])
                         self.is_categorical = True
                         self.impurity = [
                             self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),

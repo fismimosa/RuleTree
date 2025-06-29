@@ -1,9 +1,6 @@
 import copy
-import warnings
 
 import numpy as np
-import pandas as pd
-from pyexpat import features
 from sklearn.tree import DecisionTreeClassifier
 
 
@@ -27,7 +24,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
     Attributes:
         is_categorical (bool): Whether the selected split is categorical.
         kwargs (dict): Additional arguments passed to DecisionTreeClassifier.
-        unique_val_enum (array): Unique values for categorical features.
         threshold_original (array): Split threshold values.
         feature_original (array): Feature indices used for splits.
         coefficients (array): Coefficients for oblique splits (if used).
@@ -122,7 +118,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         rule["impurity"] = self.impurity
 
         rule["args"] = {
-            "unique_val_enum": self.unique_val_enum,
             "coefficients": self.coefficients,
         } | self.kwargs
 
@@ -166,7 +161,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         self.is_categorical = node_dict["is_categorical"]
 
         args = copy.deepcopy(node_dict.get("args", {}))
-        self.unique_val_enum = args.pop("unique_val_enum", np.nan)
         self.coefficients = args.pop("coefficients", np.nan)
         self.impurity = args.pop("impurity", np.nan)
         self.kwargs = args
@@ -193,7 +187,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         self.is_categorical = None
 
         self.kwargs = kwargs
-        self.unique_val_enum = None
 
         self.threshold_original = None
         self.feature_original = None
@@ -343,7 +336,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                         best_info_gain = info_gain
                         self.feature_original = [i, -2, -2]
                         self.threshold_original = np.array([value, -2, -2])
-                        self.unique_val_enum = np.unique(X[:, i])
                         self.is_categorical = True
                         self.impurity = [
                             self.impurity_fun(y, sample_weight, class_weight),

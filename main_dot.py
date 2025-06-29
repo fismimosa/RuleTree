@@ -1,8 +1,6 @@
 import pandas as pd
-from graphviz import Source
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 
 from RuleTree import RuleTreeClassifier
 from RuleTree.tree.RuleTree import RuleTree
