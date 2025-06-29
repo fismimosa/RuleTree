@@ -83,7 +83,7 @@ def get_leaf_internal_node_matrix(leaf_nodes: dict[RuleTreeNode]) -> [np.ndarray
             - np.ndarray: A 2D matrix of shape (number of internal nodes, number of leaf nodes).
             - list: A list of internal node IDs.
     """
-    internal_nodes = dict()
+    internal_nodes = {}
     for leaf_node_id in leaf_nodes.keys():
         for node_in_path in get_nodes_in_path(leaf_node_id):
             internal_nodes[node_in_path] = 1
@@ -116,5 +116,3 @@ def _eval_rule(X: np.ndarray, rule: RuleTreeNode, return_probababilities=False):
         raise ValueError("The rule is a leaf node, cannot evaluate.")
 
     rule.stump.predict(X)
-
-    return

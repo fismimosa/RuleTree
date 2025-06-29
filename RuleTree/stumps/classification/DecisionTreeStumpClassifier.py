@@ -173,7 +173,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         self.n_node_samples[0] = node_dict.get("samples", -1)
         self.is_categorical = node_dict["is_categorical"]
 
-        args = copy.deepcopy(node_dict.get("args", dict()))
+        args = copy.deepcopy(node_dict.get("args", {}))
         self.is_oblique = args.pop("is_oblique", False)
         self.is_pivotal = args.pop("is_pivotal", False)
         self.unique_val_enum = args.pop("unique_val_enum", np.nan)
@@ -193,7 +193,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         Args:
             **kwargs: Additional arguments for the DecisionTreeClassifier. Common parameters include:
                 - criterion (str): Function to measure the quality of a split ('gini' or 'entropy')
-                - max_depth (int): Maximum depth of the tree (should be 1 for a stump)
                 - min_samples_leaf (int): Minimum samples required to be at a leaf node
                 - class_weight (dict or 'balanced'): Weights associated with classes
                 - random_state (int): Seed for the random number generator
@@ -201,8 +200,8 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         super().__init__(**kwargs)
 
         self.is_categorical = None
-        self.is_oblique = False # TODO: @Alessio, ma questi ci servono qui? Non sarebbe meglio mettere tutto in
-        self.is_pivotal = False #       PivotTreeStumpClassifier e poi usare l'ereditarietà da quello?
+        self.is_oblique = False
+        self.is_pivotal = False
 
 
         self.kwargs = kwargs
@@ -287,18 +286,13 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             sample_weight (array-like, optional): Sample weights of shape (n_samples,).
                                                  If None, samples are equally weighted.
 
-        Raises:
-            Exception: If max_depth > 1, as this implementation only supports stumps.
         """
-        if self.max_depth > 1:
-            raise Exception("not implemented") # TODO: implement?
-
         if len(self.categorical) > 0 and best_info_gain != float('inf'):
             len_x = len(X)
 
             class_weight = None
             if self.class_weight == "balanced":
-                class_weight = dict()
+                class_weight = {}
                 for class_label in np.unique(y):
                     class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
 
@@ -310,11 +304,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                     len_left = np.sum(X_split)
 
                     if sample_weight is not None:
-                        # TODO: check. Sample weights. If None, then samples are equally weighted. Splits that would
-                        #  create child nodes with net zero or negative weight are ignored while searching for a split
-                        #  in each node. Splits are also ignored if they would result in any single class carrying a
-                        #  negative weight in either child node.
-
                         if _my_counts(y, sample_weight) - (_my_counts(y[X_split[:, 0]], sample_weight)
                                                            + _my_counts(y[~X_split[:, 0]], sample_weight)) <= 0:
                             continue
@@ -364,17 +353,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             y_pred[X_feature <= self.threshold_original[0]] = 1
 
             return y_pred
-
-        else:
-            y_pred = np.ones(X.shape[0]) * 2
-            X_feature = X[:, self.feature_original[0]]
-            y_pred[X_feature == self.threshold_original[0]] = 1
-
-            return y_pred
-
-    def apply_sk(self, X, check_input=False): ##this implements the apply of the sklearn DecisionTreeClassifier
-        if not self.is_categorical:
-            return super().apply(X[:, self.numerical])
 
         else:
             y_pred = np.ones(X.shape[0]) * 2

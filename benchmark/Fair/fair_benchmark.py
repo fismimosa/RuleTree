@@ -1,8 +1,8 @@
 import os
 
-from competitors.FRAC_model import FRAC_model
-from competitors.VFC_model import VFC_model
-from competitors.kmeanstree import KMeansTree
+from benchmark.competitors.FRAC_model import FRAC_model
+from benchmark.competitors.VFC_model import VFC_model
+from benchmark.competitors.kmeanstree import KMeansTree
 
 n = 16
 

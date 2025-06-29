@@ -14,8 +14,8 @@ if __name__ == "__main__":
     df_train.target = df_train.target.astype(int)
     df_test.target = df_test.target.astype(int)
 
-    X_train = df_train.drop(columns=['target']).values.reshape((-1, 1, 128))
-    X_test = df_test.drop(columns=['target']).values.reshape((-1, 1, 128))
+    X_train = df_train.drop(columns=['target']).to_numpy().reshape((-1, 1, 128))
+    X_test = df_test.drop(columns=['target']).to_numpy().reshape((-1, 1, 128))
     y_train = df_train['target'].values
     y_test = df_test['target'].values
 

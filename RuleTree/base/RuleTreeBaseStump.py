@@ -6,9 +6,11 @@ and some basic functionalities for a rule-based tree stump model in machine lear
 """
 
 from abc import ABC, abstractmethod
+from typing import Optional
+
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 
 
@@ -23,7 +25,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     """
 
     @abstractmethod
-    def get_rule(self, columns_names=None, scaler=None, float_precision: int | None = 3):
+    def get_rule(self, columns_names:list=None, scaler:TransformerMixin=None, float_precision: Optional[int] = 3) -> dict:
         """
         Abstract method to generate a rule based on the model's learned parameters.
 
@@ -37,7 +39,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         pass
 
-    def feature_analysis(self, X, y):
+    def feature_analysis(self, X:np.ndarray, y:np.ndarray) -> None:
         """
         Analyzes features of input data and categorizes them into numerical and categorical types.
 
@@ -54,7 +56,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         self.categorical = dtypes[dtypes == np.dtype('O')].index
 
     @abstractmethod
-    def node_to_dict(self):
+    def node_to_dict(self) -> dict:
         """
         Abstract method to convert a tree node into a dictionary representation.
 
@@ -65,7 +67,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
     @classmethod
     @abstractmethod
-    def dict_to_node(cls, node_dict, X):
+    def dict_to_node(cls, node_dict:dict, X:np.ndarray) -> None:
         """
         Abstract method to create a tree node from its dictionary representation.
 
@@ -79,7 +81,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         pass
 
     @staticmethod
-    def supports(data_type):
+    def supports(data_type:str) -> bool:
         """
         Checks if the given data type is supported by this model.
 

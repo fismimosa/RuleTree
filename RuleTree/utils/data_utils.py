@@ -7,6 +7,7 @@ performing data encoding/decoding operations.
 
 import json
 import math
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -164,7 +165,7 @@ def prepare_data(X_original, max_nbr_values, max_nbr_values_cat, feature_names_o
             if feature not in categorical_indices:
                 X[:, feature] = X[:, feature].astype(float)
 
-    feature_values = dict()
+    feature_values = {}
     is_categorical_feature = np.full_like(np.zeros(n_features, dtype=bool), False)
 
     if categorical_indices is None:
@@ -211,13 +212,13 @@ def prepare_data(X_original, max_nbr_values, max_nbr_values_cat, feature_names_o
             pd.DataFrame(data=X, columns=feature_names_original))  #TODO: serve passare da pandas??
         X = df.values
         feature_names = df.columns.tolist()
-        map_original_onehot = dict()
-        map_onehot_original = dict()
-        map_original_onehot_idx = dict()
-        map_onehot_original_idx = dict()
+        map_original_onehot = {}
+        map_onehot_original = {}
+        map_original_onehot_idx = {}
+        map_onehot_original_idx = {}
         for i, c1 in enumerate(feature_names_original):
-            map_original_onehot[c1] = list()
-            map_original_onehot_idx[i] = list()
+            map_original_onehot[c1] = []
+            map_original_onehot_idx[i] = []
             for j, c2 in enumerate(feature_names):
                 if c2.startswith(c1):
                     map_original_onehot[c1].append(c2)
@@ -232,7 +233,7 @@ def prepare_data(X_original, max_nbr_values, max_nbr_values_cat, feature_names_o
             'map_onehot_original_idx': map_onehot_original_idx
         }
 
-        feature_values = dict()
+        feature_values = {}
         n_features = X.shape[1]
         is_categorical_feature = np.full_like(np.zeros(n_features, dtype=bool), False)
         for feature in range(n_features):
@@ -271,7 +272,7 @@ def calculate_mode(x: np.ndarray):
     idx = np.argmax(counts)
     return vals[idx]
 
-def get_info_gain(clf: DecisionTreeClassifier | DecisionTreeRegressor):
+def get_info_gain(clf: Union[DecisionTreeClassifier, DecisionTreeRegressor]):
     """
     Calculate information gain from a decision tree split.
     
@@ -287,8 +288,8 @@ def get_info_gain(clf: DecisionTreeClassifier | DecisionTreeRegressor):
     """
     try:
         if len(clf.tree_.impurity) == 1:#no_split
-            return 0 # TODO: check
-    except:
+            return 0
+    except Exception:
         pass
     imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
     n_parent, n_child_l, n_child_r = clf.tree_.weighted_n_node_samples  ##n_node_samples 
@@ -321,7 +322,7 @@ def _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_
     gain_split = imp_parent - imp_child_l * (n_child_l / n_parent) - imp_child_r * (n_child_r / n_parent)
     return gain_split
 
-def get_gain_ratio(clf: DecisionTreeClassifier | DecisionTreeRegressor):
+def get_gain_ratio(clf: Union[DecisionTreeClassifier, DecisionTreeRegressor]):
     """
     Calculate the gain ratio from a decision tree split.
     
@@ -339,7 +340,7 @@ def get_gain_ratio(clf: DecisionTreeClassifier | DecisionTreeRegressor):
         Gain ratio achieved by the split
     """
     if len(clf.tree_.impurity) == 1:#no_split
-        return 0 # TODO: check
+        return 0
     imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
     n_parent, n_child_l, n_child_r = clf.tree_.weighted_n_node_samples  #n_node_samples
     gain_split = imp_parent - imp_child_l * (n_child_l / n_parent) - imp_child_r * (n_child_r / n_parent)
@@ -372,7 +373,7 @@ def _my_counts(x, sample_weight:np.ndarray=None, class_weight:dict=None):
 
     else:
         sample_weight = np.ones(x.shape[0]) if sample_weight is None else sample_weight
-        class_weight = dict([(y_, 1.) for y_ in np.unique(x)]) if class_weight is None else class_weight
+        class_weight = dict.fromkeys(np.unique(x), 1) if class_weight is None else class_weight
 
         counts = np.zeros((len(class_weight), ))
         for i, (c_k, c_w) in enumerate(class_weight.items()):
@@ -469,7 +470,7 @@ def select_stumps(node, p=0.2, selected_stumps=None):
     return selected_stumps
 
 
-class json_NumpyEncoder(json.JSONEncoder):
+class json_numpy_encoder(json.JSONEncoder):
     """
     JSON encoder that handles NumPy data types.
     
@@ -506,4 +507,4 @@ class json_NumpyEncoder(json.JSONEncoder):
             return float(obj)
         if isinstance(obj, np.ndarray):
             return obj.tolist()
-        return super(json_NumpyEncoder, self).default(obj)
+        return super(json_numpy_encoder, self).default(obj)

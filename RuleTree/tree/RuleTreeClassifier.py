@@ -7,9 +7,9 @@ functionality, including methods for handling class probabilities and medoid com
 
 import heapq
 import traceback
+from typing import Union
 
 import numpy as np
-import psutil
 import sklearn
 from sklearn import tree
 from sklearn.base import ClassifierMixin
@@ -17,17 +17,13 @@ import copy
 
 from sklearn.preprocessing import StandardScaler
 
-from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
-from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
-from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
+#from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
+#from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
+#from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.utils.data_utils import calculate_mode, get_info_gain
-
-from RuleTree.utils.utils_decoding import configure_non_cat_split, configure_cat_split
-from RuleTree.utils.utils_decoding import set_node_children , simplify_decode
-from sklearn.metrics import pairwise_distances
 
 
 class RuleTreeClassifier(RuleTree, ClassifierMixin):
@@ -48,22 +44,10 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stumps: ClassifierMixin | list = None,
+                 base_stumps: Union[ClassifierMixin, list] = None,
                  stump_selection: str = 'random',
                  random_state=None,
-
-                 criterion='gini',
-                 splitter='best',
-                 min_samples_leaf=1, 
-                 min_weight_fraction_leaf=0.0,
-                 max_features=None,
-                 min_impurity_decrease=0.0,
-                 class_weight=None,
-                 ccp_alpha=0.0,
-                 monotonic_cst=None,
-                 distance_matrix = None,
                  distance_measure = None
-                 
                  ):
         """
         Initialize the RuleTreeClassifier.
@@ -76,26 +60,10 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             base_stumps (list): List of base stumps or their configurations.
             stump_selection (str): Stump selection strategy ('random' or 'best').
             random_state (int): Random seed for reproducibility.
-            criterion (str): Splitting criterion ('gini' or 'entropy').
-            splitter (str): Split strategy ('best' or 'random').
-            min_samples_leaf (int): Minimum samples required in a leaf node.
             distance_measure (str): Distance metric for medoid computation.
         """
         if base_stumps is None:
-            base_stumps = DecisionTreeStumpClassifier(
-                                max_depth=1,
-                                criterion=criterion,
-                                splitter=splitter,
-                                min_samples_split=min_samples_split,
-                                min_samples_leaf = min_samples_leaf,
-                                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                                max_features=max_features,
-                                random_state=random_state,
-                                min_impurity_decrease=min_impurity_decrease,
-                                class_weight=class_weight,
-                                ccp_alpha=ccp_alpha,
-                                monotonic_cst = monotonic_cst
-            )
+            base_stumps = DecisionTreeStumpClassifier(max_depth=1)
 
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
@@ -103,25 +71,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                          prune_useless_leaves=prune_useless_leaves,
                          base_stumps=base_stumps,
                          stump_selection=stump_selection,
-                         random_state=random_state)
-
-        self.max_depth = max_depth
-        self.criterion = criterion
-        self.splitter = splitter
-        self.min_samples_split = min_samples_split
-        self.min_samples_leaf = min_samples_leaf
-        self.min_weight_fraction_leaf = min_weight_fraction_leaf
-        self.max_features = max_features
-        self.random_state = random_state
-        self.min_impurity_decrease = min_impurity_decrease
-        self.class_weight = class_weight
-        self.ccp_alpha = ccp_alpha
-        self.monotonic_cst = monotonic_cst
-        self.distance_matrix = distance_matrix    
-        self.distance_measure = distance_measure
-
-        self.X_scaler = None
-
+                         random_state=random_state,
+                         distance_measure=distance_measure)
 
     def is_split_useless(self, X, clf: tree, idx: np.ndarray):
         """
@@ -135,14 +86,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         Returns:
             bool: True if the split is useless, False otherwise.
         """
-        pivots_list = ['PivotTreeStumpClassifier',
-                       'MultiplePivotTreeStumpClassifier',
-                       'ObliquePivotTreeStumpClassifier',
-                       'MultipleObliquePivotTreeStumpClassifier']
-        if clf.__class__.__module__.split('.')[-1] in pivots_list:
-            labels = clf.apply(self.X_scaler.transform(X[idx]))
-        else:
-            labels = clf.apply(X[idx])
+        labels = clf.apply(X[idx])
 
         return len(np.unique(labels)) == 1
 
@@ -184,27 +128,16 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         Returns:
             tree: The selected stump after fitting.
         """
-        pivots_list = ['PivotTreeStumpClassifier',
-                        'MultiplePivotTreeStumpClassifier',
-                        'ObliquePivotTreeStumpClassifier',
-                        'MultipleObliquePivotTreeStumpClassifier']
         
     
         if self.stump_selection == 'random':
             stump = self._get_random_stump(X)
         
-            if stump.__class__.__module__.split('.')[-1] in pivots_list:
-                
-                
-                stump.fit(X[idx], y[idx], distance_matrix=self.distance_matrix[idx][:,idx], idx=idx,
-                         
-                          distance_measure = self.distance_measure, sample_weight=None if sample_weight is None else sample_weight[idx]) 
-            else:
-                stump.fit(X=X,
-                          y=y,
-                          idx=idx,
-                          context = self,
-                          sample_weight=None if sample_weight is None else sample_weight[idx])
+            stump.fit(X=X,
+                      y=y,
+                      idx=idx,
+                      context = self,
+                      sample_weight=None if sample_weight is None else sample_weight[idx])
                 
         elif self.stump_selection == 'best':
             clfs = []
@@ -213,23 +146,11 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 try:
                     stump = sklearn.clone(stump)
 
-                    if stump.__class__.__module__.split('.')[-1] in pivots_list:
-                        try:
-                            stump.fit(X=self.X_scaler.transform(X[idx]),
-                                      y=y[idx],
-                                      distance_matrix=self.distance_matrix[np.ix_(idx, idx)],
-                                      idx=idx,
-                                      distance_measure=self.distance_measure,
-                                      sample_weight=None if sample_weight is None else sample_weight[idx])
-                        except Exception as e:
-                            traceback.print_exc()
-                            print()
-                    else:
-                         stump.fit(X=X,
-                                  y=y,
-                                  idx=idx,
-                                  context=self,
-                                  sample_weight=None if sample_weight is None else sample_weight[idx])
+                    stump.fit(X=X,
+                              y=y,
+                              idx=idx,
+                              context=self,
+                              sample_weight=None if sample_weight is None else sample_weight[idx])
 
                     gain = get_info_gain(stump)
                     info_gains.append(gain)
@@ -280,37 +201,6 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             samples=len(y[idx]),
         )
 
-    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
-        """
-        Compute medoids for the given data.
-
-        Args:
-            X (np.ndarray): Feature matrix.
-            y (np.ndarray): Target labels.
-            idx (np.ndarray): Indices of the samples to consider.
-            **kwargs: Additional arguments for medoid computation.
-
-        Returns:
-            list: Indices of the computed medoids.
-        """
-        if self.distance_measure is not None:
-            medoids = []
-            sub_matrix = None
-            for label in set(y[idx]):
-                idx_local_label = np.where(y[idx] == label)[0]
-                idx_label = idx[idx_local_label]
-                X_class_points = X[idx_label]
-                
-                if self.distance_matrix is not None:
-                    sub_matrix = self.distance_matrix[idx_label][:,idx_label]
-                else:
-                    sub_matrix = pairwise_distances(X_class_points, metric=self.distance_measure)
-                total_distances = sub_matrix.sum(axis=1)
-                medoid_index = idx_label[total_distances.argmin()]
-                medoids += [medoid_index]
-                
-            return medoids
-             
     def fit(self, X: np.array, y: np.array = None, sample_weight=None, **kwargs):
         """
         Fit the RuleTreeClassifier to the provided data.
@@ -324,34 +214,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         Returns:
             RuleTreeClassifier: The fitted RuleTreeClassifier instance.
         """
-        # Check and initialize the distance matrix if needed
-        if self.distance_matrix is None and self.base_stumps is not None:
-            base_stumps = self.base_stumps if isinstance(self.base_stumps, list) else [self.base_stumps]
-            for stump in base_stumps:
-                # Check if the class name matches the specified list
-                if stump.__class__.__module__.split('.')[-1] in [
-                    'PivotTreeStumpClassifier',
-                    'MultiplePivotTreeStumpClassifier',
-                    'ObliquePivotTreeStumpClassifier',
-                    'MultipleObliquePivotTreeStumpClassifier'
-                ]:
-
-                    # Compute the distance matrix
-                    self.X_scaler = StandardScaler()
-                    self.distance_matrix = pairwise_distances(self.X_scaler.fit_transform(X),
-                                                              metric=self.distance_measure,
-                                                              n_jobs=min(128, psutil.cpu_count()))
-                    #print(X[0][0])
-                    #print('compute dist')
-                    #print(self.distance_matrix.shape)
-                    
-                
-                    break  # Distance matrix is initialized, no need to continue
-    
-        
         super().fit(X, y, sample_weight=sample_weight, **kwargs)
-        if self.distance_matrix is not None:
-            self.distance_matrix = None #remove to save space when training many estimators
 
         return self
 
@@ -366,7 +229,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        labels, leaves, proba = self._predict(X, self.root)
+        _, _, proba = self._predict(X, self.root)
 
         return proba
 
@@ -398,15 +261,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
 
             clf = current_node.stump
-            pivots_list = ['PivotTreeStumpClassifier',
-                           'MultiplePivotTreeStumpClassifier',
-                           'ObliquePivotTreeStumpClassifier',
-                           'MultipleObliquePivotTreeStumpClassifier']
-            if clf.__class__.__module__.split('.')[-1] in pivots_list:
-                X_scaled = self.X_scaler.transform(X)
-                labels_clf = clf.apply(X_scaled)
-            else:
-                labels_clf = clf.apply(X)
+            labels_clf = clf.apply(X)
 
             X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
 
@@ -549,7 +404,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         leaves, paths, leaf_to_path, values = super().local_interpretation(X = X,
                                                                            joint_contribution = joint_contribution)
         normalizer = values.sum(axis=1)[:, np.newaxis]
-        normalizer[normalizer == 0.0] = 1.0
+        normalizer[np.isclose(normalizer, 0.0, rtol=1e-09, atol=1e-09)] = 1.0
         values /= normalizer
 
         biases = np.tile(values[paths[0][0]], (X.shape[0], 1))
@@ -584,8 +439,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         if current_node is None:
             current_node = self.root
             
-        if not current_node.is_leaf():
-            if current_node.balance_score > p:
+        if not current_node.is_leaf() and current_node.balance_score > p:
                 stumps[current_node.node_id] = (current_node, current_node.balance_score)
                 self.get_balanced_stumps(current_node=current_node.node_l, stumps=stumps, p=p)
                 self.get_balanced_stumps(current_node=current_node.node_r, stumps=stumps, p=p)
@@ -612,13 +466,9 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_l = copy.deepcopy(node.node_l)
             node_r = copy.deepcopy(node.node_r)
                         
-            feat = tuple(node.stump.feature_original[0])  # Ensure it's a tuple
+            feat = tuple(node.stump.feature_original[0])
 
             thr = (node.stump.threshold_original[0],)
-                        
-            #print(feat)
-            #print(thr)
-            
             
             rt.root = node
             rt.root.node_l = node_l
@@ -629,9 +479,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             
             rt.root.node_id, rt.root.node_l.node_id, rt.root.node_r.node_id = 'R', 'Rl', 'Rr'
             
-            
-            #print('ids', rt.root.node_id, rt.root.node_l.node_id)
-            
+
             trees[(feat, thr)] = rt
             
         return trees
@@ -654,7 +502,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             y (np.ndarray): Target labels.
             n_classes_ (int): Number of classes.
         """
-        classes_ = [i for i in range(n_classes_)]
+        classes_ = list(range(n_classes_))
         node.prediction = calculate_mode(y)
         node.prediction_probability = np.zeros((len(classes_), ))
         node.samples = len(y)
@@ -671,105 +519,3 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                 cls.complete_tree(node.node_l, X_l, y_l, n_classes_)
             if X_r.shape[0] != 0:
                 cls.complete_tree(node.node_r, X_r, y_r, n_classes_)
-
-            
-        
-    @classmethod    
-    def decode_ruletree(cls, vector, n_features_in_, n_classes_, n_outputs_, 
-                        numerical_idxs=None, categorical_idxs=None):
-        """
-        Decode a RuleTree from a vector representation.
-
-        Args:
-            vector (list): Vector representation of the tree.
-            n_features_in_ (int): Number of input features.
-            n_classes_ (int): Number of classes.
-            n_outputs_ (int): Number of outputs.
-            numerical_idxs (list): Indices of numerical features.
-            categorical_idxs (list): Indices of categorical features.
-
-        Returns:
-            RuleTreeClassifier: Decoded RuleTreeClassifier instance.
-        """
-        idx_to_node = super().decode_ruletree(vector)
-        
-        for index in range(len(vector[0])):
-            #if leaf
-            if vector[0][index] == -1:
-                idx_to_node[index].prediction = vector[1][index]
-            else:
-                clf = DecisionTreeStumpClassifier() ##add kwargs in the function
-                clf.numerical = numerical_idxs
-                clf.categorical = categorical_idxs
-                if isinstance(vector[1][index], str):
-                    clf = configure_cat_split(clf, vector[0][index], vector[1][index])
-                else:
-                    clf = configure_non_cat_split(clf, vector, index, 
-                                               n_features_in_, n_classes_, n_outputs_)
-                    
-                idx_to_node[index].stump = clf
-                set_node_children(idx_to_node, index, vector)
-                
-        
-        rule_tree = RuleTreeClassifier()
-        rule_tree.classes_ = [i for i in range(n_classes_)]
-        simplify_decode(idx_to_node[0])
-        rule_tree.root = idx_to_node[0]
-        return rule_tree
-                
-                
-        
-            
-    @classmethod
-    def _decode_old(cls, vector, n_features_in_, n_classes_, n_outputs_, 
-                        numerical_idxs=None, categorical_idxs=None, criterion=None):
-        """
-        Decode a RuleTree using an older method.
-
-        Args:
-            vector (list): Vector representation of the tree.
-            n_features_in_ (int): Number of input features.
-            n_classes_ (int): Number of classes.
-            n_outputs_ (int): Number of outputs.
-            numerical_idxs (list): Indices of numerical features.
-            categorical_idxs (list): Indices of categorical features.
-            criterion (str): Splitting criterion.
-
-        Returns:
-            RuleTreeClassifier: Decoded RuleTreeClassifier instance.
-        """
-        idx_to_node = super().decode_ruletree(vector, n_features_in_, n_classes_, n_outputs_, 
-                                              numerical_idxs, categorical_idxs, criterion)
-        
-    
-        for index in range(len(vector[0])):
-            if vector[0][index] == -1:
-                idx_to_node[index].prediction = vector[1][index]
-            else:
-                clf = DecisionTreeStumpClassifier(
-                                        criterion=criterion)
-                
-                clf = DecisionTreeStumpClassifier()
-        
-                if numerical_idxs is not None:
-                   clf.numerical = numerical_idxs
-        
-                if categorical_idxs is not None:
-                   clf.categorical = categorical_idxs
-                            
-                if isinstance(vector[1][index], str):
-                    configure_cat_split(clf, vector[0][index], vector[1][index])
-                else:
-                    configure_non_cat_split(clf, vector, index, 
-                                               n_features_in_, n_classes_, n_outputs_)
-                idx_to_node[index].stump = clf
-                set_node_children(idx_to_node, index, vector)
-                
-                print(clf)
-                
-        rule_tree = RuleTreeClassifier()
-        simplify_decode(idx_to_node[0])
-        rule_tree.root = idx_to_node[0]
-        return rule_tree
-
-

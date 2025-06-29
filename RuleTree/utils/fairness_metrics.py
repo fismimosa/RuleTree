@@ -65,7 +65,7 @@ def max_fairness_cost(labels:np.ndarray, prot_attr:np.ndarray, ideal_dist:dict):
         Maximum fairness cost across all class labels. Lower values indicate
         distributions closer to the ideal fair distribution.
     """
-    sums = dict()
+    sums = {}
 
     n_prot_attr = len(np.unique(prot_attr))
 

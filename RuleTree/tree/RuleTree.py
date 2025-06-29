@@ -13,16 +13,18 @@ import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from itertools import count
+from typing import Optional
 
 import numpy as np
 import sklearn
 from sklearn import tree
+from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.utils.data_utils import json_NumpyEncoder
+from RuleTree.utils.data_utils import json_numpy_encoder
 from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS
 
 
@@ -52,6 +54,7 @@ class RuleTree(RuleTreeBase, ABC):
                                 # list of tuple (probability, RuleTreeBaseStump) where sum(probabilities)==1
                  stump_selection, # ['random', 'best']
                  random_state,
+                 distance_measure=None
                  ):
         """
         Initialize the RuleTree.
@@ -66,15 +69,14 @@ class RuleTree(RuleTreeBase, ABC):
             random_state (int): Random seed for reproducibility.
         """
         self.tiebreaker = count()
-        self.root:RuleTreeNode = None
-        self.queue = list()
-        self.classes_ = None
-        self.n_classes_ = None
+        self.root:Optional[RuleTreeNode] = None
+        self.queue = []
 
         self.max_leaf_nodes = float("inf") if max_leaf_nodes is None else max_leaf_nodes
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         self.prune_useless_leaves = prune_useless_leaves
+        self.distance_measure = distance_measure
 
         self.base_stumps = base_stumps
         self.stump_selection = stump_selection
@@ -95,7 +97,7 @@ class RuleTree(RuleTreeBase, ABC):
             assert isinstance(self.base_stumps, class_to_check)
             _base_stump.append(self.base_stumps)
             _p.append(1.)
-        elif type(self.base_stumps) == list:
+        elif isinstance(self.base_stumps, list):
             assert len(self.base_stumps) > 0
             _equal_p = 1 / len(self.base_stumps)
             for el in self.base_stumps:
@@ -161,24 +163,21 @@ class RuleTree(RuleTreeBase, ABC):
             compatible_stumps = [(p/p_total, x) for p, x in compatible_stumps]
 
         return compatible_stumps
+
     
+    def _incremental_fit(self, root: RuleTreeNode, X: np.ndarray, idx: np.ndarray):
+        if root.is_leaf():
+            self.queue_push(root, idx)
+            return 1
+        else:
+            labels = root.stump.apply(X[idx])
+            return (
+                    1 +
+                    self._incremental_fit(root.node_l, X, idx[labels==1]) +
+                    self._incremental_fit(root.node_r, X, idx[labels == 2])
+            )
 
-    @abstractmethod
-    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
-        """
-        Compute medoids for the given data.
 
-        Args:
-            X (np.ndarray): Feature matrix.
-            y: Target labels.
-            idx (np.ndarray): Indices of the samples.
-            **kwargs: Additional arguments.
-
-        Returns:
-            np.ndarray: Medoids indices.
-        """
-        pass
-    
     def fit(self, X: np.array, y: np.array = None, **kwargs):
         """
         Fit the RuleTree to the provided data.
@@ -191,18 +190,21 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             RuleTree: The fitted RuleTree instance.
         """
-        self.classes_ = np.unique(y)
-        self.n_classes_ = len(self.classes_)
-        self.n_features = X.shape[1]
+        self.classes_ = self.classes_ if hasattr(self, 'classes_') else np.unique(y)
+        self.n_classes_ = self.n_classes_ if hasattr(self, 'n_classes_') else len(self.classes_)
+        self.n_features = self.n_features if hasattr(self, 'n_features') else X.shape[1]
         self._set_stump()
 
         idx = np.arange(X.shape[0])
 
-        self.root = self.prepare_node(y, idx, "R")
+        if self.root is None:
+            self.root = self.prepare_node(y, idx, "R")
+            self.queue_push(self.root, idx)
+            nbr_curr_nodes = 0
+        else:
+            nbr_curr_nodes = self._incremental_fit(self.root, X, idx)
 
-        self.queue_push(self.root, idx)
 
-        nbr_curr_nodes = 0
         while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
             idx, current_node = self.queue_pop()
             
@@ -233,15 +235,8 @@ class RuleTree(RuleTreeBase, ABC):
 
             try:
                 clf = self.make_split(X, y, idx=idx, **kwargs)
-                pivots_list = ['PivotTreeStumpClassifier',
-                               'MultiplePivotTreeStumpClassifier',
-                               'ObliquePivotTreeStumpClassifier',
-                               'MultipleObliquePivotTreeStumpClassifier']
-                if clf.__class__.__module__.split('.')[-1] in pivots_list:
-                     labels = clf.apply(self.X_scaler.transform(X[idx]))
-                else:
-                    labels = clf.apply(X[idx])
-            except (ValueError, AttributeError, IndexError) as e: #No split
+                labels = clf.apply(X[idx])
+            except (ValueError, AttributeError, IndexError) as e:
                 self.make_leaf(current_node)
                 current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 nbr_curr_nodes += 1
@@ -249,8 +244,7 @@ class RuleTree(RuleTreeBase, ABC):
 
            
             name_clf = clf.__class__.__module__.split('.')[-1]
-            #print(name_clf)
-            
+
             if name_clf in ['ObliqueDecisionTreeStumpClassifier',
                             'DecisionTreeStumpClassifier']:
                 current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
@@ -272,17 +266,6 @@ class RuleTree(RuleTreeBase, ABC):
             current_node.node_l = self.prepare_node(y, idx_l, current_node.node_id + "l", )
             current_node.node_r = self.prepare_node(y, idx_r, current_node.node_id + "r", )
             current_node.node_l.parent, current_node.node_r.parent = current_node, current_node
-            
-            
-            #current_node.balance_score = (np.min(np.unique(labels, return_counts= True)[1]) / labels.shape[0])
-            
-            #global_labels = clf.apply(X)
-            #current_node.balance_score_global = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
-           
-            #current_node.balance_score = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
-           
-            
-            
 
             self.queue_push(current_node.node_l, idx_l)
             self.queue_push(current_node.node_r, idx_r)
@@ -304,7 +287,7 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Predicted class labels.
         """
-        labels, leaves, proba = self._predict(X, self.root)
+        labels, _, _ = self._predict(X, self.root)
 
         return labels
 
@@ -318,7 +301,7 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Leaf indices for each sample.
         """
-        labels, leaves, proba = self._predict(X, self.root)
+        _, leaves, _ = self._predict(X, self.root)
 
         return leaves
 
@@ -332,7 +315,7 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        labels, leaves, proba = self._predict(X, self.root)
+        labels, _, proba = self._predict(X, self.root)
         proba_matrix = np.zeros((X.shape[0], self.n_classes_))
         for classe in self.classes_:
             proba_matrix[labels == classe, self.classes_ == classe] = proba[labels == classe]
@@ -375,6 +358,39 @@ class RuleTree(RuleTreeBase, ABC):
                                                                                                          current_node.node_r)
 
             return labels, leaves, proba
+
+    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
+        """
+        Compute medoids for the given data.
+
+        Args:
+            X (np.ndarray): Feature matrix.
+            y (np.ndarray): Target labels.
+            idx (np.ndarray): Indices of the samples to consider.
+            **kwargs: Additional arguments for medoid computation.
+
+        Returns:
+            list: Indices of the computed medoids.
+        """
+        if self.distance_measure is not None:
+            medoids = []
+            sub_matrix = None
+            for label in set(y[idx]):
+                idx_local_label = np.where(y[idx] == label)[0]
+                idx_label = idx[idx_local_label]
+                X_class_points = X[idx_label]
+
+                if self.distance_matrix is not None:
+                    sub_matrix = self.distance_matrix[idx_label][:, idx_label]
+                else:
+                    sub_matrix = pairwise_distances(X_class_points, metric=self.distance_measure)
+                total_distances = sub_matrix.sum(axis=1)
+                medoid_index = idx_label[total_distances.argmin()]
+                medoids += [medoid_index]
+
+            return medoids
+        else:
+            return None
 
     def get_rules(self, columns_names = None):
         """
@@ -427,7 +443,6 @@ class RuleTree(RuleTreeBase, ABC):
         """
         Perform post-fit adjustments to the RuleTree.
         """
-        return
 
     @abstractmethod
     def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
@@ -639,9 +654,7 @@ class RuleTree(RuleTreeBase, ABC):
                 - n_child_l * imp_child_l
                 - n_child_r * imp_child_r
             )
-           
-            info_gain 
-           
+
             importances[feature] += info_gain
 
             # Recur for left and right children
@@ -771,188 +784,28 @@ class RuleTree(RuleTreeBase, ABC):
     
     
     @classmethod
-    def print_rules(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
+    def print_rules(cls, rules: dict=None, digits=2, indent: int = 0, ):
         """
         Print the rules of the RuleTree.
 
         Args:
             rules (dict): Rules of the tree.
-            columns_names (list): Column names for the features.
-            ndigits (int): Number of digits for rounding.
+            digits (int): Number of digits for rounding.
             indent (int): Indentation level.
         """
-        #columns_names now included in stump get_rule(), should we keep it here?
-        #ndigits/float precision included in stump get_rule(), should we keep it here?
       
         indentation = "".join(["|   " for _ in range(indent)])
         
         if rules["is_leaf"]:
             pred = rules['prediction']
             print(f"{indentation} output: "
-                  f"{pred if type(pred) in [np.str_, np.string_, str] else round(pred, ndigits=ndigits)}")
+                  f"{pred if type(pred) in [np.str_, np.bytes_, str] else round(pred, ndigits=digits)}")
             
         else:
             print(f"{indentation}|--- {rules['textual_rule']}")
-            cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
+            cls.print_rules(rules=rules['left_node'], indent=indent + 1)
             print(f"{indentation}|--- {rules['not_textual_rule']}")
-            cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
-    
-    
-    @classmethod
-    def print_rules_old(cls, rules: dict, columns_names: list = None, ndigits=2, indent: int = 0, ):
-        """
-        Print the rules of the RuleTree (old version).
-
-        Args:
-            rules (dict): Rules of the tree.
-            columns_names (list): Column names for the features.
-            ndigits (int): Number of digits for rounding.
-            indent (int): Indentation level.
-        """
-        names = lambda x: f"X_{x}"
-        names_pivots = lambda x: f"P_{x}"
-
-        if columns_names is not None:
-            names = lambda x: columns_names[x]
-
-        indentation = "".join(["|   " for _ in range(indent)])
-
-        if rules["is_leaf"]:
-            pred = rules['prediction']
-
-            print(f"{indentation} output: "
-                  f"{pred if type(pred) in [np.str_, np.string_, str] else round(pred, ndigits=ndigits)}")
-        else:
-            comparison = "==" if rules['is_categorical'] else "<="
-            not_comparison = "!=" if rules['is_categorical'] else ">"
-            feature_idx = rules['feature_idx']
-            coefficients = rules['coefficients'] if 'coefficients' in rules else None
-            thr = rules['threshold']
-            
-            print(feature_idx)
-
-            if isinstance(feature_idx, (int, np.integer)):
-                print(f"{indentation}|--- {rules['textual_rule']}")
-                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
-
-                print(f"{indentation}|--- {rules['not_textual_rule']}")
-                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
-                
-            elif (isinstance(feature_idx, str) and feature_idx.endswith('_P')): #TODO: cambia
-                print(f"{indentation}|--- {names_pivots(feature_idx[:-2])} {comparison} "
-                      f"{thr if isinstance(thr, (np.str_, np.string_, str)) else round(thr, ndigits=ndigits)}"
-                      f"\t{rules['samples']}")
-                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
-            
-                print(f"{indentation}|--- {names_pivots(feature_idx[:-2])} {not_comparison} "
-                      f"{thr if isinstance(thr, (np.str_, np.string_, str)) else round(thr, ndigits=ndigits)}")
-                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
-
-            
-            elif isinstance(feature_idx, tuple) and all(isinstance(i, (int, np.integer)) for i in feature_idx):
-                
-                print(f"{indentation}|--- near {names_pivots(feature_idx[0])}"
-                      
-                      f"\t{rules['samples']}")
-                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
-
-                print(f"{indentation}|--- near {names_pivots(feature_idx[1])}"
-                     )
-                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
-                
-            elif isinstance(feature_idx, list) and all(isinstance(i, (int, np.integer)) for i in feature_idx):
-                feature_coefficient_pairs = [f"{round(coef, ndigits=ndigits)} * {names(idx)}" for coef, idx in zip(coefficients, feature_idx)]
-                feature_coefficient_str = " + ".join(feature_coefficient_pairs)
-                
-                print(f"{indentation}|--- {feature_coefficient_str} {comparison} "
-                      f"{thr if isinstance(thr, (str, np.str_, np.string_)) else round(thr, ndigits=ndigits)}"
-                      f"\t{rules['samples']}")
-                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
-                
-                print(f"{indentation}|--- {feature_coefficient_str} {not_comparison} "
-                      f"{thr if isinstance(thr, (str, np.str_, np.string_)) else round(thr, ndigits=ndigits)}")
-                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
-                
-            elif isinstance(feature_idx, list) and feature_idx[0].endswith('_P'):
-                feature_coefficient_pairs = [f"{round(coef, ndigits=ndigits)} * {names_pivots(idx[:-2])}" for coef, idx in zip(coefficients, feature_idx)]
-                feature_coefficient_str = " + ".join(feature_coefficient_pairs)
-                
-                print(f"{indentation}|--- {feature_coefficient_str} {comparison} "
-                      f"{thr if isinstance(thr, (str, np.str_, np.string_)) else round(thr, ndigits=ndigits)}"
-                      f"\t{rules['samples']}")
-                cls.print_rules(rules=rules['left_node'], columns_names=columns_names, indent=indent + 1)
-                
-                print(f"{indentation}|--- {feature_coefficient_str} {not_comparison} "
-                      f"{thr if isinstance(thr, (str, np.str_, np.string_)) else round(thr, ndigits=ndigits)}")
-                cls.print_rules(rules=rules['right_node'], columns_names=columns_names, indent=indent + 1)
-                
-            else: #if list -> oblique
-                raise Exception("Unimplemented")
-
-    @classmethod
-    def decode_ruletree(cls, vector):
-        """
-        Decode a RuleTree from a vector representation.
-
-        Args:
-            vector (np.ndarray): Vector representation of the tree.
-
-        Returns:
-            dict: Mapping of indices to RuleTreeNode instances.
-        """
-        #need to check if n_classes_ is actually necessary
-        
-        #n_classes_ = np.array([n_classes_], dtype=np.intp)
-        
-        idx_to_node = {index: RuleTreeNode(node_id=None,
-                                        prediction=None, prediction_probability=None, parent=-1) 
-                       for index in range(len(vector[0]))}
-        
-        idx_to_node[0].node_id = 'R'
-        idx_to_node[0].parent = -1
-        
-        return idx_to_node
-                            
-    def encode_ruletree(self):
-        """
-        Encode the RuleTree into a vector representation.
-
-        Returns:
-            np.ndarray: Vector representation of the tree.
-        """
-        nodes = (2 ** (self.max_depth + 1)) - 1
-        vector = np.zeros((2, nodes), dtype=object)
-        
-        index = {'R': 0}  # root index
-        parent = {}
-        
-        if not hasattr(self, 'root'):
-            raise ValueError('This RuleTree instance must be fitted before encoding.')
-        else:
-            root_node = self.root
-        root_node.encode_node(index, parent, vector, self)
-        
-        
-        for node in range(vector.shape[1]):
-            if vector[0][node] == -1:
-                # children update
-                if ((2*node + 1) < (vector.shape[1] - 1)) and ((2*node + 2) < vector.shape[1]):
-                    vector[0][2*node + 1] = -1
-                    vector[1][2*node + 1] = vector[1][node]
-                    vector[0][2*node + 2] = -1
-                    vector[1][2*node + 2] = vector[1][node]
-
-                    parent[2*node + 1] = node
-                    parent[2*node + 2] = node
-
-                    # update the node itself
-                    vector[0][node] = vector[0][parent[node]]
-                    vector[1][node] = vector[1][parent[node]]
-                    
-        self.vector = vector
-        
-        return vector
-
+            cls.print_rules(rules=rules['right_node'], indent=indent + 1)
 
     def to_dict(self, filename=None):
         """
@@ -994,7 +847,7 @@ class RuleTree(RuleTreeBase, ABC):
             dictionary["nodes"].append(node.node_to_dict())
 
         with open(filename, 'w') as f:
-            json.dump(dictionary, f, cls=json_NumpyEncoder)
+            json.dump(dictionary, f, cls=json_numpy_encoder)
 
         return dictionary
 
@@ -1015,7 +868,7 @@ class RuleTree(RuleTreeBase, ABC):
         assert 'tree_type' in dictionary
 
         class_c = getattr(importlib.import_module(dictionary['tree_type']), dictionary['tree_type'].split('.')[-1])
-        tree = class_c(**dictionary.get('args', dict()))
+        tree = class_c(**dictionary.get('args', {}))
         tree.classes_ = dictionary.get('classes_', np.nan)
         tree.n_classes_ = dictionary.get('n_classes_', np.nan)
 
@@ -1032,7 +885,7 @@ class RuleTree(RuleTreeBase, ABC):
 
         return tree
 
-    def export_graphviz(self, columns_names=None, scaler=None, float_precision=3, filename:str|None=None):
+    def export_graphviz(self, columns_names=None, scaler=None, float_precision=3, filename:Optional[str]=None):
         """
         Export the RuleTree to a Graphviz representation.
 

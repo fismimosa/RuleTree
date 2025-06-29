@@ -1,3 +1,6 @@
+from RuleTree import RuleTreeClassifier
+
+
 def ruletree_to_array(node, max_depth=2):
     max_nodes = 2 ** (max_depth + 1) - 1
     node_array = np.empty(max_nodes, dtype=object)
@@ -37,9 +40,9 @@ def build_subtree(index):
     
     return node
 
-def array_to_ruletree(node_array, max_depth=2, n_classes_=2):
+def array_to_ruletree(max_depth=2, n_classes_=2):
     ruletree = RuleTreeClassifier(max_depth=max_depth)
-    ruletree.classes_ = [i for i in range(n_classes_)]
+    ruletree.classes_ = list(range(n_classes_))
     ruletree.root = build_subtree(0)
     ruletree.root.parent = -1
     

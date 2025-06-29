@@ -106,7 +106,7 @@ class MFA(pca.PCA):
                 X_partial = self.partial_factor_analysis_[name].one_hot_.transform(X_partial).loc[:, self.partial_factor_analysis_[name]._usecols].sparse.to_dense()
 
             sv = self.partial_factor_analysis_[name].singular_values_[0]
-            if sv == 0.0:
+            if np.isclose(sv, 0.0, rtol=1e-09, atol=1e-09):
                 sv = 0.000001
             X_partials.append(X_partial / sv)
 

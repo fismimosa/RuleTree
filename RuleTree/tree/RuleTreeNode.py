@@ -1,8 +1,9 @@
 import importlib
-from typing import Self
+from typing import Union, Optional
 
 import graphviz
 import numpy as np
+from sklearn.base import TransformerMixin
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
@@ -30,13 +31,13 @@ class RuleTreeNode:
 
     def __init__(self,
                  node_id: str,
-                 prediction: int | str | float,
-                 prediction_probability: np.ndarray | float,
+                 prediction: Union[int, str, float],
+                 prediction_probability: Union[np.ndarray, float],
                  classes: np.ndarray,
-                 parent: Self | None,
+                 parent: Optional['RuleTreeNode'],
                  stump: RuleTreeBaseStump = None,
-                 node_l: Self = None,
-                 node_r: Self = None,
+                 node_l: 'RuleTreeNode' = None,
+                 node_r: 'RuleTreeNode' = None,
                  **kwargs):
         """
         Initialize a RuleTreeNode.
@@ -85,7 +86,7 @@ class RuleTreeNode:
         self.node_l, self.node_r = None, None
         return self
 
-    def simplify(self) -> Self:
+    def simplify(self) -> 'RuleTreeNode':
         """
         Simplify the tree rooted at this node.
         
@@ -97,7 +98,7 @@ class RuleTreeNode:
         self._simplify()
         return self
 
-    def _simplify(self):  # TODO: update
+    def _simplify(self):
         """
         Internal method that simplifies the tree by pruning redundant nodes.
         
@@ -126,7 +127,7 @@ class RuleTreeNode:
         """
         self.stump = stump
 
-    def get_possible_outputs(self) -> tuple[set, set]:  # TODO: update
+    def get_possible_outputs(self) -> tuple[set, set]:
         """
         Get all possible prediction values in the subtree.
         
@@ -152,7 +153,7 @@ class RuleTreeNode:
         """
         return len(self.node_id) - 1
 
-    def get_rule(self, columns_names=None, scaler=None):
+    def get_rule(self, columns_names:list=None, scaler:TransformerMixin=None):
         """
         Get a dictionary representation of the rule at this node and its subtree.
         

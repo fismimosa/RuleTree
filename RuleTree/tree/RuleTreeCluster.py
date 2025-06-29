@@ -1,4 +1,5 @@
 import heapq
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -69,32 +70,11 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stumps: RegressorMixin | list = None,
+                 base_stumps: Union[RegressorMixin, list] = None,
                  random_state=None,
-
-                 criterion='squared_error',
-                 splitter='best',
-                 min_samples_leaf=1,
-                 min_weight_fraction_leaf=0.0,
-                 max_features=None,
-                 min_impurity_decrease=0.0,
-                 ccp_alpha=0.0,
-                 monotonic_cst=None
-                 ):
+                 distance_measure=None):
         if base_stumps is None:
-            base_stumps = DecisionTreeStumpRegressor(
-                max_depth=1,
-                criterion=criterion,
-                splitter=splitter,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                random_state=random_state,
-                min_impurity_decrease=min_impurity_decrease,
-                ccp_alpha=ccp_alpha,
-                monotonic_cst=monotonic_cst
-            )
+            base_stumps = DecisionTreeStumpRegressor(max_depth=1)
 
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
@@ -102,22 +82,15 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                          prune_useless_leaves=prune_useless_leaves,
                          base_stumps=base_stumps,
                          stump_selection='random',
-                         random_state=random_state)
+                         random_state=random_state,
+                         distance_measure=distance_measure)
 
         self.n_components = n_components
         self.clus_impurity = clus_impurity
         self.bic_eps = bic_eps
-        self.criterion = criterion
-        self.splitter = splitter
-        self.min_samples_leaf = min_samples_leaf
-        self.min_weight_fraction_leaf = min_weight_fraction_leaf
-        self.max_features = max_features
-        self.min_impurity_decrease = min_impurity_decrease
-        self.ccp_alpha = ccp_alpha
-        self.monotonic_cst = monotonic_cst
 
         if self.clus_impurity not in ['bic', 'r2']:
-            raise Exception('Unknown clustering impurity measure %s' % self.clus_impurity)
+            raise ValueError('Unknown clustering impurity measure %s' % self.clus_impurity)
 
     def is_split_useless(self, X, clf: tree, idx: np.ndarray):
         """
@@ -232,13 +205,13 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                 best_clf = clf
 
         return best_clf
-        
+
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """
         Compute the medoids for clusters.
-        
+
         This is a placeholder method for computing cluster medoids.
-        
+
         Parameters
         ----------
         X : ndarray of shape (n_samples, n_features)
@@ -371,7 +344,6 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
         
         For classification, no additional post-processing is needed.
         """
-        return
 
     def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
         """
@@ -427,7 +399,6 @@ class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
         
         For regression, no additional post-processing is needed.
         """
-        return
 
     def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
         """

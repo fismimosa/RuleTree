@@ -34,13 +34,13 @@ class FAMD(mfa.MFA):
         if len(num_cols):
             self.groups['Numerical'] = num_cols
         else:
-            raise ValueError("FAMD works with categorical and numerical data but " +
-                             "you only have categorical data; you should consider using MCA")
+            raise ValueError('FAMD works with categorical and numerical data but you only have categorical data; you '
+                             'should consider using MCA')
         if len(cat_cols):
             self.groups['Categorical'] = cat_cols
         else:
-            raise ValueError("FAMD works with categorical and numerical data but " +
-                             "you only have numerical data; you should consider using PCA")
+            raise ValueError('FAMD works with categorical and numerical data but you only have numerical data; you '
+                             'should consider using PCA')
 
         return super().fit(X)
     
