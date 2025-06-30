@@ -826,10 +826,9 @@ class RuleTree(RuleTreeBase, ABC):
 
         while len(node_list) > 0:
             node = node_list.pop()
+            dictionary["nodes"].append(node.node_to_dict())
             if not node.is_leaf():
                 node_list += [node.node_l, node.node_r]
-
-            dictionary["nodes"].append(node.node_to_dict())
 
         with open(filename, 'w') as f:
             json.dump(dictionary, f, cls=json_numpy_encoder)
