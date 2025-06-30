@@ -809,12 +809,12 @@ class RuleTree(RuleTreeBase, ABC):
             "min_samples_split": self.min_samples_split,
             "max_depth": self.max_depth,
             "prune_useless_leaves": self.prune_useless_leaves,
-            "base_stumps": None,
             "stump_selection": self.stump_selection,
             "random_state": self.random_state,
+            "base_stumps": [
+                (p, stump.node_to_dict()) for p, stump in self.base_stumps if isinstance(stump, RuleTreeBaseStump)
+            ]
         }
-
-        warnings.warn("As for now base_stump is not serializable")
 
         dictionary = {
             "tree_type": self.__class__.__module__,
@@ -854,10 +854,16 @@ class RuleTree(RuleTreeBase, ABC):
 
         class_c = getattr(importlib.import_module(dictionary['tree_type']), dictionary['tree_type'].split('.')[-1])
         tree = class_c(**dictionary.get('args', {}))
-        tree.classes_ = dictionary.get('classes_', np.nan)
-        tree.n_classes_ = dictionary.get('n_classes_', np.nan)
+        tree.classes_ = dictionary.get('classes_', None)
+        tree.n_classes_ = dictionary.get('n_classes_', None)
 
         nodes = {node["node_id"]: RuleTreeNode.dict_to_node(node) for node in dictionary['nodes']}
+
+        tree.base_stumps = []
+        for p, stump_dict in dictionary['args']['base_stumps']:
+            stump_class = getattr(importlib.import_module(stump_dict['stump_type']), stump_dict['stump_type'].split('.')[-1])
+            stump_instance = stump_class.dict_to_node(stump_dict)
+            tree.base_stumps.append((p, stump_instance))
 
         for node_instance, node_info in zip(nodes.values(), dictionary['nodes']):
             if not node_info["is_leaf"]:

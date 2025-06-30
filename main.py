@@ -22,7 +22,7 @@ def test_clf_iris():
 
     print(f"F1: {f1_rule}")
 
-    print(clf_rule.print_rules(clf_rule.get_rules(columns_names=df.columns)))
+    clf_rule.print_rules(clf_rule.get_rules(columns_names=df.columns))
 
 def test_reg_iris():
     df = pd.read_csv("datasets/CLF/iris.csv")

@@ -26,7 +26,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         kwargs (dict): Additional arguments passed to DecisionTreeClassifier.
         threshold_original (array): Split threshold values.
         feature_original (array): Feature indices used for splits.
-        coefficients (array): Coefficients for oblique splits (if used).
         impurity_fun (function): Function used to calculate impurity (gini, entropy, etc.).
     """
 
@@ -112,18 +111,18 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                 - args: Dictionary with constructor arguments and parameters
                 - split: Dictionary with split information
         """
+        if self.feature_original is None:
+            return {
+                "stump_type": self.__class__.__module__,
+                "args": self.kwargs,
+            }
+
         rule = self.get_rule(float_precision=None)
 
         rule["stump_type"] = self.__class__.__module__
         rule["impurity"] = self.impurity
 
-        rule["args"] = {
-            "coefficients": self.coefficients,
-        } | self.kwargs
-
-        rule["split"] = {
-            "args": {}
-        }
+        rule["args"] = self.kwargs
 
         return rule
 
@@ -149,19 +148,19 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         """
         self = cls()
 
-        assert 'feature_idx' in node_dict
-        assert 'threshold' in node_dict
-        assert 'is_categorical' in node_dict
+        self.feature_original = None
+        if 'feature_idx' in node_dict:
+            self.feature_original = np.ones(3, dtype=int) * -2
+            self.feature_original[0] = node_dict.get('feature_idx', -2)
 
-        self.feature_original = np.zeros(3, dtype=int)
-        self.threshold_original = np.zeros(3)
+        self.threshold_original = None
+        if 'threshold' in node_dict:
+            self.threshold_original = np.ones(3) * -2
+            self.threshold_original[0] = node_dict.get('threshold', -2)
 
-        self.feature_original[0] = node_dict["feature_idx"]
-        self.threshold_original[0] = node_dict["threshold"]
-        self.is_categorical = node_dict["is_categorical"]
+        self.is_categorical = node_dict.get('is_categorical', None)
 
         args = copy.deepcopy(node_dict.get("args", {}))
-        self.coefficients = args.pop("coefficients", np.nan)
         self.impurity = args.pop("impurity", np.nan)
         self.kwargs = args
 
@@ -190,7 +189,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
         self.threshold_original = None
         self.feature_original = None
-        self.coefficients = None
 
         if 'criterion' not in kwargs or kwargs['criterion'] == "gini":
             self.impurity_fun = gini

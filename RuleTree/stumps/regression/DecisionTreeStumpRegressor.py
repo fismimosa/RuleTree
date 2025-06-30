@@ -77,9 +77,13 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
         return rule
 
-    def dict_to_node(self, node_dict, X=None):
+    @classmethod
+    def dict_to_node(cls, node_dict, X=None):
         """
-        Create a stump from its dictionary representation.
+         Deserializes a dictionary into a DecisionTreeStumpRegressor node.
+
+        This is essentially the inverse operation of node_to_dict(), recreating
+        a stump instance from a serialized dictionary representation.
         
         Parameters
         ----------
@@ -92,22 +96,25 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         -------
         None
         """
-        assert 'feature_idx' in node_dict
-        assert 'threshold' in node_dict
-        assert 'is_categorical' in node_dict
+        self = cls()
 
-        self.feature_original = np.zeros(3)
-        self.threshold_original = np.zeros(3)
+        if 'feature_idx' in node_dict:
+            self.feature_original = np.ones(3, dtype=int) * -2
+            self.feature_original[0] = node_dict.get('feature_idx', -2)
 
-        self.feature_original[0] = node_dict["feature_idx"]
-        self.threshold_original[0] = node_dict["threshold"]
-        self.is_categorical = node_dict["is_categorical"]
+        self.threshold_original = None
+        if 'threshold' in node_dict:
+            self.threshold_original = np.ones(3) * -2
+            self.threshold_original[0] = node_dict.get('threshold', -2)
+
+        self.is_categorical = node_dict.get('is_categorical', None)
 
         args = copy.deepcopy(node_dict.get("args", {}))
-        self.impurity = args.pop("impurity", np.nan)
         self.kwargs = args
 
         self.__set_impurity_fun(args["criterion"])
+
+        return self
 
     def __init__(self, **kwargs):
         """

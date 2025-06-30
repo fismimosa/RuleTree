@@ -111,10 +111,11 @@ class RuleTreeNode:
         if self.is_leaf():
             return {self.prediction}
         else:
-            all_pred = self.node_l._simplify() | self.node_r._simplify() | {self.prediction}
+            all_pred = self.node_l._simplify() | self.node_r._simplify()
 
             if len(all_pred) == 1:
                 self.make_leaf()
+                self.prediction = all_pred.pop()
                 return {self.prediction}
             else:
                 return all_pred
@@ -237,7 +238,6 @@ class RuleTreeNode:
             return node
 
         import_path = info_dict['stump_type']
-        print(import_path)
         class_c = getattr(importlib.import_module(import_path), info_dict['stump_type'].split('.')[-1])
         
         node.stump = class_c.dict_to_node(info_dict, X)
