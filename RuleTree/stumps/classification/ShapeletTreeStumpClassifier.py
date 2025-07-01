@@ -87,7 +87,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
                             selection=self.selection,
                             distance=self.distance,
                             mi_n_neighbors=self.mi_n_neighbors,
-                            random_state=random.randint(0, 2 ** 32 - 1),
+                            random_state=random_state,
                             n_jobs=self.n_jobs
                             )
 
