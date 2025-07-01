@@ -139,6 +139,9 @@ class Shapelets(TransformerMixin):
         NotImplementedError
             If multivariate time series are provided (n_signals > 1).
         """
+        random.seed(self.random_state)
+        np.random.seed(self.random_state)
+
         if X.shape[1] != 1:
             raise NotImplementedError("Multivariate TS are not supported (yet).")
 
@@ -154,8 +157,6 @@ class Shapelets(TransformerMixin):
             self.shapelets = self.__fit_selection_cluster(candidate_shapelets, X, y)
 
         return self
-
-
 
 
     def __fit_partition(self, X, y):
@@ -274,7 +275,7 @@ class Shapelets(TransformerMixin):
             scores = mutual_info_fun(dist, y,
                                      n_jobs=self.n_jobs,
                                      n_neighbors=min(dist.shape[0], self.mi_n_neighbors),
-                                     discrete_features=False)
+                                     discrete_features=False, random_state=self.random_state)
         if len(candidate_shapelets) == self.n_shapelets:
             return candidate_shapelets
         return candidate_shapelets[np.argpartition(scores, -min(scores.shape[0], self.n_shapelets))\
@@ -313,8 +314,8 @@ class Shapelets(TransformerMixin):
         try:
             from sklearn_extra.cluster import KMedoids
             clu = KMedoids(n_clusters=self.n_shapelets, random_state=self.random_state, metric='precomputed')
-        except Exception as e:
-            raise Exception(f"Please install scikit-learn-extra [{e}]")
+        except ImportError as e:
+            raise ImportError("Please install scikit-learn-extra")
         clu.fit(dist_matrix)
 
         return candidate_shapelets[clu.medoid_indices_]
