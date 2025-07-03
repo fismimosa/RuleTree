@@ -1,0 +1,11 @@
+digraph RuleTree {
+	R [label="X_2 ≤ 2.45" shape=box]
+	Rl [label="Iris-setosa"]
+	R -> Rl [color="#2ca02c"]
+	Rr [label="X_3 ≤ 1.55" shape=box]
+	Rrl [label="Iris-versicolor"]
+	Rr -> Rrl [color="#2ca02c"]
+	Rrr [label="Iris-virginica"]
+	Rr -> Rrr [color="#d62728"]
+	R -> Rr [color="#d62728"]
+}

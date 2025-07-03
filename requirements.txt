@@ -1,4 +1,4 @@
-numpy<2.0.0
+numpy>=2.0.0
 scikit-learn>=1.5.0
 scipy
 pandas
@@ -6,7 +6,6 @@ category_encoders
 threadpoolctl
 tqdm
 progress-table
-graphviz>=0.20.3
 numba
 psutil
 setuptools

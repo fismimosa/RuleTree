@@ -1,8 +1,6 @@
 import pandas as pd
-from graphviz import Source
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 
 from RuleTree import RuleTreeClassifier
 from RuleTree.tree.RuleTree import RuleTree
@@ -12,9 +10,6 @@ def main():
     df = pd.read_csv("datasets/CLF/iris.csv")
     X = df.iloc[:, :-1].values
     y = df.iloc[:, -1].values
-
-    scaler = MinMaxScaler()
-    #X = scaler.fit_transform(X)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
     clf_rule = RuleTreeClassifier(max_depth=5)

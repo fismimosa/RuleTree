@@ -1,9 +1,16 @@
 import os
-from benchmark.Fair.FairHyper import n_jobs
 
-os.environ["OMP_NUM_THREADS"] = f"{n_jobs}"
-os.environ["OPENBLAS_NUM_THREADS"] = f"{n_jobs}"
+from benchmark.competitors.FRAC_model import FRAC_model
+from benchmark.competitors.VFC_model import VFC_model
+from benchmark.competitors.kmeanstree import KMeansTree
 
+n = 16
+
+os.environ["OMP_NUM_THREADS"] = f"{n}"
+os.environ["OPENBLAS_NUM_THREADS"] = f"{n}"
+os.environ["MKL_NUM_THREADS"] = f"{n}"
+os.environ["NUMEXPR_NUM_THREADS"] = f"{n}"
+os.environ["VECLIB_MAXIMUM_THREADS"] = f"{n}" # export VECLIB_MAXIMUM_THREADS=4
 
 import hashlib
 import os.path
@@ -15,7 +22,6 @@ import pandas as pd
 import psutil
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.preprocessing import MinMaxScaler
-from threadpoolctl import threadpool_limits
 from tqdm.auto import tqdm
 
 from RuleTree import RuleTreeCluster
@@ -92,8 +98,8 @@ def run(hyper, dataset_name, df:pd.DataFrame):
     elif base_method == "kmeans":
         model = KMeans(**hyper)
     elif base_method == "DB":
-        model = DBSCAN(n_jobs=n_jobs, **hyper)
-    else:
+        model = DBSCAN(n_jobs=n_jobs, algorithm='ball_tree', **hyper)
+    elif base_method == "FRT":
         bic_eps = hyper["bic_eps"]
         del hyper["bic_eps"]
         max_leaf_nodes = hyper["max_leaf_nodes"]
@@ -103,14 +109,26 @@ def run(hyper, dataset_name, df:pd.DataFrame):
 
         stump = FairTreeStumpRegressor(**hyper)
         model = RuleTreeCluster(bic_eps=bic_eps, max_leaf_nodes=max_leaf_nodes, base_stumps=stump)
+    elif base_method == "KMT":
+        model = KMeansTree(n_jobs=n_jobs, **hyper)
+    elif base_method == "FRAC":
+        model = FRAC_model(**hyper)
+    elif base_method == "VFC":
+        model = VFC_model(**hyper)
 
-    with threadpool_limits(limits=n_jobs, user_api='blas'):
-        start = time.time()
-        model.fit(X)
-        end = time.time()
+    start = time.time()
+    model.fit(X)
+    end = time.time()
 
-    scores |= {'time': end-start} | compute_measures(X, model.predict(X), target, prot_attr, mfc_dataset, model)
+    if base_method in ['DB', 'kmeans']:
+        scores |= {'time': end - start} | compute_measures(X, model.labels_, target, prot_attr, mfc_dataset, model)
+    elif base_method == 'KMeansTree':
+        scores |= {'time': end - start} | compute_measures(X, model.predict(X), target, prot_attr, mfc_dataset, model.dt)
+        scores |= {'accuracy': model.accuracy_}
+    else:
+        scores |= {'time': end-start} | compute_measures(X, model.predict(X), target, prot_attr, mfc_dataset, model)
     scores["dataset"] = dataset_name
+
     df = pd.DataFrame.from_dict([scores])
     try:
         df.to_csv("res_tmp/"+filename, index=False)
@@ -136,16 +154,26 @@ def main():
         processes = []
         dataframes = []
 
-        with ProcessPoolExecutor(max_workers=(psutil.cpu_count()//n_jobs)) as executor:
+        single_t = True
+
+        if single_t:
             for hyper in tqdm(get_hyperparameters(df), desc=f"{dataset_name}: submitting experiments"):
-                processes.append(executor.submit(run, hyper, dataset_name, df))
+                processes.append(run(hyper, dataset_name, df))
 
             for process in tqdm(processes, desc=f"{dataset_name}: collecting results"):
-                try:
-                    res = process.result()
-                    dataframes.append(res)
-                except Exception as e:
-                    print(e)
+                dataframes.append(process)
+
+        else:
+            with ProcessPoolExecutor(max_workers=(psutil.cpu_count())) as executor: #//n_jobs
+                for hyper in tqdm(get_hyperparameters(df), desc=f"{dataset_name}: submitting experiments"):
+                    processes.append(executor.submit(run, hyper, dataset_name, df))
+
+                for process in tqdm(processes, desc=f"{dataset_name}: collecting results"):
+                    try:
+                        res = process.result()
+                        dataframes.append(res)
+                    except Exception as e:
+                        print(e)
 
 
         pd.concat(dataframes, ignore_index=True).to_csv(f"fair_benchmark_{dataset_name}.csv", index=False)
