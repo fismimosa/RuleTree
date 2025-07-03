@@ -121,6 +121,33 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
 
         return bic_parent < bic_children - self.bic_eps * np.abs(bic_parent)
 
+    def fit_predict(self, X, y=None, **kwargs):
+        """
+        Perform clustering on `X` and returns cluster labels.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Input data.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        **kwargs : dict
+            Arguments to be passed to ``fit``.
+
+            .. versionadded:: 1.4
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,), dtype=np.int64
+            Cluster labels.
+        """
+        # non-optimized default implementation; override when a better
+        # method is possible for a given clustering algorithm
+        self.fit(X, **kwargs)
+        return self.predict(X)
+
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
         Push a new node into the priority queue for processing.
@@ -206,6 +233,12 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
 
         return best_clf
 
+    def fit(self, X: np.array, y: np.array = None, **kwargs):
+        super().fit(X, y, **kwargs)
+        self._post_fit_fix()
+        return self
+
+
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """
         Compute the medoids for clusters.
@@ -263,8 +296,9 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         Converts string labels to integers for more efficient processing.
         """
         possible_labels, inner_nodes = self.root.get_possible_outputs()
-        all_outputs = list(possible_labels) + list(inner_nodes)
-        if type(next(iter(all_outputs))) is str and not hasattr(self, 'label_encoder'):
+        all_outputs = np.array(list(possible_labels) + list(inner_nodes))
+        if np.issubdtype(all_outputs.dtype, np.object_) and not hasattr(self, 'label_encoder'):
+            all_outputs = sorted(all_outputs, key=lambda x: (len(x), x))
             self.label_encoder = {k: all_outputs.index(k) for k in set(all_outputs)}
             self.__labels_obj_to_int(self.root)
 
