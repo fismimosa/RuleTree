@@ -49,10 +49,11 @@ class RuleTreeNode:
         if self.is_leaf():
             return {self.prediction}
         else:
-            all_pred = self.node_l._simplify() | self.node_r._simplify() | {self.prediction}
+            all_pred = self.node_l._simplify() | self.node_r._simplify()  # | {self.prediction}
 
             if len(all_pred) == 1:
                 self.make_leaf()
+                self.prediction = list(all_pred)[0]
                 return {self.prediction}
             else:
                 return all_pred
