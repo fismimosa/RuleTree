@@ -169,6 +169,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         rule = {
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],
+            "is_categorical": False,
         }
 
         rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
@@ -241,6 +242,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
                 'stump_type': self.__class__.__module__,
                 "feature_idx": self.feature_original[0],
                 "threshold": self.threshold_original[0],
+                "is_categorical": False,
             }
 
             rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
