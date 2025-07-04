@@ -146,7 +146,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         Raises:
             AssertionError: If required fields are missing from the dictionary.
         """
-        self = cls()
+        self = cls(**node_dict["args"])
 
         self.feature_original = None
         if 'feature_idx' in node_dict:
