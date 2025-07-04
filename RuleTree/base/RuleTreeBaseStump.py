@@ -26,7 +26,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
     @abstractmethod
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
-        pass
+        raise NotImplementedError("The fit method must be implemented in subclasses.")
 
     @abstractmethod
     def get_rule(self, columns_names:list=None, scaler:TransformerMixin=None, float_precision: Optional[int] = 3) -> dict:
@@ -67,7 +67,21 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Returns:
             dict: A dictionary representing the node's state.
         """
-        pass
+        raise NotImplementedError("The node_to_dict method must be implemented in subclasses.")
+
+    @abstractmethod
+    def apply(self, X: np.ndarray, check_input=True) -> np.ndarray:
+        """
+        Abstract method to apply the model to input data and return predictions.
+
+        Args:
+            X (np.ndarray): Input feature matrix.
+            check_input (bool): Whether to check the input data for validity.
+
+        Returns:
+            np.ndarray: Predictions made by the model.
+        """
+        raise NotImplementedError("The apply method must be implemented in subclasses.")
 
     @classmethod
     @abstractmethod
@@ -82,7 +96,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Returns:
             RuleTreeBaseStump: An instance of RuleTreeBaseStump or its subclass.
         """
-        pass
+        raise NotImplementedError("The dict_to_node method must be implemented in subclasses.")
 
     @staticmethod
     def supports(data_type:str) -> bool:
@@ -99,5 +113,4 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
     @staticmethod
     def update_statistics(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
-        # TODO document why this method is empty
         pass
