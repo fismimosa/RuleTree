@@ -3,7 +3,7 @@ import copy
 from sklearn.tree._tree import Tree, TREE_LEAF, TREE_UNDEFINED
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np
-from RuleTree.encoding.jakowski_utils import (
+from RuleTree.encoding._deprecated.jakowski_utils import (
     max_node_count,
 )
 
