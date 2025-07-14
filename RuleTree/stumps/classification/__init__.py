@@ -2,6 +2,7 @@ from .DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 #from .MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
 #from .ObliqueDecisionTreeStumpClassifier import ObliqueDecisionTreeStumpClassifier
 #from .ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
-#from .PivotTreeStumpClassifier import PivotTreeStumpClassifier
+from .PivotTreeStumpClassifier import PivotTreeStumpClassifier
 #from .ProximityTreeStumpClassifier import ProximityTreeStumpClassifier
-#from .ShapeletTreeStumpClassifier import ShapeletTreeStumpClassifier
+from .ShapeletTreeStumpClassifier import ShapeletTreeStumpClassifier
+from .PartialPivotTreeStumpClassifier import PartialPivotTreeStumpClassifier
