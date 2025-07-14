@@ -17,6 +17,7 @@ import copy
 
 from sklearn.preprocessing import StandardScaler
 
+from RuleTree.exceptions import NoSplitFoundWarning
 #from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
 #from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
 #from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
@@ -157,12 +158,16 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
 
                     clfs.append(stump)
                 except ValueError as e:
+                    traceback.print_exc()
                     if 'split' in str(e) or 'n_shapelets' in str(e):
                         continue
                     else:
                         raise e
+                except NoSplitFoundWarning:
+                    # If no split is found, we skip this stump
+                    continue
                 except Exception as e:
-                    #traceback.print_exc()
+                    traceback.print_exc()
                     continue
 
             stump = clfs[np.argmax(info_gains)]

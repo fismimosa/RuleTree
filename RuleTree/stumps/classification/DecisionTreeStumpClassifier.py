@@ -181,6 +181,9 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                 - class_weight (dict or 'balanced'): Weights associated with classes
                 - random_state (int): Seed for the random number generator
         """
+        if 'max_depth' not in kwargs:
+            kwargs['max_depth'] = 1
+
         super().__init__(**kwargs)
 
         self.is_categorical = None
