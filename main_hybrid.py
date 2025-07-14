@@ -7,21 +7,21 @@ from sklearn.model_selection import train_test_split
 from RuleTree import RuleTreeClassifier
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier
 from RuleTree.stumps.classification.PartialPivotTreeStumpClassifier import PartialPivotTreeStumpClassifier
-from RuleTree.stumps.classification.PartialProximityTreeStumpClassifier import PartialProximityTreeStumpClassifier
+#from RuleTree.stumps.classification.PartialProximityTreeStumpClassifier import PartialProximityTreeStumpClassifier
 
 ##previous stumps
 
 #oblique decision tree
-from RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier import ObliqueDecisionTreeStumpClassifier
+#from RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier import ObliqueDecisionTreeStumpClassifier
 #pivot tree
 from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
 #oblique pivot tree
-from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
+#from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
 
 #proximity pivot tree
-from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
+#from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
 #oblique proximity pivot tree
-from RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier import MultipleObliquePivotTreeStumpClassifier
+#from RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier import MultipleObliquePivotTreeStumpClassifier
 
 
 
@@ -32,27 +32,14 @@ if __name__ == "__main__":
 
     stumps = [
         PartialPivotTreeStumpClassifier(n_shapelets=np.inf, n_features_strategy='all', n_jobs=10,
-                                        random_state=random_state, selection='mi_clf'),
-        PartialProximityTreeStumpClassifier(n_shapelets=np.inf, n_features_strategy='all', n_jobs=10,
-                                            random_state=random_state, selection='mi_clf'),
+                                        random_state=random_state, selection='all'),
+        #PartialProximityTreeStumpClassifier(n_shapelets=np.inf, n_features_strategy='all', n_jobs=10, random_state=random_state, selection='mi_clf'),
         DecisionTreeStumpClassifier(max_depth=1, random_state=random_state),
-        ObliqueDecisionTreeStumpClassifier(max_depth=1, random_state=random_state,
-                                           oblique_split_type='householder',
-                                           pca=None,
-                                           max_oblique_features=2,
-                                           tau=1e-4),
+        #ObliqueDecisionTreeStumpClassifier(max_depth=1, random_state=random_state, oblique_split_type='householder', pca=None, max_oblique_features=2, tau=1e-4),
         PivotTreeStumpClassifier(max_depth=1, random_state=random_state),
-        MultiplePivotTreeStumpClassifier(max_depth=1, random_state=random_state),
-        ObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state,
-                                        oblique_split_type='householder',
-                                        pca=None,
-                                        max_oblique_features=2,
-                                        tau=1e-4),
-        MultipleObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state,
-                                                oblique_split_type='householder',
-                                                pca=None,
-                                                max_oblique_features=2,
-                                                tau=1e-4),
+        #MultiplePivotTreeStumpClassifier(max_depth=1, random_state=random_state),
+        #ObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state, oblique_split_type='householder', pca=None, max_oblique_features=2, tau=1e-4),
+        #MultipleObliquePivotTreeStumpClassifier(max_depth=1, random_state=random_state, oblique_split_type='householder', pca=None, max_oblique_features=2, tau=1e-4),
     ]
     for stump in stumps:
         print("----------------------------------------")
