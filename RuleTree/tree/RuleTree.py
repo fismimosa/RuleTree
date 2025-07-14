@@ -365,7 +365,7 @@ class RuleTree(RuleTreeBase, ABC):
                 idx_label = idx[idx_local_label]
                 X_class_points = X[idx_label]
 
-                if self.distance_matrix is not None:
+                if hasattr(self, 'distance_matrix'):
                     sub_matrix = self.distance_matrix[idx_label][:, idx_label]
                 else:
                     sub_matrix = pairwise_distances(X_class_points, metric=self.distance_measure)
