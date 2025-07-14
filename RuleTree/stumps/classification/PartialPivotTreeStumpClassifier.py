@@ -46,6 +46,16 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         if selection not in ["random", "cluster", "all"]:
             raise ValueError("'selection' must be 'random', 'all' or 'cluster'")
 
+        self.st = TabularShapelets(n_shapelets=self.n_shapelets,
+                                   n_ts_for_selection=self.n_ts_for_selection,
+                                   n_features_strategy=self.n_features_strategy,
+                                   selection=self.selection,
+                                   distance=self.distance,
+                                   random_state=self.random_state,
+                                   use_combination=self.use_combination,
+                                   n_jobs=self.n_jobs
+                                   )
+
         super().__init__(**kwargs)
 
         self.kwargs |= {
@@ -67,8 +77,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         if idx is None:
             idx = slice(None)
 
-        self.y_lims = [X.min(), X.max()]
-
         X = X[idx]
         y = y[idx]
         if self.scaler is not None:
@@ -77,16 +85,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         random.seed(self.random_state)
         if sample_weight is not None:
             warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
-
-        self.st = TabularShapelets(n_shapelets=self.n_shapelets,
-                                   n_ts_for_selection=self.n_ts_for_selection,
-                                   n_features_strategy=self.n_features_strategy,
-                                   selection=self.selection,
-                                   distance=self.distance,
-                                   random_state=random.randint(0, 2**32-1),
-                                   use_combination=self.use_combination,
-                                   n_jobs=self.n_jobs
-                                   )
 
         super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
         selected_shape = self.tree_.feature[0]
@@ -100,7 +98,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
     def apply(self, X, check_input=False):
         if self.scaler is not None:
             X = self.scaler.transform(X)
-        self.y_lims = [min(self.y_lims[0], X.min()), min(self.y_lims[1], X.max())]
 
         return super().apply(self.st.transform(X), check_input=check_input)
 
@@ -149,30 +146,57 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         return rule
 
     def node_to_dict(self):
-        return super().node_to_dict()
+        rule = super().node_to_dict()
+        if self.feature_original is not None:
+            rule |= {
+                'stump_type': self.__class__.__module__,
+                "feature_idx": self.feature_original[0],
+                "threshold": self.threshold_original[0],
+                "is_categorical": False,
+            }
+
+            rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
+
+            rule |= self.get_rule()
+
+        # shapelet transform stuff
+            rule["shapelets"] = self.st.shapelets.tolist()
+
+        rule["n_shapelets"] = self.st.n_shapelets
+        rule["n_ts_for_selection"] = self.st.n_ts_for_selection
+        rule["n_features_strategy"] = self.st.n_features_strategy
+        rule["selection"] = self.st.selection
+        rule["distance"] = self.st.distance
+        rule["random_state"] = self.st.random_state
+        rule["use_combination"] = self.st.use_combination
+        rule["n_jobs"] = self.st.n_jobs
+
+        return rule
 
     @classmethod
     def dict_to_node(cls, node_dict, X=None):
-        self = super().dict_to_node(node_dict, X)
+        self = cls(
+            n_shapelets=node_dict["n_shapelets"],
+            n_ts_for_selection=node_dict["n_ts_for_selection"],
+            n_features_strategy=node_dict["n_features_strategy"],
+            selection=node_dict["selection"],
+            distance=node_dict["distance"],
+            scaler=node_dict.get("scaler", None),
+            use_combination=node_dict["use_combination"],
+            random_state=node_dict["random_state"],
+            n_jobs=node_dict["n_jobs"],
+        )
 
-        self.st.shapelets = np.array(node_dict["shapelets"])
+        if 'shapelets' in node_dict:
+            self.st.shapelets = np.array(node_dict["shapelets"])
 
-        self.feature_original = np.zeros(3, dtype=int)
-        self.threshold_original = np.zeros(3)
-        self.n_node_samples = np.zeros(3, dtype=int)
+            self.feature_original = np.zeros(3, dtype=int)
+            self.threshold_original = np.zeros(3)
+            self.n_node_samples = np.zeros(3, dtype=int)
 
-        self.feature_original[0] = node_dict["feature_idx"]
-        self.threshold_original[0] = node_dict["threshold"]
-        self.n_node_samples[0] = node_dict["samples"]
-        self.is_categorical = node_dict["is_categorical"]
+            self.feature_original[0] = node_dict["feature_idx"]
+            self.threshold_original[0] = node_dict["threshold"]
 
-        self.y_lims = node_dict["y_lims"]
-
-        args = copy.deepcopy(node_dict["args"])
-        self.is_oblique = args.pop("is_oblique")
-        self.is_pivotal = args.pop("is_pivotal")
-        self.unique_val_enum = args.pop("unique_val_enum")
-        self.coefficients = args.pop("coefficients")
-        self.kwargs = args
+        self.kwargs = copy.deepcopy(node_dict["args"])
 
         return self

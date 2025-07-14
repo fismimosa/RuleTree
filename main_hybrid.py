@@ -59,6 +59,9 @@ if __name__ == "__main__":
         )
         rt.fit(X_train, y_train)
 
+        rt.to_dict("test_dict.json")
+        rt = RuleTreeClassifier.from_dict("test_dict.json")
+
         y_pred = rt.predict(X_test)
 
         print(classification_report(y_test, y_pred))
@@ -73,6 +76,9 @@ if __name__ == "__main__":
         distance_measure='euclidean'  # added here metric for case-based splits
     )
     rt.fit(X_train, y_train)
+
+    rt.to_dict("test_dict.json")
+    rt = RuleTreeClassifier.from_dict("test_dict.json")
 
     y_pred = rt.predict(X_test)
 
