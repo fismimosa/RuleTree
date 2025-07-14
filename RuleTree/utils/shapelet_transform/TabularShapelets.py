@@ -137,36 +137,6 @@ class TabularShapelets(TransformerMixin):
             subsequences_index[len(best_features_idx)] = [best_features_idx]
         return subsequences_index
 
-    def _old_selectable_features_smart(self, X, y):
-        subsequences_index = {}
-        for n_features in tqdm(range(1, X.shape[1]+1)):
-            subsequences_index[n_features] = list(combinations(list(range(X.shape[1])), n_features))
-
-        model = RandomForestClassifier(n_estimators=1000, n_jobs=self.n_jobs, random_state=self.random_state)
-        if np.unique(y).dtype == float:
-            model = RandomForestRegressor(n_estimators=1000, n_jobs=self.n_jobs, random_state=self.random_state)
-        model.fit(X, y)
-        feature_importances_ = model.feature_importances_
-        sorted_feature_importances_idx = np.argsort(-feature_importances_)
-
-        if self.n_features_strategy == 'drop':
-            max_gap = np.argmax(np.abs(np.diff(feature_importances_[sorted_feature_importances_idx])))
-            best_features_idx = sorted_feature_importances_idx[:max_gap + 1]
-        else:
-            knee_feature_idx = self.__utils_auto_get_knee_point_value(
-                feature_importances_[sorted_feature_importances_idx])
-            best_features_idx = sorted_feature_importances_idx[:knee_feature_idx + 1]
-        filtered_subsequences_index = {}
-
-        for n_features, subsequences in subsequences_index.items():
-            if n_features > len(best_features_idx):
-                continue
-            valid_subs = [s for s in subsequences if all(i in best_features_idx for i in s)]
-            if valid_subs:
-                filtered_subsequences_index[n_features] = valid_subs
-
-        return filtered_subsequences_index
-
     def _selectable_features_iterative(self, X, y):
         min_n_features, max_n_features = self._compute_n_features(X)
 
@@ -208,7 +178,7 @@ class TabularShapelets(TransformerMixin):
             return self._selectable_features_iterative(X, y)
         else:
             subsequences_index = {}
-            for n_features in tqdm(range(min_n_features, max_n_features)):
+            for n_features in range(min_n_features, max_n_features):
                 subsequences_index[n_features] = list(combinations(list(range(X.shape[1])), n_features))
             return subsequences_index
 
