@@ -108,17 +108,22 @@ class RuleTreeNode:
         Returns:
             set: A set of unique prediction values in this subtree
         """
+        print("Simplifying node:", self.node_id)
         if self.is_leaf():
-            return {self.prediction}
+            return {self.prediction}, [self.prediction_probability]
         else:
-            all_pred = self.node_l._simplify() | self.node_r._simplify()  # | {self.prediction}
+            pred_l, pred_proba_l = self.node_l._simplify()
+            pred_r, pred_proba_r = self.node_r._simplify()
+            all_pred = pred_l | pred_r
+            all_proba = pred_proba_l + pred_proba_r
 
             if len(all_pred) == 1:
                 self.make_leaf()
                 self.prediction = list(all_pred)[0]
-                return {self.prediction}
+                self.prediction_probability = np.mean(np.vstack(all_proba), axis=0)
+                return {self.prediction}, [self.prediction_probability]
             else:
-                return all_pred
+                return all_pred, all_proba
 
     def set_stump(self, stump:RuleTreeBaseStump):
         """
