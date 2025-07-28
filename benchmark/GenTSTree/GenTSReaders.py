@@ -22,26 +22,26 @@ def _reader_fun(dataset_name):
 
     return dataset_name, X_train[:, 0, :], y_train, X_test[:, 0, :], y_test
 
+it = tqdm(univariate)
+for dataset_name in it:
+    it.set_description(f"Preparing: {dataset_name}")
+    try:
+        _, X_train, y_train, X_test, y_test = _reader_fun(dataset_name)
+    except Exception as e:
+        warnings.warn(f'Unable to load {dataset_name}. Is it irregular?')
+        continue
+
+    n_ts = X_train.shape[0] + X_test.shape[0]
+    n_features = max(X_train.shape[1], X_test.shape[1])
+
+    if n_ts < 200 and n_features < 500:
+        small_datasets.append(lambda : _reader_fun(dataset_name))
+    elif n_ts < 200 or n_features < 1000:
+        medium_datasets.append(lambda : _reader_fun(dataset_name))
+    else:
+        big_datasets.append(lambda : _reader_fun(dataset_name))
+
 if __name__ == "__main__":
-    it = tqdm(univariate)
-    for dataset_name in it:
-        it.set_description(f"Preparing: {dataset_name}")
-        try:
-            _, X_train, y_train, X_test, y_test = _reader_fun(dataset_name)
-        except Exception as e:
-            warnings.warn(f'Unable to load {dataset_name}. Is it irregular?')
-            continue
-
-        n_ts = X_train.shape[0] + X_test.shape[0]
-        n_features = max(X_train.shape[1], X_test.shape[1])
-
-        if n_ts < 200 and n_features < 500:
-            small_datasets.append(lambda : _reader_fun(dataset_name))
-        elif n_ts < 200 or n_features < 1000:
-            medium_datasets.append(lambda : _reader_fun(dataset_name))
-        else:
-            big_datasets.append(lambda : _reader_fun(dataset_name))
-
     print(f'len(small_datasets) = {len(small_datasets)}')
     print(f'len(medium_datasets) = {len(medium_datasets)}')
     print(f'len(big_datasets) = {len(big_datasets)}')
