@@ -8,6 +8,7 @@ import pandas as pd
 import psutil
 from tqdm.auto import tqdm
 
+from benchmark.GenTSTree.GenTSBenchmark.GenTSBenchmark_Hyper import get_hyperparameters
 from benchmark.evaluation_utils import evaluate_clf
 
 os.environ['OPENBLAS_NUM_THREADS'] = '32'
