@@ -1,14 +1,34 @@
+import hashlib
 import os
 import pickle
 import time
 import traceback
 from concurrent.futures import ProcessPoolExecutor
+from copy import copy
 
+import numpy as np
 import pandas as pd
 import psutil
+from aeon.classification.convolution_based import Arsenal, HydraClassifier, MultiRocketHydraClassifier, \
+    RocketClassifier, MiniRocketClassifier, MultiRocketClassifier
+from aeon.classification.deep_learning import MLPClassifier, InceptionTimeClassifier
+from aeon.classification.dictionary_based import BOSSEnsemble, MrSEQLClassifier, MrSQMClassifier, MUSE, WEASEL, WEASEL_V2
+from aeon.classification.distance_based import KNeighborsTimeSeriesClassifier, ProximityForest, ProximityTree
+from aeon.classification.feature_based import Catch22Classifier
+from aeon.classification.hybrid import HIVECOTEV1, HIVECOTEV2
+from aeon.classification.interval_based import CanonicalIntervalForestClassifier, DrCIFClassifier, \
+    IntervalForestClassifier
+from aeon.transformations.collection.dictionary_based import BORF
+from keras.src.applications.resnet import ResNet
+from sklearn.linear_model import RidgeClassifier
+from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from tqdm.auto import tqdm
 
-from benchmark.GenTSTree.GenTSBenchmark.GenTSBenchmark_Hyper import get_hyperparameters
+from RuleTree import RuleTreeClassifier
+from RuleTree.stumps.classification import DecisionTreeStumpClassifier, ShapeletTreeStumpClassifier
+from RuleTree.utils.data_utils import preprocessing
+from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
+from benchmark.GenTSTree.GenTSBenchmark.GenTSBenchmark_Hyper import get_hyperparameters, n_jobs
 from benchmark.evaluation_utils import evaluate_clf
 
 os.environ['OPENBLAS_NUM_THREADS'] = '32'
@@ -19,6 +39,82 @@ os.environ["NUMEXPR_NUM_THREADS"] = '32'
 os.environ["VECLIB_MAXIMUM_THREADS"] = '32'
 
 from benchmark.GenTSTree.GenTSReaders import small_datasets, medium_datasets, big_datasets
+
+scalers = {
+    "none": None,
+}
+
+
+def _get_model(method, hyper_dict):
+    hyper_dict = copy(hyper_dict)
+
+    preprocessing = None
+    if method == "RT_shapelet":
+        stump_hyper_dict = {k: v for k, v in hyper_dict.items() if k.startswith('shapelet.')}
+        hyper_dict = {k: v for k, v in hyper_dict.items() if not k.startswith('shapelet.')}
+        stump = ShapeletTreeStumpClassifier(**stump_hyper_dict)
+        model = RuleTreeClassifier(**hyper_dict, base_stumps=[stump])
+    elif method == "pre_RT_shapelet":
+        stump_hyper_dict = {k: v for k, v in hyper_dict.items() if k.startswith('shapelet.')}
+        hyper_dict = {k: v for k, v in hyper_dict.items() if not k.startswith('shapelet.')}
+        preprocessing = Shapelets(**stump_hyper_dict)
+        model = RuleTreeClassifier(**hyper_dict, base_stumps=[DecisionTreeStumpClassifier()])
+    elif method == 'GenTS':
+        raise NotImplementedError("GenTS is not yet implemented")
+    elif method == 'Hydra':
+        model = HydraClassifier(**hyper_dict)
+    elif method == 'MultiRocketHydraClassifier':
+        model = MultiRocketHydraClassifier(**hyper_dict)
+    elif method == 'RocketClassifier':
+        model = RocketClassifier(**hyper_dict)
+    elif method == 'MiniRocketClassifier':
+        model = MiniRocketClassifier(**hyper_dict)
+    elif method == 'MultiRocketClassifier':
+        model = MultiRocketClassifier(**hyper_dict)
+    elif method == 'ResNet':
+        model = ResNet(**hyper_dict)
+    elif method == 'MLPClassifier':
+        model = MLPClassifier(**hyper_dict)
+    elif method == 'InceptionTimeClassifier':
+        model = InceptionTimeClassifier(**hyper_dict)
+    elif method == 'BOSSEnsemble':
+        model = BOSSEnsemble(**hyper_dict)
+    elif method == 'MrSEQLClassifier':
+        model = MrSEQLClassifier(**hyper_dict)
+    elif method == 'MrSQMClassifier':
+        model = MrSQMClassifier(**hyper_dict)
+    elif method == 'MUSE':
+        model = MUSE(**hyper_dict)
+    elif method == 'WEASEL':
+        model = WEASEL(**hyper_dict)
+    elif method == 'WEASELV2':
+        model = WEASEL_V2(**hyper_dict)
+    elif method == 'KNeighborsTimeSeriesClassifier':
+        model = KNeighborsTimeSeriesClassifier(**hyper_dict)
+    elif method == 'ProximityForest':
+        model = ProximityForest(**hyper_dict)
+    elif method == 'ProximityTree':
+        model = ProximityTree(**hyper_dict)
+    elif method == 'Catch22Classifier_RF':
+        model = Catch22Classifier(**hyper_dict)
+    elif method == 'Catch22Classifier_DT':
+        model = Catch22Classifier(**hyper_dict)
+    elif method == 'HIVECOTEV1':
+        model = HIVECOTEV1(**hyper_dict)
+    elif method == 'HIVECOTEV2':
+        model = HIVECOTEV2(**hyper_dict)
+    elif method == 'CanonicalIntervalForestClassifier':
+        model = CanonicalIntervalForestClassifier(**hyper_dict)
+    elif method == 'DrCIFClassifier':
+        model = DrCIFClassifier(**hyper_dict)
+    elif method == 'IntervalForestClassifier':
+        model = IntervalForestClassifier(**hyper_dict)
+    elif method == 'BORF':
+        model = RidgeClassifier(**hyper_dict['RidgeCV'])
+        del hyper_dict['RidgeCV']
+        preprocessing = BORF(**hyper_dict)
+
+    return model, preprocessing
 
 def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
     hyper_dict = copy(hyper_dict)
@@ -36,7 +132,7 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
     scores |= copy(hyper_stump_dict)
 
     y = df[df.columns[-1]].values
-    X = StandardScaler().fit_transform(df[df.columns[:-1]].values)
+    X = df[df.columns[:-1]].values
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
@@ -47,44 +143,17 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
         hyper_dict = copy(hyper_dict_original)
         X_train_kf, X_val, y_train_kf, y_val = (X_train[train_index], X_train[test_index],
                                                 y_train[train_index], y_train[test_index])
-        if method == "DT":
-            model = DecisionTreeStumpClassifier(**hyper_dict)
-        elif method == "RF":
-            model = RandomForestClassifier(**hyper_dict)
-        elif method == "AB":
-            model = AdaBoostClassifier(**hyper_dict)
-        else:
-            base_stumps = []
-            if 'base_stumps' not in hyper_dict:
-                raise ValueError(f"Base stumps not found in hyper_dict for {method}")
-            for stump in hyper_dict["base_stumps"]:
-                if stump == "PartialPivotTreeStumpClassifier":
-                    base_stumps.append(PartialPivotTreeStumpClassifier(**hyper_stump_dict[stump]))
-                elif stump == "PartialProximityTreeStumpClassifier":
-                     base_stumps.append(PartialProximityTreeStumpClassifier(**hyper_stump_dict[stump]))
-                elif stump == "ObliqueDecisionTreeStumpClassifier":
-                    base_stumps.append(ObliqueDecisionTreeStumpClassifier(**hyper_stump_dict[stump]))
-                elif stump == "ObliquePivotTreeStumpClassifier":
-                    base_stumps.append(ObliquePivotTreeStumpClassifier(**hyper_stump_dict[stump]))
-                elif stump == "PivotTreeStumpClassifier":
-                    base_stumps.append(PivotTreeStumpClassifier(**hyper_stump_dict[stump]))
-                elif stump == "MultiplePivotTreeStumpClassifier":
-                    base_stumps.append(MultiplePivotTreeStumpClassifier(**hyper_stump_dict[stump]))
-                elif stump == "MultipleObliquePivotTreeStumpClassifier":
-                    base_stumps.append(MultipleObliquePivotTreeStumpClassifier(**hyper_stump_dict[stump]))
-                elif stump == "DecisionTreeStumpClassifier":
-                    base_stumps.append(DecisionTreeStumpClassifier(**hyper_stump_dict[stump]))
-                else:
-                    raise ValueError(f"Unknown stump type: {stump}")
-
-            del hyper_dict["base_stumps"]
-            model = RuleTreeClassifier(**hyper_dict, base_stumps=base_stumps)
+        model, preprocessing = _get_model(method, hyper_dict)
 
         start = time.time()
         try:
+            if preprocessing is not None:
+                X_train_kf = preprocessing.fit(X_train).transform(X_train_kf)
+                X_val = preprocessing.transform(X_val)
+                if method == 'BORF':
+                    X_train_kf = np.arcsinh(X_train_kf)
+                    X_val = np.arcsinh(X_val)
             model.fit(X_train_kf, y_train_kf)
-        except UnsupportedError:
-            return pd.DataFrame()
         except Exception as e:
             traceback.print_exc()
             return pd.DataFrame()
@@ -92,27 +161,23 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
 
         y_pred_val = model.predict(X_val)
 
-        dict_res = {f'{k}_val': v for k, v in compute_measures(y_val, y_pred_val, model).items()}
+        dict_res = {f'{k}_val': v for k, v in evaluate_clf(y_val, y_pred_val).items()}
         scores_kv.append(dict_res)
 
     hyper_dict = hyper_dict_original.copy()
 
-    if method == "DT":
-        model = DecisionTreeStumpClassifier(**hyper_dict)
-    elif method == "RF":
-        model = RandomForestClassifier(**hyper_dict)
-    elif method == "AB":
-        model = AdaBoostClassifier(**hyper_dict)
-    else:
-        raise ValueError(f"Unknown method {method}")
-
-        del hyper_dict["base_stumps"]
-        model = RuleTreeClassifier(**hyper_dict, base_stumps=base_stumps)
+    model, preprocessing = _get_model(method, hyper_dict)
 
     try:
         process = psutil.Process(os.getpid())
         before = process.memory_info().rss
         start = time.time()
+        if preprocessing is not None:
+            X_train = preprocessing.fit_transform(X_train)
+            X_test = preprocessing.transform(X_test)
+            if method == 'BORF':
+                X_train = np.arcsinh(X_train)
+                X_test = np.arcsinh(X_test)
         model.fit(X_train, y_train)
         end = time.time()
         after = process.memory_info().rss
@@ -162,7 +227,6 @@ def main():
 
     n_process = int(psutil.cpu_count(logical=True) / n_jobs)+2
     print(n_process)
-    #n_process = 16
 
     processes = []
     dataframes = []
@@ -206,9 +270,6 @@ def main():
                 dataframes.append(res)
             except Exception as e:
                 traceback.print_exc()
-
-        #pd.concat(dataframes, ignore_index=True).to_csv(f"res_tmp/hybrid_benchmark_{dataset_name}.csv", index=False)
-
 
 if __name__ == '__main__':
     main()

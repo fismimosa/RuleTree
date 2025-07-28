@@ -17,37 +17,41 @@ max_depth_trees = [
 window_sizes = [12, 24, 36, 48, .1, .3, .5, 1.0]
 n_estimators = [5, 25, 100, 1000]
 
-shapelet_hyperparameters = { #pyts implementation
-    'window_size': window_sizes + ['auto'],
-    'criterion': ['mutual_info', 'anova'],
-    'window_steps': [1],
-    'remove_similar': [True, False],
-    'random_state': [42],
-    'n_jobs': [n_jobs],
-}
-
-
-hyper_transformations = {
-    'shapelet': shapelet_hyperparameters,
-
-}
-
-
-hyper_models = {
-    'DT': {  # the transformation is done at each stump level
+hyper_models = {} | {
+    'RT_shapelet': {  # the transformation is done at each stump level
         'max_depth': max_depth_trees,
         'prune_useless_leaves': [True],
         'stump_selection': ['best',],
         'random_state': [42],
         'splitter': ['best'],
         'transformation': ['shapelet', 'none'],
+        #Shapelet stuff
+        'shapelet.window_size': window_sizes + ['auto'],
+        'shapelet.criterion': ['mutual_info', 'anova'],
+        'shapelet.window_steps': [1],
+        'shapelet.remove_similar': [True, False],
+        'shapelet.random_state': [42],
+        'shapelet.n_jobs': [n_jobs],
+        'selection': ['random', 'mi_clf'],
+        'distance': ['euclidean'],
+        'mi_n_neighbors': [100]
     },
-    'pre_DT': {  # the transformation step happens before the DT
+    'pre_RT_shapelet': {  # the transformation step happens before the DT
         'max_depth': max_depth_trees,
         'prune_useless_leaves': [True],
         'stump_selection': ['best',],
         'random_state': [42],
         'splitter': ['best'],
+        #Shapelet stuff
+        'shapelet.window_size': window_sizes + ['auto'],
+        'shapelet.criterion': ['mutual_info', 'anova'],
+        'shapelet.window_steps': [1],
+        'shapelet.remove_similar': [True, False],
+        'shapelet.random_state': [42],
+        'shapelet.n_jobs': [n_jobs],
+        'selection': ['random', 'mi_clf'],
+        'distance': ['euclidean'],
+        'mi_n_neighbors': [100]
     },
     'GenTS': {  # gentree with shapelets
         'max_depth': max_depth_trees,
