@@ -229,7 +229,7 @@ class RuleTreeNode:
 
         node = RuleTreeNode(node_id = info_dict['node_id'],
                             prediction = info_dict.get('prediction', np.nan),
-                            prediction_probability = info_dict.get('prediction_probability', [np.nan]),
+                            prediction_probability = info_dict.get('prediction_probability', [np.nan]*info_dict.get('prediction_classes_', 1)),
                             parent = None,
                             classes=info_dict.get('prediction_classes_', np.nan),
                             n_features=info_dict.get('n_features', np.nan), )
