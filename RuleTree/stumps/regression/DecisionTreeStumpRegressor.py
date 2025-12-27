@@ -2,11 +2,11 @@ import copy
 import warnings
 
 import numpy as np
-import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 from RuleTree.utils.data_utils import get_info_gain, _get_info_gain
@@ -28,7 +28,6 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         Notable parameters include:
         - criterion: Function to measure the quality of a split ("squared_error", 
           "friedman_mse", "absolute_error", "poisson", default="squared_error")
-        - max_depth: Maximum depth of the tree (default=1 for stumps)
     """
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
@@ -68,12 +67,9 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         rule = self.get_rule(float_precision=None)
 
         rule["stump_type"] = self.__class__.__name__
-        rule["samples"] = self.tree_.n_node_samples[0]
-        rule["impurity"] = self.tree_.impurity[0]
+        rule["impurity"] = self.impurity
 
-        rule["args"] = {
-                           "unique_val_enum": self.unique_val_enum,
-                       } | self.kwargs
+        rule["args"] |= self.kwargs
 
         rule["split"] = {
             "args": {}
@@ -81,9 +77,13 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
         return rule
 
-    def dict_to_node(self, node_dict, X=None):
+    @classmethod
+    def dict_to_node(cls, node_dict, X=None):
         """
-        Create a stump from its dictionary representation.
+         Deserializes a dictionary into a DecisionTreeStumpRegressor node.
+
+        This is essentially the inverse operation of node_to_dict(), recreating
+        a stump instance from a serialized dictionary representation.
         
         Parameters
         ----------
@@ -96,22 +96,25 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         -------
         None
         """
-        assert 'feature_idx' in node_dict
-        assert 'threshold' in node_dict
-        assert 'is_categorical' in node_dict
+        self = cls()
 
-        self.feature_original = np.zeros(3)
-        self.threshold_original = np.zeros(3)
+        if 'feature_idx' in node_dict:
+            self.feature_original = np.ones(3, dtype=int) * -2
+            self.feature_original[0] = node_dict.get('feature_idx', -2)
 
-        self.feature_original[0] = node_dict["feature_idx"]
-        self.threshold_original[0] = node_dict["threshold"]
-        self.is_categorical = node_dict["is_categorical"]
+        self.threshold_original = None
+        if 'threshold' in node_dict:
+            self.threshold_original = np.ones(3) * -2
+            self.threshold_original[0] = node_dict.get('threshold', -2)
 
-        args = copy.deepcopy(node_dict.get("args", dict()))
-        self.unique_val_enum = args.pop("unique_val_enum", np.nan)
+        self.is_categorical = node_dict.get('is_categorical', None)
+
+        args = copy.deepcopy(node_dict.get("args", {}))
         self.kwargs = args
 
         self.__set_impurity_fun(args["criterion"])
+
+        return self
 
     def __init__(self, **kwargs):
         """
@@ -124,12 +127,10 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             Notable parameters include:
             - criterion: Function to measure the quality of a split ("squared_error", 
               "friedman_mse", "absolute_error", "poisson", default="squared_error")
-            - max_depth: Maximum depth of the tree (default=1 for stumps)
         """
         super().__init__(**kwargs)
         self.is_categorical = False
         self.kwargs = kwargs
-        self.unique_val_enum = None
         self.threshold_original = None
         self.feature_original = None
 
@@ -158,7 +159,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         if imp == "squared_error":
             return mean_squared_error
         elif imp == "friedman_mse":
-            raise Exception("not implemented") # TODO: implement
+            raise NotImplementedError("not implemented") # TODO: implement
         elif imp == "absolute_error":
             return mean_absolute_error
         elif imp == "poisson":
@@ -245,6 +246,21 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             self.threshold_original = self.tree_.threshold
             self.n_node_samples = self.tree_.n_node_samples
             best_info_gain = get_info_gain(self)
+
+            #no split
+            if len(self.feature_original) == 1:
+                raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
+
+            curr_pred = np.ones((len(y),)) * np.mean(y)
+            idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
+            idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
+            l_pred = np.ones((len(y[idx_l]),)) * np.mean(y[idx_l])
+            r_pred = np.ones((len(y[idx_r]),)) * np.mean(y[idx_r])
+            self.impurity = [
+                self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+                self._impurity_fun(self.impurity_fun, y_true=y[idx_l], y_pred=l_pred),
+                self._impurity_fun(self.impurity_fun, y_true=y[idx_r], y_pred=r_pred),
+            ]
             
         self._fit_cat(X, y, best_info_gain)
 
@@ -263,9 +279,6 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         best_info_gain : float
             Current best information gain from numerical features.
         """
-        if self.max_depth > 1:
-            raise Exception("not implemented") # TODO: implement?
-
         len_x = len(X)
 
         if len(self.categorical) > 0 and best_info_gain != float('inf'):
@@ -290,8 +303,12 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                         best_info_gain = info_gain
                         self.feature_original = [i, -2, -2]
                         self.threshold_original = np.array([value, -2, -2])
-                        self.unique_val_enum = np.unique(X[:, i])
                         self.is_categorical = True
+                        self.impurity = [
+                            self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+                            self._impurity_fun(self.impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
+                            self._impurity_fun(self.impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
+                        ]
 
 
     def apply(self, X, check_input=False):
@@ -325,3 +342,18 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             y_pred[X_feature == self.threshold_original[0]] = 1
 
             return y_pred
+
+    def update_statistics(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        X = X[idx]
+        y = y[idx]
+
+        curr_pred = np.ones((len(y),)) * np.mean(y)
+        idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
+        idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
+        l_pred = np.ones((len(y[idx_l]),)) * np.mean(y[idx_l])
+        r_pred = np.ones((len(y[idx_r]),)) * np.mean(y[idx_r])
+        self.impurity = [
+            self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+            self._impurity_fun(self.impurity_fun, y_true=y[idx_l], y_pred=l_pred),
+            self._impurity_fun(self.impurity_fun, y_true=y[idx_r], y_pred=r_pred),
+        ]

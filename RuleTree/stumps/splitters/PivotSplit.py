@@ -16,12 +16,12 @@ from RuleTree.utils.data_utils import get_info_gain
 class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     """
     PivotSplit is a split strategy that selects pivot instances to represent classes.
-    
+
     This class identifies both descriptive (most central) and discriminative (most separating)
     instances for each class. These pivot instances are then used as candidates for determining
     the split. Descriptive instances represent the "typical" members of a class, while
     discriminative instances help to distinguish between different classes.
-    
+
     Parameters
     ----------
     ml_task : str
@@ -46,6 +46,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     is_pivotal : bool
         Flag indicating if the split is based on pivot instances.
     """
+
     def __init__(
             self,
 
@@ -63,11 +64,11 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         self.candidates_names = None
         self.is_pivotal = False
 
-    #@abstractmethod
+    # @abstractmethod
     def get_base_model(self):
         """
         Returns the appropriate base model based on the machine learning task.
-        
+
         The model is used for finding discriminative split points between classes.
 
         Returns
@@ -91,7 +92,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     def compute_descriptive(self, sub_matrix):
         """
         Computes the descriptive (most central) instance for a class.
-        
+
         This method identifies the medoid of a class, which is the instance
         with the minimum sum of distances to all other instances in the same class.
 
@@ -99,7 +100,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         ----------
         sub_matrix : array-like
             Distance matrix for instances of a particular class.
-            
+
         Returns
         -------
         int
@@ -112,7 +113,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     def compute_discriminative(self, sub_matrix, y, sample_weight=None, check_input=True):
         """
         Computes the discriminative instance for a class.
-        
+
         This method identifies the instance that best separates different classes
         by training a decision tree and extracting the feature used at the root node.
 
@@ -126,7 +127,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             Sample weights for weighted learning.
         check_input : bool, default=True
             Whether to validate input.
-            
+
         Returns
         -------
         int
@@ -141,7 +142,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             sample_weight=None, check_input=True):
         """
         Fits the PivotSplit by finding descriptive and discriminative instances.
-        
+
         For each class, this method identifies both descriptive instances (those that
         best represent the class) and discriminative instances (those that best separate
         the classes). These instances are stored as candidates for determining splits.
@@ -162,7 +163,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             Sample weights.
         check_input : bool, default=True
             Whether to validate input.
-            
+
         Returns
         -------
         self
@@ -180,24 +181,22 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             local_idx_label = local_idx[idx_label]
             sub_matrix_label = sub_matrix[:, idx_label]
 
-            disc_id = self.compute_discriminative(sub_matrix_label, y, 
+            disc_id = self.compute_discriminative(sub_matrix_label, y,
                                                   sample_weight=sample_weight,
                                                   check_input=check_input)
 
             desc_id = self.compute_descriptive(sub_matrix_label[idx_label])
             desc_idx = local_idx_label[desc_id]
-            
-           
-            if disc_id == -2: #if no split performed, do not add anything
+
+            if disc_id == -2:  # if no split performed, do not add anything
                 local_discriminatives += []
-            else:   
+            else:
                 disc_idx = local_idx_label[disc_id]
                 if isinstance(disc_idx, (list, np.ndarray)):
                     local_discriminatives += disc_idx.flatten().tolist() if isinstance(disc_idx, np.ndarray) else list(
                         disc_idx)
                 else:
                     local_discriminatives += [disc_idx]
-
 
             local_descriptives += [desc_idx]
 
@@ -213,7 +212,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     def transform(self, X, distance_measure):
         """
         Transforms input data using the selected pivot instances.
-        
+
         Computes distances from each input instance to each pivot instance,
         creating a new feature representation based on these distances.
 
@@ -223,7 +222,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             Input feature matrix.
         distance_measure : str or callable
             Distance measure to use (e.g., 'euclidean', 'cosine').
-            
+
         Returns
         -------
         array-like of shape (n_samples, n_candidates)
@@ -234,7 +233,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     def get_candidates_names(self):
         """
         Returns the names/indices of candidate instances.
-        
+
         These are the instances selected as potential split points,
         including both descriptive and discriminative instances.
 
@@ -248,7 +247,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     def get_descriptive_names(self):
         """
         Returns the names/indices of descriptive instances.
-        
+
         These are the instances that best represent each class (the medoids).
 
         Returns
@@ -261,7 +260,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
     def get_discriminative_names(self):
         """
         Returns the names/indices of discriminative instances.
-        
+
         These are the instances that best separate different classes.
 
         Returns

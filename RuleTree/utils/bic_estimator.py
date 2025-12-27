@@ -30,7 +30,7 @@ def estimate_gaussian_covariances(X, nk, means, resp, reg_covar=1e-06):
     return covariances
 
 
-def estimate_parameters(X, resp, reg_covar=1e-06):
+def estimate_parameters(X, resp):
     nk = resp.sum(axis=0) + 10 * np.finfo(resp.dtype).eps
     means = np.dot(resp.T, X) / nk[:, np.newaxis]
     covariances = estimate_gaussian_covariances(X, nk, means, resp)
@@ -165,7 +165,7 @@ def score(X, n_components, labels):
     resp = np.zeros((n_samples, n_components))
     resp[np.arange(n_samples), labels] = 1
 
-    weights, means, covariances = estimate_parameters(X, resp, reg_covar=1e-06)
+    weights, means, covariances = estimate_parameters(X, resp)
     weights /= n_samples
 
     precisions_chol = compute_precision_cholesky(covariances)

@@ -1,3 +1,5 @@
+from sklearn.preprocessing import StandardScaler
+
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.splitters.PivotSplit import PivotSplit
@@ -36,10 +38,10 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         """
         super().__init__(**kwargs)
         self.pivot_split = PivotSplit(ml_task=MODEL_TYPE_CLF, **kwargs)
-        self.distance_measure = None
-        self.split_instance = None
+        self.distance_measure = kwargs.get('distance_measure', 'euclidean')
+        self.X_split_instance = None
 
-    def fit(self, X, y, distance_matrix, distance_measure, idx, sample_weight=None, check_input=True):
+    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
         """
         Fit the classifier to the training data.
 
@@ -55,10 +57,6 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
             Feature matrix of shape (n_samples, n_features).
         y : numpy.ndarray
             Target labels of shape (n_samples,).
-        distance_matrix : numpy.ndarray
-            Precomputed distance matrix between samples.
-        distance_measure : str
-            Distance metric to use (e.g., 'euclidean', 'manhattan', 'cosine').
         idx : int
             Index of the pivot instance in the dataset.
         sample_weight : numpy.ndarray, optional
@@ -71,22 +69,33 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         self : PivotTreeStumpClassifier
             Fitted classifier instance.
         """
+        X = X[idx]
+        y = y[idx]
         self.feature_analysis(X, y)
         self.num_pre_transformed = self.numerical
         self.cat_pre_transformed = self.categorical
-       
+
+        if context is None:
+            raise ValueError("Context must be provided for PivotTreeStumpClassifier.")
+        if not hasattr(context, "PivotTreeStumpClassifier_scaler"):
+            context.PivotTreeStumpClassifier_scaler = StandardScaler().fit(X)
+            context.distance_matrix = pairwise_distances(X[:, self.numerical], metric=self.distance_measure)
+
+        self.scaler = context.PivotTreeStumpClassifier_scaler
+        distance_matrix = context.distance_matrix[np.ix_(idx, idx)]
+        X_scaled = context.PivotTreeStumpClassifier_scaler.transform(X[:, self.numerical])
+
+
         if len(self.numerical) > 0:
-            self.pivot_split.fit(X[:, self.numerical], y, distance_matrix, distance_measure, idx,
-                                 sample_weight=sample_weight, check_input=check_input)
-            X_transform = self.pivot_split.transform(X[:, self.numerical], distance_measure)
+            self.pivot_split.fit(X_scaled, y, distance_matrix, self.distance_measure, idx, sample_weight=sample_weight,
+                                 check_input=check_input)
+            X_transform = self.pivot_split.transform(X_scaled, self.distance_measure)
             candidate_names = self.pivot_split.get_candidates_names()
             super().fit(X_transform, y, sample_weight=sample_weight, check_input=check_input)
 
             self.feature_original = [f'{candidate_names[self.tree_.feature[0]]}', -2, -2]
             self.threshold_original = self.tree_.threshold
-            self.is_pivotal = True
-            
-            self.distance_measure = distance_measure
+
             self.X_split_instance = self.pivot_split.X_candidates[self.tree_.feature[0]]
 
         return self
@@ -108,19 +117,16 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         numpy.ndarray
             Predicted class labels for each sample in X.
         """
-        X_transformed = pairwise_distances(X[:, self.num_pre_transformed], 
+        X_transformed = pairwise_distances(self.scaler.transform(X[:, self.num_pre_transformed]),
                                            self.X_split_instance.reshape(1, -1),
                                            metric=self.distance_measure)
-        
+
         y_pred = (np.ones(X_transformed.shape[0]) * 2)
-        X_feature = X_transformed[:,  0]
+        X_feature = X_transformed[:, 0]
         y_pred[X_feature <= self.threshold_original[0]] = 1
-        
+
         return y_pred
-        
-        #return super().apply_sk(X_transformed)
-        
-        
+
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
         Get the rule representation of this classifier.
@@ -144,7 +150,6 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
             A dictionary containing rule information with keys:
             - feature_idx: Feature index in the original feature space
             - threshold: Threshold value for the decision rule
-            - coefficients: Feature coefficients
             - is_categorical: Whether the feature is categorical
             - samples: Number of samples in the node
             - feature_name: Name of the feature
@@ -155,18 +160,19 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
             - not_blob_rule: Negated simplified rule representation
             - not_graphviz_rule: Negated rule representation for Graphviz visualization
         """
+        if self.X_split_instance is None:
+            return {}
+
         rule = {
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],
-            "coefficients" : self.coefficients,
             "is_categorical": self.is_categorical,
-            "samples": self.n_node_samples[0]
         }
 
         feat_name = f"P_{rule['feature_idx']}"
         if columns_names is not None:
-            #feat_names should not be useful for pivot tree
-            #feat_name = columns_names[self.feature_original[0]]
+            # feat_names should not be useful for pivot tree
+            # feat_name = columns_names[self.feature_original[0]]
             feat_name = None
         rule["feature_name"] = feat_name
 
@@ -178,7 +184,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
         if scaler is not None:
             NotImplementedError()
-        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}\t{rule['samples']}"
+        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}"
         rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
         rule["graphviz_rule"] = {
             "label": f"{feat_name} {'<=' if not self.is_categorical else '='} {rounded_value}",
@@ -208,30 +214,32 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         rule = self.get_rule(float_precision=None)
 
         rule["stump_type"] = self.__class__.__module__
-        rule["samples"] = self.n_node_samples[0]
-        rule["impurity"] = self.tree_.impurity[0]
-     
-      
+
+
         rule["args"] = {
-            "is_oblique": self.is_oblique,
-            "is_pivotal": self.is_pivotal,
-            "unique_val_enum": self.unique_val_enum,
-            "coefficients": self.coefficients,
-            "num_pre_transformed" : self.num_pre_transformed,
-            "cat_pre_transformed" : self.cat_pre_transformed,
-            
-            "distance_measure" : self.distance_measure #adding this for PT
-            
-        } | self.kwargs
+                           "distance_measure": self.distance_measure,
+                       } | self.kwargs
+
+        if self.X_split_instance is not None:
+            rule['num_pre_transformed'] = self.num_pre_transformed.tolist()
+            rule['cat_pre_transformed'] = self.cat_pre_transformed.tolist()
+            rule["X_split_instance"] = self.X_split_instance
+
+            rule['scaler'] = {
+                'mean_': self.scaler.mean_.tolist(),
+                'scale_': self.scaler.scale_.tolist(),
+                'var_': self.scaler.var_.tolist(),
+                'n_samples_seen_': self.scaler.n_samples_seen_
+            }
 
         rule["split"] = {
             "args": {}
         }
 
         return rule
-    
+
     @classmethod
-    def dict_to_node(cls, node_dict, X = None):
+    def dict_to_node(cls, node_dict, X=None):
         """
         Create a classifier node from a dictionary representation.
 
@@ -251,29 +259,26 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
             A reconstructed classifier instance.
         """
         self = cls()
-        self.feature_original = np.zeros(3, dtype=int)
-        self.threshold_original = np.zeros(3)
-        self.n_node_samples = np.zeros(3, dtype=int)
+        self.kwargs = copy.deepcopy(node_dict["args"])
 
-        self.feature_original[0] = node_dict["feature_idx"]
-        self.threshold_original[0] = node_dict["threshold"]
-        self.n_node_samples[0] = node_dict["samples"]
-        self.is_categorical = node_dict["is_categorical"]
+        if 'num_pre_transformed' in node_dict: #fitted
+            self.feature_original = np.zeros(3, dtype=int)
+            self.threshold_original = np.zeros(3)
 
-        args = copy.deepcopy(node_dict["args"])
-        self.is_oblique = args.pop("is_oblique")
-        self.is_pivotal = args.pop("is_pivotal")
-        self.unique_val_enum = args.pop("unique_val_enum")
-        self.coefficients = args.pop("coefficients")
-        self.kwargs = args
-        
-        self.distance_measure = args.pop("distance_measure")
-        self.num_pre_transformed = args.pop("num_pre_transformed")
-        self.cat_pre_transformed = args.pop("cat_pre_transformed")
-        
-        #X acts as a reference dataset for the instance id
-        if X is not None:
-            self.X_split_instance = X[int(node_dict["feature_idx"])]
+            self.feature_original[0] = node_dict["feature_idx"]
+            self.threshold_original[0] = node_dict["threshold"]
+
+            self.num_pre_transformed = node_dict["num_pre_transformed"]
+            self.cat_pre_transformed = node_dict["cat_pre_transformed"]
+            self.X_split_instance = np.array(node_dict["X_split_instance"])
+
+            self.distance_measure = self.kwargs.pop("distance_measure")
+
+            self.scaler = StandardScaler()
+            self.scaler.mean_ = np.array(node_dict['scaler']['mean_'])
+            self.scaler.scale_ = np.array(node_dict['scaler']['scale_'])
+            self.scaler.var_ = np.array(node_dict['scaler']['var_'])
+            self.scaler.n_samples_seen_ = node_dict['scaler']['n_samples_seen_']
 
         return self
 

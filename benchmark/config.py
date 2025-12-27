@@ -6,7 +6,7 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from RuleTree import RuleTreeClassifier, RuleTreeRegressor, RuleTreeCluster, RuleForestClassifier, RuleForestRegressor
-from competitors.kmeanstree import KMeansTree
+from benchmark.competitors.kmeanstree import KMeansTree
 
 warnings.filterwarnings("ignore")
 

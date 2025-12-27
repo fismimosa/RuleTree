@@ -34,7 +34,7 @@ def _earth_mover_distance(a:np.ndarray, b_idx:np.ndarray, is_categorical:bool):
         a_binned /= len_a
         b_binned = np.asarray([np.sum(b == x) for x in unique_values])/len_b
     else:
-        bins = KBinsDiscretizer(n_bins=max(3, int(len_a**.5)), strategy='uniform')
+        bins = KBinsDiscretizer(n_bins=max(3, int(len_a**.5)), strategy='uniform', random_state=42)
         a_binned = np.sum(bins.fit_transform(a.reshape(-1, 1)), axis=0)[0]/len_a
         b_binned = np.sum(bins.transform(b.reshape(-1, 1)), axis=0)[0]/len_b
 

@@ -116,7 +116,7 @@ class Shapelets(TransformerMixin):
         return self.distance
 
 
-    def fit(self, X, y=None, **fit_params):
+    def fit(self, X, y=None):
         """
         Fit the Shapelets transformer on training data.
         
@@ -129,9 +129,6 @@ class Shapelets(TransformerMixin):
         y : array-like of shape (n_samples,), default=None
             Target values for supervised learning.
             
-        **fit_params : dict
-            Additional parameters passed to selection methods.
-            
         Returns
         -------
         self : Shapelets
@@ -142,7 +139,9 @@ class Shapelets(TransformerMixin):
         NotImplementedError
             If multivariate time series are provided (n_signals > 1).
         """
-        # X.shape = (n_records, n_signals, n_obs)
+        random.seed(self.random_state)
+        np.random.seed(self.random_state)
+
         if X.shape[1] != 1:
             raise NotImplementedError("Multivariate TS are not supported (yet).")
 
@@ -158,8 +157,6 @@ class Shapelets(TransformerMixin):
             self.shapelets = self.__fit_selection_cluster(candidate_shapelets, X, y)
 
         return self
-
-
 
 
     def __fit_partition(self, X, y):
@@ -278,7 +275,7 @@ class Shapelets(TransformerMixin):
             scores = mutual_info_fun(dist, y,
                                      n_jobs=self.n_jobs,
                                      n_neighbors=min(dist.shape[0], self.mi_n_neighbors),
-                                     discrete_features=False)
+                                     discrete_features=False, random_state=self.random_state)
         if len(candidate_shapelets) == self.n_shapelets:
             return candidate_shapelets
         return candidate_shapelets[np.argpartition(scores, -min(scores.shape[0], self.n_shapelets))\
@@ -317,13 +314,13 @@ class Shapelets(TransformerMixin):
         try:
             from sklearn_extra.cluster import KMedoids
             clu = KMedoids(n_clusters=self.n_shapelets, random_state=self.random_state, metric='precomputed')
-        except Exception as e:
-            raise Exception(f"Please install scikit-learn-extra [{e}]")
+        except ImportError as e:
+            raise ImportError("Please install scikit-learn-extra")
         clu.fit(dist_matrix)
 
         return candidate_shapelets[clu.medoid_indices_]
 
-    def transform(self, X, y=None, **transform_params):
+    def transform(self, X, y=None):
         """
         Transform time series data into shapelet distance features.
         
@@ -337,9 +334,6 @@ class Shapelets(TransformerMixin):
             
         y : array-like of shape (n_samples,), default=None
             Target values (unused in transformation).
-            
-        **transform_params : dict
-            Additional parameters (unused).
             
         Returns
         -------
@@ -400,8 +394,8 @@ if __name__ == '__main__':
     df_train.target = df_train.target.astype(int)
     df_test.target = df_test.target.astype(int)
 
-    X_train = df_train.drop(columns=['target']).values.reshape((-1, 1, 128))
-    X_test = df_test.drop(columns=['target']).values.reshape((-1, 1, 128))
+    X_train = df_train.drop(columns=['target']).to_numpy().reshape((-1, 1, 128))
+    X_test = df_test.drop(columns=['target']).to_numpy().reshape((-1, 1, 128))
     y_train = df_train['target'].values
     y_test = df_test['target'].values
 
@@ -410,7 +404,7 @@ if __name__ == '__main__':
     X_train_transform = st.fit_transform(X_train, y_train)
     X_test_transform = st.transform(X_test)
 
-    rf = RandomForestClassifier(n_estimators=100, n_jobs=-1)
+    rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
     rf.fit(X_train_transform, y_train)
 
     y_pred = rf.predict(X_test_transform)

@@ -26,12 +26,4 @@ class OneHotEncoder(preprocessing.OneHotEncoder):
             data=super().transform(X),
             columns=self.column_names_,
             index=X.index if isinstance(X, pd.DataFrame) else None,
-            #fill_value=0
         )
-
-        """return pd.SparseDataFrame(
-            data=super().transform(X),
-            columns=self.column_names_,
-            index=X.index if isinstance(X, pd.DataFrame) else None,
-            default_fill_value=0
-        )"""

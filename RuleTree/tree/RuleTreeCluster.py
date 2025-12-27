@@ -1,4 +1,5 @@
 import heapq
+from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -69,32 +70,11 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                  min_samples_split=2,
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
-                 base_stumps: RegressorMixin | list = None,
+                 base_stumps: Union[RegressorMixin, list] = None,
                  random_state=None,
-
-                 criterion='squared_error',
-                 splitter='best',
-                 min_samples_leaf=1,
-                 min_weight_fraction_leaf=0.0,
-                 max_features=None,
-                 min_impurity_decrease=0.0,
-                 ccp_alpha=0.0,
-                 monotonic_cst=None
-                 ):
+                 distance_measure=None):
         if base_stumps is None:
-            base_stumps = DecisionTreeStumpRegressor(
-                max_depth=1,
-                criterion=criterion,
-                splitter=splitter,
-                min_samples_split=min_samples_split,
-                min_samples_leaf=min_samples_leaf,
-                min_weight_fraction_leaf=min_weight_fraction_leaf,
-                max_features=max_features,
-                random_state=random_state,
-                min_impurity_decrease=min_impurity_decrease,
-                ccp_alpha=ccp_alpha,
-                monotonic_cst=monotonic_cst
-            )
+            base_stumps = DecisionTreeStumpRegressor(max_depth=1)
 
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
@@ -102,22 +82,15 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                          prune_useless_leaves=prune_useless_leaves,
                          base_stumps=base_stumps,
                          stump_selection='random',
-                         random_state=random_state)
+                         random_state=random_state,
+                         distance_measure=distance_measure)
 
         self.n_components = n_components
         self.clus_impurity = clus_impurity
         self.bic_eps = bic_eps
-        self.criterion = criterion
-        self.splitter = splitter
-        self.min_samples_leaf = min_samples_leaf
-        self.min_weight_fraction_leaf = min_weight_fraction_leaf
-        self.max_features = max_features
-        self.min_impurity_decrease = min_impurity_decrease
-        self.ccp_alpha = ccp_alpha
-        self.monotonic_cst = monotonic_cst
 
         if self.clus_impurity not in ['bic', 'r2']:
-            raise Exception('Unknown clustering impurity measure %s' % self.clus_impurity)
+            raise ValueError('Unknown clustering impurity measure %s' % self.clus_impurity)
 
     def is_split_useless(self, X, clf: tree, idx: np.ndarray):
         """
@@ -147,6 +120,33 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         bic_children = bic(X[idx], (np.array(labels) - 1).tolist())
 
         return bic_parent < bic_children - self.bic_eps * np.abs(bic_parent)
+
+    def fit_predict(self, X, y=None, **kwargs):
+        """
+        Perform clustering on `X` and returns cluster labels.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Input data.
+
+        y : Ignored
+            Not used, present for API consistency by convention.
+
+        **kwargs : dict
+            Arguments to be passed to ``fit``.
+
+            .. versionadded:: 1.4
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,), dtype=np.int64
+            Cluster labels.
+        """
+        # non-optimized default implementation; override when a better
+        # method is possible for a given clustering algorithm
+        self.fit(X, **kwargs)
+        return self.predict(X)
 
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
@@ -232,13 +232,19 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                 best_clf = clf
 
         return best_clf
-        
+
+    def fit(self, X: np.array, y: np.array = None, **kwargs):
+        super().fit(X, y, **kwargs)
+        self._post_fit_fix()
+        return self
+
+
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """
         Compute the medoids for clusters.
-        
+
         This is a placeholder method for computing cluster medoids.
-        
+
         Parameters
         ----------
         X : ndarray of shape (n_samples, n_features)
@@ -275,6 +281,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             prediction=node_id,
             prediction_probability=-1,
             classes=np.array(['NA']),
+            n_features=self.n_features,
             parent=None,
             stump=None,
             node_l=None,
@@ -285,12 +292,13 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
     def _post_fit_fix(self):
         """
         Perform post-fitting operations.
-        
+
         Converts string labels to integers for more efficient processing.
         """
         possible_labels, inner_nodes = self.root.get_possible_outputs()
-        all_outputs = list(possible_labels) + list(inner_nodes)
-        if type(next(iter(all_outputs))) is str and not hasattr(self, 'label_encoder'):
+        all_outputs = np.array(list(possible_labels) + list(inner_nodes))
+        if np.issubdtype(all_outputs.dtype, np.object_) and not hasattr(self, 'label_encoder'):
+            all_outputs = sorted(all_outputs, key=lambda x: (len(x), x))
             self.label_encoder = {k: all_outputs.index(k) for k in set(all_outputs)}
             self.__labels_obj_to_int(self.root)
 
@@ -371,7 +379,6 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
         
         For classification, no additional post-processing is needed.
         """
-        return
 
     def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
         """
@@ -401,7 +408,7 @@ class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
     
     See RuleTreeCluster for the full list of parameters.
     """
-    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Prepare a new regression node in the tree.
         
@@ -422,28 +429,8 @@ class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
         return RuleTreeRegressor.prepare_node(self, y, idx, node_id)
 
     def _post_fit_fix(self):
-        """
-        Perform post-fitting operations for regression.
-        
-        For regression, no additional post-processing is needed.
-        """
-        return
-
-    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
-        """
-        Predict regression value for X using the trained regression tree.
-        
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features)
-            Input data.
-        current_node : RuleTreeNode
-            Current node in the tree traversal.
-            
-        Returns
-        -------
-        ndarray
-            Predicted continuous values.
-        """
-        return RuleTreeRegressor._predict(self, X, current_node)
-
+        possible_labels, inner_nodes = self.root.get_possible_outputs()
+        all_outputs = list(possible_labels) + list(inner_nodes)
+        if type(next(iter(all_outputs))) is str and not hasattr(self, 'label_encoder'):
+            self.label_encoder = {k: all_outputs.index(k) for k in set(all_outputs)}
+            self.__labels_obj_to_int(self.root)

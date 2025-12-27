@@ -1,6 +1,8 @@
 import copy
 import random
 import warnings
+from typing import Optional
+
 import numpy as np
 import psutil
 import tempfile312
@@ -79,6 +81,17 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         super().__init__(**kwargs)
 
+        self.st = Shapelets(n_shapelets=self.n_shapelets,
+                            n_shapelets_for_selection=self.n_shapelets_for_selection,
+                            n_ts_for_selection_per_class=self.n_ts_for_selection_per_class,
+                            sliding_window=self.sliding_window,
+                            selection=self.selection,
+                            distance=self.distance,
+                            mi_n_neighbors=self.mi_n_neighbors,
+                            random_state=random_state,
+                            n_jobs=self.n_jobs
+                            )
+
         self.kwargs |= {
             "n_shapelets": n_shapelets,
             "n_shapelets_for_selection": n_shapelets_for_selection,
@@ -115,17 +128,6 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         if sample_weight is not None:
             raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")
 
-        self.st = Shapelets(n_shapelets=self.n_shapelets,
-                            n_shapelets_for_selection=self.n_shapelets_for_selection,
-                            n_ts_for_selection_per_class=self.n_ts_for_selection_per_class,
-                            sliding_window=self.sliding_window,
-                            selection=self.selection,
-                            distance=self.distance,
-                            mi_n_neighbors=self.mi_n_neighbors,
-                            random_state=random.randint(0, 2**32-1),
-                            n_jobs=self.n_jobs
-                            )
-
         return super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
 
     def apply(self, X, check_input=False):
@@ -153,7 +155,7 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         """
         return data_type in [DATA_TYPE_TS]
 
-    def get_rule(self, columns_names=None, scaler=None, float_precision: int | None = 3):
+    def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """
         Generate a rule representation of the tree stump.
 
@@ -200,34 +202,22 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
             n_jobs=node_dict["n_jobs"]
         )
 
-        self.st = Shapelets(
-            n_shapelets=node_dict["n_shapelets"],
-            n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],
-            n_ts_for_selection_per_class=node_dict["n_ts_for_selection_per_class"],
-            sliding_window=node_dict["sliding_window"],
-            selection=node_dict["selection"],
-            distance=node_dict["distance"],
-            mi_n_neighbors=node_dict["mi_n_neighbors"],
-            random_state=node_dict["random_state"],
-            n_jobs=node_dict["n_jobs"]
-        )
+        self.st.shapelets = np.array(node_dict.get("shapelets", []))
 
-        self.st.shapelets = np.array(node_dict["shapelets"])
+        self.feature_original = None
+        if 'feature_idx' in node_dict:
+            self.feature_original = np.ones(3, dtype=int) * -2
+            self.feature_original[0] = node_dict.get('feature_idx', -2)
 
-        self.feature_original = np.zeros(3, dtype=int)
-        self.threshold_original = np.zeros(3)
-        self.n_node_samples = np.zeros(3, dtype=int)
-
-        self.feature_original[0] = node_dict["feature_idx"]
-        self.threshold_original[0] = node_dict["threshold"]
-        self.n_node_samples[0] = node_dict["samples"]
-        self.is_categorical = node_dict["is_categorical"]
+        self.threshold_original = None
+        if 'threshold' in node_dict:
+            self.threshold_original = np.ones(3) * -2
+            self.threshold_original[0] = node_dict.get('threshold', -2)
 
         args = copy.deepcopy(node_dict["args"])
-        self.is_oblique = args.pop("is_oblique")
-        self.is_pivotal = args.pop("is_pivotal")
-        self.unique_val_enum = args.pop("unique_val_enum")
-        self.coefficients = args.pop("coefficients")
         self.kwargs = args
 
         return self
+
+    def update_statistics(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+        super().update_statistics(self.st.transform(X), y, idx, context, sample_weight, check_input)

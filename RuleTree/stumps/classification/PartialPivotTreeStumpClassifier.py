@@ -3,6 +3,8 @@ import inspect
 import io
 import random
 import warnings
+from typing import Optional
+
 import numpy as np
 import psutil
 import tempfile312
@@ -16,7 +18,8 @@ from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
 
 
 class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
-    def __init__(self, n_shapelets=psutil.cpu_count(logical=False)*2,
+    def __init__(self,
+                 n_shapelets=psutil.cpu_count(logical=False)*2,
                  n_ts_for_selection=100,  #int, inf
                  n_features_strategy=2,
                  selection='random',  #random, mi_clf, mi_reg, cluster
@@ -43,6 +46,16 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         if selection not in ["random", "cluster", "all"]:
             raise ValueError("'selection' must be 'random', 'all' or 'cluster'")
 
+        self.st = TabularShapelets(n_shapelets=self.n_shapelets,
+                                   n_ts_for_selection=self.n_ts_for_selection,
+                                   n_features_strategy=self.n_features_strategy,
+                                   selection=self.selection,
+                                   distance=self.distance,
+                                   random_state=self.random_state,
+                                   use_combination=self.use_combination,
+                                   n_jobs=self.n_jobs
+                                   )
+
         super().__init__(**kwargs)
 
         self.kwargs |= {
@@ -64,8 +77,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         if idx is None:
             idx = slice(None)
 
-        self.y_lims = [X.min(), X.max()]
-
         X = X[idx]
         y = y[idx]
         if self.scaler is not None:
@@ -73,18 +84,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         random.seed(self.random_state)
         if sample_weight is not None:
-            pass
-             #warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
-
-        self.st = TabularShapelets(n_shapelets=self.n_shapelets,
-                                   n_ts_for_selection=self.n_ts_for_selection,
-                                   n_features_strategy=self.n_features_strategy,
-                                   selection=self.selection,
-                                   distance=self.distance,
-                                   random_state=random.randint(0, 2**32-1),
-                                   use_combination=self.use_combination,
-                                   n_jobs=self.n_jobs
-                                   )
+            warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
 
         super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
         selected_shape = self.tree_.feature[0]
@@ -98,138 +98,78 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
     def apply(self, X, check_input=False):
         if self.scaler is not None:
             X = self.scaler.transform(X)
-        self.y_lims = [min(self.y_lims[0], X.min()), min(self.y_lims[1], X.max())]
 
         return super().apply(self.st.transform(X), check_input=check_input)
 
     def supports(self, data_type):
         return data_type in [DATA_TYPE_TABULAR]
 
-    def get_rule(self, columns_names=None, scaler=None, float_precision: int | None = 3):
+    def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         rule = {
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],
-            "is_categorical": self.is_categorical,
-            "samples": self.n_node_samples[0]
+            "is_categorical": False,
         }
 
-        rule["feature_name"] = f"PartialPivot_{rule['feature_idx']}"
+        if columns_names is None:
+            columns_names = [f"Feat. {i}" for i in range(self.st.shapelets.shape[1])]
 
+        pivot = np.copy(self.st.shapelets[self.feature_original[0]])
         if scaler is not None:
-            raise UnsupportedError(f"Scaler not supported for {self.__class__.__name__}")
+            pivot = scaler.inverse_transform(pivot.reshape(1, -1)).flatten()
+        frac_not_null = 1- np.isnan(pivot).sum() / pivot.shape[0]
+        if frac_not_null <= .50:
+            feature_list = [f'{name}={val}' for name, val in zip(columns_names, pivot) if not np.isnan(val)]
+            str_feat = 'd: ' + (", ".join(feature_list))
+        else:
+            feature_list = [f'{name}={val}' for name, val in zip(columns_names, pivot) if np.isnan(val)]
+            str_feat = f"d all excpet: {', '.join(feature_list)}"
+
+        rule["feature_name"] = f"SP{rule['feature_idx']}({str_feat})"
 
         comparison = "<="
         not_comparison = ">"
         rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
 
-        shape = self.st.shapelets[self.feature_original[0], 0]
-
-        with tempfile312.NamedTemporaryFile(delete_on_close=False,
-                                            delete=False,
-                                            suffix=".png",
-                                            mode="wb") as temp_file:
-            plt.figure(figsize=(2, 1))
-            plt.plot([i for i in range(shape.shape[0])], shape)
-            plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-            plt.ylim(*self.y_lims)
-            plt.xlim(0, shape.shape[0])
-            plt.gca().tick_params(axis='both', which='both', length=2, labelsize=6)
-            plt.gca().spines['right'].set_color('none')
-            plt.gca().spines['top'].set_color('none')
-            #plt.gca().spines['bottom'].set_position('zero')
-            plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
-            plt.close()
-
-        rule["textual_rule"] = f"{self.distance}(PP, shp) {comparison} {rounded_value}\t{rule['samples']}"
-        rule["blob_rule"] = f"{self.distance}(PP, shp) {comparison} {rounded_value}"
+        rule["textual_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}"
+        rule["blob_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}"
         rule["graphviz_rule"] = {
-            "image": f'{temp_file.name}',
-            "imagescale": "true",
-            "imagepos": "bc",
-            "label": f"{self.distance}(PP, shp) <= {rounded_value}",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
+            "label": f"{rule['feature_name']} {comparison} {rounded_value}",
         }
 
-        rule["not_textual_rule"] = f"{self.distance}(PP, shp) {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{self.distance}(PP, shp) {not_comparison} {rounded_value}"
+        rule["not_textual_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
+        rule["not_blob_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
         rule["not_graphviz_rule"] = {
-            "image": f'{temp_file.name}',
-            "imagescale": "true",
-            "label": f"{self.distance}(PP, shp) {not_comparison} {rounded_value}",
-            "imagepos": "bc",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
+            "label": f"{rule['feature_name']} {not_comparison} {rounded_value}"
         }
 
         return rule
 
     def node_to_dict(self):
-        rule = super().node_to_dict() | {
-            'stump_type': self.__class__.__module__,
-            "feature_idx": self.feature_original[0],
-            "threshold": self.threshold_original[0],
-            "is_categorical": self.is_categorical,
-            "samples": self.n_node_samples[0]
-        }
+        rule = super().node_to_dict()
+        if self.feature_original is not None:
+            rule |= {
+                'stump_type': self.__class__.__module__,
+                "feature_idx": self.feature_original[0],
+                "threshold": self.threshold_original[0],
+                "is_categorical": False,
+            }
 
-        rule["feature_name"] = f"PartialPivot_{rule['feature_idx']}"
+            rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
 
-        comparison = "<="
-        not_comparison = ">"
-        rounded_value = rule["threshold"]
-
-        rule["textual_rule"] = f"{self.distance}(PP, shp) {comparison} {rounded_value}\t{rule['samples']}"
-        rule["blob_rule"] = f"{self.distance}(PP, shp) {comparison} {rounded_value}"
-        rule["graphviz_rule"] = {
-            "image": f'None',
-            "imagescale": "true",
-            "imagepos": "bc",
-            "label": f"{self.distance}(PP, shp) {comparison} {rounded_value}",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
-        }
-
-        rule["not_textual_rule"] = f"{self.distance}(PP, shp) {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{self.distance}(PP, shp) {not_comparison} {rounded_value}"
-        rule["not_graphviz_rule"] = {
-            "image": f'{None}',
-            "imagescale": "true",
-            "label": f"{self.distance}(PP, shp) {not_comparison} {rounded_value}",
-            "imagepos": "bc",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
-        }
+            rule |= self.get_rule()
 
         # shapelet transform stuff
-        rule["shapelets"] = self.st.shapelets.tolist()
+            rule["shapelets"] = self.st.shapelets.tolist()
+
         rule["n_shapelets"] = self.st.n_shapelets
-        rule["n_shapelets_for_selection"] = self.st.n_shapelets_for_selection
-        rule["n_ts_for_selection_per_class"] = self.st.n_ts_for_selection
-        rule["min_n_features"] = self.st.min_n_features
-        rule["max_n_features"] = self.st.max_n_features
+        rule["n_ts_for_selection"] = self.st.n_ts_for_selection
+        rule["n_features_strategy"] = self.st.n_features_strategy
         rule["selection"] = self.st.selection
         rule["distance"] = self.st.distance
-        rule["mi_n_neighbors"] = self.st.mi_n_neighbors
         rule["random_state"] = self.st.random_state
+        rule["use_combination"] = self.st.use_combination
         rule["n_jobs"] = self.st.n_jobs
-        rule["y_lims"] = self.y_lims
 
         return rule
 
@@ -237,47 +177,26 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
     def dict_to_node(cls, node_dict, X=None):
         self = cls(
             n_shapelets=node_dict["n_shapelets"],
-            n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],
-            n_ts_for_selection=node_dict["n_ts_for_selection_per_class"],
-            sliding_window=node_dict["sliding_window"],
+            n_ts_for_selection=node_dict["n_ts_for_selection"],
+            n_features_strategy=node_dict["n_features_strategy"],
             selection=node_dict["selection"],
             distance=node_dict["distance"],
-            mi_n_neighbors=node_dict["mi_n_neighbors"],
+            scaler=node_dict.get("scaler", None),
+            use_combination=node_dict["use_combination"],
             random_state=node_dict["random_state"],
-            n_jobs=node_dict["n_jobs"]
+            n_jobs=node_dict["n_jobs"],
         )
 
-        self.st = TabularShapelets(
-            n_shapelets=node_dict["n_shapelets"],
-            n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],
-            n_ts_for_selection=node_dict["n_ts_for_selection_per_class"],
-            min_n_features=node_dict["min_n_features"],
-            max_n_features=node_dict["max_n_features"],
-            selection=node_dict["selection"],
-            distance=node_dict["distance"],
-            mi_n_neighbors=node_dict["mi_n_neighbors"],
-            random_state=node_dict["random_state"],
-            n_jobs=node_dict["n_jobs"]
-        )
+        if 'shapelets' in node_dict:
+            self.st.shapelets = np.array(node_dict["shapelets"])
 
-        self.st.shapelets = np.array(node_dict["shapelets"])
+            self.feature_original = np.zeros(3, dtype=int)
+            self.threshold_original = np.zeros(3)
+            self.n_node_samples = np.zeros(3, dtype=int)
 
-        self.feature_original = np.zeros(3, dtype=int)
-        self.threshold_original = np.zeros(3)
-        self.n_node_samples = np.zeros(3, dtype=int)
+            self.feature_original[0] = node_dict["feature_idx"]
+            self.threshold_original[0] = node_dict["threshold"]
 
-        self.feature_original[0] = node_dict["feature_idx"]
-        self.threshold_original[0] = node_dict["threshold"]
-        self.n_node_samples[0] = node_dict["samples"]
-        self.is_categorical = node_dict["is_categorical"]
-
-        self.y_lims = node_dict["y_lims"]
-
-        args = copy.deepcopy(node_dict["args"])
-        self.is_oblique = args.pop("is_oblique")
-        self.is_pivotal = args.pop("is_pivotal")
-        self.unique_val_enum = args.pop("unique_val_enum")
-        self.coefficients = args.pop("coefficients")
-        self.kwargs = args
+        self.kwargs = copy.deepcopy(node_dict["args"])
 
         return self

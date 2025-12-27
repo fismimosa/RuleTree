@@ -96,7 +96,7 @@ class TabularShapelets(TransformerMixin):
         random.seed(self.random_state)
 
         n_ts_for_selection = self.n_ts_for_selection
-        if type(n_ts_for_selection) == float:
+        if isinstance(n_ts_for_selection, float):
             n_ts_for_selection = max(1, int(X.shape[0] * min(1, n_ts_for_selection)))
 
         sub_idx = np.random.choice(X.shape[0], min(n_ts_for_selection, X.shape[0]), replace=False)
@@ -105,11 +105,11 @@ class TabularShapelets(TransformerMixin):
 
         self.subsequences_index = self._selectable_features(X_sub, y_sub)
         if self.selection == 'random':
-            self.shapelets = self._candidate_pivots_random(X_sub, y_sub, self.subsequences_index)
+            self.shapelets = self._candidate_pivots_random(X_sub, self.subsequences_index)
         elif self.selection == 'all':
-            self.shapelets = self._candidate_pivots_all(X_sub, y_sub, self.subsequences_index)
+            self.shapelets = self._candidate_pivots_all(X_sub, self.subsequences_index)
         elif self.selection == 'cluster':
-            self.shapelets = self._candidate_pivots_cluster(X_sub, y_sub, self.subsequences_index)
+            self.shapelets = self._candidate_pivots_cluster(X_sub, self.subsequences_index)
 
         return self
 
@@ -129,7 +129,7 @@ class TabularShapelets(TransformerMixin):
                 feature_importances_[sorted_feature_importances_idx])
             best_features_idx = sorted_feature_importances_idx[:knee_feature_idx + 1]
 
-        subsequences_index = dict()
+        subsequences_index = {}
         if self.use_combination:
             for n_features in range(1, len(best_features_idx)+1):
                 subsequences_index[n_features] = list(combinations(best_features_idx, n_features))
@@ -137,47 +137,19 @@ class TabularShapelets(TransformerMixin):
             subsequences_index[len(best_features_idx)] = [best_features_idx]
         return subsequences_index
 
-    def _old_selectable_features_smart(self, X, y):
-        subsequences_index = dict()
-        for n_features in tqdm(range(1, X.shape[1]+1)):
-            subsequences_index[n_features] = list(combinations([i for i in range(X.shape[1])], n_features))
+    def _selectable_features_iterative(self, X, y):
+        min_n_features, max_n_features = self._compute_n_features(X)
 
-        model = RandomForestClassifier(n_estimators=1000, n_jobs=self.n_jobs, random_state=self.random_state)
-        if np.unique(y).dtype == float:
-            model = RandomForestRegressor(n_estimators=1000, n_jobs=self.n_jobs, random_state=self.random_state)
-        model.fit(X, y)
-        feature_importances_ = model.feature_importances_
-        sorted_feature_importances_idx = np.argsort(-feature_importances_)
-
-        if self.n_features_strategy == 'drop':
-            max_gap = np.argmax(np.abs(np.diff(feature_importances_[sorted_feature_importances_idx])))
-            best_features_idx = sorted_feature_importances_idx[:max_gap + 1]
-        else:
-            knee_feature_idx = self.__utils_auto_get_knee_point_value(
-                feature_importances_[sorted_feature_importances_idx])
-            best_features_idx = sorted_feature_importances_idx[:knee_feature_idx + 1]
-        filtered_subsequences_index = {}
-
-        for n_features, subsequences in subsequences_index.items():
-            if n_features > len(best_features_idx):
-                continue
-            valid_subs = [s for s in subsequences if all(i in best_features_idx for i in s)]
-            if valid_subs:
-                filtered_subsequences_index[n_features] = valid_subs
-
-        return filtered_subsequences_index
-
-    def _selectable_features_iterative(self, X, y, min_n_features, max_n_features):
         available_features_idx = np.arange(0, X.shape[1])
         selected_feature_idxs = []
-        filtered_subsequences_index = dict()
+        filtered_subsequences_index = {}
 
         for n_feature in range(min_n_features, max_n_features):
             features_to_test = []
             candidate_subsequences = []
-            for subsequence in combinations([i for i in range(X.shape[1])], n_feature):
-                if all([i in available_features_idx for i in subsequence]) and \
-                    not any([i in selected_feature_idxs for i in subsequence]):
+            for subsequence in combinations(list(range(X.shape[1])), n_feature):
+                if all(i in available_features_idx for i in subsequence) and \
+                    not any(i in selected_feature_idxs for i in subsequence):
                     candidate_subsequences.append(subsequence)
                     X_combination = np.ones(X.shape) * np.nan
                     X_combination[:, subsequence] = X[:, subsequence]
@@ -188,7 +160,7 @@ class TabularShapelets(TransformerMixin):
             candidate_shapelets_it_transformed = TabularShapelets._transform(X=X, y=y, n_jobs=self.n_jobs,
                                                                              shapelets=candidate_shapelets_it,
                                                                              distance=self.__get_distance())
-            dt = DecisionTreeClassifier(max_depth=1)
+            dt = DecisionTreeClassifier(max_depth=1, random_state=self.random_state)
             dt.fit(candidate_shapelets_it_transformed, y)
             selected_column = dt.tree_.feature[0]
             filtered_subsequences_index[n_feature] = [candidate_subsequences[selected_column//X.shape[0]]]
@@ -205,13 +177,13 @@ class TabularShapelets(TransformerMixin):
         elif self.n_features_strategy == 'iterative':
             return self._selectable_features_iterative(X, y)
         else:
-            subsequences_index = dict()
-            for n_features in tqdm(range(min_n_features, max_n_features)):
-                subsequences_index[n_features] = list(combinations([i for i in range(X.shape[1])], n_features))
+            subsequences_index = {}
+            for n_features in range(min_n_features, max_n_features):
+                subsequences_index[n_features] = list(combinations(list(range(X.shape[1])), n_features))
             return subsequences_index
 
 
-    def _candidate_pivots_all(self, X:np.ndarray, y:np.ndarray, subsequences_index:dict):
+    def _candidate_pivots_all(self, X: np.ndarray, subsequences_index: dict):
         res_data = [
             np.unique(np.where(np.isin(np.arange(X.shape[1]), combination), X, np.nan), axis=0)
             for combinations in subsequences_index.values()
@@ -245,7 +217,7 @@ class TabularShapelets(TransformerMixin):
 
         return X[subsample_idx]
 
-    def _candidate_pivots_random(self, X:np.ndarray, y:np.ndarray, subsequences_index:dict):
+    def _candidate_pivots_random(self, X: np.ndarray, subsequences_index: dict):
         res_data = []
         n_shapelet_for_stratification = []
         for n_features, combinations in subsequences_index.items():
@@ -272,7 +244,7 @@ class TabularShapelets(TransformerMixin):
 
         return X[nearest_indices]
 
-    def _candidate_pivots_cluster(self, X:np.ndarray, y:np.ndarray, subsequences_index:dict):
+    def _candidate_pivots_cluster(self, X: np.ndarray, subsequences_index: dict):
         res_data = []
         for combinations in subsequences_index.values():
             for combination in combinations:
@@ -363,7 +335,7 @@ if __name__ == '__main__':
     iris = load_iris()
     df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
     df['target'] = iris.target
-    df['target'] = df['target'].map({i: name for i, name in enumerate(iris.target_names)})
+    df['target'] = df['target'].map(dict(enumerate(iris.target_names)))
 
     X = df[iris.feature_names].values
     y = df['target'].values
@@ -371,7 +343,6 @@ if __name__ == '__main__':
 
     st = TabularShapelets(n_shapelets=5,
                           n_features_strategy='all', #tuple, float, int, 'elbow', 'drop', 'new', 'all'
-                          mi_n_neighbors=100,
                           n_jobs=10,
                           distance='euclidean',
                           selection='cluster' #random, cluster, all
@@ -382,7 +353,7 @@ if __name__ == '__main__':
 
     print(X_train_transform.shape)
 
-    rf = RandomForestClassifier(n_estimators=100, n_jobs=-1)
+    rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
     rf.fit(X_train_transform, y_train)
 
     y_pred = rf.predict(X_test_transform)

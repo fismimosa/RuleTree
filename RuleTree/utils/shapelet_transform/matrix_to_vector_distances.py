@@ -96,9 +96,8 @@ def cosine(matrix, vector):
     for i in matrix.shape[0]:
         try:
             res[i] = 1 - np.dot(matrix[i], vector) / np.linalg.norm(matrix[i]) * np.linalg.norm(vector)
-        except:
+        except Exception:
             res[i] = np.nan
-            #warnings.warn("Er")
 
     return np.nan_to_num(res)
 

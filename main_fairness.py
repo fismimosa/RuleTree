@@ -12,12 +12,11 @@ from tqdm.auto import tqdm
 
 from RuleTree import RuleTreeCluster
 from RuleTree.stumps.regression.FairTreeStumpRegressor import FairTreeStumpRegressor
-from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric
 
 def compute_measures(X, clu_id, target, prot_attr, ideal):
     return [round(x, 3) for x in [
-        silhouette_score(X, clu_id, metric='euclidean'),
+        silhouette_score(X, clu_id, metric='euclidean', random_state=42),
         fowlkes_mallows_score(target, clu_id),
         balance_metric(clu_id, prot_attr),
         max_fairness_cost(clu_id, prot_attr, ideal),
@@ -31,7 +30,7 @@ def main():
     df["Sex"] = LabelEncoder().fit_transform(df.Sex)
 
     min_perc = 1.
-    mfc_map = dict()
+    mfc_map = {}
     for s in df.Sex.unique():
         print(s, len(df[df.Sex == s])/len(df), sep='\t')
         mfc_map[s] = len(df[df.Sex == s])*1./len(df)

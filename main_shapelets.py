@@ -11,20 +11,21 @@ if __name__ == "__main__":
     df_train.target = df_train.target.astype(int)
     df_test.target = df_test.target.astype(int)
 
-    X_train = df_train.drop(columns=['target']).values.reshape((-1, 1, 128))
-    X_test = df_test.drop(columns=['target']).values.reshape((-1, 1, 128))
+    X_train = df_train.drop(columns=['target']).to_numpy().reshape((-1, 1, 128))
+    X_test = df_test.drop(columns=['target']).to_numpy().reshape((-1, 1, 128))
     y_train = df_train['target'].values
     y_test = df_test['target'].values
 
     dt = RuleTreeClassifier(
         max_depth=2,
-        base_stumps=[ShapeletTreeStumpClassifier()]
+        base_stumps=[ShapeletTreeStumpClassifier(random_state=42)],
+        random_state=42,
     )
 
     dt.fit(X_train, y_train)
     y_pred = dt.predict(X_test)
     print(classification_report(y_test, y_pred))
-    dt.export_graphviz()
+    dt.export_graphviz(filename="test")
 
 
     dt.to_dict("dizionario_shapelets.json")
@@ -32,4 +33,4 @@ if __name__ == "__main__":
 
     y_pred = dt2.predict(X_test)
     print(classification_report(y_test, y_pred))
-    dt2.export_graphviz()
+    dt2.export_graphviz(filename="test2")
