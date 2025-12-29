@@ -324,6 +324,19 @@ class RuleTree(RuleTreeBase, ABC):
         if node is None:
             return
 
+    def _get_node(self, node_id: str):
+        def __get_node(curr:RuleTreeNode):
+            if curr.node_id == node_id:
+                return curr
+            else:
+                r = __get_node(curr.node_r)
+                if r is not None:
+                    return r
+                else:
+                    return __get_node(curr.node_l)
+            return None
+        return __get_node(self.root)
+
 
 
 
