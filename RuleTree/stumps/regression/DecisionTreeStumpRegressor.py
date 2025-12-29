@@ -4,6 +4,7 @@ import warnings
 import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.tree._criterion import FriedmanMSE
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
@@ -159,7 +160,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         if imp == "squared_error":
             return mean_squared_error
         elif imp == "friedman_mse":
-            raise NotImplementedError("not implemented") # TODO: implement
+            raise NotImplementedError("not implemented") # TODO: implement in DecisionTreeRegressor?
         elif imp == "absolute_error":
             return mean_absolute_error
         elif imp == "poisson":
