@@ -10,6 +10,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+from ordered_set import OrderedSet
 from sklearn.base import BaseEstimator, TransformerMixin
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 
@@ -56,8 +57,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             self.categorical (list): Indices of categorical features.
         """
         dtypes = pd.DataFrame(X).infer_objects().dtypes
-        self.numerical = dtypes[dtypes != np.dtype('O')].index
-        self.categorical = dtypes[dtypes == np.dtype('O')].index
+        self.numerical = OrderedSet(dtypes[dtypes != np.dtype('O')].index)
+        self.categorical = OrderedSet(dtypes[dtypes == np.dtype('O')].index)
 
     @abstractmethod
     def node_to_dict(self) -> dict:

@@ -2,6 +2,7 @@ import copy
 import warnings
 
 import numpy as np
+from line_profiler_pycharm import profile
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.tree._criterion import FriedmanMSE
@@ -238,7 +239,13 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         X = X[idx]
         y = y[idx]
 
-        self.feature_analysis(X, y)
+        if hasattr(context, 'categorical'):
+            self.categorical = context.categorical
+            self.numerical = context.numerical
+        else:
+            self.feature_analysis(X, y)
+            context.categorical = self.categorical
+            context.numerical = self.numerical
         best_info_gain = -float('inf')
 
         if len(self.numerical) > 0:

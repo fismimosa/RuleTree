@@ -17,6 +17,7 @@ from typing import Optional
 
 import numpy as np
 import sklearn
+from line_profiler_pycharm import profile
 from sklearn import tree
 from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory
@@ -325,17 +326,13 @@ class RuleTree(RuleTreeBase, ABC):
             return
 
     def _get_node(self, node_id: str):
-        def __get_node(curr:RuleTreeNode):
-            if curr.node_id == node_id:
-                return curr
-            else:
-                r = __get_node(curr.node_r)
-                if r is not None:
-                    return r
-                else:
-                    return __get_node(curr.node_l)
-            return None
-        return __get_node(self.root)
+        if not hasattr(self, 'opportunistic_node_map'):
+            def __fill_map(curr: RuleTreeNode):
+                if curr is None:
+                    return dict()
+                return {curr.node_id: curr} | __fill_map(curr.node_l) | __fill_map(curr.node_r)
+            self.opportunistic_node_map = __fill_map(self.root)
+        return self.opportunistic_node_map[node_id]
 
 
 

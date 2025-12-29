@@ -248,7 +248,13 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             for class_label in np.unique(y):
                 class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
 
-        self.feature_analysis(X, y)
+        if hasattr(context, 'categorical'):
+            self.categorical = context.categorical
+            self.numerical = context.numerical
+        else:
+            self.feature_analysis(X, y)
+            context.categorical = self.categorical
+            context.numerical = self.numerical
         best_info_gain = -float('inf')
 
         if len(self.numerical) > 0:
