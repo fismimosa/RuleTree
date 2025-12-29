@@ -9,6 +9,8 @@ from sklearn.preprocessing import LabelEncoder
 
 from RuleTree.ensemble.GBoostedTreeClassifier import GBoostedTreeClassifier
 from RuleTree.ensemble.GBoostedTreeRegressor import GBoostedTreeRegressor
+from RuleTree.ensemble.XGBoostedTreeRegressor import XGBoostedTreeRegressor
+
 
 def _fit_pred_times(model, X_train, y_train, X_test):
     start_train = time.time()
@@ -42,6 +44,11 @@ def test_reg():
     gbr = GBoostedTreeRegressor(n_estimators=100)
     train_time, pred_time, y_pred = _fit_pred_times(gbr, X_train, y_train, X_test)
     print('RuleTree gboost:', mean_squared_error(y_test, y_pred))
+    print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')
+
+    xgbr = XGBoostedTreeRegressor(n_estimators=100)
+    train_time, pred_time, y_pred = _fit_pred_times(xgbr, X_train, y_train, X_test)
+    print('XGBoostedTreeRegressor:', mean_squared_error(y_test, y_pred))
     print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')
 
 def test_clf():
