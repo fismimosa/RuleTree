@@ -11,3 +11,4 @@ psutil
 setuptools
 matplotlib
 tempfile312
+ordered-set
