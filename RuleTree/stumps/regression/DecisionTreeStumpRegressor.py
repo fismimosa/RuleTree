@@ -349,8 +349,12 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         y = y[idx]
 
         curr_pred = np.ones((len(y),)) * np.mean(y)
-        idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
-        idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
+        if self.is_categorical:
+            idx_l = X[:, self.feature_original[0]] == self.threshold_original[0]
+            idx_r = X[:, self.feature_original[0]] != self.threshold_original[0]
+        else:
+            idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
+            idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
         l_pred = np.ones((len(y[idx_l]),)) * np.mean(y[idx_l])
         r_pred = np.ones((len(y[idx_r]),)) * np.mean(y[idx_r])
         self.impurity = [

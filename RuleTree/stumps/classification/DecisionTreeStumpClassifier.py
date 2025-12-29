@@ -375,8 +375,15 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             for class_label in np.unique(y):
                 class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
 
-        self.impurity = [
-            self.impurity_fun(y, sample_weight, class_weight),
-            self.impurity_fun(y[X[:, self.feature_original[0]] <= self.threshold_original[0]], None, class_weight),
-            self.impurity_fun(y[X[:, self.feature_original[0]] > self.threshold_original[0]], None, class_weight)
-        ]
+        if self.is_categorical:
+            self.impurity = [
+                self.impurity_fun(y, sample_weight, class_weight),
+                self.impurity_fun(y[X[:, self.feature_original[0]] == self.threshold_original[0]], None, class_weight),
+                self.impurity_fun(y[X[:, self.feature_original[0]] != self.threshold_original[0]], None, class_weight)
+            ]
+        else:
+            self.impurity = [
+                self.impurity_fun(y, sample_weight, class_weight),
+                self.impurity_fun(y[X[:, self.feature_original[0]] <= self.threshold_original[0]], None, class_weight),
+                self.impurity_fun(y[X[:, self.feature_original[0]] > self.threshold_original[0]], None, class_weight)
+            ]
