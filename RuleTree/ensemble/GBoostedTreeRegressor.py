@@ -1,6 +1,7 @@
 import copy
 
 import numpy as np
+from line_profiler_pycharm import profile
 from sklearn.base import RegressorMixin
 from sklearn.metrics import mean_squared_error
 
@@ -20,8 +21,11 @@ class GBoostedTreeRegressor(RuleTreeBase, RegressorMixin):
         self.n_iter_no_change = n_iter_no_change
         self.tol = tol
 
+    def _get_base_prediction(self, y):
+        return np.mean(y)
+
     def fit(self, X: np.ndarray, y: np.ndarray):
-        self.base_prediction_ = np.mean(y)
+        self.base_prediction_ = self._get_base_prediction(y)
         self.estimators_ = []
         residuals = y - self.base_prediction_
 

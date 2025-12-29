@@ -1,0 +1,47 @@
+import warnings
+
+import numpy as np
+from line_profiler_pycharm import profile
+
+from RuleTree import RuleTreeRegressor
+from RuleTree.stumps.regression.XGBoostTreeStumpRegressor import XGBoostTreeStumpRegressor
+from RuleTree.tree.RuleTreeNode import RuleTreeNode
+
+
+class EmptyXGBTreeException(Exception):
+    pass
+
+
+class RuleTreeXGBoostRegressor(RuleTreeRegressor):
+    def __init__(self, gamma=0, lam=1, max_depth=6, n_jobs=1, **kwargs):
+        if 'base_stumps' in kwargs:
+            warnings.warn('base_stumps will be set as XGBoostTreeStumpRegressor.',)
+        kwargs['base_stumps'] = XGBoostTreeStumpRegressor(lam=lam, n_jobs=n_jobs)
+        super().__init__(max_depth=max_depth, **kwargs)
+        self.gamma = gamma
+        self.lam = lam
+        self.n_jobs = n_jobs
+
+
+    def fit(self, X: np.array, y: np.array = None, **kwargs):
+        super().fit(X, y, **kwargs)
+        if self._gamma_pruning(self.root).is_leaf():
+            raise EmptyXGBTreeException('The value of gamma lead to an empty XGBoostTreeStumpRegressor.')
+
+        leafs = self.apply(X)
+        for leaf in np.unique(leafs):
+            cond = leafs == leaf
+            output_value = np.sum(y[cond])/(np.sum(cond) + self.lam)
+            self._get_node(leaf).prediction = output_value
+
+    def _gamma_pruning(self, node:RuleTreeNode):
+        if node.is_leaf():
+            return node
+        if node.stump.gain < self.gamma:
+            node.make_leaf()
+            return node
+
+        self._gamma_pruning(node.node_l)
+        self._gamma_pruning(node.node_r)
+
+        return node
