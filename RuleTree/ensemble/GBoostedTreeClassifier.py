@@ -11,7 +11,7 @@ from RuleTree.base.RuleTreeBase import RuleTreeBase
 
 
 class GBoostedTreeClassifier(RuleTreeBase, ClassifierMixin):
-    def __init__(self, base_estimator=RuleTreeRegressor(max_depth=3), n_estimators=100, learning_rate=.1,
+    def __init__(self, base_estimator=RuleTreeRegressor(max_depth=4), n_estimators=100, learning_rate=.1,
                  loss='squared_loss', n_iter_no_change=None, tol=1e-4, n_jobs=cpu_count()):
         self.base_estimator = base_estimator
         self.n_estimators = n_estimators
