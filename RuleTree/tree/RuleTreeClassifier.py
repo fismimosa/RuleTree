@@ -190,8 +190,10 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         """
         prediction = calculate_mode(y[idx])
         predict_proba = np.zeros((len(self.classes_), ))
+        log_odds = np.zeros((len(self.classes_), ))
         for i, classe in enumerate(self.classes_):
             predict_proba[i] = sum(np.where(y[idx] == classe, 1, 0)) / len(y[idx])
+            log_odds[i] = np.log(sum(np.where(y[idx] == classe, 1, 0)) / sum(np.where(y[idx] != classe, 1, 0)))
 
         if node is not None:
             node.prediction = prediction
@@ -206,6 +208,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_id=node_id,
             prediction=prediction,
             prediction_probability=predict_proba,
+            log_odds=log_odds,
             classes = self.classes_,
             n_features=self.n_features,
             parent=None,

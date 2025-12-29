@@ -249,6 +249,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             node_id=node_id,
             prediction=prediction,
             prediction_probability=prediction_std,
+            log_odds=np.nan,
             parent=None,
             stump=None,
             node_l=None,

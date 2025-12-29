@@ -280,6 +280,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             node_id=node_id,
             prediction=node_id,
             prediction_probability=-1,
+            loss=np.nan,
             classes=np.array(['NA']),
             n_features=self.n_features,
             parent=None,

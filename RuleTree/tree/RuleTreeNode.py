@@ -32,6 +32,7 @@ class RuleTreeNode:
                  node_id: str,
                  prediction: Union[int, str, float],
                  prediction_probability: Union[np.ndarray, float],
+                 log_odds: Union[np.ndarray, float],
                  classes: np.ndarray,
                  n_features: np.ndarray,
                  parent: Optional['RuleTreeNode'],
@@ -56,6 +57,7 @@ class RuleTreeNode:
         self.node_id = node_id
         self.prediction = prediction
         self.prediction_probability = prediction_probability
+        self.log_odds = log_odds
         self.classes = classes
         self.n_features = n_features
         self.parent = parent
@@ -171,6 +173,7 @@ class RuleTreeNode:
             "is_leaf": self.is_leaf(),
             "prediction": self.prediction,
             "prediction_probability": self.prediction_probability,
+            "log_odds": self.log_odds,
             "prediction_classes_": self.classes,
             "n_features": self.n_features,
             "left_node": self.node_l.get_rule(columns_names = columns_names, scaler = scaler) if self.node_l is not None else None,
@@ -196,6 +199,7 @@ class RuleTreeNode:
             "is_leaf": self.is_leaf(),
             "prediction": self.prediction,
             "prediction_probability": self.prediction_probability if isinstance(self.prediction_probability, float) else self.prediction_probability.tolist(),
+            "log_odds": self.log_odds if isinstance(self.log_odds, float) else self.log_odds.tolist(),
             "prediction_classes_": self.classes.tolist(),
             "n_features": self.n_features,
             "left_node": self.node_l.node_id if self.node_l is not None else None,
@@ -230,6 +234,7 @@ class RuleTreeNode:
         node = RuleTreeNode(node_id = info_dict['node_id'],
                             prediction = info_dict.get('prediction', np.nan),
                             prediction_probability = info_dict.get('prediction_probability', [np.nan]*info_dict.get('prediction_classes_', 1)),
+                            log_odds = info_dict.get('log_odds', [np.nan]*info_dict.get('prediction_classes_', 1)),
                             parent = None,
                             classes=info_dict.get('prediction_classes_', np.nan),
                             n_features=info_dict.get('n_features', np.nan), )
