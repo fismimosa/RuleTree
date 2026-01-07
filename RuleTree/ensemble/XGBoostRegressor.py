@@ -1,10 +1,10 @@
 from psutil import cpu_count
 
-from RuleTree.ensemble.GBoostedTreeRegressor import GBoostedTreeRegressor
+from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
 from RuleTree.tree.RuleTreeXGBoostRegressor import RuleTreeXGBoostRegressor
 
 
-class XGBoostedTreeRegressor(GBoostedTreeRegressor):
+class XGBoostRegressor(GBoostRegressor):
     def __init__(self, base_estimator=RuleTreeXGBoostRegressor(n_jobs=cpu_count()),
                  learning_rate=.3, **kwargs):
         super().__init__(base_estimator=base_estimator, learning_rate=learning_rate, **kwargs)

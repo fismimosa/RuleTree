@@ -7,7 +7,7 @@ from RuleTree.utils.tree_utils import xgboost_similarity_score
 
 from line_profiler_pycharm import profile
 
-class XGBoostTreeStumpRegressor(DecisionTreeStumpRegressor):
+class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
     def __init__(self, lam, approximation=None, n_quantiles=32, n_jobs=1):
         super().__init__()
         self.lam = lam

@@ -7,9 +7,9 @@ from sklearn.metrics import mean_squared_error, f1_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
-from RuleTree.ensemble.GBoostedTreeClassifier import GBoostedTreeClassifier
-from RuleTree.ensemble.GBoostedTreeRegressor import GBoostedTreeRegressor
-from RuleTree.ensemble.XGBoostedTreeRegressor import XGBoostedTreeRegressor
+from RuleTree.ensemble.GBoostClassifier import GBoostClassifier
+from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
+from RuleTree.ensemble.XGBoostRegressor import XGBoostRegressor
 
 
 def _fit_pred_times(model, X_train, y_train, X_test):
@@ -41,12 +41,12 @@ def test_reg():
     print('sk-learn gboost:', mean_squared_error(y_test, y_pred))
     print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')
 
-    gbr = GBoostedTreeRegressor(n_estimators=100)
+    gbr = GBoostRegressor(n_estimators=100)
     train_time, pred_time, y_pred = _fit_pred_times(gbr, X_train, y_train, X_test)
     print('RuleTree gboost:', mean_squared_error(y_test, y_pred))
     print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')
 
-    xgbr = XGBoostedTreeRegressor(n_estimators=100)
+    xgbr = XGBoostRegressor(n_estimators=100)
     train_time, pred_time, y_pred = _fit_pred_times(xgbr, X_train, y_train, X_test)
     print('XGBoostedTreeRegressor:', mean_squared_error(y_test, y_pred))
     print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')
@@ -67,7 +67,7 @@ def test_clf():
     print('sk-learn gboost:', classification_report(y_test, y_pred), end='\t')
     print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')
 
-    gbr = GBoostedTreeClassifier(n_estimators=100)
+    gbr = GBoostClassifier(n_estimators=100)
     train_time, pred_time, y_pred = _fit_pred_times(gbr, X_train, y_train, X_test)
     print('RuleTree gboost:', classification_report(y_test, y_pred), end='\t')
     print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')

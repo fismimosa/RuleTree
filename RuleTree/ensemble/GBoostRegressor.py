@@ -9,7 +9,7 @@ from RuleTree import RuleTreeRegressor
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 
 
-class GBoostedTreeRegressor(RuleTreeBase, RegressorMixin):
+class GBoostRegressor(RuleTreeBase, RegressorMixin):
     def __init__(self, base_estimator=RuleTreeRegressor(max_depth=3),
                  n_estimators=100, learning_rate=.1, loss='squared_loss', n_iter_no_change=None, tol=1e-4,):
         self.base_estimator = base_estimator

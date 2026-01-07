@@ -4,7 +4,7 @@ import numpy as np
 from line_profiler_pycharm import profile
 
 from RuleTree import RuleTreeRegressor
-from RuleTree.stumps.regression.XGBoostTreeStumpRegressor import XGBoostTreeStumpRegressor
+from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 
 
@@ -16,7 +16,7 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
     def __init__(self, gamma=0, lam=1, max_depth=6, n_jobs=1, **kwargs):
         if 'base_stumps' in kwargs:
             warnings.warn('base_stumps will be set as XGBoostTreeStumpRegressor.',)
-        kwargs['base_stumps'] = XGBoostTreeStumpRegressor(lam=lam, n_jobs=n_jobs)
+        kwargs['base_stumps'] = XGBoostStumpRegressor(lam=lam, n_jobs=n_jobs)
         super().__init__(max_depth=max_depth, **kwargs)
         self.gamma = gamma
         self.lam = lam
