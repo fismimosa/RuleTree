@@ -36,7 +36,7 @@ class GBoostRegressor(RuleTreeBase, RegressorMixin):
 
             res_delta = self.learning_rate * est.predict(X)
             if patience is not None:
-                if np.mean(res_delta) <= self.tol:
+                if np.mean(np.abs(res_delta)) <= self.tol:
                     patience -= 1
                 if patience == 0:
                     self.estimators_ = self.estimators_[:-self.n_iter_no_change]
