@@ -115,5 +115,14 @@ def _eval_rule(X: np.ndarray, rule: RuleTreeNode, return_probababilities=False):
 
     rule.stump.predict(X)
 
-def xgboost_similarity_score(residuals:np.ndarray, _lambda:int=0) -> float:
-    return np.square(np.sum(residuals))/(_lambda+len(residuals))
+def xgboost_similarity_score_regression(residuals:np.ndarray, cover:int, _lambda:int=0) -> float:
+    return np.square(np.sum(residuals))/(_lambda+cover)
+
+def xgboost_cover_regression(residuals:np.ndarray) -> float:
+    return len(residuals)
+
+def xgboost_similarity_score_classification(residuals:np.ndarray, cover:float, _lambda:int=0) -> float:
+    return np.square(np.sum(residuals))/(cover+_lambda)
+
+def xgboost_cover_classification(prev_probability:np.ndarray) -> float:
+    return np.sum(prev_probability*(1-prev_probability))

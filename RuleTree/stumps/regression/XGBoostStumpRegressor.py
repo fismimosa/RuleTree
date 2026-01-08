@@ -3,12 +3,12 @@ import numpy as np
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.regression import DecisionTreeStumpRegressor
-from RuleTree.utils.tree_utils import xgboost_similarity_score
+from RuleTree.utils.tree_utils import xgboost_similarity_score_regression, xgboost_cover_regression
 
 from line_profiler_pycharm import profile
 
 class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
-    def __init__(self, lam, approximation=None, n_quantiles=32, n_jobs=1):
+    def __init__(self, lam, approximation=None, n_quantiles=32, min_cover=1, n_jobs=1):
         super().__init__()
         self.lam = lam
         self.n_jobs = n_jobs
@@ -16,14 +16,18 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
             raise ValueError('approximation must be None or quantile')
         self.approximation = approximation
         self.n_quantiles = n_quantiles
+        self.min_cover = min_cover
         self.kwargs |= {
             'lam': self.lam,
             'approximation': self.approximation,
             'n_quantiles': self.n_quantiles,
             'n_jobs': self.n_jobs,
+            'min_cover': self.min_cover,
         }
 
-    @profile
+    def _get_cover_similarity_fun(self):
+        return xgboost_cover_regression, xgboost_similarity_score_regression
+
     def get_threshold_values(self, X, feature_idx):
         unique_val = np.unique(X[:, feature_idx])
         if feature_idx in self.categorical:
@@ -35,12 +39,14 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
             else:
                 return numpy.quantile(X[:, feature_idx], np.linspace(0, 1, self.n_quantiles))
 
-    @profile
     def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
         if idx is None:
             idx = slice(None)
         X = X[idx]
         y = y[idx]
+
+        cover_fn, sim_fn = self._get_cover_similarity_fun()
+
         if hasattr(context, 'categorical'):
             self.categorical = context.categorical
             self.numerical = context.numerical
@@ -49,8 +55,8 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
             context.categorical = self.categorical
             context.numerical = self.numerical
 
-        root_similarity = xgboost_similarity_score(y, self.lam)
-
+        root_cover = cover_fn(y)
+        root_similarity = sim_fn(y, root_cover, self.lam)
         best_gain, best_feature_idx, best_threshold, best_categorical = -np.inf, -1, -1, False
 
         for feature_idx in range(X.shape[1]):
@@ -61,8 +67,13 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
                 else:
                     cond_l = X[:, feature_idx] == threshold
                     cond_r = ~cond_l
-                similarity_l = xgboost_similarity_score(y[cond_l], self.lam)
-                similarity_r = xgboost_similarity_score(y[cond_r], self.lam)
+
+                cover_l = cover_fn(y[cond_l])
+                cover_r = cover_fn(y[cond_r])
+                if cover_l < self.min_cover or cover_r < self.min_cover:
+                    continue
+                similarity_l = xgboost_similarity_score_regression(y[cond_l], cover_l, self.lam)
+                similarity_r = xgboost_similarity_score_regression(y[cond_r], cover_r, self.lam)
 
                 gain = similarity_l + similarity_r - root_similarity
 
@@ -92,8 +103,21 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
             idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
             idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
 
-        self.root_similarity = xgboost_similarity_score(y, self.lam)
-        self.similarity_l = xgboost_similarity_score(y[idx_l], self.lam)
-        self.similarity_r = xgboost_similarity_score(y[idx_r], self.lam)
+        cover_fn, sim_fn = self._get_cover_similarity_fun()
+
+        if hasattr(context, 'categorical'):
+            self.categorical = context.categorical
+            self.numerical = context.numerical
+        else:
+            self.feature_analysis(X, y)
+            context.categorical = self.categorical
+            context.numerical = self.numerical
+
+        root_cover = cover_fn(y)
+        self.root_similarity = sim_fn(y, root_cover, self.lam)
+        cover_l = cover_fn(y[idx_l])
+        cover_r = cover_fn(y[idx_r])
+        self.similarity_l = xgboost_similarity_score_regression(y[idx_l], cover_l, self.lam)
+        self.similarity_r = xgboost_similarity_score_regression(y[idx_r], cover_r, self.lam)
         self.gain = self.similarity_l + self.similarity_r - self.root_similarity
 
