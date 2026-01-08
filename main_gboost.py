@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error, f1_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
+from RuleTree.ensemble.EBMRegressor import EBMRegressor
 from RuleTree.ensemble.GBoostClassifier import GBoostClassifier
 from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
 from RuleTree.ensemble.XGBoostRegressor import XGBoostRegressor
@@ -49,6 +50,11 @@ def test_reg():
     xgbr = XGBoostRegressor(n_estimators=100)
     train_time, pred_time, y_pred = _fit_pred_times(xgbr, X_train, y_train, X_test)
     print('XGBoostedTreeRegressor:', mean_squared_error(y_test, y_pred))
+    print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')
+
+    ebmr = EBMRegressor(n_iterations=1000)
+    train_time, pred_time, y_pred = _fit_pred_times(ebmr, X_train, y_train, X_test)
+    print('EBMRegressor:', mean_squared_error(y_test, y_pred))
     print(f'Training time: {train_time}s\tPrediction time: {pred_time}s\n\n')
 
 def test_clf():
