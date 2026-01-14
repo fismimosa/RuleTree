@@ -58,6 +58,8 @@ class EBMRegressor(RuleTreeBase, RegressorMixin):
             else:
                 wait += 1
                 if wait >= self.patience:
+                    for feature_idx in self.estimators_.keys():
+                        self.estimators_[feature_idx] = self.estimators_[feature_idx][:-self.patience+1]
                     break
             prev_residuals_val = np.sum(np.abs(residuals_val))
 
