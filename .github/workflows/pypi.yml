@@ -18,7 +18,7 @@ jobs:
       - name: Set version from date
         run: |
           VERSION=$(date +'%Y.%m.%d.%H%M%S')
-          sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
+          sed -i "s/version=.*/version=\"$VERSION\",/" setup.py
 
       - name: Install build tools
         run: |
