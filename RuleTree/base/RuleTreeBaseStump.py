@@ -57,8 +57,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             self.categorical (list): Indices of categorical features.
         """
         dtypes = pd.DataFrame(X).infer_objects().dtypes
-        self.numerical = OrderedSet(dtypes[dtypes != np.dtype('O')].index)
-        self.categorical = OrderedSet(dtypes[dtypes == np.dtype('O')].index)
+        self.numerical = OrderedSet([i for i, x in enumerate(dtypes) if pd.api.types.is_numeric_dtype(x)])
+        self.categorical = OrderedSet([i for i, x in enumerate(dtypes) if not pd.api.types.is_numeric_dtype(x)])
 
     @abstractmethod
     def node_to_dict(self) -> dict:
