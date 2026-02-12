@@ -415,7 +415,7 @@ def read_ecoli(encode=True):
 
 def read_magic(encode=True):
     target_col = 'label'
-    df = pd.read_csv("../../../datasets/CLF/ecoli.csv")
+    df = pd.read_csv("../../../datasets/CLF/MagicTelescope.csv")
 
     columns = set(df.columns.tolist()) - {target_col}
 
