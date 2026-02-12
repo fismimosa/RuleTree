@@ -32,23 +32,25 @@ def evaluate_clf(y_test, y_pred, y_pred_proba):
     }
 
     if y_pred_proba is not None:
+        if len(y_pred_proba.shape) >= 2:
+            y_pred_proba = y_pred_proba[:, 1]
         res.update(
             {
-                'roc_macro': skm.roc_auc_score(y_test, y_pred_proba[:, 1],
+                'roc_macro': skm.roc_auc_score(y_test, y_pred_proba,
                                                average='macro') if binary else skm.roc_auc_score(
                     y_test, y_pred_proba, average='macro', multi_class='ovr'),
-                'roc_micro': skm.roc_auc_score(y_test, y_pred_proba[:, 1],
+                'roc_micro': skm.roc_auc_score(y_test, y_pred_proba,
                                                average='micro') if binary else skm.roc_auc_score(
                     y_test, y_pred_proba, average='micro', multi_class='ovr'),
-                'roc_weighted': skm.roc_auc_score(y_test, y_pred_proba[:, 1], average='weighted')
+                'roc_weighted': skm.roc_auc_score(y_test, y_pred_proba, average='weighted')
                 if binary else skm.roc_auc_score(y_test, y_pred_proba, average='weighted', multi_class='ovr'),
-                'average_precision_macro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='macro',
+                'average_precision_macro': skm.average_precision_score(y_test, y_pred_proba, average='macro',
                                                                        pos_label=class_values[1])
                 if binary else skm.average_precision_score(y_test, y_pred_proba, average='macro'),
-                'average_precision_micro': skm.average_precision_score(y_test, y_pred_proba[:, 1], average='micro',
+                'average_precision_micro': skm.average_precision_score(y_test, y_pred_proba, average='micro',
                                                                        pos_label=class_values[1])
                 if binary else skm.average_precision_score(y_test, y_pred_proba, average='micro'),
-                'average_precision_weighted': skm.average_precision_score(y_test, y_pred_proba[:, 1],
+                'average_precision_weighted': skm.average_precision_score(y_test, y_pred_proba,
                                                                           average='weighted',
                                                                           pos_label=class_values[1])
                 if binary else skm.average_precision_score(y_test, y_pred_proba, average='weighted'),
