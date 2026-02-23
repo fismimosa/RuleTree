@@ -249,6 +249,7 @@ class RuleTree(RuleTreeBase, ABC):
                 warning = RuntimeWarning(*e.args)
                 warning.with_traceback(e.__traceback__)
                 warnings.warn(warning)
+                raise e
                 continue
 
            
