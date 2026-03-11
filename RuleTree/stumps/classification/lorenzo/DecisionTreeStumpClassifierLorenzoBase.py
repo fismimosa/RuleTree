@@ -6,9 +6,10 @@ from RuleTree.stumps.classification import DecisionTreeStumpClassifier
 from RuleTree.utils.data_utils import gini, entropy
 
 
-class DecisionTreeStumpClassifierLorenzo(DecisionTreeStumpClassifier):
+class DecisionTreeStumpClassifierLorenzoBase(DecisionTreeStumpClassifier):
     """
-    A decision tree stump classifier that implements RuleTreeBaseStumpLorenzo.
+    A decision tree stump classifier that extends DecisionTreeStumpClassifier.
+    Version: Base
 
     A decision tree stump is a decision tree with a maximum depth of 1 (a single split), making
     it a simple interpretable model. This implementation supports both numerical and categorical features,
