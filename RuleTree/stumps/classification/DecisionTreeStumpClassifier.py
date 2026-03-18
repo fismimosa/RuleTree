@@ -275,6 +275,11 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
         self._fit_cat(X, y, best_info_gain)
 
+        feat = self.feature_original[0]
+        X_feat = X[:, feat]
+        if len(np.unique(X_feat)) == 2 and not self.is_categorical:
+            self.threshold_original = np.array([(X_feat.max()+X_feat.min())/2, -2, -2])
+
         return self
 
     def _fit_cat(self, X, y, best_info_gain, sample_weight=None):
