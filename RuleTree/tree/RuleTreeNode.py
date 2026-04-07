@@ -184,6 +184,42 @@ class RuleTreeNode:
             rule |= self.stump.get_rule(columns_names=columns_names, scaler=scaler)
     
         return rule
+
+    def update_statistics(self, X, y, idx=None, context=None):
+        if idx is None:
+            idx = slice(None)
+
+        y_local = y[idx]
+
+        classes = None
+        if self.classes is not None:
+            classes = np.asarray(self.classes)
+        elif context is not None and hasattr(context, "classes_") and context.classes_ is not None:
+            classes = np.asarray(context.classes_)
+        else:
+            classes = np.unique(y)
+
+        if classes.ndim == 0:
+            classes = classes.reshape(1)
+
+        class_counts = np.array([np.sum(y_local == class_label) for class_label in classes], dtype=float)
+
+        if y_local.shape[0] > 0 and class_counts.sum() > 0:
+            self.prediction = classes[np.argmax(class_counts)]
+            self.prediction_probability = class_counts / y_local.shape[0]
+            with np.errstate(divide='ignore', invalid='ignore'):
+                self.log_odds = np.log(class_counts / (y_local.shape[0] - class_counts))
+        else:
+            self.prediction = np.nan
+            self.prediction_probability = np.zeros(len(classes), dtype=float)
+            self.log_odds = np.full(len(classes), np.nan, dtype=float)
+
+        self.classes = classes
+        self.n_features = getattr(context, "n_features", X.shape[1])
+        self.samples = len(y_local)
+
+        if self.stump is not None and not self.is_leaf():
+            self.stump.update_statistics(X, y, idx=idx, context=context)
     
     def node_to_dict(self):
         """
@@ -406,7 +442,7 @@ class RuleTreeNode:
 
         return None
 
-    def get_leaf_nodes(self) -> dict[str: 'RuleTreeNode']:
+    def get_leaf_nodes(self) -> dict:
         """
         Get all leaf nodes in the tree.
 

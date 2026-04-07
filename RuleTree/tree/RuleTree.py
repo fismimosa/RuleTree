@@ -325,6 +325,22 @@ class RuleTree(RuleTreeBase, ABC):
         if node is None:
             return
 
+        node.classes = self.classes_
+        node.n_features = self.n_features
+        if node.stump is not None and hasattr(node.stump, "classes_"):
+            node.stump.classes_ = self.classes_
+
+        node.update_statistics(X, y, idx, self)
+        if node.is_leaf() or node.stump is None:
+            return
+
+        labels = node.stump.apply(X[idx])
+        idx_l = idx[labels == 1]
+        idx_r = idx[labels == 2]
+
+        self._update_statistics(X, y, node.node_l, idx_l)
+        self._update_statistics(X, y, node.node_r, idx_r)
+
     def _get_node(self, node_id: str):
         if not hasattr(self, 'opportunistic_node_map'):
             def __fill_map(curr: RuleTreeNode):
@@ -935,5 +951,3 @@ class RuleTree(RuleTreeBase, ABC):
             list: List of leaf nodes.
         """
         return self.root.get_leaf_nodes()
-
-
