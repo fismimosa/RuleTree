@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.metrics import classification_report, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 
 from RuleTree import RuleTreeClassifier, RuleTreeRegressor
 from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     print("\n=== REGRESSION (datasets/REG/boston.csv) ===")
     df_reg = pd.read_csv("datasets/REG/boston.csv")
     X_reg = df_reg.iloc[:, :-1].values
-    y_reg = df_reg.iloc[:, -1].values
+    y_reg = MinMaxScaler().fit_transform(df_reg.iloc[:, -1].values.reshape(-1, 1))
 
     X_train_reg, X_test_reg, y_train_reg, y_test_reg = train_test_split(
         X_reg,
