@@ -1,44 +1,19 @@
 from sklearn.preprocessing import StandardScaler
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
+from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.stumps.splitters.PivotSplit import PivotSplit
-from RuleTree.utils import MODEL_TYPE_CLF
+from RuleTree.utils import MODEL_TYPE_REG
 from sklearn.metrics.pairwise import pairwise_distances
 import numpy as np
 import copy
-import warnings
 from types import SimpleNamespace
 
 
-class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
-    """
-    A classifier that uses a pivot-based splitting strategy for decision tree stumps.
-
-    This classifier implements a pivot-based approach for decision tree stumps in classification tasks.
-    It works by selecting a pivot instance from the dataset and calculating distances from all other
-    instances to this pivot. These distances are then used to make splitting decisions.
-
-    The pivot-based approach is particularly useful for working with non-standard data representations
-    where traditional feature-based splits may not be applicable. It provides an alternative
-    splitting mechanism based on distance metrics.
-
-    This classifier supports both numerical and categorical features and inherits functionality
-    from both DecisionTreeStumpClassifier and RuleTreeBaseStump.
-    """
-
+class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
     def __init__(self, **kwargs):
-        """
-        Initialize the PivotTreeStumpClassifier.
-
-        Parameters
-        ----------
-        **kwargs : dict
-            Additional keyword arguments passed to the parent classes and the PivotSplit.
-            Common parameters include criterion, max_depth, min_samples_split, etc.
-        """
         super().__init__(**kwargs)
-        self.pivot_split = PivotSplit(ml_task=MODEL_TYPE_CLF, **kwargs)
+        self.pivot_split = PivotSplit(ml_task=MODEL_TYPE_REG, **kwargs)
         self.distance_measure = kwargs.get('distance_measure', 'euclidean')
         self.X_split_instance = None
 
@@ -67,8 +42,8 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
 
         Returns
         -------
-        self : PivotTreeStumpClassifier
-            Fitted classifier instance.
+        self : PivotTreeStumpRegressor
+            Fitted regressor instance.
         """
         X = X[idx]
         y = y[idx]
@@ -77,14 +52,14 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         self.cat_pre_transformed = self.categorical
 
         if context is None:
-            raise ValueError("Context must be provided for PivotTreeStumpClassifier.")
-        if not hasattr(context, "PivotTreeStumpClassifier_scaler"):
-            context.PivotTreeStumpClassifier_scaler = StandardScaler().fit(X)
+            raise ValueError("Context must be provided for PivotTreeStumpRegressor.")
+        if not hasattr(context, "PivotTreeStumpRegressor_scaler"):
+            context.PivotTreeStumpRegressor_scaler = StandardScaler().fit(X)
             context.distance_matrix = pairwise_distances(X[:, self.numerical], metric=self.distance_measure)
 
-        self.scaler = context.PivotTreeStumpClassifier_scaler
+        self.scaler = context.PivotTreeStumpRegressor_scaler
         distance_matrix = context.distance_matrix[np.ix_(idx, idx)]
-        X_scaled = context.PivotTreeStumpClassifier_scaler.transform(X[:, self.numerical])
+        X_scaled = context.PivotTreeStumpRegressor_scaler.transform(X[:, self.numerical])
 
 
         if len(self.numerical) > 0:
@@ -117,7 +92,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         Returns
         -------
         numpy.ndarray
-            Predicted class labels for each sample in X.
+            Predicted node ids (1 for left branch, 2 for right branch).
         """
         X_transformed = pairwise_distances(self.scaler.transform(X[:, self.num_pre_transformed]),
                                            self.X_split_instance.reshape(1, -1),
@@ -211,7 +186,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         -------
         dict
             A dictionary containing all essential information about the classifier node,
-            including the rule, classifier type, node statistics, and configuration parameters.
+            including the rule, regressor type, node statistics, and configuration parameters.
         """
         rule = self.get_rule(float_precision=None)
 
@@ -245,7 +220,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         """
         Create a classifier node from a dictionary representation.
 
-        This class method deserializes a dictionary back into a PivotTreeStumpClassifier
+        This class method deserializes a dictionary back into a PivotTreeStumpRegressor
         instance, restoring its state and configuration.
 
         Parameters
@@ -257,8 +232,8 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
 
         Returns
         -------
-        PivotTreeStumpClassifier
-            A reconstructed classifier instance.
+        PivotTreeStumpRegressor
+            A reconstructed regressor instance.
         """
         self = cls()
         self.kwargs = copy.deepcopy(node_dict["args"])
@@ -289,7 +264,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         Export the classifier as a Graphviz digraph representation.
 
         This method is intended to visualize the classifier as a graph but is
-        currently not implemented for PivotTreeStumpClassifier.
+        currently not implemented for PivotTreeStumpRegressor.
 
         Parameters
         ----------
@@ -305,6 +280,6 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         Raises
         ------
         NotImplementedError
-            This method is not implemented for PivotTreeStumpClassifier.
+            This method is not implemented for PivotTreeStumpRegressor.
         """
         raise NotImplementedError()

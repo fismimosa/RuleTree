@@ -4,7 +4,7 @@ import numpy as np
 from itertools import chain
 from sklearn.base import TransformerMixin
 from sklearn.metrics.pairwise import pairwise_distances
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from RuleTree.base.RuleTreeBaseSplit import RuleTreeBaseSplit
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
@@ -54,6 +54,15 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             **kwargs
     ):
         super(RuleTreeBaseSplit, RuleTreeBaseSplit).__init__(ml_task)
+        self.k = kwargs.pop("k", None)
+        self.reg_contrast_lambda = kwargs.pop("reg_contrast_lambda", .2)
+        self.reg_max_thresholds = kwargs.pop("reg_max_thresholds", None)
+        if self.reg_max_thresholds is not None:
+            try:
+                if not np.isfinite(self.reg_max_thresholds):
+                    self.reg_max_thresholds = None
+            except TypeError:
+                self.reg_max_thresholds = None
         self.kwargs = kwargs
         self.X_candidates = None
         self.is_categorical = False
@@ -85,7 +94,7 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         if self.ml_task == MODEL_TYPE_CLF:
             return DecisionTreeClassifier(**self.kwargs)
         elif self.ml_task == MODEL_TYPE_REG:
-            return NotImplementedError()
+            return DecisionTreeRegressor(**self.kwargs)
         elif self.ml_task == MODEL_TYPE_CLU:
             raise NotImplementedError()
 
@@ -109,6 +118,80 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         row_sums = sub_matrix.sum(axis=1)
         medoid_index = np.argmin(row_sums)
         return medoid_index
+
+    def _resolve_knn_density_k(self, n_samples):
+        if self.k is None:
+            k = int(np.sqrt(n_samples))
+        else:
+            k = int(self.k)
+
+        k = min(max(5, k), n_samples)
+        if n_samples <= 1:
+            return 1
+        return min(k, n_samples - 1)
+
+    @staticmethod
+    def _root_split_gain(tree_):
+        if tree_.feature[0] == -2:
+            return 0.0
+
+        w = tree_.weighted_n_node_samples
+        imp = tree_.impurity
+        if w[0] <= 0:
+            return 0.0
+
+        return float(imp[0] - (w[1] / w[0]) * imp[1] - (w[2] / w[0]) * imp[2])
+
+    def compute_descriptive_regression(self, sub_matrix, y, sample_weight=None):
+        n_samples = len(y)
+        if n_samples <= 1:
+            return 0
+
+        k = self._resolve_knn_density_k(n_samples)
+
+        gains = np.zeros(n_samples, dtype=float)
+        contrasts = np.zeros(n_samples, dtype=float)
+
+        for pivot_idx in range(n_samples):
+            distances = sub_matrix[:, pivot_idx]
+            sorted_distances = np.sort(distances)
+
+            near_distances = sorted_distances[1:k + 1]
+            far_distances = sorted_distances[-k:]
+            if len(near_distances) == 0:
+                near_distances = sorted_distances[:1]
+            if len(far_distances) == 0:
+                far_distances = sorted_distances[-1:]
+            contrasts[pivot_idx] = float(np.mean(far_distances) - np.mean(near_distances))
+
+            distances_for_gain = distances
+            max_thresholds = int(self.reg_max_thresholds) if self.reg_max_thresholds is not None else (
+                max(256, int(np.sqrt(n_samples))))
+            unique_distances = np.unique(distances)
+            if max_thresholds > 0 and len(unique_distances) - 1 > max_thresholds:
+                quantiles = np.linspace(0.0, 1.0, max_thresholds + 2)[1:-1]
+                bins = np.unique(np.quantile(distances, quantiles))
+                if len(bins) > 0:
+                    distances_for_gain = np.digitize(distances, bins=bins, right=True).astype(float)
+
+            reg = DecisionTreeRegressor(
+                criterion=self.kwargs.get("criterion", "squared_error"),
+                max_depth=1,
+                min_samples_split=self.kwargs.get("min_samples_split", 2),
+                min_samples_leaf=self.kwargs.get("min_samples_leaf", 1),
+                random_state=self.kwargs.get("random_state", None),
+            )
+            reg.fit(distances_for_gain.reshape(-1, 1), y, sample_weight=sample_weight)
+            gains[pivot_idx] = self._root_split_gain(reg.tree_)
+
+        gains_min, gains_max = np.min(gains), np.max(gains)
+        contrast_min, contrast_max = np.min(contrasts), np.max(contrasts)
+
+        gains_norm = (gains - gains_min) / (gains_max - gains_min + 1e-12)
+        contrasts_norm = (contrasts - contrast_min) / (contrast_max - contrast_min + 1e-12)
+
+        scores = gains_norm + float(self.reg_contrast_lambda) * contrasts_norm
+        return int(np.argmax(scores))
 
     def compute_discriminative(self, sub_matrix, y, sample_weight=None, check_input=True):
         """
@@ -176,29 +259,39 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         local_discriminatives = []
         local_candidates = []
 
-        for label in set(y):
-            idx_label = np.where(y == label)[0]
-            local_idx_label = local_idx[idx_label]
-            sub_matrix_label = sub_matrix[:, idx_label]
+        if self.ml_task == MODEL_TYPE_REG:
+            desc_id = self.compute_descriptive_regression(sub_matrix, y, sample_weight=sample_weight)
+            local_descriptives = [local_idx[desc_id]]
 
-            disc_id = self.compute_discriminative(sub_matrix_label, y,
+            disc_id = self.compute_discriminative(sub_matrix, y,
                                                   sample_weight=sample_weight,
                                                   check_input=check_input)
+            if disc_id != -2:
+                local_discriminatives = [local_idx[disc_id]]
+        else:
+            for label in set(y):
+                idx_label = np.where(y == label)[0]
+                local_idx_label = local_idx[idx_label]
+                sub_matrix_label = sub_matrix[:, idx_label]
 
-            desc_id = self.compute_descriptive(sub_matrix_label[idx_label])
-            desc_idx = local_idx_label[desc_id]
+                disc_id = self.compute_discriminative(sub_matrix_label, y,
+                                                      sample_weight=sample_weight,
+                                                      check_input=check_input)
 
-            if disc_id == -2:  # if no split performed, do not add anything
-                local_discriminatives += []
-            else:
-                disc_idx = local_idx_label[disc_id]
-                if isinstance(disc_idx, (list, np.ndarray)):
-                    local_discriminatives += disc_idx.flatten().tolist() if isinstance(disc_idx, np.ndarray) else list(
-                        disc_idx)
+                desc_id = self.compute_descriptive(sub_matrix_label[idx_label])
+                desc_idx = local_idx_label[desc_id]
+
+                if disc_id == -2:  # if no split performed, do not add anything
+                    local_discriminatives += []
                 else:
-                    local_discriminatives += [disc_idx]
+                    disc_idx = local_idx_label[disc_id]
+                    if isinstance(disc_idx, (list, np.ndarray)):
+                        local_discriminatives += disc_idx.flatten().tolist() if isinstance(disc_idx, np.ndarray) else list(
+                            disc_idx)
+                    else:
+                        local_discriminatives += [disc_idx]
 
-            local_descriptives += [desc_idx]
+                local_descriptives += [desc_idx]
 
         local_candidates = local_descriptives + local_discriminatives
 
