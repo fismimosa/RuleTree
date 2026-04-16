@@ -845,7 +845,7 @@ class RuleTree(RuleTreeBase, ABC):
         dictionary = {
             "tree_type": self.__class__.__module__,
             "args": args,
-            "classes_": self.classes_.tolist(),
+            "classes_": np.array(self.classes_).tolist(),
             "n_classes_": self.n_classes_,
             "nodes": [],
         }
@@ -873,8 +873,11 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             RuleTree: RuleTree instance.
         """
-        with open(filename, 'r') as f:
-            dictionary = json.load(f)
+        if not isinstance(filename, dict):
+            with open(filename, 'r') as f:
+                dictionary = json.load(f)
+        else:
+            dictionary = filename
 
         assert 'tree_type' in dictionary
 

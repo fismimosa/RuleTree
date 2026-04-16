@@ -9,11 +9,12 @@ def get_tree_depth(d:dict):
 
     return depth -1
 
-def make_complete_rule_tree(filename=None, d=None, max_depth=None):
-    assert d is not None or filename is not None, "Either a dictionary or a filename must be provided."
-    if d is None:
+def make_complete_rule_tree(filename, max_depth=None, verbose=False):
+    if not isinstance(filename, dict):
         with open(filename, 'r') as f:
             d = json.load(f)
+    else:
+        d = filename
 
     if max_depth is None:
         max_depth = max(d['args'].get('max_depth', 0), get_tree_depth(d))
@@ -21,7 +22,8 @@ def make_complete_rule_tree(filename=None, d=None, max_depth=None):
     nodes = {el['node_id']: el for el in d['nodes']}
     leaves = [k for k, v in nodes.items() if v['is_leaf'] and len(k) - 1 < max_depth]
 
-    #print('Leaves to complete:', len(leaves))
+    if verbose:
+        print('Leaves to complete:', len(leaves))
 
     while leaves:
         node_id = leaves.pop()
@@ -54,7 +56,8 @@ def make_complete_rule_tree(filename=None, d=None, max_depth=None):
 
     d['nodes'] = list(nodes.values())
 
-    if filename is not None:
+    if not isinstance(filename, dict):
         with open(filename, 'w') as f:
             json.dump(d, f, indent=4)
+
     return d

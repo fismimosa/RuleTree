@@ -234,9 +234,9 @@ class RuleTreeNode:
             "node_id": self.node_id,
             "is_leaf": self.is_leaf(),
             "prediction": self.prediction,
-            "prediction_probability": self.prediction_probability if isinstance(self.prediction_probability, float) else self.prediction_probability.tolist(),
-            "log_odds": self.log_odds if isinstance(self.log_odds, float) else self.log_odds.tolist(),
-            "prediction_classes_": self.classes.tolist(),
+            "prediction_probability": self.prediction_probability if isinstance(self.prediction_probability, float) else np.array(self.prediction_probability).tolist(),
+            "log_odds": self.log_odds if isinstance(self.log_odds, float) else np.array(self.log_odds).tolist(),
+            "prediction_classes_": np.array(self.classes).tolist(),
             "n_features": self.n_features,
             "left_node": self.node_l.node_id if self.node_l is not None else None,
             "right_node": self.node_r.node_id if self.node_r is not None else None,
@@ -269,8 +269,8 @@ class RuleTreeNode:
 
         node = RuleTreeNode(node_id = info_dict['node_id'],
                             prediction = info_dict.get('prediction', np.nan),
-                            prediction_probability = info_dict.get('prediction_probability', [np.nan]*info_dict.get('prediction_classes_', 1)),
-                            log_odds = info_dict.get('log_odds', [np.nan]*info_dict.get('prediction_classes_', 1)),
+                            prediction_probability = info_dict.get('prediction_probability', [np.nan]*int(info_dict.get('classes', 1))),
+                            log_odds = info_dict.get('log_odds', [np.nan]*int(info_dict.get('classes', 1))),
                             parent = None,
                             classes=info_dict.get('prediction_classes_', np.nan),
                             n_features=info_dict.get('n_features', np.nan), )
