@@ -1,4 +1,5 @@
 import numpy as np
+from line_profiler import profile
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier
@@ -24,7 +25,7 @@ class DecisionTreeStumpClassifierLorenzoMatrixv1(DecisionTreeStumpClassifier):
         impurity_fun (function): Function used to calculate impurity (gini, entropy, etc.).
     """
 
-    def __init__(self, min_samples_leaf=1, class_weight=None, random_state=42, criterion=None):
+    def __init__(self, min_samples_leaf=1, class_weight=None, random_state=42, criterion=None, batch_size=None):
         """
         Initializes the DecisionTreeStumpClassifier.
 
@@ -44,6 +45,7 @@ class DecisionTreeStumpClassifierLorenzoMatrixv1(DecisionTreeStumpClassifier):
         self.categorical = None
         self.numerical = None
 
+        self.batch_size = batch_size
         self.class_weight = class_weight
         self.min_samples_leaf = min_samples_leaf
         self.random_state = random_state
@@ -51,19 +53,18 @@ class DecisionTreeStumpClassifierLorenzoMatrixv1(DecisionTreeStumpClassifier):
             'class_weight': class_weight,
             'random_state': random_state,
             'criterion': criterion,
-            'min_samples_leaf': min_samples_leaf
+            'min_samples_leaf': min_samples_leaf,
+            'batch_size': batch_size # L'ho dovuto inserire qui sennò andando giu nell'albero diventava None
         }
 
         self.impurity = [0.0, 0.0, 0.0]  # padre, sx, dx
         self.impurity_fun = Impurity.gini  # default gini
 
-        # Matrici
-        self.A = None
-        self.B = None
 
         if criterion == "entropy":
             self.impurity_fun = Impurity.entropy
 
+    @profile
     def fit(self, X, y, idx=None, context=None, sample_weight=None):
         """
         Fits the decision tree stump to the provided data.
@@ -106,36 +107,13 @@ class DecisionTreeStumpClassifierLorenzoMatrixv1(DecisionTreeStumpClassifier):
             context.numerical = self.numerical
 
         m = X.shape[1]  # Numero di features
+        batch_size = self.batch_size or m # Dimensione del batch oppure m stesso se non specificato
 
-        self.A, self.B = self.build_A_B(X, m, range(m))  # Costruisco le matrici A e B
-        k = self.A.shape[1]  # Numero di split
+        best_gain = -np.inf # Miglior gain in assoluto
+        best_feature = None # Miglior feature in assoluto associata al best gain
+        best_threshold = None # Miglior threshold in assoluto associata al best gain
 
-        # Per ogni colonna di A, trova l’indice della riga con il valore più grande (la feature stessa)
-        # array lunghezza k
-        active_features = np.argmax(self.A, axis=0)  # active_features[j] = feature usata dal j-esimo split
-
-        # Estraggo il threshold di ogni split j usando la feature che attivo in A (active_features[j])
-        # array lunghezza k
-        active_thresholds = self.B[self.A]  # thresholds[j] = B[active_features[j],j]
-
-        # Maschere per split numerici e categorici
-        sx_mask = np.zeros((n_samples, k), dtype=bool)  # Matrice n_samples x k
-        # Se sx_mask[i, j] = True allora il record i va a sinistra nello split j
-        # Se sx_mask[i, j] = False allora il record i va a destra nello split j
-
-        # np.isin() controlla se ogni elemento di un array appartiene a un insieme di valori
-        categorical_mask = np.isin(active_features, self.categorical)  # Quali split sono categorici?
-        numerical_mask = ~categorical_mask  # Faccio la negazione cosi ottengo i numerici
-
-        # TODO capire come si puo fare la regressione con il mio metodo, quando fatto prendo FairRuleTreeRegressor ecc. e guardare come si puo implementare nel mio metodo.
-        # X@A <= B || X@A==B
-        sx_mask[:, numerical_mask] = X[:, active_features[numerical_mask]] <= active_thresholds[numerical_mask]
-        sx_mask[:, categorical_mask] = X[:, active_features[categorical_mask]] == active_thresholds[categorical_mask]
-
-        # Con questo i tempi erano rimasti invariati! Circa 0.0606
-        # imp_left = np.array([self.impurity_fun(y[sx_mask[:, j]]) for j in range(k)])
-        # imp_right = np.array([self.impurity_fun(y[~sx_mask[:, j]]) for j in range(k)])
-
+        ### COSTRUZIONE ONE HOT ###
         classes = np.unique(y)  # Array ordinato di classi univoche
         n_classes = len(classes)
 
@@ -155,17 +133,49 @@ class DecisionTreeStumpClassifierLorenzoMatrixv1(DecisionTreeStumpClassifier):
         if class_weight is not None:
             class_weight_vec = np.array([class_weight[c] for c in classes])  # Trasformo dizionario in vettore
             y_onehot *= class_weight_vec
+        ### FINE COSTRUZIONE ONEHOT ###
 
-        info_gain, imp_parent, imp_left, imp_right = Impurity.calculate_gain(sx_mask, y_onehot, self.impurity_fun)
+        for start in range(0, m, batch_size): # Incremento di batch_size
+            end = min(start + batch_size, m)
+            features_batch = list(range(start, end))
+            A, B = self.build_A_B(X, m, features_batch)  # Costruisco le matrici A e B
+            k = A.shape[1]  # Numero di split
 
-        best_j = np.argmax(info_gain)  # Indice del best gain
-        self.feature = active_features[best_j]
-        self.threshold = active_thresholds[best_j]
+            # Per ogni colonna di A, trova l’indice della riga con il valore più grande (la feature stessa)
+            # array lunghezza k
+            active_features = np.argmax(A, axis=0)  # active_features[j] = feature usata dal j-esimo split
 
-        self.impurity[0] = imp_parent
-        self.impurity[1] = imp_left[best_j]
-        self.impurity[2] = imp_right[best_j]
+            # Estraggo il threshold di ogni split j usando la feature che attivo in A (active_features[j])
+            # array lunghezza k
+            active_thresholds = B[A]  # thresholds[j] = B[active_features[j],j]
 
+            # Maschere per split numerici e categorici
+            sx_mask = np.zeros((n_samples, k), dtype=bool)  # Matrice n_samples x k
+            # Se sx_mask[i, j] = True allora il record i va a sinistra nello split j
+            # Se sx_mask[i, j] = False allora il record i va a destra nello split j
+
+            # np.isin() controlla se ogni elemento di un array appartiene a un insieme di valori
+            categorical_mask = np.isin(active_features, self.categorical)  # Quali split sono categorici?
+            numerical_mask = ~categorical_mask  # Faccio la negazione cosi ottengo i numerici
+
+            # X@A <= B || X@A==B
+            sx_mask[:, numerical_mask] = X[:, active_features[numerical_mask]] <= active_thresholds[numerical_mask]
+            sx_mask[:, categorical_mask] = X[:, active_features[categorical_mask]] == active_thresholds[categorical_mask]
+
+            info_gain, imp_parent, imp_left, imp_right = Impurity.calculate_gain(sx_mask, y_onehot, self.impurity_fun)
+
+            local_best = np.argmax(info_gain)  # Indice del best gain
+            if info_gain[local_best] > best_gain:
+                best_gain = info_gain[local_best]
+                best_feature = active_features[local_best]
+                best_threshold = active_thresholds[local_best]
+
+                self.impurity[0] = imp_parent
+                self.impurity[1] = imp_left[local_best]
+                self.impurity[2] = imp_right[local_best]
+
+        self.feature = best_feature
+        self.threshold = best_threshold
         self.is_categorical = self.feature in self.categorical
 
         # no split
@@ -196,6 +206,7 @@ class DecisionTreeStumpClassifierLorenzoMatrixv1(DecisionTreeStumpClassifier):
 
         return y_pred + 1
 
+    @profile
     def build_A_B(self, X, m, numerical):
         """
         Costruisce le matrici A e B.

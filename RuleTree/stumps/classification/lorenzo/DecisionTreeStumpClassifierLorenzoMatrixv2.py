@@ -1,4 +1,5 @@
 import numpy as np
+from line_profiler import profile
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier
@@ -24,7 +25,7 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
         impurity_fun (function): Function used to calculate impurity (gini, entropy, etc.).
     """
 
-    def __init__(self, min_samples_leaf=1, class_weight=None, random_state=42, criterion=None):
+    def __init__(self, min_samples_leaf=1, class_weight=None, random_state=42, criterion=None, batch_size=None):
         """
         Initializes the DecisionTreeStumpClassifier.
 
@@ -44,6 +45,7 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
         self.categorical = None
         self.numerical = None
 
+        self.batch_size = batch_size
         self.class_weight = class_weight
         self.min_samples_leaf = min_samples_leaf
         self.random_state = random_state
@@ -51,7 +53,8 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
             'class_weight': class_weight,
             'random_state': random_state,
             'criterion': criterion,
-            'min_samples_leaf': min_samples_leaf
+            'min_samples_leaf': min_samples_leaf,
+            'batch_size': batch_size
         }
 
         self.impurity = [0.0, 0.0, 0.0]  # padre, sx, dx
@@ -64,6 +67,7 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
         if criterion == "entropy":
             self.impurity_fun = Impurity.entropy
 
+    # @profile
     def fit(self, X, y, idx=None, context=None, sample_weight=None):
         """
         Fits the decision tree stump to the provided data.
@@ -86,7 +90,7 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
         if idx is None:  # Prendo la porzione di features e colonna target che mi interessa
             idx = slice(None)
 
-        X = X[idx]
+        X = X[idx].astype(np.float32, copy=False)  # Cambiamento float -> float32
         y = y[idx]
 
         n_samples = len(X)
@@ -106,24 +110,13 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
             context.numerical = self.numerical
 
         m = X.shape[1]  # Numero di features
+        batch_size = self.batch_size or m  # Dimensione del batch oppure m stesso se non specificato
 
-        active_features, active_thresholds = self.build_splits(X, range(m))
-        k = len(active_features)
+        best_gain = -np.inf  # Miglior gain in assoluto
+        best_feature = None  # Miglior feature in assoluto associata al best gain
+        best_threshold = None  # Miglior threshold in assoluto associata al best gain
 
-        # Maschere per split numerici e categorici
-        sx_mask = np.zeros((n_samples, k), dtype=bool)  # Matrice n_samples x k
-        # Se sx_mask[i, j] = True allora il record i va a sinistra nello split j
-        # Se sx_mask[i, j] = False allora il record i va a destra nello split j
-
-        # np.isin() controlla se ogni elemento di un array appartiene a un insieme di valori
-        categorical_mask = np.isin(active_features, self.categorical)  # Quali split sono categorici?
-        numerical_mask = ~categorical_mask  # Faccio la negazione cosi ottengo i numerici
-
-        # TODO capire come si puo fare la regressione con il mio metodo, quando fatto prendo FairRuleTreeRegressor ecc. e guardare come si puo implementare nel mio metodo.
-        # X@A <= B || X@A==B
-        sx_mask[:, numerical_mask] = X[:, active_features[numerical_mask]] <= active_thresholds[numerical_mask]
-        sx_mask[:, categorical_mask] = X[:, active_features[categorical_mask]] == active_thresholds[categorical_mask]
-
+        ### INIZIO COSTRUZIONE ONEHOT ###
         classes = np.unique(y)  # Array ordinato di classi univoche
         n_classes = len(classes)
 
@@ -132,7 +125,8 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
 
         # One-hot encoding di y
         # Per ogni sample dico a quale classe appartiene
-        y_onehot = np.zeros((n_samples, n_classes), dtype=float)  # Matrice n_samples x n_classes di zeri
+        y_onehot = np.zeros((n_samples, n_classes),
+                            dtype=np.float32)  # Matrice n_samples x n_classes di zeri, cambiamento float -> float32
 
         if sample_weight is None:
             y_onehot[np.arange(n_samples), y_idx] = 1.0  # Se non c'è peso, assegno peso 1
@@ -143,18 +137,56 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
         if class_weight is not None:
             class_weight_vec = np.array([class_weight[c] for c in classes])  # Trasformo dizionario in vettore
             y_onehot *= class_weight_vec
+        ### FINE COSTRUZIONE ONEHOT ###
 
-        info_gain, imp_parent, imp_left, imp_right = Impurity.calculate_gain(sx_mask, y_onehot, self.impurity_fun)
+        categorical_set = set(self.categorical)
 
+        for start in range(0, m, batch_size):
+            end = min(start + batch_size, m)
+            features_batch = list(range(start, end))
+            active_features, active_thresholds = self.build_splits(X, features_batch)
+            k = len(active_features)
 
-        best_j = np.argmax(info_gain)  # Indice del best gain
-        self.feature = active_features[best_j]
-        self.threshold = active_thresholds[best_j]
+            # Maschere per split numerici e categorici
+            sx_mask = np.empty((n_samples, k), dtype=bool)  # Matrice n_samples x k, Cambiamento np.zeros -> np.empty
 
-        self.impurity[0] = imp_parent
-        self.impurity[1] = imp_left[best_j]
-        self.impurity[2] = imp_right[best_j]
+            # np.isin() controlla se ogni elemento di un array appartiene a un insieme di valori
+            categorical_mask = np.fromiter( # cambiamento
+                (f in categorical_set for f in active_features),
+                dtype=bool,
+                count=len(active_features)
+            )  # cambiamento # Quali split sono categorici?
+            numerical_mask = ~categorical_mask  # Faccio la negazione cosi ottengo i numerici
 
+            # X@A <= B || X@A==B
+            num_features = active_features[numerical_mask]
+            num_thresholds = active_thresholds[numerical_mask]
+
+            cat_features = active_features[categorical_mask]
+            cat_thresholds = active_thresholds[categorical_mask]
+
+            if len(num_features) > 0:
+                X_num = X[:, num_features]
+                sx_mask[:, numerical_mask] = X_num <= num_thresholds
+
+            if len(cat_features) > 0:
+                X_cat = X[:, cat_features]
+                sx_mask[:, categorical_mask] = X_cat == cat_thresholds
+
+            info_gain, imp_parent, imp_left, imp_right = Impurity.calculate_gain(sx_mask, y_onehot, self.impurity_fun)
+
+            local_best = np.argmax(info_gain)  # Indice del best gain
+            if info_gain[local_best] > best_gain:
+                best_gain = info_gain[local_best]
+                best_feature = active_features[local_best]
+                best_threshold = active_thresholds[local_best]
+
+                self.impurity[0] = imp_parent
+                self.impurity[1] = imp_left[local_best]
+                self.impurity[2] = imp_right[local_best]
+
+        self.feature = best_feature
+        self.threshold = best_threshold
         self.is_categorical = self.feature in self.categorical
 
         # no split
@@ -185,13 +217,15 @@ class DecisionTreeStumpClassifierLorenzoMatrixv2(DecisionTreeStumpClassifier):
 
         return y_pred + 1
 
+    # @profile
     def build_splits(self, X, features):
-        features_list = []
-        thresholds_list = []
+        thresholds = [np.unique(X[:, f]) for f in features]
 
-        for f in features:
-            thr = np.unique(X[:, f])
-            features_list.append(np.full(thr.size, f))
-            thresholds_list.append(thr)
+        active_thresholds = np.concatenate(thresholds).astype(np.float32, copy=False)
 
-        return np.concatenate(features_list), np.concatenate(thresholds_list)
+        active_features = np.concatenate([
+            np.full(len(thr), f, dtype=np.int32)
+            for f, thr in zip(features, thresholds)
+        ])
+
+        return active_features, active_thresholds

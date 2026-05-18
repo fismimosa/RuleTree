@@ -99,7 +99,7 @@ def evaluate_expl(model):
 
     return {
         "n_leaf": res[0],
-        "n_nodes": res[1],
+            "n_nodes": res[1],
         "resulting_max_depth": res[2],
     }
 
