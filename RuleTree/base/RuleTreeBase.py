@@ -77,41 +77,6 @@ class RuleTreeBase(BaseEstimator, ABC):
         check_consistent_length(*values_to_check)
         return data_inputs
 
-    def _resolve_data_input(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None):
-        """Return the first provided input container after validation.
-
-        This helper is intended for legacy estimators that still operate on one
-        data container internally. All provided containers are validated for
-        consistent sample length, then the first available one is returned in
-        the order ``X``, ``X_ts``, ``X_img``, ``X_txt``.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, ...), default=None
-            Generic or tabular input data.
-        y : array-like of shape (n_samples,), default=None
-            Target values.
-        X_ts : array-like of shape (n_samples, ...), default=None
-            Time-series input data.
-        X_img : array-like of shape (n_samples, ...), default=None
-            Image input data.
-        X_txt : array-like of shape (n_samples, ...), default=None
-            Text input data.
-
-        Returns
-        -------
-        X_resolved : array-like of shape (n_samples, ...)
-            The first provided input container in RuleTree's modality order.
-        """
-        data_inputs = self._validate_inputs(
-            X=X,
-            y=y,
-            X_ts=X_ts,
-            X_img=X_img,
-            X_txt=X_txt,
-        )
-        return next(iter(data_inputs.values()))
-
     def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None):
         """Validate input data before fitting.
 
