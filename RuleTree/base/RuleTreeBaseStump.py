@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 from ordered_set import OrderedSet
 from sklearn.base import BaseEstimator, TransformerMixin
+
+from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 
 
@@ -25,8 +27,13 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         categorical (list): List of indices for categorical features.
     """
 
+    _DATA_INPUT_NAMES = RuleTreeBase._DATA_INPUT_NAMES
+    _validate_inputs = RuleTreeBase._validate_inputs
+    _resolve_data_input = RuleTreeBase._resolve_data_input
+
     @abstractmethod
-    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
+            idx=None, context=None, sample_weight=None, check_input=True):
         raise NotImplementedError("The fit method must be implemented in subclasses.")
 
     @abstractmethod
@@ -71,7 +78,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         raise NotImplementedError("The node_to_dict method must be implemented in subclasses.")
 
     @abstractmethod
-    def apply(self, X: np.ndarray, check_input=True) -> np.ndarray:
+    def apply(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None, check_input=True) -> np.ndarray:
         """
         Abstract method to apply the model to input data and return predictions.
 
@@ -113,5 +120,6 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         return data_type in [DATA_TYPE_TABULAR]
 
     @staticmethod
-    def update_statistics(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+    def update_statistics(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
+                          idx=None, context=None, sample_weight=None, check_input=True):
         pass
