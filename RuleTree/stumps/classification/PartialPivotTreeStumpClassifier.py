@@ -70,7 +70,10 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
             "n_jobs": n_jobs,
         }
 
-    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
+            idx=None, context=None, sample_weight=None, check_input=True):
+        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+
         if self.scaler is not None:
             self.scaler.fit(X)
 
@@ -95,7 +98,9 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         return self
 
-    def apply(self, X, check_input=False):
+    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, check_input=False):
+        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+
         if self.scaler is not None:
             X = self.scaler.transform(X)
 

@@ -17,7 +17,8 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
         self.distance_measure = kwargs.get('distance_measure', 'euclidean')
         self.X_split_instance = None
 
-    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
+            idx=None, context=None, sample_weight=None, check_input=True):
         """
         Fit the classifier to the training data.
 
@@ -45,6 +46,7 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
         self : PivotTreeStumpRegressor
             Fitted regressor instance.
         """
+        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         X = X[idx]
         y = y[idx]
         self.feature_analysis(X, y)
@@ -77,7 +79,7 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
 
         return self
 
-    def apply(self, X):
+    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None):
         """
         Apply the fitted classifier to the input data.
 
@@ -94,6 +96,7 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
         numpy.ndarray
             Predicted node ids (1 for left branch, 2 for right branch).
         """
+        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         X_transformed = pairwise_distances(self.scaler.transform(X[:, self.num_pre_transformed]),
                                            self.X_split_instance.reshape(1, -1),
                                            metric=self.distance_measure)

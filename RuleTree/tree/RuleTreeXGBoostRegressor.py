@@ -25,12 +25,14 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
         self.n_jobs = n_jobs
 
 
-    def fit(self, X: np.array, y: np.array = None, **kwargs):
-        super().fit(X, y, **kwargs)
+    def fit(self, X: np.array = None, y: np.array = None,
+            X_ts=None, X_img=None, X_txt=None, **kwargs):
+        X_resolved = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+        super().fit(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, **kwargs)
         if self._gamma_pruning(self.root).is_leaf():
             raise EmptyXGBTreeException('The value of gamma lead to an empty XGBoostTree.')
 
-        leafs = self.apply(X)
+        leafs = self.apply(X_resolved)
         for leaf in np.unique(leafs):
             cond = leafs == leaf
             output_value = np.sum(y[cond])/(np.sum(cond) + self.lam)

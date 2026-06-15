@@ -17,7 +17,10 @@ from typing import Optional
 
 import numpy as np
 import sklearn
-from line_profiler_pycharm import profile
+try:
+    from line_profiler_pycharm import profile
+except ImportWarning:
+    profile = None
 from sklearn import tree
 from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory
@@ -56,7 +59,8 @@ class RuleTree(RuleTreeBase, ABC):
                                 # list of tuple (probability, RuleTreeBaseStump) where sum(probabilities)==1
                  stump_selection, # ['random', 'best']
                  random_state,
-                 distance_measure=None
+                 distance_measure=None,
+                 exceptions='raise'
                  ):
         """
         Initialize the RuleTree.
@@ -84,6 +88,9 @@ class RuleTree(RuleTreeBase, ABC):
         self.stump_selection = stump_selection
 
         self.random_state = random_state
+        if exceptions not in ['raise', 'ignore']:
+            raise ValueError("exception must me either raise or ignore")
+        self.exceptions = exceptions
         random.seed(random_state)
 
     def _set_stump(self):
@@ -167,7 +174,8 @@ class RuleTree(RuleTreeBase, ABC):
         return compatible_stumps
 
     
-    def _incremental_fit(self, root: RuleTreeNode, X: np.ndarray, idx: np.ndarray):
+    def _incremental_fit(self, root: RuleTreeNode, X: np.ndarray, X_ts: np.ndarray, X_img: np.ndarray, X_txt,
+                         idx: np.ndarray):
         if root.is_leaf():
             self.queue_push(root, idx)
             return 1
@@ -175,12 +183,13 @@ class RuleTree(RuleTreeBase, ABC):
             labels = root.stump.apply(X[idx])
             return (
                     1 +
-                    self._incremental_fit(root.node_l, X, idx[labels==1]) +
-                    self._incremental_fit(root.node_r, X, idx[labels == 2])
+                    self._incremental_fit(root.node_l, X, X_ts, X_img, X_txt, idx[labels==1]) +
+                    self._incremental_fit(root.node_r, X, X_ts, X_img, X_txt, idx[labels==2])
             )
 
 
-    def fit(self, X: np.array, y: np.array = None, **kwargs):
+    def fit(self, X:np.ndarray|None=None, y:np.ndarray|None=None,
+            X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None, X_txt:np.ndarray|None=None, **kwargs):
         """
         Fit the RuleTree to the provided data.
 
@@ -194,57 +203,50 @@ class RuleTree(RuleTreeBase, ABC):
         """
         self.classes_ = self.classes_ if hasattr(self, 'classes_') else np.unique(y)
         self.n_classes_ = self.n_classes_ if hasattr(self, 'n_classes_') else len(self.classes_)
-        self.n_features = self.n_features if hasattr(self, 'n_features') else X.shape[1]
         self._set_stump()
 
-        idx = np.arange(X.shape[0])
+        idx = np.arange(y.shape[0])
         if self.root is None:
-            self.root = self.prepare_node(y, idx, "R")
+            self.root = self.prepare_node(y=y, idx=idx, node_id="R")
             self.queue_push(self.root, idx)
             nbr_curr_nodes = 0
         else:
-            nbr_curr_nodes = self._incremental_fit(self.root, X, idx)
+            nbr_curr_nodes = self._incremental_fit(root=self.root, X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx)
 
 
         while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
             idx, current_node = self.queue_pop()
             
-            
             if len(idx) < self.min_samples_split:
                 self.make_leaf(current_node)
-                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                #current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs) #  TODO: questo va nello stump
                 nbr_curr_nodes += 1
                 continue
 
             if nbr_curr_nodes + len(self.queue) + 1 >= self.max_leaf_nodes:
-                self.make_leaf(current_node)
-                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
                 continue
 
             if self.max_depth is not None and current_node.get_depth() >= self.max_depth:
-                self.make_leaf(current_node)
-                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
                 continue
 
             if self.check_additional_halting_condition(y=y, curr_idx=idx):
-                self.make_leaf(current_node)
-                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
                 continue
 
             try:
-                clf = self.make_split(X, y, idx=idx, **kwargs)
-                labels = clf.apply(X[idx])
+                clf = self.make_split(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx, **kwargs)
+                labels = clf.apply(X, X_ts, X_img, X_txt, idx=idx)
             except NoSplitFoundWarning:
-                self.make_leaf(current_node)
-                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
                 continue
             except (ValueError, AttributeError, IndexError) as e:
-                self.make_leaf(current_node)
-                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+                self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
                 warning = RuntimeWarning(*e.args)
                 warning.with_traceback(e.__traceback__)
@@ -252,20 +254,19 @@ class RuleTree(RuleTreeBase, ABC):
                 continue
 
            
-            name_clf = clf.__class__.__module__.split('.')[-1]
+            #name_clf = clf.__class__.__module__.split('.')[-1]
 
-            if name_clf in ['ObliqueDecisionTreeStumpClassifier',
-                            'DecisionTreeStumpClassifier']:
-                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
+            #if name_clf in ['ObliqueDecisionTreeStumpClassifier', TODO: vedi sopra
+            #                'DecisionTreeStumpClassifier']:
+            #    current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 
                 
-            global_labels = clf.apply(X)
+            global_labels = clf.apply(X) #  TODO: Questo non si può fare a livello di nodo/stump o come metodo separato? vorrei mantenere la fit quanto più pulita possibile
             current_node.balance_score_global = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
             current_node.balance_score = current_node.balance_score_global
 
-            if self.is_split_useless(X=X, clf=clf, idx=idx):
+            if self.is_split_useless(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, clf=clf, idx=idx):
                 self.make_leaf(current_node)
-                current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
                 nbr_curr_nodes += 1
                 continue
 
@@ -286,7 +287,7 @@ class RuleTree(RuleTreeBase, ABC):
 
         return self
 
-    def predict(self, X: np.ndarray):
+    def predict(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
         Predict class labels for the input data.
 
@@ -296,11 +297,12 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Predicted class labels.
         """
+        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         labels, _, _ = self.root.predict(X)
 
         return labels
 
-    def apply(self, X: np.ndarray):
+    def apply(self, X: np.ndarray|None = None, X_ts=None, X_img=None, X_txt=None):
         """
         Apply the RuleTree to the input data.
 
@@ -310,6 +312,7 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Leaf indices for each sample.
         """
+        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         _, leaves, _ = self.root.predict(X)
 
         return leaves
@@ -317,7 +320,6 @@ class RuleTree(RuleTreeBase, ABC):
     def update_statistics(self, X: np.ndarray, y: np.ndarray):
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
-        self.n_features = X.shape[1]
 
         self._update_statistics(X, y, self.root, np.arange(X.shape[0]))
 
@@ -326,7 +328,6 @@ class RuleTree(RuleTreeBase, ABC):
             return
 
         node.classes = self.classes_
-        node.n_features = self.n_features
         if node.stump is not None and hasattr(node.stump, "classes_"):
             node.stump.classes_ = self.classes_
 
@@ -353,7 +354,8 @@ class RuleTree(RuleTreeBase, ABC):
 
 
 
-    def predict_proba(self, X: np.ndarray):
+    def predict_proba(self, X: np.ndarray|None=None, X_ts: np.ndarray|None=None, X_img: np.ndarray|None=None,
+                      X_txt: np.ndarray|None=None):
         """
         Predict class probabilities for the input data.
 
@@ -363,7 +365,7 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        labels, _, proba = self.root.predict(X)
+        labels, _, proba = self.root.predict(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         proba_matrix = np.zeros((X.shape[0], self.n_classes_))
         for classe in self.classes_:
             proba_matrix[labels == classe, self.classes_ == classe] = proba[labels == classe]
@@ -456,7 +458,8 @@ class RuleTree(RuleTreeBase, ABC):
         """
 
     @abstractmethod
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
+    def make_split(self, X: np.ndarray|None, X_ts: np.ndarray|None, X_img: np.ndarray|None, X_txt: np.ndarray|None,
+                   y: np.ndarray|None, idx: np.ndarray, **kwargs) -> tree:
         """
         Create a split in the RuleTree.
 
@@ -472,7 +475,7 @@ class RuleTree(RuleTreeBase, ABC):
         pass
 
     @abstractmethod
-    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
+    def prepare_node(self, y: np.ndarray|None, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Prepare a node in the RuleTree.
 
@@ -498,7 +501,8 @@ class RuleTree(RuleTreeBase, ABC):
         pass
 
     @abstractmethod
-    def is_split_useless(self, X: np.ndarray, clf: tree, idx: np.ndarray):
+    def is_split_useless(self, X: np.ndarray|None, X_ts:np.ndarray|None, X_img:np.ndarray|None, X_txt:np.ndarray|None,
+                         clf: RuleTreeBaseStump, idx: np.ndarray):
         """
         Check if a split is useless.
 
@@ -642,13 +646,13 @@ class RuleTree(RuleTreeBase, ABC):
 
         Args:
             current_node (RuleTreeNode): Current node in the tree.
-            importances (np.ndarray): Array to store importances.
+            importances (dict): Array to store importances.
 
         Returns:
-            np.ndarray: Feature importances.
+            dict: Feature importances.
         """
         if importances is None:
-            importances = np.zeros(self.n_features, dtype=np.float64)
+            importances = dict()
 
         if current_node is None:
             current_node = self.root

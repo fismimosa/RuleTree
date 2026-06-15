@@ -104,7 +104,8 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
             "n_jobs": n_jobs,
         }
 
-    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
+            idx=None, context=None, sample_weight=None, check_input=True):
         """
         Fit the regressor to the given data.
 
@@ -119,6 +120,8 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         Returns:
             self: Fitted regressor.
         """
+        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+
         if idx is None:
             idx = slice(None)
         X = X[idx]
@@ -130,7 +133,7 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         return super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
 
-    def apply(self, X, check_input=False):
+    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, check_input=False):
         """
         Apply the fitted model to the input data.
 
@@ -141,6 +144,7 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         Returns:
             array-like: Transformed data.
         """
+        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         return super().apply(self.st.transform(X), check_input=check_input)
 
     def supports(self, data_type):

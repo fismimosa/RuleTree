@@ -218,7 +218,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             samples=len(y[idx]),
         )
 
-    def fit(self, X: np.array, y: np.array = None, sample_weight=None, **kwargs):
+    def fit(self, X: np.array = None, y: np.array = None,
+            X_ts=None, X_img=None, X_txt=None, sample_weight=None, **kwargs):
         """
         Fit the RuleTreeClassifier to the provided data.
 
@@ -231,7 +232,15 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         Returns:
             RuleTreeClassifier: The fitted RuleTreeClassifier instance.
         """
-        super().fit(X, y, sample_weight=sample_weight, **kwargs)
+        super().fit(
+            X=X,
+            y=y,
+            X_ts=X_ts,
+            X_img=X_img,
+            X_txt=X_txt,
+            sample_weight=sample_weight,
+            **kwargs,
+        )
 
         return self
 

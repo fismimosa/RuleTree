@@ -233,8 +233,9 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
 
         return best_clf
 
-    def fit(self, X: np.array, y: np.array = None, **kwargs):
-        super().fit(X, y, **kwargs)
+    def fit(self, X: np.array = None, y: np.array = None,
+            X_ts=None, X_img=None, X_txt=None, **kwargs):
+        super().fit(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, **kwargs)
         self._post_fit_fix()
         return self
 

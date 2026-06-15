@@ -358,7 +358,8 @@ class RuleTreeNode:
 
         return graph
 
-    def predict(self, X: np.ndarray, prediction_step=np.inf):
+    def predict(self, X: np.ndarray|None=None, X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None,
+                X_txt:np.ndarray|None=None, idx:np.ndarray=None, prediction_step=np.inf):
         """
         Predict labels, leaf indices, and probabilities for the given input data.
 
@@ -381,31 +382,44 @@ class RuleTreeNode:
             - np.ndarray: Leaf node IDs corresponding to each sample.
             - np.ndarray: Predicted probabilities for each sample.
         """
+        if idx is None:
+            if X is not None:
+                n = X.shape[0]
+            elif X_ts is not None:
+                n = X_ts.shape[0]
+            elif X_img is not None:
+                n = X_img.shape[0]
+            else:
+                n = len(X_txt)
+            idx = np.arange(n)
+        else:
+            n = len(idx)
+
         if self.is_leaf() or prediction_step < 1:
-            n = len(X)
             return np.array([self.prediction] * n), \
                 np.array([self.node_id] * n), \
                 np.array(np.array([self.prediction_probability] * n).reshape(n, -1))
 
         else:
             labels, leaves, proba = (
-                np.full(len(X), fill_value=-1,
-                        dtype=object if type(self.prediction) is str else type(self.prediction)),
-                np.zeros(len(X), dtype=object),
+                np.full(n, fill_value=-1, dtype=object if type(self.prediction) is str else type(self.prediction)),
+                np.zeros(n, dtype=object),
                 np.ones((
-                    len(X),
+                    n,
                     1 if type(self.prediction_probability) in [float, int] else len(self.prediction_probability)
                 ), dtype=float) * -1
             )
 
-            labels_clf = self.stump.apply(X)
+            labels_clf = self.stump.apply(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
             X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
             if X_l.shape[0] != 0:
                 labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = (
-                    self.node_l.predict(X_l, prediction_step - 1))
+                    self.node_l.predict(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx[labels_clf == 1],
+                                        prediction_step=prediction_step-1))
             if X_r.shape[0] != 0:
                 labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = (
-                    self.node_r.predict(X_r, prediction_step - 1))
+                    self.node_r.predict(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx[labels_clf == 2],
+                                        prediction_step=prediction_step - 1))
 
             return labels, leaves, proba
 
