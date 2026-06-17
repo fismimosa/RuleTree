@@ -236,8 +236,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         Returns:
             DecisionTreeStumpClassifier: The fitted classifier (self).
         """
-        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-
         if idx is None:
             idx = slice(None)
         X = X[idx]
@@ -359,8 +357,9 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                         ]
 
 
-    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, check_input=False):
-        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, idx=None, check_input=False):
+        if idx is not None:
+            X = X[idx]
 
         if len(self.feature_original) < 3:
             return np.ones(X.shape[0])

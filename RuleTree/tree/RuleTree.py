@@ -19,7 +19,7 @@ import numpy as np
 import sklearn
 try:
     from line_profiler_pycharm import profile
-except ImportWarning:
+except ModuleNotFoundError:
     profile = None
 from sklearn import tree
 from sklearn.metrics import pairwise_distances
@@ -205,7 +205,18 @@ class RuleTree(RuleTreeBase, ABC):
         self.n_classes_ = self.n_classes_ if hasattr(self, 'n_classes_') else len(self.classes_)
         self._set_stump()
 
-        idx = np.arange(y.shape[0])
+        if y is not None:
+            idx = np.arange(y.shape[0])
+        elif X is not None:
+            idx = np.arange(X.shape[0])
+        elif X_ts is not None:
+            idx = np.arange(X_ts.shape[0])
+        elif X_img is not None:
+            idx = np.arange(X_img.shape[0])
+        elif X_txt is not None:
+            idx = np.arange(X_txt.shape[0])
+
+
         if self.root is None:
             self.root = self.prepare_node(y=y, idx=idx, node_id="R")
             self.queue_push(self.root, idx)
@@ -246,6 +257,8 @@ class RuleTree(RuleTreeBase, ABC):
                 nbr_curr_nodes += 1
                 continue
             except (ValueError, AttributeError, IndexError) as e:
+                if self.exceptions == 'raise':
+                    raise e
                 self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
                 warning = RuntimeWarning(*e.args)
@@ -297,7 +310,6 @@ class RuleTree(RuleTreeBase, ABC):
         Returns:
             np.ndarray: Predicted class labels.
         """
-        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         labels, _, _ = self.root.predict(X)
 
         return labels

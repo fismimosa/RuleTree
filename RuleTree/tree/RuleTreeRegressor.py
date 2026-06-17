@@ -7,6 +7,7 @@ import sklearn
 from sklearn import tree
 from sklearn.base import RegressorMixin
 
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
@@ -104,7 +105,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                          random_state=random_state,
                          distance_measure=distance_measure)
 
-    def is_split_useless(self, X: np.ndarray, clf: tree, idx: np.ndarray):
+    def is_split_useless(self, X: np.ndarray|None, X_ts:np.ndarray|None, X_img:np.ndarray|None, X_txt:np.ndarray|None,
+                         clf: RuleTreeBaseStump, idx: np.ndarray):
         """
         Determine if a split is useless by checking if all samples end up in the same leaf.
         
@@ -256,7 +258,6 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             node_r=None,
             samples=len(y[idx]),
             classes=self.classes_,
-            n_features=self.n_features,
         )
 
     def _get_stumps_base_class(self):

@@ -17,6 +17,7 @@ import copy
 
 from sklearn.preprocessing import StandardScaler
 
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
 #from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
 #from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
@@ -75,7 +76,8 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                          random_state=random_state,
                          distance_measure=distance_measure)
 
-    def is_split_useless(self, X, clf: tree, idx: np.ndarray):
+    def is_split_useless(self, X: np.ndarray | None, X_ts: np.ndarray | None, X_img: np.ndarray | None,
+                         X_txt: np.ndarray | None, clf: RuleTreeBaseStump, idx: np.ndarray):
         """
         Check if a split is useless.
 
@@ -157,19 +159,16 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                     info_gains.append(gain)
 
                     clfs.append(stump)
-                except ValueError as e:
-                    traceback.print_exc()
-                    if 'split' in str(e) or 'n_shapelets' in str(e):
-                        continue
-                    else:
-                        raise e
                 except NoSplitFoundWarning:
-                    # If no split is found, we skip this stump
                     continue
                 except Exception as e:
+                    if self.exceptions == 'raise':
+                        raise e
                     traceback.print_exc()
                     continue
 
+            if len(clfs) == 0:
+                raise NoSplitFoundWarning('No splits found')
             stump = clfs[np.argmax(info_gains)]
         else:
             raise TypeError('Unknown stump selection method')
@@ -209,8 +208,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             prediction=prediction,
             prediction_probability=predict_proba,
             log_odds=log_odds,
-            classes = self.classes_,
-            n_features=self.n_features,
+            classes=self.classes_,
             parent=None,
             stump=None,
             node_l=None,

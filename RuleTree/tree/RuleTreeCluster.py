@@ -8,6 +8,7 @@ from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 
 from RuleTree import RuleTreeRegressor, RuleTreeClassifier
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.utils import bic, light_famd
@@ -92,7 +93,8 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         if self.clus_impurity not in ['bic', 'r2']:
             raise ValueError('Unknown clustering impurity measure %s' % self.clus_impurity)
 
-    def is_split_useless(self, X, clf: tree, idx: np.ndarray):
+    def is_split_useless(self, X: np.ndarray|None, X_ts:np.ndarray|None, X_img:np.ndarray|None, X_txt:np.ndarray|None,
+                         clf: RuleTreeBaseStump, idx: np.ndarray):
         """
         Determine if a split is useful based on BIC criteria.
         
@@ -283,12 +285,12 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             prediction_probability=-1,
             loss=np.nan,
             classes=np.array(['NA']),
-            n_features=self.n_features,
             parent=None,
             stump=None,
             node_l=None,
             node_r=None,
             samples=len(idx),
+            log_odds=None
         )
 
     def _post_fit_fix(self):

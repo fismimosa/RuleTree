@@ -2,10 +2,12 @@ import copy
 import warnings
 
 import numpy as np
-from line_profiler_pycharm import profile
+try:
+    from line_profiler_pycharm import profile
+except ModuleNotFoundError:
+    pass
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.tree._criterion import FriedmanMSE
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
@@ -235,8 +237,6 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         self : object
             Fitted estimator.
         """
-        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-
         if idx is None:
             idx = slice(None)
         X = X[idx]
@@ -322,7 +322,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                         ]
 
 
-    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, check_input=False):
+    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, idx=None, check_input=False):
         """
         Apply the decision stump to X.
         
@@ -338,7 +338,8 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         y : array-like of shape (n_samples,)
             The predicted node indices (1 for left node, 2 for right node).
         """
-        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+        if idx is not None:
+            X = X[idx]
 
         if len(self.feature_original) < 3:
             return np.ones(X.shape[0])

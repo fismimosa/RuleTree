@@ -34,7 +34,6 @@ class RuleTreeNode:
                  prediction_probability: Union[np.ndarray, float],
                  log_odds: Union[np.ndarray, float],
                  classes: np.ndarray,
-                 n_features: np.ndarray,
                  parent: Optional['RuleTreeNode'],
                  stump: RuleTreeBaseStump = None,
                  node_l: 'RuleTreeNode' = None,
@@ -59,7 +58,6 @@ class RuleTreeNode:
         self.prediction_probability = prediction_probability
         self.log_odds = log_odds
         self.classes = classes
-        self.n_features = n_features
         self.parent = parent
         self.stump = stump
         self.node_l = node_l
@@ -175,7 +173,6 @@ class RuleTreeNode:
             "prediction_probability": self.prediction_probability,
             "log_odds": self.log_odds,
             "prediction_classes_": self.classes,
-            "n_features": self.n_features,
             "left_node": self.node_l.get_rule(columns_names = columns_names, scaler = scaler) if self.node_l is not None else None,
             "right_node": self.node_r.get_rule(columns_names = columns_names, scaler = scaler) if self.node_r is not None else None,
         }
@@ -215,7 +212,6 @@ class RuleTreeNode:
             self.log_odds = np.full(len(classes), np.nan, dtype=float)
 
         self.classes = classes
-        self.n_features = getattr(context, "n_features", X.shape[1])
         self.samples = len(y_local)
 
         if self.stump is not None and not self.is_leaf():
@@ -237,7 +233,6 @@ class RuleTreeNode:
             "prediction_probability": self.prediction_probability if isinstance(self.prediction_probability, float) else np.array(self.prediction_probability).tolist(),
             "log_odds": self.log_odds if isinstance(self.log_odds, float) else np.array(self.log_odds).tolist(),
             "prediction_classes_": np.array(self.classes).tolist(),
-            "n_features": self.n_features,
             "left_node": self.node_l.node_id if self.node_l is not None else None,
             "right_node": self.node_r.node_id if self.node_r is not None else None,
         }
@@ -272,8 +267,7 @@ class RuleTreeNode:
                             prediction_probability = info_dict.get('prediction_probability', [np.nan]*int(info_dict.get('classes', 1))),
                             log_odds = info_dict.get('log_odds', [np.nan]*int(info_dict.get('classes', 1))),
                             parent = None,
-                            classes=info_dict.get('prediction_classes_', np.nan),
-                            n_features=info_dict.get('n_features', np.nan), )
+                            classes=info_dict.get('prediction_classes_', np.nan),)
         
         if info_dict['is_leaf'] == True:
             return node
@@ -410,13 +404,12 @@ class RuleTreeNode:
                 ), dtype=float) * -1
             )
 
-            labels_clf = self.stump.apply(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-            X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
-            if X_l.shape[0] != 0:
+            labels_clf = self.stump.apply(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx)
+            if sum(labels_clf == 1) != 0:
                 labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = (
                     self.node_l.predict(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx[labels_clf == 1],
                                         prediction_step=prediction_step-1))
-            if X_r.shape[0] != 0:
+            if sum(labels_clf == 2) != 0:
                 labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = (
                     self.node_r.predict(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx[labels_clf == 2],
                                         prediction_step=prediction_step - 1))

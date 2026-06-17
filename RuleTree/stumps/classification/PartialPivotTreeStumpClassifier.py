@@ -72,8 +72,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
 
     def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
             idx=None, context=None, sample_weight=None, check_input=True):
-        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-
         if self.scaler is not None:
             self.scaler.fit(X)
 
@@ -89,12 +87,13 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         if sample_weight is not None:
             warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
 
-        super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
+        super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input,
+                    context=context)
         selected_shape = self.tree_.feature[0]
         if selected_shape == -2:
             raise ValueError("No split found")
         self.st._optimize_memory(np.array([selected_shape]))
-        super().fit(self.st.transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
+        super().fit(self.st.transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input, context=context)
 
         return self
 

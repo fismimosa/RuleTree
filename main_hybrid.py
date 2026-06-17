@@ -27,7 +27,7 @@ from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStu
 
 
 if __name__ == "__main__":
-    max_depth = 10
+    max_depth = 3
     random_state = 42
 
     stumps = [
