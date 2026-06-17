@@ -8,6 +8,7 @@
 
 import os
 import sys
+import importlib
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -19,25 +20,38 @@ release = '0.0.1'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
+def _extension_available(extension):
+    try:
+        importlib.import_module(extension)
+    except Exception:
+        return False
+    return True
+
+
 extensions = [
     'sphinx.ext.todo',  # Support for todo items
     'sphinx.ext.viewcode',  # Add links to highlighted source code
     'sphinx.ext.autodoc',  #Include documentation from docstrings
     'sphinx.ext.githubpages',  # Publish HTML docs in GitHub Pages
-    'sphinx_favicon',
-    'sphinx_copybutton',
-    'sphinx_prompt',
-    'nbsphinx',
-    'versionwarning.extension',
-    'sphinx_last_updated_by_git',
     'sphinx.ext.napoleon',
     # Additional useful extensions
     'sphinx.ext.intersphinx',  # Link to other projects' documentation
     'sphinx.ext.mathjax',      # Better math support
-    'sphinx_design',           # Responsive web components
     'sphinx.ext.autosummary',  # Generate summary tables
-    'sphinx_togglebutton',     # Add toggle buttons to content
 ]
+
+optional_extensions = [
+    'sphinx_favicon',
+    'sphinx_copybutton',
+    'sphinx_prompt',
+    'sphinx_last_updated_by_git',
+    'sphinx_design',
+    'sphinx_togglebutton',
+]
+
+extensions.extend(
+    extension for extension in optional_extensions if _extension_available(extension)
+)
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -146,5 +160,3 @@ autosummary_generate = True
 
 # Add last updated timestamp to each page
 html_last_updated_fmt = "%b %d, %Y"
-
-

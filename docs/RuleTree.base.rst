@@ -1,6 +1,17 @@
 RuleTree.base package
 =====================
 
+API reference
+-------------
+
+.. autosummary::
+   :toctree: generated/
+   :recursive:
+
+   RuleTree.base.RuleTreeBase.RuleTreeBase
+   RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit
+   RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump
+
 Submodules
 ----------
 
@@ -11,6 +22,7 @@ RuleTree.base.RuleTreeBase module
    :members:
    :show-inheritance:
    :undoc-members:
+   :no-index:
 
 RuleTree.base.RuleTreeBaseSplit module
 --------------------------------------
@@ -19,6 +31,7 @@ RuleTree.base.RuleTreeBaseSplit module
    :members:
    :show-inheritance:
    :undoc-members:
+   :no-index:
 
 RuleTree.base.RuleTreeBaseStump module
 --------------------------------------
@@ -27,6 +40,7 @@ RuleTree.base.RuleTreeBaseStump module
    :members:
    :show-inheritance:
    :undoc-members:
+   :no-index:
 
 Module contents
 ---------------
@@ -35,3 +49,4 @@ Module contents
    :members:
    :show-inheritance:
    :undoc-members:
+   :no-index:
