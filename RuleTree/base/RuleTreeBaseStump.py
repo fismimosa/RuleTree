@@ -10,7 +10,6 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-from ordered_set import OrderedSet
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
@@ -26,10 +25,6 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         numerical (list): List of indices for numerical features.
         categorical (list): List of indices for categorical features.
     """
-
-    _DATA_INPUT_NAMES = RuleTreeBase._DATA_INPUT_NAMES
-    _validate_inputs = RuleTreeBase._validate_inputs
-    _resolve_data_input = RuleTreeBase._resolve_data_input
 
     @abstractmethod
     def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
@@ -64,8 +59,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             self.categorical (list): Indices of categorical features.
         """
         dtypes = pd.DataFrame(X).infer_objects().dtypes
-        self.numerical = OrderedSet([i for i, x in enumerate(dtypes) if pd.api.types.is_numeric_dtype(x)])
-        self.categorical = OrderedSet([i for i, x in enumerate(dtypes) if not pd.api.types.is_numeric_dtype(x)])
+        self.numerical = [i for i, x in enumerate(dtypes) if pd.api.types.is_numeric_dtype(x)]
+        self.categorical = [i for i, x in enumerate(dtypes) if not pd.api.types.is_numeric_dtype(x)]
 
     @abstractmethod
     def node_to_dict(self) -> dict:
