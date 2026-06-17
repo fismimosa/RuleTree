@@ -11,5 +11,5 @@ psutil
 setuptools
 matplotlib
 tempfile312
-ordered
+ordered-set
 line-profiler-pycharm
