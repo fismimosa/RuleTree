@@ -1,0 +1,608 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/icon.png" sizes="572x577" rel="icon" type="image/png">
+    <title>RuleTree documentation &#8212; RuleTree Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="RuleTree.base package" href="RuleTree.base.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="RuleTree Documentation - Home"/>
+    <img src="_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree Documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="RuleTree.base.html">RuleTree.base package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit.html">RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.ensemble.html">RuleTree.ensemble package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="RuleTree.stumps.html">RuleTree.stumps package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.tree.html">RuleTree.tree package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="RuleTree.utils.html">RuleTree.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree/issues/new?title=Issue%20on%20page%20%2Findex.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/index.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>RuleTree documentation</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="ruletree-documentation">
+<h1>RuleTree documentation<a class="headerlink" href="#ruletree-documentation" title="Link to this heading">#</a></h1>
+<p>Add your content using <code class="docutils literal notranslate"><span class="pre">reStructuredText</span></code> syntax. See the
+<a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html">reStructuredText</a>
+documentation for details.</p>
+<div class="toctree-wrapper compound">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.base.html">RuleTree.base package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.base.html#api-reference">API reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit.html">RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.base.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.base.html#ruletree-base-ruletreebase-module">RuleTree.base.RuleTreeBase module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.base.html#ruletree-base-ruletreebasesplit-module">RuleTree.base.RuleTreeBaseSplit module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.base.html#ruletree-base-ruletreebasestump-module">RuleTree.base.RuleTreeBaseStump module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.base.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.ensemble.html">RuleTree.ensemble package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.ensemble.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.ensemble.html#ruletree-ensemble-ruleforestclassifier-module">RuleTree.ensemble.RuleForestClassifier module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.ensemble.html#ruletree-ensemble-ruleforestregressor-module">RuleTree.ensemble.RuleForestRegressor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.ensemble.html#ruletree-ensemble-ruletreeadaboostclassifier-module">RuleTree.ensemble.RuleTreeAdaBoostClassifier module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.ensemble.html#ruletree-ensemble-ruletreeadaboostregressor-module">RuleTree.ensemble.RuleTreeAdaBoostRegressor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.ensemble.html#module-RuleTree.ensemble">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.stumps.html">RuleTree.stumps package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.html#ruletree-stumps-instance-stumps-module">RuleTree.stumps.instance_stumps module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.html#module-RuleTree.stumps">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.tree.html">RuleTree.tree package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.tree.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.tree.html#module-RuleTree.tree.RuleTree">RuleTree.tree.RuleTree module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.tree.html#RuleTree.tree.RuleTree.RuleTree"><code class="docutils literal notranslate"><span class="pre">RuleTree</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.tree.html#module-RuleTree.tree.RuleTreeClassifier">RuleTree.tree.RuleTreeClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.tree.html#RuleTree.tree.RuleTreeClassifier.RuleTreeClassifier"><code class="docutils literal notranslate"><span class="pre">RuleTreeClassifier</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.tree.html#module-RuleTree.tree.RuleTreeCluster">RuleTree.tree.RuleTreeCluster module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.tree.html#RuleTree.tree.RuleTreeCluster.RuleTreeCluster"><code class="docutils literal notranslate"><span class="pre">RuleTreeCluster</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.tree.html#RuleTree.tree.RuleTreeCluster.RuleTreeClusterClassifier"><code class="docutils literal notranslate"><span class="pre">RuleTreeClusterClassifier</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.tree.html#RuleTree.tree.RuleTreeCluster.RuleTreeClusterRegressor"><code class="docutils literal notranslate"><span class="pre">RuleTreeClusterRegressor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.tree.html#module-RuleTree.tree.RuleTreeNode">RuleTree.tree.RuleTreeNode module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode"><code class="docutils literal notranslate"><span class="pre">RuleTreeNode</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.tree.html#module-RuleTree.tree.RuleTreeRegressor">RuleTree.tree.RuleTreeRegressor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.tree.html#RuleTree.tree.RuleTreeRegressor.RuleTreeRegressor"><code class="docutils literal notranslate"><span class="pre">RuleTreeRegressor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.tree.html#module-RuleTree.tree">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.utils.html">RuleTree.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#module-RuleTree.utils.bic_estimator">RuleTree.utils.bic_estimator module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.estimate_gaussian_covariances"><code class="docutils literal notranslate"><span class="pre">estimate_gaussian_covariances()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.estimate_parameters"><code class="docutils literal notranslate"><span class="pre">estimate_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.compute_precision_cholesky"><code class="docutils literal notranslate"><span class="pre">compute_precision_cholesky()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.estimate_weighted_log_prob"><code class="docutils literal notranslate"><span class="pre">estimate_weighted_log_prob()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.estimate_log_prob"><code class="docutils literal notranslate"><span class="pre">estimate_log_prob()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.compute_log_det_cholesky"><code class="docutils literal notranslate"><span class="pre">compute_log_det_cholesky()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.estimate_log_weights"><code class="docutils literal notranslate"><span class="pre">estimate_log_weights()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.score_samples"><code class="docutils literal notranslate"><span class="pre">score_samples()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.score"><code class="docutils literal notranslate"><span class="pre">score()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.get_n_parameters"><code class="docutils literal notranslate"><span class="pre">get_n_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.bic_estimator.bic"><code class="docutils literal notranslate"><span class="pre">bic()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#module-RuleTree.utils.data_utils">RuleTree.utils.data_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.preprocessing"><code class="docutils literal notranslate"><span class="pre">preprocessing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.inverse_preprocessing"><code class="docutils literal notranslate"><span class="pre">inverse_preprocessing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.prepare_data"><code class="docutils literal notranslate"><span class="pre">prepare_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.calculate_mode"><code class="docutils literal notranslate"><span class="pre">calculate_mode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.get_info_gain"><code class="docutils literal notranslate"><span class="pre">get_info_gain()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.get_gain_ratio"><code class="docutils literal notranslate"><span class="pre">get_gain_ratio()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.gini"><code class="docutils literal notranslate"><span class="pre">gini()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.entropy"><code class="docutils literal notranslate"><span class="pre">entropy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.select_stumps"><code class="docutils literal notranslate"><span class="pre">select_stumps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.data_utils.json_numpy_encoder"><code class="docutils literal notranslate"><span class="pre">json_numpy_encoder</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#module-RuleTree.utils.define">RuleTree.utils.define module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#module-RuleTree.utils.dict_ruletree_encoding">RuleTree.utils.dict_ruletree_encoding module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.dict_ruletree_encoding.ruletree_to_array"><code class="docutils literal notranslate"><span class="pre">ruletree_to_array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.dict_ruletree_encoding.build_subtree"><code class="docutils literal notranslate"><span class="pre">build_subtree()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.dict_ruletree_encoding.array_to_ruletree"><code class="docutils literal notranslate"><span class="pre">array_to_ruletree()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#module-RuleTree.utils.fairness_metrics">RuleTree.utils.fairness_metrics module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.fairness_metrics.balance_metric"><code class="docutils literal notranslate"><span class="pre">balance_metric()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.fairness_metrics.max_fairness_cost"><code class="docutils literal notranslate"><span class="pre">max_fairness_cost()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.fairness_metrics.privacy_metric"><code class="docutils literal notranslate"><span class="pre">privacy_metric()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.fairness_metrics.privacy_metric_all"><code class="docutils literal notranslate"><span class="pre">privacy_metric_all()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#module-RuleTree.utils.privacy_utils">RuleTree.utils.privacy_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.privacy_utils.compute_k_anonimity"><code class="docutils literal notranslate"><span class="pre">compute_k_anonimity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.privacy_utils.compute_l_diversity"><code class="docutils literal notranslate"><span class="pre">compute_l_diversity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.privacy_utils.compute_t_closeness"><code class="docutils literal notranslate"><span class="pre">compute_t_closeness()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#module-RuleTree.utils.utils_decoding">RuleTree.utils.utils_decoding module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.utils_decoding.configure_cat_split"><code class="docutils literal notranslate"><span class="pre">configure_cat_split()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.utils_decoding.configure_non_cat_split"><code class="docutils literal notranslate"><span class="pre">configure_non_cat_split()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.utils_decoding.create_inner_tree"><code class="docutils literal notranslate"><span class="pre">create_inner_tree()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.utils_decoding.assign_tree_properties"><code class="docutils literal notranslate"><span class="pre">assign_tree_properties()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.utils_decoding.set_node_children"><code class="docutils literal notranslate"><span class="pre">set_node_children()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.html#RuleTree.utils.utils_decoding.simplify_decode"><code class="docutils literal notranslate"><span class="pre">simplify_decode()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.html#module-RuleTree.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="RuleTree.base.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">RuleTree.base package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cristiano Landi, Alessio Cascione, Riccardo Guidotti
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

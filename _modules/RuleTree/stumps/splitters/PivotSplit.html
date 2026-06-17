@@ -1,0 +1,808 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleTree.stumps.splitters.PivotSplit &#8212; RuleTree Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/RuleTree/stumps/splitters/PivotSplit';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo.png" class="logo__image only-light" alt="RuleTree Documentation - Home"/>
+    <img src="../../../../_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree Documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.base.html">RuleTree.base package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit.html">RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../RuleTree.ensemble.html">RuleTree.ensemble package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.stumps.html">RuleTree.stumps package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../RuleTree.tree.html">RuleTree.tree package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.utils.html">RuleTree.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree/issues/new?title=Issue%20on%20page%20%2F_modules/RuleTree/stumps/splitters/PivotSplit.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for RuleTree.stumps.splitters.PivotSplit</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABC</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics.pairwise</span><span class="w"> </span><span class="kn">import</span> <span class="n">pairwise_distances</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeClassifier</span><span class="p">,</span> <span class="n">DecisionTreeRegressor</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.base.RuleTreeBaseSplit</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeBaseSplit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.base.RuleTreeBaseStump</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeBaseStump</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.define</span><span class="w"> </span><span class="kn">import</span> <span class="n">MODEL_TYPE_CLF</span><span class="p">,</span> <span class="n">MODEL_TYPE_REG</span><span class="p">,</span> <span class="n">MODEL_TYPE_CLU</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.data_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_info_gain</span>
+
+
+<div class="viewcode-block" id="PivotSplit">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PivotSplit</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">RuleTreeBaseSplit</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PivotSplit is a split strategy that selects pivot instances to represent classes.</span>
+
+<span class="sd">    This class identifies both descriptive (most central) and discriminative (most separating)</span>
+<span class="sd">    instances for each class. These pivot instances are then used as candidates for determining</span>
+<span class="sd">    the split. Descriptive instances represent the &quot;typical&quot; members of a class, while</span>
+<span class="sd">    discriminative instances help to distinguish between different classes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ml_task : str</span>
+<span class="sd">        The machine learning task type (classification, regression, or clustering).</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Additional parameters to pass to the base model (e.g., DecisionTreeClassifier).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X_candidates : array-like</span>
+<span class="sd">        Selected candidate instances for splitting.</span>
+<span class="sd">    is_categorical : bool</span>
+<span class="sd">        Flag indicating if the features are categorical.</span>
+<span class="sd">    ml_task : str</span>
+<span class="sd">        Type of machine learning task.</span>
+<span class="sd">    discriminative_names : array-like</span>
+<span class="sd">        Names/indices of discriminative instances.</span>
+<span class="sd">    descriptive_names : array-like</span>
+<span class="sd">        Names/indices of descriptive instances.</span>
+<span class="sd">    candidates_names : array-like</span>
+<span class="sd">        Names/indices of all candidate instances.</span>
+<span class="sd">    is_pivotal : bool</span>
+<span class="sd">        Flag indicating if the split is based on pivot instances.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PivotSplit.__init__">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+
+            <span class="n">ml_task</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RuleTreeBaseSplit</span><span class="p">,</span> <span class="n">RuleTreeBaseSplit</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ml_task</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_contrast_lambda</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;reg_contrast_lambda&quot;</span><span class="p">,</span> <span class="mf">.2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_max_thresholds</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;reg_max_thresholds&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_max_thresholds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reg_max_thresholds</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">reg_max_thresholds</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reg_max_thresholds</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_candidates</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_categorical</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ml_task</span> <span class="o">=</span> <span class="n">ml_task</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">discriminative_names</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">descriptive_names</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">candidates_names</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_pivotal</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+    <span class="c1"># @abstractmethod</span>
+<div class="viewcode-block" id="PivotSplit.get_base_model">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.get_base_model">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_base_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the appropriate base model based on the machine learning task.</span>
+
+<span class="sd">        The model is used for finding discriminative split points between classes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        model : estimator</span>
+<span class="sd">            The machine learning model to use for finding splits.</span>
+<span class="sd">            Returns DecisionTreeClassifier for classification tasks.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">            If the ml_task is regression or clustering, which are not yet implemented.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_task</span> <span class="o">==</span> <span class="n">MODEL_TYPE_CLF</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_task</span> <span class="o">==</span> <span class="n">MODEL_TYPE_REG</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_task</span> <span class="o">==</span> <span class="n">MODEL_TYPE_CLU</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PivotSplit.compute_descriptive">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.compute_descriptive">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_descriptive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_matrix</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the descriptive (most central) instance for a class.</span>
+
+<span class="sd">        This method identifies the medoid of a class, which is the instance</span>
+<span class="sd">        with the minimum sum of distances to all other instances in the same class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sub_matrix : array-like</span>
+<span class="sd">            Distance matrix for instances of a particular class.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Index of the medoid (instance with minimum sum of distances to other instances).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_sums</span> <span class="o">=</span> <span class="n">sub_matrix</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">medoid_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">row_sums</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">medoid_index</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_knn_density_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_samples</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">n_samples</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_root_split_gain</span><span class="p">(</span><span class="n">tree_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tree_</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="n">tree_</span><span class="o">.</span><span class="n">weighted_n_node_samples</span>
+        <span class="n">imp</span> <span class="o">=</span> <span class="n">tree_</span><span class="o">.</span><span class="n">impurity</span>
+        <span class="k">if</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">imp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">imp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">w</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">imp</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+<div class="viewcode-block" id="PivotSplit.compute_descriptive_regression">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.compute_descriptive_regression">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_descriptive_regression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_matrix</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_knn_density_k</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+        <span class="n">gains</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">contrasts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">pivot_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_samples</span><span class="p">):</span>
+            <span class="n">distances</span> <span class="o">=</span> <span class="n">sub_matrix</span><span class="p">[:,</span> <span class="n">pivot_idx</span><span class="p">]</span>
+            <span class="n">sorted_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+
+            <span class="n">near_distances</span> <span class="o">=</span> <span class="n">sorted_distances</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">far_distances</span> <span class="o">=</span> <span class="n">sorted_distances</span><span class="p">[</span><span class="o">-</span><span class="n">k</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">near_distances</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">near_distances</span> <span class="o">=</span> <span class="n">sorted_distances</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">far_distances</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">far_distances</span> <span class="o">=</span> <span class="n">sorted_distances</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">contrasts</span><span class="p">[</span><span class="n">pivot_idx</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">far_distances</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">near_distances</span><span class="p">))</span>
+
+            <span class="n">distances_for_gain</span> <span class="o">=</span> <span class="n">distances</span>
+            <span class="n">max_thresholds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reg_max_thresholds</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_max_thresholds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span>
+                <span class="nb">max</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_samples</span><span class="p">))))</span>
+            <span class="n">unique_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">max_thresholds</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_distances</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">&gt;</span> <span class="n">max_thresholds</span><span class="p">:</span>
+                <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">max_thresholds</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">distances_for_gain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+            <span class="n">reg</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span>
+                <span class="n">criterion</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;criterion&quot;</span><span class="p">,</span> <span class="s2">&quot;squared_error&quot;</span><span class="p">),</span>
+                <span class="n">max_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">min_samples_split</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min_samples_split&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="n">min_samples_leaf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min_samples_leaf&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;random_state&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">reg</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">distances_for_gain</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">)</span>
+            <span class="n">gains</span><span class="p">[</span><span class="n">pivot_idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_split_gain</span><span class="p">(</span><span class="n">reg</span><span class="o">.</span><span class="n">tree_</span><span class="p">)</span>
+
+        <span class="n">gains_min</span><span class="p">,</span> <span class="n">gains_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">gains</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">gains</span><span class="p">)</span>
+        <span class="n">contrast_min</span><span class="p">,</span> <span class="n">contrast_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">contrasts</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">contrasts</span><span class="p">)</span>
+
+        <span class="n">gains_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">gains</span> <span class="o">-</span> <span class="n">gains_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">gains_max</span> <span class="o">-</span> <span class="n">gains_min</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
+        <span class="n">contrasts_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">contrasts</span> <span class="o">-</span> <span class="n">contrast_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">contrast_max</span> <span class="o">-</span> <span class="n">contrast_min</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">gains_norm</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reg_contrast_lambda</span><span class="p">)</span> <span class="o">*</span> <span class="n">contrasts_norm</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">scores</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="PivotSplit.compute_discriminative">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.compute_discriminative">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_discriminative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sub_matrix</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the discriminative instance for a class.</span>
+
+<span class="sd">        This method identifies the instance that best separates different classes</span>
+<span class="sd">        by training a decision tree and extracting the feature used at the root node.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sub_matrix : array-like</span>
+<span class="sd">            Distance matrix for instances of a particular class.</span>
+<span class="sd">        y : array-like</span>
+<span class="sd">            Target values.</span>
+<span class="sd">        sample_weight : array-like, optional</span>
+<span class="sd">            Sample weights for weighted learning.</span>
+<span class="sd">        check_input : bool, default=True</span>
+<span class="sd">            Whether to validate input.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Index of the most discriminative instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">disc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_base_model</span><span class="p">()</span>
+        <span class="n">disc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">sub_matrix</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="n">check_input</span><span class="p">)</span>
+        <span class="n">discriminative_id</span> <span class="o">=</span> <span class="n">disc</span><span class="o">.</span><span class="n">tree_</span><span class="o">.</span><span class="n">feature</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">discriminative_id</span></div>
+
+
+<div class="viewcode-block" id="PivotSplit.fit">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="n">distance_measure</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span>
+            <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fits the PivotSplit by finding descriptive and discriminative instances.</span>
+
+<span class="sd">        For each class, this method identifies both descriptive instances (those that</span>
+<span class="sd">        best represent the class) and discriminative instances (those that best separate</span>
+<span class="sd">        the classes). These instances are stored as candidates for determining splits.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : array-like of shape (n_samples, n_features)</span>
+<span class="sd">            Input feature matrix.</span>
+<span class="sd">        y : array-like of shape (n_samples,)</span>
+<span class="sd">            Target values.</span>
+<span class="sd">        distance_matrix : array-like of shape (n_samples, n_samples)</span>
+<span class="sd">            Pre-computed distance matrix between instances.</span>
+<span class="sd">        distance_measure : str or callable</span>
+<span class="sd">            Distance measure to use (e.g., &#39;euclidean&#39;, &#39;cosine&#39;).</span>
+<span class="sd">        idx : array-like of shape (n_samples,)</span>
+<span class="sd">            Indices of the instances.</span>
+<span class="sd">        sample_weight : array-like, optional</span>
+<span class="sd">            Sample weights.</span>
+<span class="sd">        check_input : bool, default=True</span>
+<span class="sd">            Whether to validate input.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self</span>
+<span class="sd">            The fitted splitter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sub_matrix</span> <span class="o">=</span> <span class="n">distance_matrix</span>
+        <span class="n">local_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+        <span class="n">local_descriptives</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">local_discriminatives</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">local_candidates</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_task</span> <span class="o">==</span> <span class="n">MODEL_TYPE_REG</span><span class="p">:</span>
+            <span class="n">desc_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_descriptive_regression</span><span class="p">(</span><span class="n">sub_matrix</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">)</span>
+            <span class="n">local_descriptives</span> <span class="o">=</span> <span class="p">[</span><span class="n">local_idx</span><span class="p">[</span><span class="n">desc_id</span><span class="p">]]</span>
+
+            <span class="n">disc_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_discriminative</span><span class="p">(</span><span class="n">sub_matrix</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span>
+                                                  <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span>
+                                                  <span class="n">check_input</span><span class="o">=</span><span class="n">check_input</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">disc_id</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span>
+                <span class="n">local_discriminatives</span> <span class="o">=</span> <span class="p">[</span><span class="n">local_idx</span><span class="p">[</span><span class="n">disc_id</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+                <span class="n">idx_label</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="n">label</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">local_idx_label</span> <span class="o">=</span> <span class="n">local_idx</span><span class="p">[</span><span class="n">idx_label</span><span class="p">]</span>
+                <span class="n">sub_matrix_label</span> <span class="o">=</span> <span class="n">sub_matrix</span><span class="p">[:,</span> <span class="n">idx_label</span><span class="p">]</span>
+
+                <span class="n">disc_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_discriminative</span><span class="p">(</span><span class="n">sub_matrix_label</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span>
+                                                      <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span>
+                                                      <span class="n">check_input</span><span class="o">=</span><span class="n">check_input</span><span class="p">)</span>
+
+                <span class="n">desc_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_descriptive</span><span class="p">(</span><span class="n">sub_matrix_label</span><span class="p">[</span><span class="n">idx_label</span><span class="p">])</span>
+                <span class="n">desc_idx</span> <span class="o">=</span> <span class="n">local_idx_label</span><span class="p">[</span><span class="n">desc_id</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">disc_id</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span>  <span class="c1"># if no split performed, do not add anything</span>
+                    <span class="n">local_discriminatives</span> <span class="o">+=</span> <span class="p">[]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">disc_idx</span> <span class="o">=</span> <span class="n">local_idx_label</span><span class="p">[</span><span class="n">disc_id</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">disc_idx</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+                        <span class="n">local_discriminatives</span> <span class="o">+=</span> <span class="n">disc_idx</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">disc_idx</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span>
+                            <span class="n">disc_idx</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">local_discriminatives</span> <span class="o">+=</span> <span class="p">[</span><span class="n">disc_idx</span><span class="p">]</span>
+
+                <span class="n">local_descriptives</span> <span class="o">+=</span> <span class="p">[</span><span class="n">desc_idx</span><span class="p">]</span>
+
+        <span class="n">local_candidates</span> <span class="o">=</span> <span class="n">local_descriptives</span> <span class="o">+</span> <span class="n">local_discriminatives</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">X_candidates</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">local_candidates</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_candidates</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">local_candidates</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">discriminative_names</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="n">local_discriminatives</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">descriptive_names</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="n">local_descriptives</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">candidates_names</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="n">local_candidates</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PivotSplit.transform">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.transform">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">distance_measure</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transforms input data using the selected pivot instances.</span>
+
+<span class="sd">        Computes distances from each input instance to each pivot instance,</span>
+<span class="sd">        creating a new feature representation based on these distances.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : array-like of shape (n_samples, n_features)</span>
+<span class="sd">            Input feature matrix.</span>
+<span class="sd">        distance_measure : str or callable</span>
+<span class="sd">            Distance measure to use (e.g., &#39;euclidean&#39;, &#39;cosine&#39;).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like of shape (n_samples, n_candidates)</span>
+<span class="sd">            Distances from each instance to the pivot instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pairwise_distances</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X_candidates</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">distance_measure</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PivotSplit.get_candidates_names">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.get_candidates_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_candidates_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the names/indices of candidate instances.</span>
+
+<span class="sd">        These are the instances selected as potential split points,</span>
+<span class="sd">        including both descriptive and discriminative instances.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            Names/indices of candidate instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">candidates_names</span></div>
+
+
+<div class="viewcode-block" id="PivotSplit.get_descriptive_names">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.get_descriptive_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_descriptive_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the names/indices of descriptive instances.</span>
+
+<span class="sd">        These are the instances that best represent each class (the medoids).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            Names/indices of descriptive instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptive_names</span></div>
+
+
+<div class="viewcode-block" id="PivotSplit.get_discriminative_names">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.PivotSplit.PivotSplit.get_discriminative_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_discriminative_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the names/indices of discriminative instances.</span>
+
+<span class="sd">        These are the instances that best separate different classes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            Names/indices of discriminative instances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">discriminative_names</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cristiano Landi, Alessio Cascione, Riccardo Guidotti
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

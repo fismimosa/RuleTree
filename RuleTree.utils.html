@@ -1,0 +1,1526 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/icon.png" sizes="572x577" rel="icon" type="image/png">
+    <title>RuleTree.utils package &#8212; RuleTree Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'RuleTree.utils';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="RuleTree.utils.light_famd package" href="RuleTree.utils.light_famd.html" />
+    <link rel="prev" title="RuleTree.tree package" href="RuleTree.tree.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="RuleTree Documentation - Home"/>
+    <img src="_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree Documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="RuleTree.base.html">RuleTree.base package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit.html">RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.ensemble.html">RuleTree.ensemble package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="RuleTree.stumps.html">RuleTree.stumps package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.tree.html">RuleTree.tree package</a></li>
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">RuleTree.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree/issues/new?title=Issue%20on%20page%20%2FRuleTree.utils.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/RuleTree.utils.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>RuleTree.utils package</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.bic_estimator">RuleTree.utils.bic_estimator module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_gaussian_covariances"><code class="docutils literal notranslate"><span class="pre">estimate_gaussian_covariances()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_parameters"><code class="docutils literal notranslate"><span class="pre">estimate_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.compute_precision_cholesky"><code class="docutils literal notranslate"><span class="pre">compute_precision_cholesky()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_weighted_log_prob"><code class="docutils literal notranslate"><span class="pre">estimate_weighted_log_prob()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_log_prob"><code class="docutils literal notranslate"><span class="pre">estimate_log_prob()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.compute_log_det_cholesky"><code class="docutils literal notranslate"><span class="pre">compute_log_det_cholesky()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_log_weights"><code class="docutils literal notranslate"><span class="pre">estimate_log_weights()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.score_samples"><code class="docutils literal notranslate"><span class="pre">score_samples()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.score"><code class="docutils literal notranslate"><span class="pre">score()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.get_n_parameters"><code class="docutils literal notranslate"><span class="pre">get_n_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.bic"><code class="docutils literal notranslate"><span class="pre">bic()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.data_utils">RuleTree.utils.data_utils module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.preprocessing"><code class="docutils literal notranslate"><span class="pre">preprocessing()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.inverse_preprocessing"><code class="docutils literal notranslate"><span class="pre">inverse_preprocessing()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.prepare_data"><code class="docutils literal notranslate"><span class="pre">prepare_data()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.calculate_mode"><code class="docutils literal notranslate"><span class="pre">calculate_mode()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.get_info_gain"><code class="docutils literal notranslate"><span class="pre">get_info_gain()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.get_gain_ratio"><code class="docutils literal notranslate"><span class="pre">get_gain_ratio()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.gini"><code class="docutils literal notranslate"><span class="pre">gini()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.entropy"><code class="docutils literal notranslate"><span class="pre">entropy()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.select_stumps"><code class="docutils literal notranslate"><span class="pre">select_stumps()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.json_numpy_encoder"><code class="docutils literal notranslate"><span class="pre">json_numpy_encoder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.json_numpy_encoder.default"><code class="docutils literal notranslate"><span class="pre">default()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">default()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.define">RuleTree.utils.define module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.dict_ruletree_encoding">RuleTree.utils.dict_ruletree_encoding module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.dict_ruletree_encoding.ruletree_to_array"><code class="docutils literal notranslate"><span class="pre">ruletree_to_array()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.dict_ruletree_encoding.build_subtree"><code class="docutils literal notranslate"><span class="pre">build_subtree()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.dict_ruletree_encoding.array_to_ruletree"><code class="docutils literal notranslate"><span class="pre">array_to_ruletree()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.fairness_metrics">RuleTree.utils.fairness_metrics module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.fairness_metrics.balance_metric"><code class="docutils literal notranslate"><span class="pre">balance_metric()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.fairness_metrics.max_fairness_cost"><code class="docutils literal notranslate"><span class="pre">max_fairness_cost()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.fairness_metrics.privacy_metric"><code class="docutils literal notranslate"><span class="pre">privacy_metric()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.fairness_metrics.privacy_metric_all"><code class="docutils literal notranslate"><span class="pre">privacy_metric_all()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.privacy_utils">RuleTree.utils.privacy_utils module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.privacy_utils.compute_k_anonimity"><code class="docutils literal notranslate"><span class="pre">compute_k_anonimity()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.privacy_utils.compute_l_diversity"><code class="docutils literal notranslate"><span class="pre">compute_l_diversity()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.privacy_utils.compute_t_closeness"><code class="docutils literal notranslate"><span class="pre">compute_t_closeness()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.utils_decoding">RuleTree.utils.utils_decoding module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.configure_cat_split"><code class="docutils literal notranslate"><span class="pre">configure_cat_split()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.configure_non_cat_split"><code class="docutils literal notranslate"><span class="pre">configure_non_cat_split()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.create_inner_tree"><code class="docutils literal notranslate"><span class="pre">create_inner_tree()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.assign_tree_properties"><code class="docutils literal notranslate"><span class="pre">assign_tree_properties()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.set_node_children"><code class="docutils literal notranslate"><span class="pre">set_node_children()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.simplify_decode"><code class="docutils literal notranslate"><span class="pre">simplify_decode()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils">Module contents</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="ruletree-utils-package">
+<h1>RuleTree.utils package<a class="headerlink" href="#ruletree-utils-package" title="Link to this heading">#</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd.ca">RuleTree.utils.light_famd.ca module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.ca.CA"><code class="docutils literal notranslate"><span class="pre">CA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.ca.CA.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.ca.CA.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.ca.CA.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.ca.CA.explained_variance_"><code class="docutils literal notranslate"><span class="pre">explained_variance_</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.ca.CA.explained_variance_ratio_"><code class="docutils literal notranslate"><span class="pre">explained_variance_ratio_</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd.famd">RuleTree.utils.light_famd.famd module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.famd.FAMD"><code class="docutils literal notranslate"><span class="pre">FAMD</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.famd.FAMD.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.famd.FAMD.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.famd.FAMD.fit_transform"><code class="docutils literal notranslate"><span class="pre">fit_transform()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd.mca">RuleTree.utils.light_famd.mca module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mca.MCA"><code class="docutils literal notranslate"><span class="pre">MCA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mca.MCA.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mca.MCA.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd.mfa">RuleTree.utils.light_famd.mfa module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mfa.MFA"><code class="docutils literal notranslate"><span class="pre">MFA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mfa.MFA.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mfa.MFA.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mfa.MFA.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mfa.MFA.fit_transform"><code class="docutils literal notranslate"><span class="pre">fit_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.mfa.MFA.column_correlation"><code class="docutils literal notranslate"><span class="pre">column_correlation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd.one_hot">RuleTree.utils.light_famd.one_hot module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.one_hot.OneHotEncoder"><code class="docutils literal notranslate"><span class="pre">OneHotEncoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.one_hot.OneHotEncoder.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.one_hot.OneHotEncoder.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.one_hot.OneHotEncoder.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd.pca">RuleTree.utils.light_famd.pca module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA"><code class="docutils literal notranslate"><span class="pre">PCA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA.invert_transform"><code class="docutils literal notranslate"><span class="pre">invert_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA.fit_transform"><code class="docutils literal notranslate"><span class="pre">fit_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA.column_correlation"><code class="docutils literal notranslate"><span class="pre">column_correlation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA.explained_variance_"><code class="docutils literal notranslate"><span class="pre">explained_variance_</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.pca.PCA.explained_variance_ratio_"><code class="docutils literal notranslate"><span class="pre">explained_variance_ratio_</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd.svd">RuleTree.utils.light_famd.svd module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.svd.compute_svd"><code class="docutils literal notranslate"><span class="pre">compute_svd()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd.util">RuleTree.utils.light_famd.util module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.util.df_correlation"><code class="docutils literal notranslate"><span class="pre">df_correlation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html#module-RuleTree.utils.light_famd">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.CA"><code class="docutils literal notranslate"><span class="pre">CA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.CA.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.CA.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.CA.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.CA.explained_variance_"><code class="docutils literal notranslate"><span class="pre">explained_variance_</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.CA.explained_variance_ratio_"><code class="docutils literal notranslate"><span class="pre">explained_variance_ratio_</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.FAMD"><code class="docutils literal notranslate"><span class="pre">FAMD</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.FAMD.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.FAMD.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.FAMD.fit_transform"><code class="docutils literal notranslate"><span class="pre">fit_transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MCA"><code class="docutils literal notranslate"><span class="pre">MCA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MCA.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MCA.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA"><code class="docutils literal notranslate"><span class="pre">PCA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA.invert_transform"><code class="docutils literal notranslate"><span class="pre">invert_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA.fit_transform"><code class="docutils literal notranslate"><span class="pre">fit_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA.column_correlation"><code class="docutils literal notranslate"><span class="pre">column_correlation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA.explained_variance_"><code class="docutils literal notranslate"><span class="pre">explained_variance_</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.PCA.explained_variance_ratio_"><code class="docutils literal notranslate"><span class="pre">explained_variance_ratio_</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MFA"><code class="docutils literal notranslate"><span class="pre">MFA</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MFA.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MFA.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MFA.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MFA.fit_transform"><code class="docutils literal notranslate"><span class="pre">fit_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.light_famd.html#RuleTree.utils.light_famd.MFA.column_correlation"><code class="docutils literal notranslate"><span class="pre">column_correlation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#module-RuleTree.utils.shapelet_transform.Shapelets">RuleTree.utils.shapelet_transform.Shapelets module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#RuleTree.utils.shapelet_transform.Shapelets.Shapelets"><code class="docutils literal notranslate"><span class="pre">Shapelets</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#RuleTree.utils.shapelet_transform.Shapelets.Shapelets.__init__"><code class="docutils literal notranslate"><span class="pre">__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#RuleTree.utils.shapelet_transform.Shapelets.Shapelets.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#RuleTree.utils.shapelet_transform.Shapelets.Shapelets.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#module-RuleTree.utils.shapelet_transform.matrix_to_vector_distances">RuleTree.utils.shapelet_transform.matrix_to_vector_distances module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#RuleTree.utils.shapelet_transform.matrix_to_vector_distances.euclidean"><code class="docutils literal notranslate"><span class="pre">euclidean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#RuleTree.utils.shapelet_transform.matrix_to_vector_distances.sqeuclidean"><code class="docutils literal notranslate"><span class="pre">sqeuclidean()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#RuleTree.utils.shapelet_transform.matrix_to_vector_distances.cityblock"><code class="docutils literal notranslate"><span class="pre">cityblock()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#RuleTree.utils.shapelet_transform.matrix_to_vector_distances.cosine"><code class="docutils literal notranslate"><span class="pre">cosine()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html#module-RuleTree.utils.shapelet_transform">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-RuleTree.utils.bic_estimator">
+<span id="ruletree-utils-bic-estimator-module"></span><h2>RuleTree.utils.bic_estimator module<a class="headerlink" href="#module-RuleTree.utils.bic_estimator" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.estimate_gaussian_covariances">
+<span class="sig-name descname"><span class="pre">estimate_gaussian_covariances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_covar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#estimate_gaussian_covariances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.estimate_gaussian_covariances" title="Link to this definition">#</a></dt>
+<dd><p>Estimate the full covariance matrices.
+:param resp:
+:type resp: array-like of shape (n_samples, n_components)
+:param X:
+:type X: array-like of shape (n_samples, n_features)
+:param nk:
+:type nk: array-like of shape (n_components,)
+:param means:
+:type means: array-like of shape (n_components, n_features)
+:param reg_covar:
+:type reg_covar: float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>covariances</strong> – The covariance matrix of the current components.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array, shape (n_components, n_features, n_features)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.estimate_parameters">
+<span class="sig-name descname"><span class="pre">estimate_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#estimate_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.estimate_parameters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.compute_precision_cholesky">
+<span class="sig-name descname"><span class="pre">compute_precision_cholesky</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">covariances</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#compute_precision_cholesky"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.compute_precision_cholesky" title="Link to this definition">#</a></dt>
+<dd><p>Compute the Cholesky decomposition of the precisions.
+:param covariances: The covariance matrix of the current components.</p>
+<blockquote>
+<div><p>The shape depends of the covariance_type.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>precisions_cholesky</strong> – The cholesky decomposition of sample precisions of the current
+components. The shape depends of the covariance_type.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.estimate_weighted_log_prob">
+<span class="sig-name descname"><span class="pre">estimate_weighted_log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precisions_chol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#estimate_weighted_log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.estimate_weighted_log_prob" title="Link to this definition">#</a></dt>
+<dd><p>Estimate the weighted log-probabilities, log P(X | Z) + log weights.
+:param X:
+:type X: array-like of shape (n_samples, n_features)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>weighted_log_prob</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array, shape (n_samples, n_component)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.estimate_log_prob">
+<span class="sig-name descname"><span class="pre">estimate_log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precisions_chol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#estimate_log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.estimate_log_prob" title="Link to this definition">#</a></dt>
+<dd><p>Estimate the log Gaussian probability.
+:param X:
+:type X: array-like of shape (n_samples, n_features)
+:param means:
+:type means: array-like of shape (n_components, n_features)
+:param precisions_chol:
+:type precisions_chol: array-like</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>log_prob</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array, shape (n_samples, n_components)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.compute_log_det_cholesky">
+<span class="sig-name descname"><span class="pre">compute_log_det_cholesky</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix_chol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#compute_log_det_cholesky"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.compute_log_det_cholesky" title="Link to this definition">#</a></dt>
+<dd><p>Compute the log-det of the cholesky decomposition of matrices.
+:param matrix_chol: Cholesky decompositions of the matrices.
+:type matrix_chol: array-like
+:param n_features: Number of features.
+:type n_features: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>log_det_precision_chol</strong> – The determinant of the precision matrix for each component.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array-like of shape (n_components,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.estimate_log_weights">
+<span class="sig-name descname"><span class="pre">estimate_log_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#estimate_log_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.estimate_log_weights" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.score_samples">
+<span class="sig-name descname"><span class="pre">score_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precisions_chol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#score_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.score_samples" title="Link to this definition">#</a></dt>
+<dd><p>Compute the log-likelihood of each sample.
+:param X: List of n_features-dimensional data points. Each row</p>
+<blockquote>
+<div><p>corresponds to a single data point.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>log_prob</strong> – Log-likelihood of each sample in <cite>X</cite> under the current model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>array, shape (n_samples,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.score" title="Link to this definition">#</a></dt>
+<dd><p>Compute the per-sample average log-likelihood of the given data X.
+:param X: List of n_features-dimensional data points. Each row</p>
+<blockquote>
+<div><p>corresponds to a single data point.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>log_likelihood</strong> – Log-likelihood of <cite>X</cite> under the Gaussian mixture model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.get_n_parameters">
+<span class="sig-name descname"><span class="pre">get_n_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#get_n_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.get_n_parameters" title="Link to this definition">#</a></dt>
+<dd><p>Return the number of free parameters in the model.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.bic_estimator.bic">
+<span class="sig-name descname"><span class="pre">bic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/bic_estimator.html#bic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.bic_estimator.bic" title="Link to this definition">#</a></dt>
+<dd><p>Bayesian information criterion for the current model on the input X.
+You can refer to this <a class="reference external" href="https://scikit-learn.org/stable/modules/linear_model.html#aic-bic" title="(in scikit-learn v1.9)"><span class="xref std std-ref">mathematical section</span></a> for more
+details regarding the formulation of the BIC used.
+:param X: The input samples.
+:type X: array of shape (n_samples, n_dimensions)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bic</strong> – The lower the better.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-RuleTree.utils.data_utils">
+<span id="ruletree-utils-data-utils-module"></span><h2>RuleTree.utils.data_utils module<a class="headerlink" href="#module-RuleTree.utils.data_utils" title="Link to this heading">#</a></h2>
+<p>Utility functions for data preprocessing, transformation, and metrics calculation
+for the RuleTree library. This module contains helper functions for handling
+categorical and numerical features, calculating information gain metrics, and
+performing data encoding/decoding operations.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.preprocessing">
+<span class="sig-name descname"><span class="pre">preprocessing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_names_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_cat_feat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_encoder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#preprocessing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.preprocessing" title="Link to this definition">#</a></dt>
+<dd><p>Preprocess data by applying encoding and scaling transformations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Input data matrix to be preprocessed</p></li>
+<li><p><strong>feature_names_r</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Names of features in the original feature space</p></li>
+<li><p><strong>is_cat_feat</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Boolean array indicating which features are categorical</p></li>
+<li><p><strong>data_encoder</strong> (<em>category_encoders object</em><em>, </em><em>optional</em>) – Encoder for transforming categorical features</p></li>
+<li><p><strong>numerical_scaler</strong> (<em>sklearn.preprocessing scaler</em><em>, </em><em>optional</em>) – Scaler for normalizing numerical features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Preprocessed data</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.inverse_preprocessing">
+<span class="sig-name descname"><span class="pre">inverse_preprocessing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_cat_feat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_encoder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#inverse_preprocessing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.inverse_preprocessing" title="Link to this definition">#</a></dt>
+<dd><p>Inverse the preprocessing operation to restore original data format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Input data matrix in preprocessed form</p></li>
+<li><p><strong>is_cat_feat</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Boolean array indicating which features are categorical</p></li>
+<li><p><strong>data_encoder</strong> (<em>category_encoders object</em><em>, </em><em>optional</em>) – Encoder used in the preprocessing step</p></li>
+<li><p><strong>numerical_scaler</strong> (<em>sklearn.preprocessing scaler</em><em>, </em><em>optional</em>) – Scaler used in the preprocessing step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data in original feature space</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.prepare_data">
+<span class="sig-name descname"><span class="pre">prepare_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_original</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nbr_values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nbr_values_cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_names_original</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_hot_encode_cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorical_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numerical_scaler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#prepare_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.prepare_data" title="Link to this definition">#</a></dt>
+<dd><p>Prepare data for RuleTree by handling categorical features and applying preprocessing.</p>
+<p>This function identifies categorical features, optionally one-hot encodes them,
+scales numerical features, and creates mapping dictionaries for feature transformation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X_original</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Original input data matrix</p></li>
+<li><p><strong>max_nbr_values</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of values for binning continuous features</p></li>
+<li><p><strong>max_nbr_values_cat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum number of unique values for a feature to be considered categorical</p></li>
+<li><p><strong>feature_names_original</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Original feature names</p></li>
+<li><p><strong>one_hot_encode_cat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to one-hot encode categorical features</p></li>
+<li><p><strong>categorical_indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Indices of features known to be categorical</p></li>
+<li><p><strong>numerical_indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Indices of features known to be numerical</p></li>
+<li><p><strong>numerical_scaler</strong> (<em>sklearn.preprocessing scaler</em><em>, </em><em>optional</em>) – Scaler to apply to numerical features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(X, features, maps)
+- X: preprocessed data matrix
+- features: tuple containing feature information
+- maps: dictionary with mappings between original and one-hot encoded features</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><strong>Exception</strong></a> – If provided categorical and numerical indices don’t match the dataset dimensions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.calculate_mode">
+<span class="sig-name descname"><span class="pre">calculate_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#calculate_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.calculate_mode" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the mode (most frequent value) of an array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Input array</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Most frequent value in the input array</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)">object</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.get_info_gain">
+<span class="sig-name descname"><span class="pre">get_info_gain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html#sklearn.tree.DecisionTreeClassifier" title="(in scikit-learn v1.9)"><span class="pre">DecisionTreeClassifier</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTreeRegressor" title="(in scikit-learn v1.9)"><span class="pre">DecisionTreeRegressor</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#get_info_gain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.get_info_gain" title="Link to this definition">#</a></dt>
+<dd><p>Calculate information gain from a decision tree split.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>clf</strong> (<em>DecisionTreeClassifier</em><em> or </em><em>DecisionTreeRegressor</em>) – Fitted decision tree classifier or regressor</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Information gain achieved by the split</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.get_gain_ratio">
+<span class="sig-name descname"><span class="pre">get_gain_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html#sklearn.tree.DecisionTreeClassifier" title="(in scikit-learn v1.9)"><span class="pre">DecisionTreeClassifier</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html#sklearn.tree.DecisionTreeRegressor" title="(in scikit-learn v1.9)"><span class="pre">DecisionTreeRegressor</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#get_gain_ratio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.get_gain_ratio" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the gain ratio from a decision tree split.</p>
+<p>Gain ratio is information gain divided by the split information,
+which normalizes the information gain to account for the number of splits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>clf</strong> (<em>DecisionTreeClassifier</em><em> or </em><em>DecisionTreeRegressor</em>) – Fitted decision tree classifier or regressor</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gain ratio achieved by the split</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.gini">
+<span class="sig-name descname"><span class="pre">gini</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#gini"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.gini" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the Gini impurity of an array.</p>
+<p>Gini impurity measures the probability of incorrectly classifying a randomly chosen
+element if it were randomly labeled according to the distribution of classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Input array</p></li>
+<li><p><strong>sample_weight</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a><em>, </em><em>optional</em>) – Sample weights to apply</p></li>
+<li><p><strong>class_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – Class weights to apply</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gini impurity value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.entropy">
+<span class="sig-name descname"><span class="pre">entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.entropy" title="Link to this definition">#</a></dt>
+<dd><p>Calculate the entropy of an array.</p>
+<p>Entropy measures the average level of “information” or “uncertainty” inherent in
+the possible outcomes of a random variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Input array</p></li>
+<li><p><strong>sample_weight</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a><em>, </em><em>optional</em>) – Sample weights to apply</p></li>
+<li><p><strong>class_weight</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – Class weights to apply</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Entropy value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.select_stumps">
+<span class="sig-name descname"><span class="pre">select_stumps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_stumps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#select_stumps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.select_stumps" title="Link to this definition">#</a></dt>
+<dd><p>Select decision stumps from a tree based on balance score threshold.</p>
+<p>This function recursively traverses the tree and collects stumps that have
+a balance score above the specified threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<em>Node</em>) – Current node in the tree</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>default=0.2</em>) – Balance score threshold</p></li>
+<li><p><strong>selected_stumps</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – Accumulator for selected stumps during recursion</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Selected stumps that meet the balance score threshold</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.json_numpy_encoder">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">json_numpy_encoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipkeys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure_ascii</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_circular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_nan</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#json_numpy_encoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.json_numpy_encoder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/json.html#json.JSONEncoder" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">JSONEncoder</span></code></a></p>
+<p>JSON encoder that handles NumPy data types.</p>
+<p>This class extends the standard JSON encoder to properly serialize
+NumPy integers, floats, and arrays to their Python equivalents.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.utils.data_utils.json_numpy_encoder.default">
+<span class="sig-name descname"><span class="pre">default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#json_numpy_encoder.default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.data_utils.json_numpy_encoder.default" title="Link to this definition">#</a></dt>
+<dd><p>Override method to handle NumPy types</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">default</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/data_utils.html#json_numpy_encoder.default"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
+<dd><p>Convert NumPy types to standard Python types for JSON serialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – Object to be serialized</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Python equivalent of NumPy type</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)">object</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If object is not a NumPy type and cannot be serialized by the parent class</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-RuleTree.utils.define">
+<span id="ruletree-utils-define-module"></span><h2>RuleTree.utils.define module<a class="headerlink" href="#module-RuleTree.utils.define" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-RuleTree.utils.dict_ruletree_encoding">
+<span id="ruletree-utils-dict-ruletree-encoding-module"></span><h2>RuleTree.utils.dict_ruletree_encoding module<a class="headerlink" href="#module-RuleTree.utils.dict_ruletree_encoding" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.dict_ruletree_encoding.ruletree_to_array">
+<span class="sig-name descname"><span class="pre">ruletree_to_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/dict_ruletree_encoding.html#ruletree_to_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.dict_ruletree_encoding.ruletree_to_array" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.dict_ruletree_encoding.build_subtree">
+<span class="sig-name descname"><span class="pre">build_subtree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/dict_ruletree_encoding.html#build_subtree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.dict_ruletree_encoding.build_subtree" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.dict_ruletree_encoding.array_to_ruletree">
+<span class="sig-name descname"><span class="pre">array_to_ruletree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/dict_ruletree_encoding.html#array_to_ruletree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.dict_ruletree_encoding.array_to_ruletree" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-RuleTree.utils.fairness_metrics">
+<span id="ruletree-utils-fairness-metrics-module"></span><h2>RuleTree.utils.fairness_metrics module<a class="headerlink" href="#module-RuleTree.utils.fairness_metrics" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.fairness_metrics.balance_metric">
+<span class="sig-name descname"><span class="pre">balance_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">prot_attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/fairness_metrics.html#balance_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.fairness_metrics.balance_metric" title="Link to this definition">#</a></dt>
+<dd><p>Computes the balance fairness metric between protected attributes and class labels.</p>
+<p>The balance metric measures how evenly the protected attributes are distributed across
+different class labels. A value closer to 1 indicates better balance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> (<em>np.ndarray</em>) – Array of class labels for each instance</p></li>
+<li><p><strong>prot_attr</strong> (<em>np.ndarray</em>) – Array of protected attribute values for each instance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Minimum balance ratio across all protected attribute and class label combinations.
+Values range from 0 to 1, with 1 indicating perfect balance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.fairness_metrics.max_fairness_cost">
+<span class="sig-name descname"><span class="pre">max_fairness_cost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">prot_attr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ideal_dist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/fairness_metrics.html#max_fairness_cost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.fairness_metrics.max_fairness_cost" title="Link to this definition">#</a></dt>
+<dd><p>Calculates the maximum fairness cost based on deviation from an ideal distribution.</p>
+<p>This metric measures how far the actual distribution of protected attributes within
+each class is from an ideal (fair) distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> (<em>np.ndarray</em>) – Array of class labels for each instance</p></li>
+<li><p><strong>prot_attr</strong> (<em>np.ndarray</em>) – Array of protected attribute values for each instance</p></li>
+<li><p><strong>ideal_dist</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary mapping protected attribute values to their ideal proportions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Maximum fairness cost across all class labels. Lower values indicate
+distributions closer to the ideal fair distribution.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.fairness_metrics.privacy_metric">
+<span class="sig-name descname"><span class="pre">privacy_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensible_attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_anonymity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_diversity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_closeness</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorical</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/fairness_metrics.html#privacy_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.fairness_metrics.privacy_metric" title="Link to this definition">#</a></dt>
+<dd><p>Evaluates privacy preservation based on k-anonymity, l-diversity, and t-closeness.</p>
+<p>This function checks whether a split of the data satisfies specified privacy constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>array-like</em>) – The dataset features</p></li>
+<li><p><strong>X_bool</strong> (<em>array-like</em>) – Boolean array indicating the split (True/False for each instance)</p></li>
+<li><p><strong>sensible_attribute</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Index or indices of the sensitive attribute(s) in X</p></li>
+<li><p><strong>k_anonymity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Minimum required k-anonymity level. If float, interpreted as a proportion</p></li>
+<li><p><strong>l_diversity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Minimum required l-diversity level</p></li>
+<li><p><strong>t_closeness</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Maximum allowed t-closeness value</p></li>
+<li><p><strong>strict</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, enforces all privacy constraints strictly</p></li>
+<li><p><strong>categorical</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether the sensitive attribute is categorical</p></li>
+<li><p><strong>use_t</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to compute and use t-closeness in the evaluation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(is_valid, k, l, t) where:
+- is_valid: boolean indicating if privacy constraints are satisfied
+- k: achieved k-anonymity value
+- l: achieved l-diversity value
+- t: achieved t-closeness value or np.nan if not computed</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.fairness_metrics.privacy_metric_all">
+<span class="sig-name descname"><span class="pre">privacy_metric_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_thr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_thr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_thr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/fairness_metrics.html#privacy_metric_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.fairness_metrics.privacy_metric_all" title="Link to this definition">#</a></dt>
+<dd><p>Computes normalized privacy violations for k-anonymity, l-diversity, and t-closeness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Achieved k-anonymity value</p></li>
+<li><p><strong>k_thr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Threshold for k-anonymity</p></li>
+<li><p><strong>l</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Achieved l-diversity value</p></li>
+<li><p><strong>l_thr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Threshold for l-diversity</p></li>
+<li><p><strong>t</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Achieved t-closeness value</p></li>
+<li><p><strong>t_thr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Threshold for t-closeness</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of normalized violation scores for [k-anonymity, l-diversity, t-closeness].
+Each score is 0 if the constraint is satisfied, otherwise it’s a positive value
+representing the degree of violation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-RuleTree.utils.privacy_utils">
+<span id="ruletree-utils-privacy-utils-module"></span><h2>RuleTree.utils.privacy_utils module<a class="headerlink" href="#module-RuleTree.utils.privacy_utils" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.privacy_utils.compute_k_anonimity">
+<span class="sig-name descname"><span class="pre">compute_k_anonimity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensible_attribute</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/privacy_utils.html#compute_k_anonimity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.privacy_utils.compute_k_anonimity" title="Link to this definition">#</a></dt>
+<dd><p>Compute k-anonymity values for left and right partitions of data.</p>
+<p>K-anonymity ensures that each group contains at least k individuals with the same
+sensitive attribute value, making it difficult to identify a specific individual.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – Feature matrix</p></li>
+<li><p><strong>X_bool</strong> (<em>np.ndarray</em>) – Boolean array indicating the split (True for left partition, False for right)</p></li>
+<li><p><strong>sensible_attribute</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index of the sensitive attribute column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(k_left, k_right) representing the k-anonymity values for both partitions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.privacy_utils.compute_l_diversity">
+<span class="sig-name descname"><span class="pre">compute_l_diversity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensible_attribute</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/privacy_utils.html#compute_l_diversity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.privacy_utils.compute_l_diversity" title="Link to this definition">#</a></dt>
+<dd><p>Compute l-diversity values for left and right partitions of data.</p>
+<p>L-diversity ensures that sensitive attribute values are well-represented in each group,
+making it difficult to infer an individual’s sensitive attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – Feature matrix</p></li>
+<li><p><strong>X_bool</strong> (<em>np.ndarray</em>) – Boolean array indicating the split (True for left partition, False for right)</p></li>
+<li><p><strong>sensible_attribute</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index of the sensitive attribute column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(l_left, l_right) representing the l-diversity values for both partitions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.privacy_utils.compute_t_closeness">
+<span class="sig-name descname"><span class="pre">compute_t_closeness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensible_attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categorical</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/privacy_utils.html#compute_t_closeness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.privacy_utils.compute_t_closeness" title="Link to this definition">#</a></dt>
+<dd><p>Compute t-closeness values for left and right partitions of data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>np.ndarray</em>) – Feature matrix</p></li>
+<li><p><strong>X_bool</strong> (<em>np.ndarray</em>) – Boolean array indicating the split (True for left partition, False for right)</p></li>
+<li><p><strong>sensible_attribute</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index of the sensitive attribute column</p></li>
+<li><p><strong>categorical</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><em>set</em></a>) – Indices of categorical features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(t_left, t_right) representing the t-closeness values for both partitions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-RuleTree.utils.utils_decoding">
+<span id="ruletree-utils-utils-decoding-module"></span><h2>RuleTree.utils.utils_decoding module<a class="headerlink" href="#module-RuleTree.utils.utils_decoding" title="Link to this heading">#</a></h2>
+<p>Utility functions for tree decoding and manipulation in RuleTree.</p>
+<p>This module provides helper functions to configure, create, and manipulate decision trees,
+primarily focusing on split configurations and tree structure modifications.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.utils_decoding.configure_cat_split">
+<span class="sig-name descname"><span class="pre">configure_cat_split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/utils_decoding.html#configure_cat_split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.utils_decoding.configure_cat_split" title="Link to this definition">#</a></dt>
+<dd><p>Configure a categorical split in a classifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – Classifier object to be modified.</p></li>
+<li><p><strong>feature_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index of the feature used for the categorical split.</p></li>
+<li><p><strong>threshold_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Threshold value for the categorical split.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>clf</strong> – Modified classifier with the categorical split configuration.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)">object</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.utils_decoding.configure_non_cat_split">
+<span class="sig-name descname"><span class="pre">configure_non_cat_split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_features_in_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_outputs_</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/utils_decoding.html#configure_non_cat_split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.utils_decoding.configure_non_cat_split" title="Link to this definition">#</a></dt>
+<dd><p>Configure a non-categorical split in a classifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – Classifier object to be modified.</p></li>
+<li><p><strong>vector</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>arrays</em>) – Contains feature indices and threshold values.</p></li>
+<li><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index to determine which split to use from the vector.</p></li>
+<li><p><strong>n_features_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of input features.</p></li>
+<li><p><strong>n_classes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of classes.</p></li>
+<li><p><strong>n_outputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of outputs.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>clf</strong> – Modified classifier with the non-categorical split configuration.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)">object</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.utils_decoding.create_inner_tree">
+<span class="sig-name descname"><span class="pre">create_inner_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_features_in_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_outputs_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/utils_decoding.html#create_inner_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.utils_decoding.create_inner_tree" title="Link to this definition">#</a></dt>
+<dd><p>Create an inner tree structure with a specified split.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_features_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of input features.</p></li>
+<li><p><strong>n_classes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of classes.</p></li>
+<li><p><strong>n_outputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of outputs.</p></li>
+<li><p><strong>vector</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>arrays</em>) – Contains feature indices and threshold values.</p></li>
+<li><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index to determine which split to use from the vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>inner_tree</strong> – A tree object with the configured split.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sklearn.tree._tree.Tree</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Creates a basic tree structure with a depth of 1 (root and two leaf nodes).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.utils_decoding.assign_tree_properties">
+<span class="sig-name descname"><span class="pre">assign_tree_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inner_tree</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/utils_decoding.html#assign_tree_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.utils_decoding.assign_tree_properties" title="Link to this definition">#</a></dt>
+<dd><p>Assign tree properties from an inner tree to a classifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>clf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – Classifier object to be modified.</p></li>
+<li><p><strong>inner_tree</strong> (<em>sklearn.tree._tree.Tree</em>) – The tree structure to assign to the classifier.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function copies essential properties from the inner_tree to the classifier,
+ensuring that the classifier has the correct tree structure and associated metadata.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.utils_decoding.set_node_children">
+<span class="sig-name descname"><span class="pre">set_node_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx_to_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/utils_decoding.html#set_node_children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.utils_decoding.set_node_children" title="Link to this definition">#</a></dt>
+<dd><p>Set parent-child relationships between nodes in a tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx_to_node</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Dictionary mapping indices to node objects.</p></li>
+<li><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Index of the parent node.</p></li>
+<li><p><strong>vector</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>arrays</em>) – Contains information about the tree structure.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function establishes the hierarchical relationships between nodes,
+setting up parent-child connections and node IDs for tree traversal.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.utils.utils_decoding.simplify_decode">
+<span class="sig-name descname"><span class="pre">simplify_decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/utils/utils_decoding.html#simplify_decode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.utils.utils_decoding.simplify_decode" title="Link to this definition">#</a></dt>
+<dd><p>Simplify a tree by removing redundant splits.</p>
+<p>This function recursively analyzes a decision tree and simplifies its structure
+by converting internal nodes to leaf nodes when all descendant leaves have the same prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – A node in the decision tree with node_l and node_r attributes referring to child nodes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A set of unique predictions in the subtree rooted at this node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)">set</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If all leaf nodes in a subtree have the same prediction, the function converts
+the root of that subtree to a leaf node with that prediction.</p>
+</dd></dl>
+
+</section>
+<section id="module-RuleTree.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-RuleTree.utils" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="RuleTree.tree.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">RuleTree.tree package</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="RuleTree.utils.light_famd.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">RuleTree.utils.light_famd package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.bic_estimator">RuleTree.utils.bic_estimator module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_gaussian_covariances"><code class="docutils literal notranslate"><span class="pre">estimate_gaussian_covariances()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_parameters"><code class="docutils literal notranslate"><span class="pre">estimate_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.compute_precision_cholesky"><code class="docutils literal notranslate"><span class="pre">compute_precision_cholesky()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_weighted_log_prob"><code class="docutils literal notranslate"><span class="pre">estimate_weighted_log_prob()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_log_prob"><code class="docutils literal notranslate"><span class="pre">estimate_log_prob()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.compute_log_det_cholesky"><code class="docutils literal notranslate"><span class="pre">compute_log_det_cholesky()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.estimate_log_weights"><code class="docutils literal notranslate"><span class="pre">estimate_log_weights()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.score_samples"><code class="docutils literal notranslate"><span class="pre">score_samples()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.score"><code class="docutils literal notranslate"><span class="pre">score()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.get_n_parameters"><code class="docutils literal notranslate"><span class="pre">get_n_parameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.bic_estimator.bic"><code class="docutils literal notranslate"><span class="pre">bic()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.data_utils">RuleTree.utils.data_utils module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.preprocessing"><code class="docutils literal notranslate"><span class="pre">preprocessing()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.inverse_preprocessing"><code class="docutils literal notranslate"><span class="pre">inverse_preprocessing()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.prepare_data"><code class="docutils literal notranslate"><span class="pre">prepare_data()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.calculate_mode"><code class="docutils literal notranslate"><span class="pre">calculate_mode()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.get_info_gain"><code class="docutils literal notranslate"><span class="pre">get_info_gain()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.get_gain_ratio"><code class="docutils literal notranslate"><span class="pre">get_gain_ratio()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.gini"><code class="docutils literal notranslate"><span class="pre">gini()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.entropy"><code class="docutils literal notranslate"><span class="pre">entropy()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.select_stumps"><code class="docutils literal notranslate"><span class="pre">select_stumps()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.json_numpy_encoder"><code class="docutils literal notranslate"><span class="pre">json_numpy_encoder</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.data_utils.json_numpy_encoder.default"><code class="docutils literal notranslate"><span class="pre">default()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">default()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.define">RuleTree.utils.define module</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.dict_ruletree_encoding">RuleTree.utils.dict_ruletree_encoding module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.dict_ruletree_encoding.ruletree_to_array"><code class="docutils literal notranslate"><span class="pre">ruletree_to_array()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.dict_ruletree_encoding.build_subtree"><code class="docutils literal notranslate"><span class="pre">build_subtree()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.dict_ruletree_encoding.array_to_ruletree"><code class="docutils literal notranslate"><span class="pre">array_to_ruletree()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.fairness_metrics">RuleTree.utils.fairness_metrics module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.fairness_metrics.balance_metric"><code class="docutils literal notranslate"><span class="pre">balance_metric()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.fairness_metrics.max_fairness_cost"><code class="docutils literal notranslate"><span class="pre">max_fairness_cost()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.fairness_metrics.privacy_metric"><code class="docutils literal notranslate"><span class="pre">privacy_metric()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.fairness_metrics.privacy_metric_all"><code class="docutils literal notranslate"><span class="pre">privacy_metric_all()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.privacy_utils">RuleTree.utils.privacy_utils module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.privacy_utils.compute_k_anonimity"><code class="docutils literal notranslate"><span class="pre">compute_k_anonimity()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.privacy_utils.compute_l_diversity"><code class="docutils literal notranslate"><span class="pre">compute_l_diversity()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.privacy_utils.compute_t_closeness"><code class="docutils literal notranslate"><span class="pre">compute_t_closeness()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils.utils_decoding">RuleTree.utils.utils_decoding module</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.configure_cat_split"><code class="docutils literal notranslate"><span class="pre">configure_cat_split()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.configure_non_cat_split"><code class="docutils literal notranslate"><span class="pre">configure_non_cat_split()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.create_inner_tree"><code class="docutils literal notranslate"><span class="pre">create_inner_tree()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.assign_tree_properties"><code class="docutils literal notranslate"><span class="pre">assign_tree_properties()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.set_node_children"><code class="docutils literal notranslate"><span class="pre">set_node_children()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.utils.utils_decoding.simplify_decode"><code class="docutils literal notranslate"><span class="pre">simplify_decode()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.utils">Module contents</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cristiano Landi, Alessio Cascione, Riccardo Guidotti
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

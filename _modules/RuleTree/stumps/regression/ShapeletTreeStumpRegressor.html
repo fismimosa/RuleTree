@@ -1,0 +1,665 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleTree.stumps.regression.ShapeletTreeStumpRegressor &#8212; RuleTree Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/RuleTree/stumps/regression/ShapeletTreeStumpRegressor';</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo.png" class="logo__image only-light" alt="RuleTree Documentation - Home"/>
+    <img src="../../../../_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree Documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.base.html">RuleTree.base package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit.html">RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../RuleTree.ensemble.html">RuleTree.ensemble package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.stumps.html">RuleTree.stumps package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../RuleTree.tree.html">RuleTree.tree package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.utils.html">RuleTree.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree/issues/new?title=Issue%20on%20page%20%2F_modules/RuleTree/stumps/regression/ShapeletTreeStumpRegressor.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for RuleTree.stumps.regression.ShapeletTreeStumpRegressor</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile312</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnsupportedError</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">ShapeletTreeStumpClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.regression.DecisionTreeStumpRegressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeStumpRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.define</span><span class="w"> </span><span class="kn">import</span> <span class="n">DATA_TYPE_TS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.shapelet_transform.Shapelets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Shapelets</span>
+
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ShapeletTreeStumpRegressor</span><span class="p">(</span><span class="n">DecisionTreeStumpRegressor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A regression tree stump that uses shapelets as features for time series data.</span>
+
+<span class="sd">    This class extends `DecisionTreeStumpRegressor` and incorporates shapelet-based</span>
+<span class="sd">    feature extraction for regression tasks. It supports various selection methods</span>
+<span class="sd">    for shapelets and allows customization of parameters such as the number of shapelets,</span>
+<span class="sd">    sliding window size, and distance metric.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        n_shapelets (int): Number of shapelets to extract.</span>
+<span class="sd">        n_shapelets_for_selection (int): Number of shapelets to consider during selection.</span>
+<span class="sd">        n_ts_for_selection_per_class (int): Number of time series per class for shapelet selection.</span>
+<span class="sd">        sliding_window (int): Size of the sliding window for shapelet extraction.</span>
+<span class="sd">        selection (str): Method for selecting shapelets (&#39;random&#39;, &#39;mi_reg&#39;, &#39;cluster&#39;).</span>
+<span class="sd">        distance (str): Distance metric to use (&#39;euclidean&#39;, etc.).</span>
+<span class="sd">        mi_n_neighbors (int): Number of neighbors for mutual information calculation.</span>
+<span class="sd">        random_state (int): Random seed for reproducibility.</span>
+<span class="sd">        n_jobs (int): Number of parallel jobs for computation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor.__init__">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_shapelets</span><span class="o">=</span><span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">(</span><span class="n">logical</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">n_shapelets_for_selection</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="c1">#int, inf, or &#39;stratified&#39;</span>
+                 <span class="n">n_ts_for_selection_per_class</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="c1">#int, inf</span>
+                 <span class="n">sliding_window</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                 <span class="n">selection</span><span class="o">=</span><span class="s1">&#39;mi_reg&#39;</span><span class="p">,</span> <span class="c1">#random, mi_clf, mi_reg, cluster</span>
+                 <span class="n">distance</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">,</span>
+                 <span class="n">mi_n_neighbors</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the ShapeletTreeStumpRegressor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n_shapelets (int): Number of shapelets to extract.</span>
+<span class="sd">            n_shapelets_for_selection (int): Number of shapelets to consider during selection.</span>
+<span class="sd">            n_ts_for_selection_per_class (int): Number of time series per class for shapelet selection.</span>
+<span class="sd">            sliding_window (int): Size of the sliding window for shapelet extraction.</span>
+<span class="sd">            selection (str): Method for selecting shapelets (&#39;random&#39;, &#39;mi_reg&#39;, &#39;cluster&#39;).</span>
+<span class="sd">            distance (str): Distance metric to use (&#39;euclidean&#39;, etc.).</span>
+<span class="sd">            mi_n_neighbors (int): Number of neighbors for mutual information calculation.</span>
+<span class="sd">            random_state (int): Random seed for reproducibility.</span>
+<span class="sd">            n_jobs (int): Number of parallel jobs for computation.</span>
+<span class="sd">            **kwargs: Additional arguments for the parent class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_shapelets</span> <span class="o">=</span> <span class="n">n_shapelets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_shapelets_for_selection</span> <span class="o">=</span> <span class="n">n_shapelets_for_selection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_ts_for_selection_per_class</span> <span class="o">=</span> <span class="n">n_ts_for_selection_per_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sliding_window</span> <span class="o">=</span> <span class="n">sliding_window</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection</span> <span class="o">=</span> <span class="n">selection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mi_n_neighbors</span> <span class="o">=</span> <span class="n">mi_n_neighbors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+
+        <span class="k">if</span> <span class="s2">&quot;max_depth&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;max_depth&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;max_depth must be 1&quot;</span><span class="p">)</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;max_depth&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">selection</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">,</span> <span class="s1">&#39;mi_reg&#39;</span><span class="p">,</span> <span class="s1">&#39;cluster&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;selection&#39; must be &#39;random&#39;, &#39;mi_reg&#39; or &#39;cluster&#39;&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">st</span> <span class="o">=</span> <span class="n">Shapelets</span><span class="p">(</span><span class="n">n_shapelets</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_shapelets</span><span class="p">,</span>
+                            <span class="n">n_shapelets_for_selection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_shapelets_for_selection</span><span class="p">,</span>
+                            <span class="n">n_ts_for_selection_per_class</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_ts_for_selection_per_class</span><span class="p">,</span>
+                            <span class="n">sliding_window</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sliding_window</span><span class="p">,</span>
+                            <span class="n">selection</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">selection</span><span class="p">,</span>
+                            <span class="n">distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span>
+                            <span class="n">mi_n_neighbors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mi_n_neighbors</span><span class="p">,</span>
+                            <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+                            <span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span>
+                            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">|=</span> <span class="p">{</span>
+            <span class="s2">&quot;n_shapelets&quot;</span><span class="p">:</span> <span class="n">n_shapelets</span><span class="p">,</span>
+            <span class="s2">&quot;n_shapelets_for_selection&quot;</span><span class="p">:</span> <span class="n">n_shapelets_for_selection</span><span class="p">,</span>
+            <span class="s2">&quot;n_ts_for_selection_per_class&quot;</span><span class="p">:</span> <span class="n">n_ts_for_selection_per_class</span><span class="p">,</span>
+            <span class="s2">&quot;sliding_window&quot;</span><span class="p">:</span> <span class="n">sliding_window</span><span class="p">,</span>
+            <span class="s2">&quot;selection&quot;</span><span class="p">:</span> <span class="n">selection</span><span class="p">,</span>
+            <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="n">distance</span><span class="p">,</span>
+            <span class="s2">&quot;mi_n_neighbors&quot;</span><span class="p">:</span> <span class="n">mi_n_neighbors</span><span class="p">,</span>
+            <span class="s2">&quot;random_state&quot;</span><span class="p">:</span> <span class="n">random_state</span><span class="p">,</span>
+            <span class="s2">&quot;n_jobs&quot;</span><span class="p">:</span> <span class="n">n_jobs</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor.fit">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_img</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_txt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit the regressor to the given data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X (array-like): Input time series data.</span>
+<span class="sd">            y (array-like): Target values.</span>
+<span class="sd">            idx (slice, optional): Indices to select a subset of data.</span>
+<span class="sd">            context (optional): Contextual information (not used).</span>
+<span class="sd">            sample_weight (optional): Sample weights (not supported).</span>
+<span class="sd">            check_input (bool): Whether to validate input data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            self: Fitted regressor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_data_input</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">X_ts</span><span class="o">=</span><span class="n">X_ts</span><span class="p">,</span> <span class="n">X_img</span><span class="o">=</span><span class="n">X_img</span><span class="p">,</span> <span class="n">X_txt</span><span class="o">=</span><span class="n">X_txt</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">UnsupportedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sample_weight is not supported for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="n">check_input</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor.apply">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.apply">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_img</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_txt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply the fitted model to the input data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            X (array-like): Input time series data.</span>
+<span class="sd">            check_input (bool): Whether to validate input data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            array-like: Transformed data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_data_input</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">X_ts</span><span class="o">=</span><span class="n">X_ts</span><span class="p">,</span> <span class="n">X_img</span><span class="o">=</span><span class="n">X_img</span><span class="p">,</span> <span class="n">X_txt</span><span class="o">=</span><span class="n">X_txt</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">check_input</span><span class="o">=</span><span class="n">check_input</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor.supports">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.supports">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">supports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the regressor supports the given data type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data_type: Data type to check.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if supported, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DATA_TYPE_TS</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor.get_rule">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.get_rule">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a rule representation of the tree stump.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            columns_names (list, optional): Column names for features.</span>
+<span class="sd">            scaler (optional): Scaler for feature values (not supported).</span>
+<span class="sd">            float_precision (int, optional): Precision for floating-point values.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Rule representation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ShapeletTreeStumpClassifier</span><span class="o">.</span><span class="n">get_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor.node_to_dict">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.node_to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">node_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the tree node to a dictionary representation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Dictionary representation of the node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ShapeletTreeStumpClassifier</span><span class="o">.</span><span class="n">node_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor.dict_to_node">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.dict_to_node">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dict_to_node</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node_dict</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a tree node from a dictionary representation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node_dict (dict): Dictionary representation of the node.</span>
+<span class="sd">            X (array-like, optional): Input data (not used).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ShapeletTreeStumpRegressor: Reconstructed tree node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">n_shapelets</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;n_shapelets&quot;</span><span class="p">],</span>
+            <span class="n">n_shapelets_for_selection</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;n_shapelets_for_selection&quot;</span><span class="p">],</span>
+            <span class="n">n_ts_for_selection_per_class</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;n_ts_for_selection_per_class&quot;</span><span class="p">],</span>
+            <span class="n">sliding_window</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;sliding_window&quot;</span><span class="p">],</span>
+            <span class="n">selection</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;selection&quot;</span><span class="p">],</span>
+            <span class="n">distance</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span>
+            <span class="n">mi_n_neighbors</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;mi_n_neighbors&quot;</span><span class="p">],</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;random_state&quot;</span><span class="p">],</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;n_jobs&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">shapelets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">node_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;shapelets&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_original</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;feature_idx&#39;</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feature_original</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feature_original</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;feature_idx&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_original</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;threshold&#39;</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">threshold_original</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">threshold_original</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;threshold&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">node_dict</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">args</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="ShapeletTreeStumpRegressor.update_statistics">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.update_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_statistics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">,</span> <span class="n">check_input</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cristiano Landi, Alessio Cascione, Riccardo Guidotti
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,954 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleTree.utils.data_utils &#8212; RuleTree Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/RuleTree/utils/data_utils';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="RuleTree Documentation - Home"/>
+    <img src="../../../_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree Documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference:</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../RuleTree.base.html">RuleTree.base package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit.html">RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../RuleTree.ensemble.html">RuleTree.ensemble package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../RuleTree.stumps.html">RuleTree.stumps package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../RuleTree.tree.html">RuleTree.tree package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../RuleTree.utils.html">RuleTree.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree/issues/new?title=Issue%20on%20page%20%2F_modules/RuleTree/utils/data_utils.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for RuleTree.utils.data_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Utility functions for data preprocessing, transformation, and metrics calculation</span>
+<span class="sd">for the RuleTree library. This module contains helper functions for handling </span>
+<span class="sd">categorical and numerical features, calculating information gain metrics, and </span>
+<span class="sd">performing data encoding/decoding operations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">category_encoders</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ce</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">RegressorMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeClassifier</span><span class="p">,</span> <span class="n">DecisionTreeRegressor</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_iterative_mean</span><span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">current_mean</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Iteratively calculates mean using Welford&#39;s online algorithm.</span>
+<span class="sd">    </span>
+<span class="sd">    This method allows for efficient computation of the mean by updating it</span>
+<span class="sd">    iteratively as new data points arrive, without storing all previous values.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    iter : int</span>
+<span class="sd">        Non-negative integer representing the current iteration</span>
+<span class="sd">    current_mean : numpy.ndarray</span>
+<span class="sd">        Current value of the mean</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        New value to be added to the mean</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Updated mean value</span>
+<span class="sd">        </span>
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    http://www.heikohoffmann.de/htmlthesis/node134.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">current_mean</span> <span class="o">+</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">current_mean</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="nb">iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="preprocessing">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.preprocessing">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">preprocessing</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">feature_names_r</span><span class="p">,</span> <span class="n">is_cat_feat</span><span class="p">,</span> <span class="n">data_encoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">numerical_scaler</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Preprocess data by applying encoding and scaling transformations.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : numpy.ndarray</span>
+<span class="sd">        Input data matrix to be preprocessed</span>
+<span class="sd">    feature_names_r : list</span>
+<span class="sd">        Names of features in the original feature space</span>
+<span class="sd">    is_cat_feat : numpy.ndarray</span>
+<span class="sd">        Boolean array indicating which features are categorical</span>
+<span class="sd">    data_encoder : category_encoders object, optional</span>
+<span class="sd">        Encoder for transforming categorical features</span>
+<span class="sd">    numerical_scaler : sklearn.preprocessing scaler, optional</span>
+<span class="sd">        Scaler for normalizing numerical features</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Preprocessed data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data_encoder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">feature_names_r</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data_encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="n">numerical_scaler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">~</span><span class="n">is_cat_feat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">X</span><span class="p">[:,</span> <span class="o">~</span><span class="n">is_cat_feat</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerical_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="o">~</span><span class="n">is_cat_feat</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">X</span></div>
+
+
+
+<div class="viewcode-block" id="inverse_preprocessing">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.inverse_preprocessing">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inverse_preprocessing</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">is_cat_feat</span><span class="p">,</span> <span class="n">data_encoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">numerical_scaler</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inverse the preprocessing operation to restore original data format.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : numpy.ndarray</span>
+<span class="sd">        Input data matrix in preprocessed form</span>
+<span class="sd">    is_cat_feat : numpy.ndarray</span>
+<span class="sd">        Boolean array indicating which features are categorical</span>
+<span class="sd">    data_encoder : category_encoders object, optional</span>
+<span class="sd">        Encoder used in the preprocessing step</span>
+<span class="sd">    numerical_scaler : sklearn.preprocessing scaler, optional</span>
+<span class="sd">        Scaler used in the preprocessing step</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Data in original feature space</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">numerical_scaler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">~</span><span class="n">is_cat_feat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">X</span><span class="p">[:,</span> <span class="o">~</span><span class="n">is_cat_feat</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerical_scaler</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="o">~</span><span class="n">is_cat_feat</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">data_encoder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data_encoder</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">return</span> <span class="n">X</span></div>
+
+
+
+<div class="viewcode-block" id="prepare_data">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.prepare_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_data</span><span class="p">(</span><span class="n">X_original</span><span class="p">,</span> <span class="n">max_nbr_values</span><span class="p">,</span> <span class="n">max_nbr_values_cat</span><span class="p">,</span> <span class="n">feature_names_original</span><span class="p">,</span> <span class="n">one_hot_encode_cat</span><span class="p">,</span>
+                 <span class="n">categorical_indices</span><span class="p">,</span> <span class="n">numerical_indices</span><span class="p">,</span> <span class="n">numerical_scaler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepare data for RuleTree by handling categorical features and applying preprocessing.</span>
+<span class="sd">    </span>
+<span class="sd">    This function identifies categorical features, optionally one-hot encodes them,</span>
+<span class="sd">    scales numerical features, and creates mapping dictionaries for feature transformation.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X_original : numpy.ndarray</span>
+<span class="sd">        Original input data matrix</span>
+<span class="sd">    max_nbr_values : int</span>
+<span class="sd">        Maximum number of values for binning continuous features</span>
+<span class="sd">    max_nbr_values_cat : int</span>
+<span class="sd">        Maximum number of unique values for a feature to be considered categorical</span>
+<span class="sd">    feature_names_original : list</span>
+<span class="sd">        Original feature names</span>
+<span class="sd">    one_hot_encode_cat : bool</span>
+<span class="sd">        Whether to one-hot encode categorical features</span>
+<span class="sd">    categorical_indices : list, optional</span>
+<span class="sd">        Indices of features known to be categorical</span>
+<span class="sd">    numerical_indices : list, optional</span>
+<span class="sd">        Indices of features known to be numerical</span>
+<span class="sd">    numerical_scaler : sklearn.preprocessing scaler, optional</span>
+<span class="sd">        Scaler to apply to numerical features</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        (X, features, maps)</span>
+<span class="sd">        - X: preprocessed data matrix</span>
+<span class="sd">        - features: tuple containing feature information</span>
+<span class="sd">        - maps: dictionary with mappings between original and one-hot encoded features</span>
+<span class="sd">    </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    Exception</span>
+<span class="sd">        If provided categorical and numerical indices don&#39;t match the dataset dimensions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">categorical_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">numerical_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">categorical_indices</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">numerical_indices</span><span class="p">)</span> <span class="o">!=</span> <span class="n">X_original</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Provided indices are different from dataset size.&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">categorical_indices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">numerical_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">categorical_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X_original</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">numerical_indices</span><span class="p">]</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X_original</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">one_hot_encode_cat</span> <span class="ow">and</span> <span class="n">categorical_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">categorical_indices</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">categorical_indices</span><span class="p">:</span>
+                <span class="n">X</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">feature_values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">is_categorical_feature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">categorical_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">])</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_nbr_values</span><span class="p">:</span>  <span class="c1"># this reduces the number of values for continuous attributes</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">max_nbr_values</span><span class="p">)</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="p">[(</span><span class="n">vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">vals</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+            <span class="n">feature_values</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_nbr_values_cat</span><span class="p">:</span>  <span class="c1"># this identifies categorical attributes</span>
+                <span class="n">is_categorical_feature</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">if</span> <span class="n">vals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">original_val_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                        <span class="k">for</span> <span class="n">min_val</span><span class="p">,</span> <span class="n">max_val</span><span class="p">,</span> <span class="n">binned_val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">vals</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">vals</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">values</span><span class="p">):</span>
+                            <span class="n">original_val</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">original_val_idx</span><span class="p">,</span> <span class="n">feature</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="n">min_val</span> <span class="o">&lt;</span> <span class="n">original_val</span> <span class="o">&lt;</span> <span class="n">max_val</span><span class="p">:</span>
+                                <span class="n">X</span><span class="p">[</span><span class="n">original_val_idx</span><span class="p">,</span> <span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">binned_val</span>
+                                <span class="k">break</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">])</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_nbr_values</span><span class="p">:</span>  <span class="c1"># this reduces the number of values for continuous attributes</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">max_nbr_values</span><span class="p">)</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="p">[(</span><span class="n">vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">vals</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+            <span class="n">feature_values</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+
+            <span class="k">if</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">categorical_indices</span><span class="p">:</span>
+                <span class="n">is_categorical_feature</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">is_categorical_feature_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">is_categorical_feature</span><span class="p">)</span>
+    <span class="n">feature_values_r</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">feature_values</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">feature_values</span><span class="p">}</span>
+
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">feature_names_original</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_categorical_feature_r</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">encoder</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">feature_names</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">maps</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">one_hot_encode_cat</span><span class="p">:</span>
+        <span class="n">encoder</span> <span class="o">=</span> <span class="n">ce</span><span class="o">.</span><span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">cols</span><span class="o">=</span><span class="n">cols</span><span class="p">,</span> <span class="n">use_cat_names</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">encoder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">feature_names_original</span><span class="p">))</span>  <span class="c1">#TODO: serve passare da pandas??</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">map_original_onehot</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">map_onehot_original</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">map_original_onehot_idx</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">map_onehot_original_idx</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c1</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">feature_names_original</span><span class="p">):</span>
+            <span class="n">map_original_onehot</span><span class="p">[</span><span class="n">c1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">map_original_onehot_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">c2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">feature_names</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">c2</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">c1</span><span class="p">):</span>
+                    <span class="n">map_original_onehot</span><span class="p">[</span><span class="n">c1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c2</span><span class="p">)</span>
+                    <span class="n">map_original_onehot_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                    <span class="n">map_onehot_original</span><span class="p">[</span><span class="n">c2</span><span class="p">]</span> <span class="o">=</span> <span class="n">c1</span>
+                    <span class="n">map_onehot_original_idx</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+        <span class="n">maps</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;map_original_onehot&#39;</span><span class="p">:</span> <span class="n">map_original_onehot</span><span class="p">,</span>
+            <span class="s1">&#39;map_onehot_original&#39;</span><span class="p">:</span> <span class="n">map_onehot_original</span><span class="p">,</span>
+            <span class="s1">&#39;map_original_onehot_idx&#39;</span><span class="p">:</span> <span class="n">map_original_onehot_idx</span><span class="p">,</span>
+            <span class="s1">&#39;map_onehot_original_idx&#39;</span><span class="p">:</span> <span class="n">map_onehot_original_idx</span>
+        <span class="p">}</span>
+
+        <span class="n">feature_values</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">is_categorical_feature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">])</span>
+            <span class="n">feature_values</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_nbr_values_cat</span><span class="p">:</span>  <span class="c1"># this identifies categorical attributes</span>
+                <span class="n">is_categorical_feature</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># print(is_categorical_feature)</span>
+
+    <span class="k">if</span> <span class="n">numerical_scaler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">~</span><span class="n">is_categorical_feature</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">X</span><span class="p">[:,</span> <span class="o">~</span><span class="n">is_categorical_feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">numerical_scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="o">~</span><span class="n">is_categorical_feature</span><span class="p">])</span>
+
+    <span class="n">features</span> <span class="o">=</span> <span class="p">(</span><span class="n">feature_values_r</span><span class="p">,</span> <span class="n">is_categorical_feature_r</span><span class="p">,</span>
+                <span class="n">feature_values</span><span class="p">,</span> <span class="n">is_categorical_feature</span><span class="p">,</span>
+                <span class="n">encoder</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">maps</span></div>
+
+
+<div class="viewcode-block" id="calculate_mode">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.calculate_mode">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_mode</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the mode (most frequent value) of an array.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Input array</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    object</span>
+<span class="sd">        Most frequent value in the input array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vals</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">vals</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_info_gain">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.get_info_gain">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_info_gain</span><span class="p">(</span><span class="n">clf</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DecisionTreeClassifier</span><span class="p">,</span> <span class="n">DecisionTreeRegressor</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate information gain from a decision tree split.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    clf : DecisionTreeClassifier or DecisionTreeRegressor</span>
+<span class="sd">        Fitted decision tree classifier or regressor</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Information gain achieved by the split</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">tree_</span><span class="o">.</span><span class="n">impurity</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span><span class="c1">#no_split</span>
+            <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">imp_parent</span><span class="p">,</span> <span class="n">imp_child_l</span><span class="p">,</span> <span class="n">imp_child_r</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">tree_</span><span class="o">.</span><span class="n">impurity</span>
+    <span class="n">n_parent</span><span class="p">,</span> <span class="n">n_child_l</span><span class="p">,</span> <span class="n">n_child_r</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">tree_</span><span class="o">.</span><span class="n">weighted_n_node_samples</span>  <span class="c1">##n_node_samples </span>
+    <span class="k">return</span> <span class="n">_get_info_gain</span><span class="p">(</span><span class="n">imp_parent</span><span class="p">,</span> <span class="n">imp_child_l</span><span class="p">,</span> <span class="n">imp_child_r</span><span class="p">,</span> <span class="n">n_parent</span><span class="p">,</span> <span class="n">n_child_l</span><span class="p">,</span> <span class="n">n_child_r</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_info_gain</span><span class="p">(</span><span class="n">imp_parent</span><span class="p">,</span> <span class="n">imp_child_l</span><span class="p">,</span> <span class="n">imp_child_r</span><span class="p">,</span> <span class="n">n_parent</span><span class="p">,</span> <span class="n">n_child_l</span><span class="p">,</span> <span class="n">n_child_r</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to calculate information gain from impurity values.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    imp_parent : float</span>
+<span class="sd">        Impurity of the parent node</span>
+<span class="sd">    imp_child_l : float</span>
+<span class="sd">        Impurity of the left child node</span>
+<span class="sd">    imp_child_r : float</span>
+<span class="sd">        Impurity of the right child node</span>
+<span class="sd">    n_parent : int</span>
+<span class="sd">        Number of samples in the parent node</span>
+<span class="sd">    n_child_l : int</span>
+<span class="sd">        Number of samples in the left child node</span>
+<span class="sd">    n_child_r : int</span>
+<span class="sd">        Number of samples in the right child node</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Information gain achieved by the split</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gain_split</span> <span class="o">=</span> <span class="n">imp_parent</span> <span class="o">-</span> <span class="n">imp_child_l</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_child_l</span> <span class="o">/</span> <span class="n">n_parent</span><span class="p">)</span> <span class="o">-</span> <span class="n">imp_child_r</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_child_r</span> <span class="o">/</span> <span class="n">n_parent</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gain_split</span>
+
+<div class="viewcode-block" id="get_gain_ratio">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.get_gain_ratio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gain_ratio</span><span class="p">(</span><span class="n">clf</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DecisionTreeClassifier</span><span class="p">,</span> <span class="n">DecisionTreeRegressor</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the gain ratio from a decision tree split.</span>
+<span class="sd">    </span>
+<span class="sd">    Gain ratio is information gain divided by the split information,</span>
+<span class="sd">    which normalizes the information gain to account for the number of splits.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    clf : DecisionTreeClassifier or DecisionTreeRegressor</span>
+<span class="sd">        Fitted decision tree classifier or regressor</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Gain ratio achieved by the split</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">clf</span><span class="o">.</span><span class="n">tree_</span><span class="o">.</span><span class="n">impurity</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span><span class="c1">#no_split</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">imp_parent</span><span class="p">,</span> <span class="n">imp_child_l</span><span class="p">,</span> <span class="n">imp_child_r</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">tree_</span><span class="o">.</span><span class="n">impurity</span>
+    <span class="n">n_parent</span><span class="p">,</span> <span class="n">n_child_l</span><span class="p">,</span> <span class="n">n_child_r</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">tree_</span><span class="o">.</span><span class="n">weighted_n_node_samples</span>  <span class="c1">#n_node_samples</span>
+    <span class="n">gain_split</span> <span class="o">=</span> <span class="n">imp_parent</span> <span class="o">-</span> <span class="n">imp_child_l</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_child_l</span> <span class="o">/</span> <span class="n">n_parent</span><span class="p">)</span> <span class="o">-</span> <span class="n">imp_child_r</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_child_r</span> <span class="o">/</span> <span class="n">n_parent</span><span class="p">)</span>
+    <span class="n">split_info</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_child_l</span> <span class="o">/</span> <span class="n">n_parent</span><span class="p">)</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n_child_l</span> <span class="o">/</span> <span class="n">n_parent</span><span class="p">)</span> <span class="o">+</span>\
+                 <span class="p">(</span><span class="n">n_child_r</span> <span class="o">/</span> <span class="n">n_parent</span><span class="p">)</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">n_child_r</span> <span class="o">/</span> <span class="n">n_parent</span><span class="p">)</span>
+    <span class="n">split_info</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">gain_split</span><span class="o">/</span><span class="n">split_info</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_my_counts</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">class_weight</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate weighted counts for each unique value in an array.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Input array</span>
+<span class="sd">    sample_weight : numpy.ndarray, optional</span>
+<span class="sd">        Sample weights to apply</span>
+<span class="sd">    class_weight : dict, optional</span>
+<span class="sd">        Class weights to apply</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Weighted counts for each unique value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">class_weight</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">sample_weight</span>
+        <span class="n">class_weight</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">class_weight</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">class_weight</span>
+
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">class_weight</span><span class="p">),</span> <span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">c_k</span><span class="p">,</span> <span class="n">c_w</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">class_weight</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">counts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sample_weight</span><span class="p">[</span><span class="n">x</span> <span class="o">==</span> <span class="n">c_k</span><span class="p">])</span> <span class="o">*</span> <span class="n">c_w</span>
+
+    <span class="k">return</span> <span class="n">counts</span>
+
+<div class="viewcode-block" id="gini">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.gini">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gini</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">class_weight</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the Gini impurity of an array.</span>
+<span class="sd">    </span>
+<span class="sd">    Gini impurity measures the probability of incorrectly classifying a randomly chosen</span>
+<span class="sd">    element if it were randomly labeled according to the distribution of classes.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Input array</span>
+<span class="sd">    sample_weight : numpy.ndarray, optional</span>
+<span class="sd">        Sample weights to apply</span>
+<span class="sd">    class_weight : dict, optional</span>
+<span class="sd">        Class weights to apply</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Gini impurity value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">_my_counts</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight</span><span class="p">)</span>
+
+    <span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">counts</span><span class="o">/</span><span class="n">total</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="entropy">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.entropy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">entropy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">class_weight</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the entropy of an array.</span>
+<span class="sd">    </span>
+<span class="sd">    Entropy measures the average level of &quot;information&quot; or &quot;uncertainty&quot; inherent in</span>
+<span class="sd">    the possible outcomes of a random variable.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Input array</span>
+<span class="sd">    sample_weight : numpy.ndarray, optional</span>
+<span class="sd">        Sample weights to apply</span>
+<span class="sd">    class_weight : dict, optional</span>
+<span class="sd">        Class weights to apply</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        Entropy value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">_my_counts</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight</span><span class="p">)</span>
+
+    <span class="n">p_j</span> <span class="o">=</span> <span class="n">counts</span><span class="o">/</span><span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+    <span class="n">p_j_log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">p_j</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="o">-</span> <span class="n">p_j</span> <span class="o">@</span> <span class="n">p_j_log</span></div>
+
+
+<div class="viewcode-block" id="select_stumps">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.select_stumps">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">select_stumps</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">selected_stumps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Select decision stumps from a tree based on balance score threshold.</span>
+<span class="sd">    </span>
+<span class="sd">    This function recursively traverses the tree and collects stumps that have</span>
+<span class="sd">    a balance score above the specified threshold.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    node : Node</span>
+<span class="sd">        Current node in the tree</span>
+<span class="sd">    p : float, default=0.2</span>
+<span class="sd">        Balance score threshold</span>
+<span class="sd">    selected_stumps : list, optional</span>
+<span class="sd">        Accumulator for selected stumps during recursion</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        Selected stumps that meet the balance score threshold</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">selected_stumps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">selected_stumps</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">stump</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">balance_score</span> <span class="o">&gt;</span> <span class="n">p</span><span class="p">:</span>
+        <span class="n">selected_stumps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">stump</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">node_l</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">select_stumps</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node_l</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">selected_stumps</span><span class="p">)</span>
+        <span class="n">select_stumps</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node_r</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">selected_stumps</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">selected_stumps</span></div>
+
+
+
+<div class="viewcode-block" id="json_numpy_encoder">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.json_numpy_encoder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">json_numpy_encoder</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONEncoder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    JSON encoder that handles NumPy data types.</span>
+<span class="sd">    </span>
+<span class="sd">    This class extends the standard JSON encoder to properly serialize</span>
+<span class="sd">    NumPy integers, floats, and arrays to their Python equivalents.</span>
+<span class="sd">    </span>
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    default(obj)</span>
+<span class="sd">        Override method to handle NumPy types</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="json_numpy_encoder.default">
+<a class="viewcode-back" href="../../../RuleTree.utils.html#RuleTree.utils.data_utils.json_numpy_encoder.default">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert NumPy types to standard Python types for JSON serialization.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        obj : object</span>
+<span class="sd">            Object to be serialized</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        object</span>
+<span class="sd">            Python equivalent of NumPy type</span>
+<span class="sd">            </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If object is not a NumPy type and cannot be serialized by the parent class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">json_numpy_encoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cristiano Landi, Alessio Cascione, Riccardo Guidotti
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
