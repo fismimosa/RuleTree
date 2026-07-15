@@ -6,12 +6,10 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import classification_report
 
 from RuleTree import RuleTreeClassifier
-from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierLorenzoBase import \
-    DecisionTreeStumpClassifierLorenzoBase
-from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierLorenzoMatrixv1 import \
-    DecisionTreeStumpClassifierLorenzoMatrixv1
-from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierLorenzoMatrixv2 import \
-    DecisionTreeStumpClassifierLorenzoMatrixv2
+from RuleTree.stumps.classification.lorenzo.matrix.DecisionTreeStumpClassifierMatrixV1 import \
+    DecisionTreeStumpClassifierMatrixV1
+from RuleTree.stumps.classification.lorenzo.matrix.DecisionTreeStumpClassifierMatrixV2 import \
+    DecisionTreeStumpClassifierMatrixV2
 
 if __name__ == "__main__":
     df = pd.read_csv("datasets/CLF/diabetes.csv")
@@ -34,7 +32,7 @@ if __name__ == "__main__":
     print(classification_report(y_test, y_pred))
 
     clf = RuleTreeClassifier(max_depth=2,
-                             base_stumps=DecisionTreeStumpClassifierLorenzoMatrixv1(random_state=42, batch_size=1),
+                             base_stumps=DecisionTreeStumpClassifierMatrixV1(random_state=42, batch_size=1),
                              random_state=42)
     start = time.time()
     clf.fit(X_train, y_train)
@@ -43,7 +41,7 @@ if __name__ == "__main__":
     print(classification_report(y_test, y_pred))
 
     clf = RuleTreeClassifier(max_depth=2,
-                             base_stumps=DecisionTreeStumpClassifierLorenzoMatrixv2(random_state=42),
+                             base_stumps=DecisionTreeStumpClassifierMatrixV2(random_state=42),
                              random_state=42)
     start = time.time()
     clf.fit(X_train, y_train)

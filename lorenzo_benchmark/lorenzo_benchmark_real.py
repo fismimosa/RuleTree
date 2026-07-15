@@ -1,26 +1,22 @@
 import os
 import time
+from math import inf
+
 import pandas as pd
 import tracemalloc
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-import datetime
-import matplotlib.pyplot as plt
 
 # Imports for the models
-from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierLorenzoBase import \
-    DecisionTreeStumpClassifierLorenzoBase
+from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierBase import \
+    DecisionTreeStumpClassifierBase
 from RuleTree.tree.RuleTreeClassifier import RuleTreeClassifier
-from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierLorenzoMatrixv1 import \
-    DecisionTreeStumpClassifierLorenzoMatrixv1
-from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierLorenzoMatrixv2 import \
-    DecisionTreeStumpClassifierLorenzoMatrixv2
 
 # Import for evaluation
 from benchmark.evaluation_utils import evaluate_clf, evaluate_expl
 
 DATASET_FOLDER = "../datasets/CLF"
-MAX_ROWS = 10000
+MAX_ROWS = 50000
 N_RUNS = 5
 BATCH_SIZE = None
 
@@ -29,9 +25,9 @@ skipped = []
 
 # List of versions to test
 stump_versions = [
-    ("Base", DecisionTreeStumpClassifierLorenzoBase),
-    ("MatrixV1", DecisionTreeStumpClassifierLorenzoMatrixv1),
-    ("MatrixV2", DecisionTreeStumpClassifierLorenzoMatrixv2)
+    ("Base", DecisionTreeStumpClassifierBase),
+    # ("MatrixV1", DecisionTreeStumpClassifierLorenzoMatrixv1),
+    # ("MatrixV2", DecisionTreeStumpClassifierLorenzoMatrixv2)
 ]
 
 # Ensure we are in the right directory or dataset folder path is correct
@@ -60,6 +56,8 @@ for file in sorted(os.listdir(DATASET_FOLDER)):
 
         X = df.iloc[:, :-1].values
         y = df.iloc[:, -1].values
+
+        n_records, n_features = X.shape
 
         if len(X) == 0:
             raise ValueError("Empty dataset")
@@ -119,7 +117,10 @@ for file in sorted(os.listdir(DATASET_FOLDER)):
                     "run": run,
                     "version": version_name,
                     "fit_time": fit_time,
-                    "peak_memory_mb": peak_memory_mb
+                    "peak_memory_mb": peak_memory_mb,
+                    "n_records": n_records,
+                    "n_features": n_features,
+                    "dataset": file
                 }
                 row.update(metrics)
 

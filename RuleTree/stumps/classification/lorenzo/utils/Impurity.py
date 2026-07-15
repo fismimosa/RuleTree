@@ -75,3 +75,10 @@ class Impurity(IImpurity):
                     ent -= p * np.log2(p)
             result[j] = ent
         return result
+
+    @staticmethod
+    def variance(y):
+        if len(y) == 0:
+            return 0.0
+
+        return np.var(y)
