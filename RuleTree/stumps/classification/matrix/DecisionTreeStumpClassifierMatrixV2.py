@@ -1,5 +1,5 @@
 import numpy as np
-from RuleTree.stumps.classification.lorenzo.interfaces.ClassifierBaseMatrix import ClassifierBaseMatrix
+from RuleTree.stumps.interfaces.ClassifierBaseMatrix import ClassifierBaseMatrix
 
 
 class DecisionTreeStumpClassifierMatrixV2(ClassifierBaseMatrix):

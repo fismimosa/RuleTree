@@ -31,7 +31,7 @@ for DEPTH in DEPTHS:
         # ===== PLOT =====
         plt.figure(figsize=(10, 7))
 
-        scale = 60 if METRIC == 'fit_time' else 1
+        scale = 1 if METRIC == 'fit_time' else 1
 
         stats = (
             df.groupby(["n_features", "version"])[METRIC]
@@ -82,6 +82,7 @@ for DEPTH in DEPTHS:
         plt.grid(True)
 
         plt.xscale("log")
+        plt.yscale("log")
 
         features = sorted(df["n_features"].unique())
 
@@ -95,7 +96,7 @@ for DEPTH in DEPTHS:
 
         plt.minorticks_off()
 
-        plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(20))
+        #plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(20))
 
         y_min = (mean[METRIC] - std[METRIC]).min() / scale
         y_max = (mean[METRIC] + std[METRIC]).max() / scale

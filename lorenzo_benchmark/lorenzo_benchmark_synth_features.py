@@ -6,13 +6,13 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 import datetime
 
-from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierBase import \
+from RuleTree.stumps.classification.DecisionTreeStumpClassifierBase import \
     DecisionTreeStumpClassifierBase
 # Imports for the models
 from RuleTree.tree.RuleTreeClassifier import RuleTreeClassifier
-from RuleTree.stumps.classification.lorenzo.matrix.DecisionTreeStumpClassifierMatrixV1 import \
+from RuleTree.stumps.classification.matrix.DecisionTreeStumpClassifierMatrixV1 import \
     DecisionTreeStumpClassifierMatrixV1
-from RuleTree.stumps.classification.lorenzo.matrix.DecisionTreeStumpClassifierMatrixV2 import \
+from RuleTree.stumps.classification.matrix.DecisionTreeStumpClassifierMatrixV2 import \
     DecisionTreeStumpClassifierMatrixV2
 from benchmark.evaluation_utils import evaluate_clf, evaluate_expl
 

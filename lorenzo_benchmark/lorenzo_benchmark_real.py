@@ -1,6 +1,5 @@
 import os
 import time
-from math import inf
 
 import pandas as pd
 import tracemalloc
@@ -8,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
 # Imports for the models
-from RuleTree.stumps.classification.lorenzo.DecisionTreeStumpClassifierBase import \
+from RuleTree.stumps.classification.DecisionTreeStumpClassifierBase import \
     DecisionTreeStumpClassifierBase
 from RuleTree.tree.RuleTreeClassifier import RuleTreeClassifier
 

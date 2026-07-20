@@ -6,9 +6,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import classification_report
 
 from RuleTree import RuleTreeClassifier
-from RuleTree.stumps.classification.lorenzo.matrix.DecisionTreeStumpClassifierMatrixV1 import \
+from RuleTree.stumps.classification.matrix.DecisionTreeStumpClassifierMatrixV1 import \
     DecisionTreeStumpClassifierMatrixV1
-from RuleTree.stumps.classification.lorenzo.matrix.DecisionTreeStumpClassifierMatrixV2 import \
+from RuleTree.stumps.classification.matrix.DecisionTreeStumpClassifierMatrixV2 import \
     DecisionTreeStumpClassifierMatrixV2
 
 if __name__ == "__main__":

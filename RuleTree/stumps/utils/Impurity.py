@@ -1,7 +1,6 @@
 import numpy as np
-from numba import njit
 
-from RuleTree.stumps.classification.lorenzo.interfaces.IImpurity import IImpurity
+from RuleTree.stumps.interfaces.IImpurity import IImpurity
 
 
 class Impurity(IImpurity):
