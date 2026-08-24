@@ -2,19 +2,24 @@ import time
 import pandas as pd
 import tracemalloc
 
-from sklearn.datasets import make_classification
+from sklearn.datasets import make_classification, make_regression
 from sklearn.model_selection import train_test_split
 import datetime
 
+from RuleTree.tree.RuleTreeRegressor import RuleTreeRegressor
 from RuleTree.stumps.classification.DecisionTreeStumpClassifierBase import \
     DecisionTreeStumpClassifierBase
+from RuleTree.stumps.regression.DecisionTreeStumpRegressorBase import DecisionTreeStumpRegressorBase
+from RuleTree.stumps.regression.matrix.DecisionTreeStumpRegressorFlatMatrix import DecisionTreeStumpRegressorFlatMatrix
+from RuleTree.stumps.regression.matrix.DecisionTreeStumpRegressorMatrixAB import DecisionTreeStumpRegressorMatrixAB
 # Imports for the models
 from RuleTree.tree.RuleTreeClassifier import RuleTreeClassifier
 from RuleTree.stumps.classification.matrix.DecisionTreeStumpClassifierMatrixAB import \
     DecisionTreeStumpClassifierMatrixAB
 from RuleTree.stumps.classification.matrix.DecisionTreeStumpClassifierFlatMatrix import \
     DecisionTreeStumpClassifierFlatMatrix
-from benchmark.evaluation_utils import evaluate_clf, evaluate_expl
+from benchmark.evaluation_utils import evaluate_clf, evaluate_expl, evaluate_reg
+from tests.test_rule_tree import evaluate_regressor
 
 # Settings
 NUM_RECORDS = 10000
@@ -23,15 +28,15 @@ INFORMATIVE_PERC = 0.8
 REDUNDANT_PERC = 0.05
 REPEATED_PERC = 0.05
 N_RUNS = 5
-BATCH_SIZE = [2, 4, 8, 16, 32, 64, 128, 256] # [0] per non usare
+BATCH_SIZE = [20] # [0] per non usare
 N_BINS= [0] # [0] per non usare
 MAX_DEPTH = [2] # [1, 2, 3, 5, 8, 10]
 STUMP_VERSIONS = [
-    #("Base", DecisionTreeStumpClassifierBase),
-    ("Matrix AB", DecisionTreeStumpClassifierMatrixAB),
-    ("Flat Matrix", DecisionTreeStumpClassifierFlatMatrix)
+    ("Base", DecisionTreeStumpRegressorBase),
+    ("Matrix AB", DecisionTreeStumpRegressorMatrixAB),
+    ("Flat Matrix", DecisionTreeStumpRegressorFlatMatrix)
 ]
-FILE_NAME = "benchmark_results_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv"
+FILE_NAME = "reg_benchmark_results_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + ".csv"
 
 if BATCH_SIZE[0] != 0:
     FILE_NAME = "B_" + str(BATCH_SIZE) + "_" + FILE_NAME
@@ -52,15 +57,16 @@ try:
 
                     # -------- RUN LOOP --------
                     for run in range(1, N_RUNS + 1):
-                        X, y = make_classification(
+                        X, y = make_regression(
                             n_samples=NUM_RECORDS,
                             n_features=NUM_FEATURES[i],
                             n_informative=round(INFORMATIVE_PERC * NUM_FEATURES[i]),
-                            n_redundant=round(REDUNDANT_PERC * NUM_FEATURES[i]),
-                            n_repeated=round(REPEATED_PERC * NUM_FEATURES[i]),
-                            n_classes=2,
+                            noise=0.0,
                             random_state=run
                         )
+
+                        y = y - y.min() + 1 # devo rendere positivi i target sennò da errore sulla MSLR
+
                         X_train, X_test, y_train, y_test = train_test_split(
                             X, y, test_size=0.3, random_state=42
                         )
@@ -68,13 +74,13 @@ try:
                             print(f"Run {run}/{N_RUNS} - {version_name}")
 
                             if version_name == "Base":
-                                clf = RuleTreeClassifier(
+                                clf = RuleTreeRegressor(
                                     max_depth=MAX_DEPTH[j],
                                     base_stumps=stump_class(random_state=run),
                                     random_state=run
                                 )
                             else:
-                                clf = RuleTreeClassifier(
+                                clf = RuleTreeRegressor(
                                     max_depth=MAX_DEPTH[j],
                                     base_stumps=stump_class(random_state=run, batch_size=BATCH_SIZE[b], n_bins=N_BINS[k] if N_BINS[k] != 0 else None),
                                     random_state=run
@@ -97,10 +103,9 @@ try:
 
                             # Predictions for metrics
                             y_pred = clf.predict(X_test)
-                            y_pred_proba = clf.predict_proba(X_test)
 
                             # Evaluate metrics
-                            metrics = evaluate_clf(y_test, y_pred, y_pred_proba) | evaluate_expl(clf)
+                            metrics = evaluate_reg(y_test, y_pred) | evaluate_expl(clf)
 
                             # Build row
                             row = {
@@ -119,7 +124,8 @@ try:
                             results.append(row)
 
 except Exception as e:
-    exit(1)
+    print("ERRORE:")
+    raise
 except KeyboardInterrupt:
     # Creare .csv
     df_results = pd.DataFrame(results)

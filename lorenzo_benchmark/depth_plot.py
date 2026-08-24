@@ -8,7 +8,7 @@ _name = "B_20_benchmark_results_20260704-202247.csv"
 FILE_PATH = f"{_path}/{_name}"
 
 METRICS = ["fit_time", "peak_memory_mb", "f1_score"]
-VERSIONS = ["Base", "MatrixV1", "MatrixV2"]
+VERSIONS = ["Base", "Matrix AB", "Flat Matrix"]
 
 FEATURES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]   # numero di features da fissare
 
@@ -34,7 +34,7 @@ for FEATURES_NUM in FEATURES:
         # ===== PLOT =====
         plt.figure(figsize=(10, 7))
 
-        scale = 60 if METRIC == "fit_time" else 1
+        scale = 1 if METRIC == "fit_time" else 1
 
         stats = (
             df.groupby(["max_depth", "version"])[METRIC]
@@ -67,7 +67,7 @@ for FEATURES_NUM in FEATURES:
         # ===== FORMAT =====
         plt.xlabel("Maximum Depth")
         plt.ylabel(
-            METRIC + " (min)" if METRIC == "fit_time" else METRIC
+            METRIC + " (sec)" if METRIC == "fit_time" else METRIC
         )
 
         title_parts = [
@@ -93,16 +93,58 @@ for FEATURES_NUM in FEATURES:
         plt.legend()
         plt.grid(True)
 
+        plt.xscale("log")
+        plt.yscale("log")
+
         # niente log: depth è discreta
         depths = sorted(df["max_depth"].unique())
 
         plt.xticks(depths)
-
-        plt.minorticks_off()
-
-        plt.gca().yaxis.set_major_locator(
-            ticker.MaxNLocator(20)
+        plt.gca().set_xticklabels(
+            depths,
+            rotation=45,
+            ha='right',
+            fontsize=8
         )
+
+        ax = plt.gca()
+
+        # ===== X AXIS =====
+        ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+        ax.xaxis.get_major_formatter().set_scientific(False)
+        ax.xaxis.get_major_formatter().set_useOffset(False)
+
+        # ===== Y AXIS =====
+        if METRIC == "f1_score":
+            # F1 score: scala lineare, più leggibile
+            ax.set_yscale("linear")
+            ax.yaxis.set_major_locator(ticker.MultipleLocator(0.05))
+            ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.2f"))
+        else:
+            ax.set_yscale("log")
+
+            # Major ticks: 1, 10, 100, 1000, ...
+            ax.yaxis.set_major_locator(
+                ticker.LogLocator(base=10, subs=(1.0,))
+            )
+
+            # Minor ticks: 2, 4, 6, 8 × 10^n
+            ax.yaxis.set_minor_locator(
+                ticker.LogLocator(base=10, subs=(2, 5))
+            )
+
+            # Etichette dei major tick
+            ax.yaxis.set_major_formatter(
+                ticker.FuncFormatter(lambda x, pos: f"{x:g}")
+            )
+
+            ax.yaxis.set_minor_formatter(
+                ticker.FuncFormatter(lambda x, pos: f"{x:g}")
+            )
+
+        # ===== GRID =====
+        ax.grid(True, which="major", axis="both", linestyle="-", alpha=0.5)
+        ax.grid(True, which="minor", axis="y", linestyle="--", alpha=0.25)
 
         y_min = (mean[METRIC] - std[METRIC]).min() / scale
         y_max = (mean[METRIC] + std[METRIC]).max() / scale

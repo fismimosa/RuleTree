@@ -3,27 +3,30 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 # ===== SETTINGS =====
-_path = "conclusi/sintetici/2048 features regressore"
-_name= "B_[20]_reg_benchmark_results_20260821-120021.csv"
+_path = "conclusi/sintetici/BINNING B20 2048 features"
+_name = "BIN_B_[20]_benchmark_results_20260813-100920.csv"
 FILE_PATH = f"{_path}/{_name}"
+
 METRICS = ["fit_time", "peak_memory_mb", "f1_score"]
-VERSIONS = ["Base", "Matrix AB", "Flat Matrix"] # ["Base", "MatrixAB", "MatrixV2"]
-DEPTHS=[2]
+VERSIONS = ["Matrix AB", "Flat Matrix"]
+
+FEATURES = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]   # numero di features da fissare
 
 # ===== LOAD =====
 df_all = pd.read_csv(FILE_PATH)
 
-for DEPTH in DEPTHS:
+
+for FEATURES_NUM in FEATURES:
     for METRIC in METRICS:
-        # Filtra solo la profondità desiderata
-        # Filtra le versioni
+
+        # Fisso il numero di features e filtro le versioni
         df = df_all[
-            (df_all["depth"] == DEPTH) &
+            (df_all["n_features"] == FEATURES_NUM) &
             (df_all["version"].isin(VERSIONS))
-            ].copy()
+        ].copy()
 
         # ===== GROUP =====
-        grouped = df.groupby(["n_features", "version"])[METRIC]
+        grouped = df.groupby(["n_bins", "version"])[METRIC]
 
         mean = grouped.mean().reset_index()
         std = grouped.std().reset_index()
@@ -31,64 +34,70 @@ for DEPTH in DEPTHS:
         # ===== PLOT =====
         plt.figure(figsize=(10, 7))
 
-        scale = 1 if METRIC == 'fit_time' else 1
+        scale = 1 if METRIC == "fit_time" else 1
 
         stats = (
-            df.groupby(["n_features", "version"])[METRIC]
+            df.groupby(["n_bins", "version"])[METRIC]
             .agg(["mean", "std"])
             .fillna(0)
             .reset_index()
         )
 
         for version in stats["version"].unique():
+
             m = (
                 stats[stats["version"] == version]
-                .sort_values("n_features")
+                .sort_values("n_bins")
             )
 
             plt.plot(
-                m["n_features"],
+                m["n_bins"],
                 m["mean"] / scale,
                 marker="o",
                 label=version
             )
 
             plt.fill_between(
-                m["n_features"],
+                m["n_bins"],
                 (m["mean"] - m["std"]) / scale,
                 (m["mean"] + m["std"]) / scale,
                 alpha=0.2
             )
+
         # ===== FORMAT =====
-        plt.xlabel("Number of Features")
-        plt.ylabel(METRIC + " (sec)" if METRIC == 'fit_time' else METRIC)
+        plt.xlabel("n_bins")
+        plt.ylabel(
+            METRIC + " (sec)" if METRIC == "fit_time" else METRIC
+        )
 
         title_parts = [
             f"{df['n_records'].iloc[0]} records",
             f"{df['run'].max()} runs",
-            f"depth={DEPTH}"
+            f"n_features={FEATURES_NUM}"
         ]
 
         if "batch_size" in df.columns and pd.notna(df["batch_size"].iloc[0]):
-            title_parts.append(f"batch_size={df['batch_size'].iloc[0]}")
+            title_parts.append(
+                f"batch_size={df['batch_size'].iloc[0]}"
+            )
 
-        if "n_bins" in df.columns and pd.notna(df["n_bins"].iloc[0]):
-            title_parts.append(f"#bins={df['n_bins'].iloc[0]}")
 
         title = "(" + ", ".join(map(str, title_parts)) + ")"
 
-        plt.title(f"{METRIC} vs #features {title}")
+        plt.title(f"{METRIC} vs depth {title}")
+
         plt.legend()
         plt.grid(True)
 
         plt.xscale("log")
         plt.yscale("log")
-        # TODO: su asse y mettere fit time base / fit time matrix (1 e 2) per fare speed up, con f1 fare delta (differenza tra i due)
-        features = sorted(df["n_features"].unique())
 
-        plt.xticks(features)
+        # niente log: depth è discreta
+        depths = sorted(df["n_bins"].unique())
+
+        plt.xticks(depths)
         plt.gca().set_xticklabels(
-            features,
+            depths,
             rotation=45,
             ha='right',
             fontsize=8
@@ -133,12 +142,16 @@ for DEPTH in DEPTHS:
         ax.grid(True, which="major", axis="both", linestyle="-", alpha=0.5)
         ax.grid(True, which="minor", axis="y", linestyle="--", alpha=0.25)
 
-        #plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(20))
-
         y_min = (mean[METRIC] - std[METRIC]).min() / scale
         y_max = (mean[METRIC] + std[METRIC]).max() / scale
 
         plt.ylim(y_min * 0.95, y_max * 1.05)
+
         plt.tight_layout()
-        plt.savefig(f"{_path}/plot_" + str(DEPTH) + "_" + METRIC + "_" + FILE_PATH.split("/")[len(FILE_PATH.split("/")) - 1] + ".png")
+
+        plt.savefig(
+            f"{_path}/plot_features_{FEATURES_NUM}_{METRIC}_depth_"
+            f"{_name}.png"
+        )
+
         plt.close()

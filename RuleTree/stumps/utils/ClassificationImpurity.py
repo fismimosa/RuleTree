@@ -1,12 +1,9 @@
 import numpy as np
 
-from RuleTree.stumps.interfaces.IImpurity import IImpurity
-
-
-class Impurity(IImpurity):
+class ClassificationImpurity():
 
     @staticmethod
-    def calculate_gain(sx_mask, y_onehot, impurity_fun, Idx=None) -> tuple:
+    def calculate_gain(sx_mask, y_onehot, impurity_fun, Idx=None):
         """
         Args:
             sx_mask: maschera samples che vanno a sx
@@ -45,7 +42,7 @@ class Impurity(IImpurity):
         return info_gain, imp_parent, imp_left, imp_right
 
     @staticmethod
-    def gini(counts: np.ndarray) -> np.ndarray:
+    def gini(counts):
         """
         counts: matrice (n_classes x k_splits)
         return: array (k_splits)
@@ -74,10 +71,3 @@ class Impurity(IImpurity):
                     ent -= p * np.log2(p)
             result[j] = ent
         return result
-
-    @staticmethod
-    def variance(y):
-        if len(y) == 0:
-            return 0.0
-
-        return np.var(y)

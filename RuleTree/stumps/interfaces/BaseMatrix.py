@@ -16,7 +16,7 @@ class BaseMatrix(RuleTreeBaseStump, ABC):
         self.bin_edges = {}
 
         self.batch_size = batch_size
-        self.n_bins = n_bins
+        self.n_bins = n_bins if n_bins is not None and n_bins > 0 else None
 
         self.min_samples_leaf = min_samples_leaf
         self.random_state = random_state
@@ -49,7 +49,7 @@ class BaseMatrix(RuleTreeBaseStump, ABC):
         y = y[idx]
         return X, y
 
-    def _prepare_data(self, X, y, idx, context):
+    def _prepare_data(self, X, y, idx, context, sample_weight=None):
         X, y = self._select_dataset_subset(X, y, idx)
         n_samples = len(X)
 
@@ -67,7 +67,13 @@ class BaseMatrix(RuleTreeBaseStump, ABC):
         if self.n_bins is not None:
             X = self._apply_binning(X)
 
-        return X, y, n_samples, m, batch_size
+        return {
+            "X": X,
+            "y": y,
+            "n_samples": n_samples,
+            "m": m,
+            "batch_size": batch_size
+        }
 
     def _finalize_fit(self, X, y, best_feature, best_threshold):
         self.feature = best_feature
@@ -77,6 +83,55 @@ class BaseMatrix(RuleTreeBaseStump, ABC):
         # no split
         if self.feature is None:
             raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
+
+    def fit(self, X, y, idx=None, context=None, sample_weight=None):
+        data = self._prepare_data(
+            X=X,
+            y=y,
+            idx=idx,
+            context=context,
+            sample_weight=sample_weight
+        )
+
+        X = data["X"]
+        y = data["y"]
+        n_samples = data["n_samples"]
+        m = data["m"]
+        batch_size = data["batch_size"]
+
+        best_gain = -np.inf  # Miglior gain in assoluto
+        best_feature = None  # Miglior feature in assoluto associata al best gain
+        best_threshold = None  # Miglior threshold in assoluto associata al best gain
+
+        for start in range(0, m, batch_size):  # Incremento di batch_size
+            end = min(start + batch_size, m)
+            features_batch = list(range(start, end))
+            active_features, active_thresholds = self._generate_splits(X, features_batch, m)
+            k = len(active_features)  # Numero di split
+
+            sx_mask = self._build_sxmask(
+                X,
+                active_features,
+                active_thresholds,
+                k,
+                n_samples
+            )
+
+            info_gain, imp_parent, imp_left, imp_right = self._calculate_gain(sx_mask, data)
+
+            local_best = np.argmax(info_gain)  # Indice del best gain
+            if info_gain[local_best] > best_gain:
+                best_gain = info_gain[local_best]
+                best_feature = active_features[local_best]
+                best_threshold = active_thresholds[local_best]
+
+                self.impurity[0] = imp_parent
+                self.impurity[1] = imp_left[local_best]
+                self.impurity[2] = imp_right[local_best]
+
+        self._finalize_fit(X, y, best_feature, best_threshold)
+
+        return self
 
     def apply(self, X):
         """
@@ -105,3 +160,12 @@ class BaseMatrix(RuleTreeBaseStump, ABC):
             y_pred[X_feature == self.threshold] = 0  # a sinistra
 
         return y_pred + 1
+
+    def _calculate_gain(self, sx_mask, data):
+        raise NotImplementedError
+
+    def _generate_splits(self, X, features_batch, m=None):
+        raise NotImplementedError
+
+    def _build_sxmask(self, X, active_features, active_thresholds, k, n_samples):
+        raise NotImplementedError

@@ -1,36 +1,8 @@
 import numpy as np
-from RuleTree.stumps.interfaces.ClassifierBaseMatrix import ClassifierBaseMatrix
 
-
-class DecisionTreeStumpClassifierMatrixV2(ClassifierBaseMatrix):
-    """
-    A decision tree stump classifier that extends DecisionTreeStumpClassifier.
-    Version: Matrix v2
-
-    A decision tree stump is a decision tree with a maximum depth of 1 (a single split), making
-    it a simple interpretable model. This implementation supports both numerical and categorical features,
-    provides methods for rule extraction, and can be used as a building block in more complex ensembles.
-
-    The class handles both numerical splits (using ≤ comparisons) and categorical splits (using = comparisons),
-    and automatically selects the feature and split that maximizes information gain.
-
-    Attributes:
-        is_categorical (bool): Whether the selected split is categorical.
-        threshold (str): Split threshold values.
-        feature (array): Feature indices used for splits.
-        impurity_fun (function): Function used to calculate impurity (gini, entropy, etc.).
-    """
-
-    def __init__(self, min_samples_leaf=1, class_weight=None, random_state=42, criterion=None, batch_size=None, n_bins=None):
-
-        super().__init__(
-            min_samples_leaf=min_samples_leaf,
-            class_weight=class_weight,
-            random_state=random_state,
-            criterion=criterion,
-            batch_size=batch_size,
-            n_bins=n_bins
-        )
+class FlatMatrixMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.categorical_set = None
         self.unique_thresholds = None
@@ -44,13 +16,16 @@ class DecisionTreeStumpClassifierMatrixV2(ClassifierBaseMatrix):
         return X, y
 
     def _prepare_data(self, X, y, idx, context, sample_weight):
-        X, y, y_onehot, n_samples, m, batch_size = super()._prepare_data(
+        data = super()._prepare_data(
             X=X,
             y=y,
             idx=idx,
             context=context,
             sample_weight=sample_weight
         )
+
+        X = data["X"]
+        m = data["m"]
 
         if self.categorical_set is None:
             self.categorical_set = set(self.categorical)
@@ -60,8 +35,7 @@ class DecisionTreeStumpClassifierMatrixV2(ClassifierBaseMatrix):
             for f in range(m)
         ]
 
-        return X, y, y_onehot, n_samples, m, batch_size
-
+        return data
 
     def _build_sxmask(self, X, active_features, active_thresholds, k, n_samples):
         # Maschere per split numerici e categorici

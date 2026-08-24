@@ -1,26 +1,6 @@
 import numpy as np
-from RuleTree.stumps.interfaces.ClassifierBaseMatrix import ClassifierBaseMatrix
 
-
-class DecisionTreeStumpClassifierMatrixV1(ClassifierBaseMatrix):
-    """
-    A decision tree stump classifier that extends DecisionTreeStumpClassifier.
-    Version: Matrix v1
-
-    A decision tree stump is a decision tree with a maximum depth of 1 (a single split), making
-    it a simple interpretable model. This implementation supports both numerical and categorical features,
-    provides methods for rule extraction, and can be used as a building block in more complex ensembles.
-
-    The class handles both numerical splits (using ≤ comparisons) and categorical splits (using = comparisons),
-    and automatically selects the feature and split that maximizes information gain.
-
-    Attributes:
-        is_categorical (bool): Whether the selected split is categorical.
-        threshold (str): Split threshold values.
-        feature (array): Feature indices used for splits.
-        impurity_fun (function): Function used to calculate impurity (gini, entropy, etc.).
-    """
-
+class MatrixABMixin:
     def _build_sxmask(self, X, active_features, active_thresholds, k, n_samples):
         # Maschere per split numerici e categorici
         sx_mask = np.zeros((n_samples, k), dtype=bool)  # Matrice n_samples x k
