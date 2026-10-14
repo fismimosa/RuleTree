@@ -4,6 +4,7 @@ from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.splitters.PivotSplit import PivotSplit
+from RuleTree.stumps.transformers.PivotTransformer import _pivot_cache
 from RuleTree.utils import MODEL_TYPE_CLF
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 from sklearn.metrics.pairwise import pairwise_distances
@@ -282,16 +283,3 @@ def _split_pivot_kwargs(kwargs: dict) -> tuple[dict, dict]:
     pivot_kwargs = {k: v for k, v in kwargs.items() if k in PIVOT_PARAMS}
     tree_kwargs = {k: v for k, v in kwargs.items() if k not in PIVOT_PARAMS}
     return pivot_kwargs, tree_kwargs
-
-
-def _pivot_cache(X, numerical, distance_measure, data_type, cache):
-    """
-    Scaler and distance matrix of the whole data set X, stored in the cache of the stump so that
-    they are computed once per data type and distance.
-    """
-    key = ("pivot", data_type, distance_measure)
-    if key not in cache:
-        scaler = StandardScaler().fit(X[:, numerical])
-        cache[key] = (scaler, pairwise_distances(X[:, numerical], metric=distance_measure))
-
-    return cache[key]

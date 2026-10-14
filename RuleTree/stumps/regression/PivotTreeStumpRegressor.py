@@ -2,7 +2,8 @@ from sklearn.preprocessing import StandardScaler
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.stumps.classification.PivotTreeStumpClassifier import _pivot_cache, _split_pivot_kwargs
+from RuleTree.stumps.classification.PivotTreeStumpClassifier import _split_pivot_kwargs
+from RuleTree.stumps.transformers.PivotTransformer import _pivot_cache
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.stumps.splitters.PivotSplit import PivotSplit
 from RuleTree.utils import MODEL_TYPE_REG
