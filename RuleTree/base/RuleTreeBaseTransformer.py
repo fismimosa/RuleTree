@@ -17,6 +17,9 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
     Abstract base class of the transformers, the component of a stump that turns the data of one
     type into a feature matrix.
 
+    A new transformer implements :meth:`transform` and, if it learns something from the data,
+    :meth:`fit` (and :meth:`get_state`/:meth:`set_state` to be saved with the tree).
+
     A transformer is fitted on the whole data set of its type (``X``, all the instances) and on
     ``idx``, the instances reaching the node, so that values computed on the whole data set can be
     shared among the splits through ``cache`` (a dictionary that lives as long as the tree's cache).
@@ -44,11 +47,13 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
     # whether select changes the feature matrix, so that the splitter must be fitted again
     refit_after_select = False
 
-    @abstractmethod
     def fit(self, X: np.ndarray, y: np.ndarray, idx: np.ndarray = None, data_type: str = None, cache: dict = None,
             sample_weight=None):
         """
         Fit the transformer and set ``numerical_`` and ``categorical_``.
+
+        The default implementation, for transformers without fitted state, only sets the types of the
+        columns of ``transform(X)``: such a transformer implements just :meth:`transform`.
 
         Parameters
         ----------
@@ -75,6 +80,8 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         NoSplitFoundWarning
             If the data of the node cannot be transformed into features (e.g. no numerical feature).
         """
+        self.numerical_, self.categorical_ = get_feature_types(self.transform(X))
+        return self
 
     @abstractmethod
     def transform(self, X: np.ndarray) -> np.ndarray:

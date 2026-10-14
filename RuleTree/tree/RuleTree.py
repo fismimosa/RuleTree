@@ -24,7 +24,7 @@ from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.tree.RuleTreeNode import RuleTreeNode
+from RuleTree.tree.RuleTreeNode import RuleTreeNode, stump_class
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.data_utils import json_numpy_encoder
 
@@ -1226,8 +1226,7 @@ class RuleTree(RuleTreeBase, ABC):
         args = dict(dictionary.get('args', {}))
         args['base_stumps'] = []
         for p, stump_dict, *data_types in dictionary['args']['base_stumps']:
-            stump_class = getattr(importlib.import_module(stump_dict['stump_type']), stump_dict['stump_type'].split('.')[-1])
-            args['base_stumps'].append((p, stump_class.dict_to_node(stump_dict), *data_types))
+            args['base_stumps'].append((p, stump_class(stump_dict).dict_to_node(stump_dict), *data_types))
 
         tree = class_c(**args)
         # older dictionaries have classes_ also for the regression and clustering trees

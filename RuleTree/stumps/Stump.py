@@ -162,6 +162,29 @@ class Stump(RuleTreeBaseStump):
         """
         self.splitter_.update_statistics(X, y, sample_weight)
 
+    def _get_cache(self, context):
+        """
+        Cache shared by the stumps of the same kind in the tree ``context``. The namespace is the class
+        name, as for the other stumps; for a Stump built directly, also the class of its transformer
+        (e.g. ``"Stump(PivotTransformer)"``), so that stumps with different transformers do not share
+        cached values.
+
+        Parameters
+        ----------
+        context : RuleTree or None
+            The tree being built.
+
+        Returns
+        -------
+        cache : dict
+            Without a context, an empty dictionary that is not kept.
+        """
+        if context is None:
+            return {}
+        if type(self) is Stump:
+            return context.get_cache(f"Stump({type(self.transformer).__name__})")
+        return context.get_cache(self.__class__.__name__)
+
     def _is_fitted(self):
         """
         Whether the stump is fitted.
@@ -226,10 +249,11 @@ class Stump(RuleTreeBaseStump):
         """
         args = _params_to_dict(self.get_params(deep=False))
         if not self._is_fitted():
-            return {"stump_type": self.__class__.__module__, "args": args}
+            return {"stump_type": self.__class__.__module__, "stump_class": self.__class__.__name__, "args": args}
 
         rule = self.get_rule(float_precision=None)
         rule["stump_type"] = self.__class__.__module__
+        rule["stump_class"] = self.__class__.__name__
         rule["data_type"] = self.data_type_
         rule["impurity"] = self.impurity
         rule["args"] = args

@@ -310,8 +310,7 @@ class RuleTreeNode:
         if info_dict['is_leaf'] == True:
             return node
 
-        import_path = info_dict['stump_type']
-        class_c = getattr(importlib.import_module(import_path), info_dict['stump_type'].split('.')[-1])
+        class_c = stump_class(info_dict)
         
         node.stump = class_c.dict_to_node(info_dict, X)
         
@@ -506,3 +505,21 @@ class RuleTreeNode:
             return {self.node_id: self}
         else:
             return self.node_l.get_leaf_nodes() | self.node_r.get_leaf_nodes()
+
+
+def stump_class(stump_dict: dict) -> type:
+    """
+    Class of a stump saved by node_to_dict: ``stump_class`` in module ``stump_type``. Dictionaries
+    saved by older versions have no ``stump_class``: the class is named as its module.
+
+    Parameters
+    ----------
+    stump_dict : dict
+        Dictionary representation of the stump.
+
+    Returns
+    -------
+    stump_class : type
+    """
+    module = stump_dict['stump_type']
+    return getattr(importlib.import_module(module), stump_dict.get('stump_class', module.split('.')[-1]))

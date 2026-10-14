@@ -77,7 +77,8 @@ class DecisionTreeStumpClassifier(Stump):
         Parameters
         ----------
         columns_names : list of str, default=None
-            Names of the features. If None, ``X_<index>``.
+            Names of the features. If None, ``X_<index>``. Features named by the transformer (see
+            RuleTreeBaseTransformer.feature_id) keep their name.
         scaler : TransformerMixin, default=None
             Scaler used to preprocess the data: the threshold is also given in the original scale
             (``threshold_scaled``) and shown in the rule.
@@ -98,9 +99,12 @@ class DecisionTreeStumpClassifier(Stump):
             "is_categorical": self.is_categorical,
         }
 
-        feat_name = f"X_{rule['feature_idx']}"
-        if columns_names is not None:
+        if isinstance(rule["feature_idx"], str):  # a feature named by the transformer, e.g. "mean"
+            feat_name = rule["feature_idx"]
+        elif columns_names is not None:
             feat_name = columns_names[self.feature_original[0]]
+        else:
+            feat_name = f"X_{rule['feature_idx']}"
         rule["feature_name"] = feat_name
 
         if scaler is not None:
