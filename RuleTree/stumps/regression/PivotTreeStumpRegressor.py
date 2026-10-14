@@ -61,38 +61,6 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor):
         """The pivot instance (standardized numerical features), None if not fitted."""
         return self.transformer_.candidates_[0] if self._is_fitted() else None
 
-    def _legacy_feature(self, node_dict):
-        """
-        Column of the feature matrix of a stump saved before the composition of the stumps: the
-        distance from the only pivot kept.
-
-        Parameters
-        ----------
-        node_dict : dict
-            Saved stump.
-
-        Returns
-        -------
-        feature : int
-            Always 0.
-        """
-        return 0  # the distance from the only pivot kept
-
-    def _legacy_transformer_state(self, node_dict):
-        """
-        State of the PivotTransformer of a stump saved before the composition of the stumps.
-
-        Parameters
-        ----------
-        node_dict : dict
-            Saved stump.
-
-        Returns
-        -------
-        state : dict
-        """
-        return node_dict | {"pivot_name": node_dict["feature_idx"]}
-
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
         Get the rule representation of this classifier.
@@ -130,15 +98,15 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor):
             return {}
 
         rule = {
-            "feature_idx": self.feature_original[0],
-            "threshold": self.threshold_original[0],
+            "feature_idx": self.feature_original,
+            "threshold": self.threshold_original,
             "is_categorical": self.is_categorical,
         }
 
         feat_name = f"P_{rule['feature_idx']}"
         if columns_names is not None:
             # feat_names should not be useful for pivot tree
-            # feat_name = columns_names[self.feature_original[0]]
+            # feat_name = columns_names[self.feature_original]
             feat_name = None
         rule["feature_name"] = feat_name
 

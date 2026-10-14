@@ -157,7 +157,7 @@ metric of ``sklearn.metrics.pairwise_distances``:
    pivot_tree.fit(X, y)
 
    pivot_tree.print_rules(pivot_tree.get_rules())
-   print("pivot of the root:", pivot_tree.root.stump.feature_original[0])
+   print("pivot of the root:", pivot_tree.root.stump.feature_original)
 
 .. code-block:: text
    :caption: Output

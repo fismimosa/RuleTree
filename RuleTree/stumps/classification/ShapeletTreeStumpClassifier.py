@@ -118,8 +118,8 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
             If a scaler is given.
         """
         rule = {
-            "feature_idx": self.feature_original[0],
-            "threshold": self.threshold_original[0],
+            "feature_idx": self.feature_original,
+            "threshold": self.threshold_original,
             "is_categorical": False,
         }
 
@@ -132,7 +132,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         not_comparison = ">"
         rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
 
-        shape = self.st.shapelets[self.feature_original[0], 0]
+        shape = self.st.shapelets[self.feature_original, 0]
 
         with tempfile312.NamedTemporaryFile(delete_on_close=False,
                                             delete=False,

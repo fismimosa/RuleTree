@@ -109,8 +109,8 @@ its left and right children, ``"Rrl"`` the left child of ``"Rr"``, and so on.
    1 100 1 False
    petal width <= 1.75
 
-The stump of an internal node also exposes its split: ``feature_original[0]`` (the feature) and
-``threshold_original[0]`` (the threshold, or the value of a categorical feature).
+The stump of an internal node also exposes its split: ``feature_original`` (the feature) and
+``threshold_original`` (the threshold, or the value of a categorical feature).
 
 
 Leaves of the instances

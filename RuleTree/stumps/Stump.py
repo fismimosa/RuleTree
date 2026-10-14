@@ -5,14 +5,12 @@ The stump made of a transformer (how the data are represented, see RuleTreeBaseT
 a splitter (how the split is chosen, see RuleTreeBaseSplitter).
 """
 import importlib
-import inspect
-import warnings
 
 import numpy as np
 import sklearn
 from sklearn.base import BaseEstimator
 
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, _is_number
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 
 
 class Stump(RuleTreeBaseStump):
@@ -195,27 +193,18 @@ class Stump(RuleTreeBaseStump):
         """
         return hasattr(self, "splitter_")
 
-    # attributes of the split, as exposed by the stumps before their composition
     @property
     def feature_original(self):
         """
-        Identifier of the feature of the split, as given by the transformer (e.g. a column of the data
-        or a pivot), followed by -2, -2 for compatibility with the former stumps. None if not fitted.
+        Feature of the split, as identified by the transformer: a column of the data (int), or a name
+        such as a pivot. None if not fitted.
         """
-        if not self._is_fitted():
-            return None
-        return [self.transformer_.feature_id(self.splitter_.feature_), -2, -2]
+        return self.transformer_.feature_id(self.splitter_.feature_) if self._is_fitted() else None
 
     @property
     def threshold_original(self):
-        """
-        Threshold (numerical split) or value (categorical split), followed by -2, -2 for compatibility
-        with the former stumps. None if not fitted.
-        """
-        if not self._is_fitted():
-            return None
-        threshold = self.splitter_.threshold_
-        return np.array([threshold, -2, -2], dtype=float if _is_number(threshold) else object)
+        """Threshold (numerical split) or value (categorical split). None if not fitted."""
+        return self.splitter_.threshold_ if self._is_fitted() else None
 
     @property
     def is_categorical(self):
@@ -263,48 +252,15 @@ class Stump(RuleTreeBaseStump):
         return rule
 
     @classmethod
-    def dict_to_node(cls, node_dict, X=None):
-        """Create a stump from a dictionary created by node_to_dict (also by versions before the composition)."""
-        self = cls(**cls._init_args(_params_from_dict(node_dict.get("args", {}))))
-
+    def dict_to_node(cls, node_dict):
+        """Create a stump from a dictionary created by node_to_dict."""
+        self = cls(**_params_from_dict(node_dict["args"]))
         if "splitter" in node_dict:
-            self._restore_data_type(node_dict)
+            self.data_type_ = node_dict["data_type"]
             self.transformer_ = self._make_transformer().set_state(node_dict["transformer"])
             self.splitter_ = self._make_splitter().set_state(node_dict["splitter"])
-        elif "feature_idx" in node_dict:  # saved before the composition: the split is at top level
-            self._restore_data_type(node_dict)
-            self.transformer_ = self._make_transformer().set_state(self._legacy_transformer_state(node_dict))
-            self.splitter_ = self._make_splitter().set_state(node_dict | {
-                "feature_": self._legacy_feature(node_dict),
-                "threshold_": node_dict["threshold"],
-                "is_categorical_": bool(node_dict.get("is_categorical")),
-                "impurity_": node_dict.get("impurity"),
-                "gain_": node_dict.get("gain"),
-            })
 
         return self
-
-    @classmethod
-    def _init_args(cls, args: dict) -> dict:
-        """
-        Constructor arguments from a dictionary saved by node_to_dict. Arguments of older versions
-        that the stump no longer accepts are dropped (max_depth: stumps always have depth 1).
-        """
-        accepted = inspect.signature(cls.__init__).parameters
-        dropped = [name for name in args if name not in accepted]
-        unexpected = [name for name in dropped if name != "max_depth"]
-        if unexpected:
-            warnings.warn(f"{cls.__name__} ignores the parameters {unexpected} of the saved stump.", UserWarning)
-
-        return {name: value for name, value in args.items() if name in accepted}
-
-    def _legacy_feature(self, node_dict: dict) -> int:
-        """Column of the feature matrix used by a split saved before the composition."""
-        return int(node_dict["feature_idx"])
-
-    def _legacy_transformer_state(self, node_dict: dict) -> dict:
-        """State of the transformer of a stump saved before the composition."""
-        return node_dict
 
 
 def _params_to_dict(params: dict) -> dict:

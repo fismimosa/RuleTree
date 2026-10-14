@@ -280,7 +280,7 @@ class RuleTreeNode:
         return node_as_dict
 
     @classmethod
-    def dict_to_node(cls, info_dict, X = None):
+    def dict_to_node(cls, info_dict):
         """
         Create a node from a dictionary created by :meth:`node_to_dict` (children not linked).
 
@@ -288,34 +288,22 @@ class RuleTreeNode:
         ----------
         info_dict : dict
             Dictionary representation of the node.
-        X : numpy.ndarray, default=None
-            Passed to the stump's dict_to_node.
 
         Returns
         -------
         node : RuleTreeNode
         """
-        assert 'node_id' in info_dict
-        assert 'is_leaf' in info_dict
+        node = RuleTreeNode(node_id=info_dict['node_id'],
+                            prediction=info_dict['prediction'],
+                            prediction_probability=info_dict['prediction_probability'],
+                            log_odds=info_dict['log_odds'],
+                            parent=None,
+                            classes=info_dict['prediction_classes_'])
         if not info_dict['is_leaf']:
-            assert 'stump_type' in info_dict
+            node.stump = stump_class(info_dict).dict_to_node(info_dict)
 
-        node = RuleTreeNode(node_id = info_dict['node_id'],
-                            prediction = info_dict.get('prediction', np.nan),
-                            prediction_probability = info_dict.get('prediction_probability', [np.nan]*int(info_dict.get('classes', 1))),
-                            log_odds = info_dict.get('log_odds', [np.nan]*int(info_dict.get('classes', 1))),
-                            parent = None,
-                            classes=info_dict.get('prediction_classes_', np.nan),)
-        
-        if info_dict['is_leaf'] == True:
-            return node
-
-        class_c = stump_class(info_dict)
-        
-        node.stump = class_c.dict_to_node(info_dict, X)
-        
         return node
-    
+
     def encode_node(self, index, parent, vector, stump, node_index=0):
         """
         Encode the subtree in arrays indexed as a complete binary tree (children of i at 2i+1 and 2i+2),
@@ -338,8 +326,8 @@ class RuleTreeNode:
             vector[0][node_index] = -1
             vector[1][node_index] = self.prediction
         else:
-            feat = self.stump.feature_original[0]
-            thr = self.stump.threshold_original[0]
+            feat = self.stump.feature_original
+            thr = self.stump.threshold_original
          
             vector[0][node_index] = feat + 1
             vector[1][node_index] = thr
@@ -509,8 +497,7 @@ class RuleTreeNode:
 
 def stump_class(stump_dict: dict) -> type:
     """
-    Class of a stump saved by node_to_dict: ``stump_class`` in module ``stump_type``. Dictionaries
-    saved by older versions have no ``stump_class``: the class is named as its module.
+    Class of a stump saved by node_to_dict: ``stump_class`` in module ``stump_type``.
 
     Parameters
     ----------
@@ -521,5 +508,4 @@ def stump_class(stump_dict: dict) -> type:
     -------
     stump_class : type
     """
-    module = stump_dict['stump_type']
-    return getattr(importlib.import_module(module), stump_dict.get('stump_class', module.split('.')[-1]))
+    return getattr(importlib.import_module(stump_dict['stump_type']), stump_dict['stump_class'])

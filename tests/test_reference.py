@@ -1,7 +1,7 @@
 """
 Non-regression test: the models must keep producing the reference outputs stored in
-tests/reference (predictions, leaves, probabilities, rules), and the trees saved with to_dict
-by the version that generated them must still load and predict the same.
+tests/reference (predictions, leaves, probabilities, rules), also after being saved with
+to_dict and loaded with from_dict.
 
 For intended changes of behavior, regenerate the references with
 ``python -m tests.reference.generate``.
@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 from RuleTree.tree.RuleTree import RuleTree
+from RuleTree.utils.data_utils import json_numpy_encoder
 from tests.reference.cases import ALL_CASES, fit_case
 
 REFERENCE_DIR = Path(__file__).parent / "reference"
@@ -41,12 +42,14 @@ def test_same_outputs(name):
             assert_same(outputs[key], expected[key])
 
 
-@pytest.mark.parametrize("name", sorted(p.stem for p in (REFERENCE_DIR / "trees").glob("*.json")))
-def test_saved_trees_still_load(name):
-    _, inputs, _ = fit_case(name)
+@pytest.mark.parametrize("name", ALL_CASES)
+def test_same_outputs_after_saving(name):
+    model, inputs, _ = fit_case(name)
+    if not isinstance(model, RuleTree):
+        pytest.skip("not a RuleTree")
     expected = REFERENCE[name]
 
-    loaded = RuleTree.from_dict(str(REFERENCE_DIR / "trees" / f"{name}.json"))
+    loaded = RuleTree.from_dict(json.loads(json.dumps(model.to_dict(), cls=json_numpy_encoder)))
 
     assert_same(loaded.predict(**inputs), expected["predict"])
     assert_same(loaded.apply(**inputs), expected["apply"])

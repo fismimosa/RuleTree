@@ -988,7 +988,7 @@ class RuleTree(RuleTreeBase, ABC):
         if current_node.is_leaf():
             feats.append(-2)
         else:
-            feats.append(current_node.stump.feature_original[0])
+            feats.append(current_node.stump.feature_original)
             self._tree_feature(current_node.node_l, feats = feats)
             self._tree_feature(current_node.node_r, feats = feats)
         
@@ -1198,7 +1198,7 @@ class RuleTree(RuleTreeBase, ABC):
     @classmethod
     def from_dict(cls, filename):
         """
-        Rebuild a tree from a dictionary created by :meth:`to_dict` (also by previous versions).
+        Rebuild a tree from a dictionary created by :meth:`to_dict`.
 
         Parameters
         ----------
@@ -1216,21 +1216,14 @@ class RuleTree(RuleTreeBase, ABC):
         else:
             dictionary = filename
 
-        assert 'tree_type' in dictionary
+        tree_class = getattr(importlib.import_module(dictionary['tree_type']), dictionary['tree_class'])
+        args = dictionary['args'] | {'base_stumps': [
+            (p, stump_class(stump_dict).dict_to_node(stump_dict), data_types)
+            for p, stump_dict, data_types in dictionary['args']['base_stumps']
+        ]}
 
-        # older dictionaries have no "tree_class": the class is named as its module
-        class_name = dictionary.get('tree_class', dictionary['tree_type'].split('.')[-1])
-        class_c = getattr(importlib.import_module(dictionary['tree_type']), class_name)
-
-        # base_stumps entries: (p, stump_dict) or, from newer dictionaries, (p, stump_dict, data_types)
-        args = dict(dictionary.get('args', {}))
-        args['base_stumps'] = []
-        for p, stump_dict, *data_types in dictionary['args']['base_stumps']:
-            args['base_stumps'].append((p, stump_class(stump_dict).dict_to_node(stump_dict), *data_types))
-
-        tree = class_c(**args)
-        # older dictionaries have classes_ also for the regression and clustering trees
-        if isinstance(tree, ClassifierMixin) and dictionary.get('classes_') is not None:
+        tree = tree_class(**args)
+        if 'classes_' in dictionary:
             tree.classes_ = np.array(dictionary['classes_'])
             tree.n_classes_ = dictionary['n_classes_']
 

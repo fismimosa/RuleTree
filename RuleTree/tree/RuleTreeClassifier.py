@@ -233,7 +233,7 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         if current_node.stump is not None:
             
             stump_name = current_node.stump.__class__.__module__.split('.')[-1]
-            used = current_node.stump.feature_original[0]
+            used = current_node.stump.feature_original
             if stump_split_map[stump_name] == 'pivot_split':
                 used = [int(used)]
             if stump_split_map[stump_name] == 'multi_pivot_split':
@@ -417,9 +417,9 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
             node_l = copy.deepcopy(node.node_l)
             node_r = copy.deepcopy(node.node_r)
                         
-            feat = tuple(node.stump.feature_original[0])
+            feat = tuple(node.stump.feature_original)
 
-            thr = (node.stump.threshold_original[0],)
+            thr = (node.stump.threshold_original,)
             
             rt.root = node
             rt.root.node_l = node_l

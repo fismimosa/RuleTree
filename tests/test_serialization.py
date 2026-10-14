@@ -65,16 +65,3 @@ def test_classes_only_for_classification(model_class, kwargs, dataset, supervise
         assert np.array_equal(model.classes_, np.unique(y))
     elif model_class is not RuleTreeCluster:
         assert all(node["prediction_classes_"] is None for node in dictionary["nodes"])
-
-
-def test_old_regression_dictionaries_with_classes(diabetes):
-    """Dictionaries saved before had classes_ (all the target values) also for regression trees."""
-    X, y = diabetes
-    model = RuleTreeRegressor(max_depth=2).fit(X, y)
-    dictionary = json.loads(json.dumps(model.to_dict(), cls=json_numpy_encoder))
-    dictionary |= {"classes_": np.unique(y).tolist(), "n_classes_": len(np.unique(y))}
-
-    loaded = RuleTree.from_dict(dictionary)
-
-    assert not hasattr(loaded, "classes_")
-    assert np.array_equal(loaded.predict(X), model.predict(X))

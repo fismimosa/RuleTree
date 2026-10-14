@@ -111,15 +111,15 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
             See RuleTreeBaseStump.get_rule.
         """
         rule = {
-            "feature_idx": self.feature_original[0],
-            "threshold": self.threshold_original[0],
+            "feature_idx": self.feature_original,
+            "threshold": self.threshold_original,
             "is_categorical": False,
         }
 
         if columns_names is None:
             columns_names = [f"Feat. {i}" for i in range(self.st.shapelets.shape[1])]
 
-        pivot = np.copy(self.st.shapelets[self.feature_original[0]])
+        pivot = np.copy(self.st.shapelets[self.feature_original])
         if scaler is not None:
             pivot = scaler.inverse_transform(pivot.reshape(1, -1)).flatten()
         frac_not_null = 1- np.isnan(pivot).sum() / pivot.shape[0]

@@ -181,13 +181,6 @@ def test_stumps_have_explicit_parameters():
         DecisionTreeStumpClassifier(max_depth=1)  # stumps always have depth 1
 
 
-def test_old_stump_parameters_are_dropped_when_loading():
-    with pytest.warns(UserWarning, match="ignores the parameters"):
-        stump = DecisionTreeStumpClassifier.dict_to_node({"args": {"max_depth": 1, "ccp_alpha": 0.1}})
-
-    assert stump.get_params() == DecisionTreeStumpClassifier().get_params()
-
-
 @pytest.mark.parametrize("base_stumps, dataset", [
     (DecisionTreeStumpClassifier(), "categorical"),
     ([DecisionTreeStumpRegressor(random_state=0),

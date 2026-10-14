@@ -119,7 +119,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
     @classmethod
     @abstractmethod
-    def dict_to_node(cls, node_dict:dict, X:np.ndarray) -> None:
+    def dict_to_node(cls, node_dict: dict) -> 'RuleTreeBaseStump':
         """
         Create a stump from a dictionary created by :meth:`node_to_dict`.
 
@@ -127,8 +127,6 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         ----------
         node_dict : dict
             Dictionary representation of the stump.
-        X : numpy.ndarray, default=None
-            Not used, kept for compatibility.
 
         Returns
         -------
@@ -328,16 +326,6 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         return context.get_cache(self.__class__.__name__) if context is not None else {}
 
-    def _restore_data_type(self, node_dict: dict) -> None:
-        """
-        Set ``data_type_`` from a dictionary created by node_to_dict (older ones have none).
-
-        Parameters
-        ----------
-        node_dict : dict
-            Dictionary representation of the stump.
-        """
-        self.data_type_ = node_dict.get("data_type", self.supported_data_types[0])
 
 def _is_number(value) -> bool:
     """

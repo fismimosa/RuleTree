@@ -94,24 +94,24 @@ class DecisionTreeStumpClassifier(Stump):
             ``not_graphviz_rule``).
         """
         rule = {
-            "feature_idx": self.feature_original[0],
-            "threshold": self.threshold_original[0],
+            "feature_idx": self.feature_original,
+            "threshold": self.threshold_original,
             "is_categorical": self.is_categorical,
         }
 
         if isinstance(rule["feature_idx"], str):  # a feature named by the transformer, e.g. "mean"
             feat_name = rule["feature_idx"]
         elif columns_names is not None:
-            feat_name = columns_names[self.feature_original[0]]
+            feat_name = columns_names[self.feature_original]
         else:
             feat_name = f"X_{rule['feature_idx']}"
         rule["feature_name"] = feat_name
 
         if scaler is not None:
             array = np.zeros((1, scaler.n_features_in_))
-            array[0, self.feature_original[0]] = self.threshold_original[0]
+            array[0, self.feature_original] = self.threshold_original
 
-            rule["threshold_scaled"] = scaler.inverse_transform(array)[0, self.feature_original[0]]
+            rule["threshold_scaled"] = scaler.inverse_transform(array)[0, self.feature_original]
 
         comparison = "<=" if not self.is_categorical else "="
         not_comparison = ">" if not self.is_categorical else "!="
