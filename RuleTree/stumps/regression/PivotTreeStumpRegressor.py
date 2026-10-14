@@ -2,23 +2,25 @@ from sklearn.preprocessing import StandardScaler
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.stumps.classification.PivotTreeStumpClassifier import _pivot_cache
+from RuleTree.stumps.classification.PivotTreeStumpClassifier import _pivot_cache, _split_pivot_kwargs
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.stumps.splitters.PivotSplit import PivotSplit
 from RuleTree.utils import MODEL_TYPE_REG
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 from sklearn.metrics.pairwise import pairwise_distances
 import numpy as np
-import copy
 
 
 class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
     supported_data_types = (DATA_TYPE_TABULAR,)
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.pivot_split = PivotSplit(ml_task=MODEL_TYPE_REG, **kwargs)
-        self.distance_measure = kwargs.get('distance_measure', 'euclidean')
+        pivot_kwargs, tree_kwargs = _split_pivot_kwargs(kwargs)
+        super().__init__(**tree_kwargs)
+        self.kwargs |= pivot_kwargs  # get_params
+        self.distance_measure = pivot_kwargs.get('distance_measure', 'euclidean')
+        self.pivot_split = PivotSplit(ml_task=MODEL_TYPE_REG, **tree_kwargs,
+                                      **{k: v for k, v in pivot_kwargs.items() if k != 'distance_measure'})
         self.X_split_instance = None
 
     def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
@@ -168,32 +170,20 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
 
     def node_to_dict(self):
         """
-        Convert the classifier node to a dictionary representation.
-
-        This method serializes the classifier's properties and configuration into a
-        dictionary format, which can be used for persistence or knowledge transfer.
+        Convert the stump to a dictionary representation: the split, the constructor arguments,
+        the pivot instance and the scaler.
 
         Returns
         -------
         dict
-            A dictionary containing all essential information about the classifier node,
-            including the rule, regressor type, node statistics, and configuration parameters.
+            Dictionary representation of the node.
         """
-        rule = self.get_rule(float_precision=None)
-
-        rule["stump_type"] = self.__class__.__module__
-
-
-        rule["args"] = {
-                           "distance_measure": self.distance_measure,
-                       } | self.kwargs
+        rule = super().node_to_dict()
 
         if self.X_split_instance is not None:
             rule['num_pre_transformed'] = list(self.num_pre_transformed)
             rule['cat_pre_transformed'] = list(self.cat_pre_transformed)
-            rule['data_type'] = self.data_type_
             rule["X_split_instance"] = self.X_split_instance
-
             rule['scaler'] = {
                 'mean_': self.scaler.mean_.tolist(),
                 'scale_': self.scaler.scale_.tolist(),
@@ -201,48 +191,30 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
                 'n_samples_seen_': self.scaler.n_samples_seen_
             }
 
-        rule["split"] = {
-            "args": {}
-        }
-
         return rule
 
     @classmethod
     def dict_to_node(cls, node_dict, X=None):
         """
-        Create a classifier node from a dictionary representation.
-
-        This class method deserializes a dictionary back into a PivotTreeStumpRegressor
-        instance, restoring its state and configuration.
+        Create a stump from a dictionary created by node_to_dict.
 
         Parameters
         ----------
         node_dict : dict
-            Dictionary containing the serialized classifier information.
+            Dictionary representation of the node.
         X : numpy.ndarray, optional
-            Reference dataset that contains the pivot instance. Default is None.
+            Not used.
 
         Returns
         -------
-        PivotTreeStumpRegressor
-            A reconstructed regressor instance.
+        The reconstructed stump.
         """
-        self = cls()
-        self.kwargs = copy.deepcopy(node_dict["args"])
+        self = super().dict_to_node(node_dict)
 
-        if 'num_pre_transformed' in node_dict: #fitted
-            self.feature_original = np.zeros(3, dtype=int)
-            self.threshold_original = np.zeros(3)
-
-            self.feature_original[0] = node_dict["feature_idx"]
-            self.threshold_original[0] = node_dict["threshold"]
-
+        if 'X_split_instance' in node_dict:
             self.num_pre_transformed = node_dict["num_pre_transformed"]
             self.cat_pre_transformed = node_dict["cat_pre_transformed"]
             self.X_split_instance = np.array(node_dict["X_split_instance"])
-
-            self.distance_measure = self.kwargs.pop("distance_measure")
-            self._restore_data_type(node_dict)
 
             self.scaler = StandardScaler()
             self.scaler.mean_ = np.array(node_dict['scaler']['mean_'])

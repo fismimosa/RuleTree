@@ -81,7 +81,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
         rule["stump_type"] = self.__class__.__module__
         rule["data_type"] = self.data_type_
-        rule["impurity"] = self.impurity
+        rule["impurity"] = getattr(self, "impurity", None)  # not computed by every stump (e.g. Fair, XGBoost)
 
         rule["args"] = self.kwargs
 
@@ -111,18 +111,8 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         None
         """
         self = cls(**copy.deepcopy(node_dict.get("args", {})))
-
-        if 'feature_idx' in node_dict:
-            self.feature_original = np.ones(3, dtype=int) * -2
-            self.feature_original[0] = node_dict.get('feature_idx', -2)
-
-        if 'threshold' in node_dict:
-            self.threshold_original = np.ones(3) * -2
-            self.threshold_original[0] = node_dict.get('threshold', -2)
-
-        self.is_categorical = node_dict.get('is_categorical', False)
+        self._restore_split(node_dict)
         self.impurity = node_dict.get('impurity', np.nan)
-        self._restore_data_type(node_dict)
 
         return self
 

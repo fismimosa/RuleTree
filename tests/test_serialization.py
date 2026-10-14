@@ -39,3 +39,14 @@ def test_file_round_trip(iris, tmp_path):
     loaded = RuleTree.from_dict(filename)
 
     assert np.array_equal(loaded.predict(X), model.predict(X))
+
+
+def test_categorical_split_round_trip(iris_mixed):
+    X, y = iris_mixed
+    model = RuleTreeClassifier(max_depth=3).fit(X, y)
+    assert any(node.stump.is_categorical for node in model.get_predicates().values())
+
+    loaded = RuleTree.from_dict(json.loads(json.dumps(model.to_dict(), cls=json_numpy_encoder)))
+
+    assert np.array_equal(loaded.predict(X), model.predict(X))
+    assert loaded.get_rules()["textual_rule"] == model.get_rules()["textual_rule"]

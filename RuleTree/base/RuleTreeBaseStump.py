@@ -209,6 +209,24 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """Set ``data_type_`` from a dictionary created by node_to_dict (older ones have none)."""
         self.data_type_ = node_dict.get("data_type", self.supported_data_types[0])
 
+    def _restore_split(self, node_dict: dict) -> None:
+        """
+        Set the split (``feature_original``, ``threshold_original``, ``is_categorical``, ``data_type_``)
+        from a dictionary created by node_to_dict. Unfitted stumps have no split.
+        """
+        self.feature_original = None
+        if 'feature_idx' in node_dict:
+            self.feature_original = np.array([node_dict['feature_idx'], -2, -2], dtype=int)
+
+        self.threshold_original = None
+        if 'threshold' in node_dict:
+            threshold = node_dict['threshold']
+            # categorical splits compare with a value of the feature, e.g. a string
+            self.threshold_original = np.array([threshold, -2, -2], dtype=float if _is_number(threshold) else object)
+
+        self.is_categorical = node_dict.get('is_categorical', False)
+        self._restore_data_type(node_dict)
+
     def feature_analysis(self, X:np.ndarray, y:np.ndarray) -> None:
         """
         Analyzes features of input data and categorizes them into numerical and categorical types.
@@ -229,3 +247,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         dtypes = pd.DataFrame(X).infer_objects().dtypes
         self.numerical = [i for i, x in enumerate(dtypes) if pd.api.types.is_numeric_dtype(x)]
         self.categorical = [i for i, x in enumerate(dtypes) if not pd.api.types.is_numeric_dtype(x)]
+
+
+def _is_number(value) -> bool:
+    return isinstance(value, (int, float, np.number)) and not isinstance(value, bool)

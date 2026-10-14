@@ -1,4 +1,3 @@
-import copy
 from concurrent.futures.process import ProcessPoolExecutor
 from typing import Union
 
@@ -218,66 +217,6 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
                                                     columns_names=columns_names,
                                                     scaler=scaler,
                                                     float_precision=float_precision)
-
-    def node_to_dict(self):
-        """
-        Convert the tree stump node to a dictionary representation.
-
-        This is useful for serialization and model storage.
-
-        Returns
-        -------
-        rule : dict
-            Dictionary representation of the node, including split information
-            and fairness parameters.
-        """
-        rule = self.get_rule(float_precision=None)
-
-        rule["stump_type"] = self.__class__.__name__
-        rule["impurity"] = self.tree_.impurity[0]
-
-        rule["args"] |= self.kwargs
-
-        rule["split"] = {
-            "args": {}
-        }
-
-        return rule
-
-    @classmethod
-    def dict_to_node(cls, node_dict, X=None):
-        """
-        Initialize the tree stump node from a dictionary representation.
-
-        This is useful for deserialization and model loading.
-
-        Parameters
-        ----------
-        node_dict : dict
-            Dictionary representation of the node.
-
-        X : array-like, default=None
-            The training input samples. Not used in this implementation.
-
-        Returns
-        -------
-        self : object
-            The initialized tree stump regressor.
-        """
-        self = cls()
-
-        self.feature_original = np.zeros(3)
-        self.threshold_original = np.zeros(3)
-
-        self.feature_original[0] = node_dict["feature_original"]
-        self.threshold_original[0] = node_dict["threshold"]
-        self.is_categorical = node_dict["is_categorical"]
-
-        args = copy.deepcopy(node_dict["args"])
-        self.kwargs = args
-
-        self.__set_impurity_fun(args["criterion"])
-
 
 def _check_balance(labels: np.ndarray, prot_attr: np.ndarray):
     """

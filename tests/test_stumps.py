@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import pytest
 
@@ -7,6 +9,7 @@ from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, Partial
 from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor, PivotTreeStumpRegressor,
                                         ShapeletTreeStumpRegressor)
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
+from RuleTree.utils.data_utils import json_numpy_encoder
 from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS
 
 
@@ -103,3 +106,36 @@ def test_fair_regressor(diabetes):
     model = RuleTreeRegressor(max_depth=2, base_stumps=stump).fit(X, y)
 
     assert model.predict(X).shape == y.shape
+
+
+def json_round_trip(dictionary):
+    return json.loads(json.dumps(dictionary, cls=json_numpy_encoder))
+
+
+@pytest.mark.parametrize("make_stump, data_type, dataset, continuous", STUMPS,
+                         ids=[f"{s[0]().__class__.__name__}-{s[1]}" for s in STUMPS])
+def test_stump_serialization(make_stump, data_type, dataset, continuous, request):
+    X, y = request.getfixturevalue(dataset)
+    data = {data_type: X}
+
+    unfitted = make_stump()
+    loaded = type(unfitted).dict_to_node(json_round_trip(unfitted.node_to_dict()))
+    assert loaded.get_params() == unfitted.get_params()
+
+    fitted = make_stump().fit(data, y.astype(float) if continuous else y, data_type=data_type)
+    loaded = type(fitted).dict_to_node(json_round_trip(fitted.node_to_dict()))
+    assert loaded.get_params() == fitted.get_params()
+    assert loaded.data_type_ == data_type
+    assert np.array_equal(loaded.apply(data), fitted.apply(data))
+    assert loaded.get_rule(float_precision=None)["textual_rule"] == fitted.get_rule(float_precision=None)["textual_rule"]
+
+
+@pytest.mark.parametrize("stump", [
+    DecisionTreeStumpClassifier(criterion="entropy"),
+    PivotTreeStumpClassifier(criterion="entropy", distance_measure="cosine", k=7),
+], ids=["DecisionTree", "Pivot"])
+def test_serialization_keeps_parameters(stump):
+    loaded = type(stump).dict_to_node(json_round_trip(stump.node_to_dict()))
+
+    assert loaded.criterion == "entropy"
+    assert loaded.get_params() == stump.get_params()

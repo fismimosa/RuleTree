@@ -7,6 +7,9 @@ from RuleTree.utils.tree_utils import xgboost_similarity_score_regression, xgboo
 
 
 class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
+    # split statistics computed by _update_statistics_matrix (gain is used by the gamma pruning)
+    _statistics = ('gain', 'root_similarity', 'similarity_l', 'similarity_r')
+
     def __init__(self, lam, approximation=None, n_quantiles=32, min_cover=1, n_jobs=1):
         super().__init__()
         self.lam = lam
@@ -95,3 +98,18 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
         self.similarity_l = xgboost_similarity_score_regression(y[idx_l], cover_l, self.lam)
         self.similarity_r = xgboost_similarity_score_regression(y[idx_r], cover_r, self.lam)
         self.gain = self.similarity_l + self.similarity_r - self.root_similarity
+
+    def node_to_dict(self):
+        rule = super().node_to_dict()
+        if self.feature_original is not None:
+            rule |= {name: getattr(self, name) for name in self._statistics}
+
+        return rule
+
+    @classmethod
+    def dict_to_node(cls, node_dict, X=None):
+        self = super().dict_to_node(node_dict)
+        for name in cls._statistics:
+            setattr(self, name, node_dict.get(name, np.nan))
+
+        return self

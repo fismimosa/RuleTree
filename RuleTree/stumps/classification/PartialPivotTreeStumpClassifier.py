@@ -1,4 +1,3 @@
-import copy
 import random
 import warnings
 from typing import Optional
@@ -147,58 +146,34 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         return rule
 
     def node_to_dict(self):
+        """
+        Convert the stump to a dictionary representation: the split, the constructor arguments
+        and the selected shapelets.
+
+        Returns:
+            dict: Dictionary representation of the node.
+        """
         rule = super().node_to_dict()
         if self.feature_original is not None:
-            rule |= {
-                'stump_type': self.__class__.__module__,
-                "feature_idx": self.feature_original[0],
-                "threshold": self.threshold_original[0],
-                "is_categorical": False,
-            }
-
-            rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
-
-            rule |= self.get_rule()
-
-        # shapelet transform stuff
             rule["shapelets"] = self.st.shapelets.tolist()
-
-        rule["n_shapelets"] = self.st.n_shapelets
-        rule["n_ts_for_selection"] = self.st.n_ts_for_selection
-        rule["n_features_strategy"] = self.st.n_features_strategy
-        rule["selection"] = self.st.selection
-        rule["distance"] = self.st.distance
-        rule["random_state"] = self.st.random_state
-        rule["use_combination"] = self.st.use_combination
-        rule["n_jobs"] = self.st.n_jobs
 
         return rule
 
     @classmethod
     def dict_to_node(cls, node_dict, X=None):
-        self = cls(
-            n_shapelets=node_dict["n_shapelets"],
-            n_ts_for_selection=node_dict["n_ts_for_selection"],
-            n_features_strategy=node_dict["n_features_strategy"],
-            selection=node_dict["selection"],
-            distance=node_dict["distance"],
-            scaler=node_dict.get("scaler", None),
-            use_combination=node_dict["use_combination"],
-            random_state=node_dict["random_state"],
-            n_jobs=node_dict["n_jobs"],
-        )
+        """
+        Create a stump from a dictionary created by node_to_dict.
 
-        if 'shapelets' in node_dict:
+        Args:
+            node_dict (dict): Dictionary representation of the node.
+            X (array-like, optional): Not used.
+
+        Returns:
+            The reconstructed stump.
+        """
+        self = super().dict_to_node(node_dict)
+        if "shapelets" in node_dict:
             self.st.shapelets = np.array(node_dict["shapelets"])
 
-            self.feature_original = np.zeros(3, dtype=int)
-            self.threshold_original = np.zeros(3)
-            self.n_node_samples = np.zeros(3, dtype=int)
-
-            self.feature_original[0] = node_dict["feature_idx"]
-            self.threshold_original[0] = node_dict["threshold"]
-
-        self.kwargs = copy.deepcopy(node_dict["args"])
-        self._restore_data_type(node_dict)
-
         return self
+

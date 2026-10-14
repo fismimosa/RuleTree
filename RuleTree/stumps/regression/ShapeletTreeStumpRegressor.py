@@ -1,4 +1,3 @@
-import copy
 import random
 import warnings
 from typing import Optional
@@ -155,52 +154,33 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
     def node_to_dict(self):
         """
-        Convert the tree node to a dictionary representation.
+        Convert the stump to a dictionary representation: the split, the constructor arguments
+        and the selected shapelets.
 
         Returns:
             dict: Dictionary representation of the node.
         """
-        return ShapeletTreeStumpClassifier.node_to_dict(self)
+        rule = super().node_to_dict()
+        if self.feature_original is not None:
+            rule["shapelets"] = self.st.shapelets.tolist()
+
+        return rule
 
     @classmethod
     def dict_to_node(cls, node_dict, X=None):
         """
-        Create a tree node from a dictionary representation.
+        Create a stump from a dictionary created by node_to_dict.
 
         Args:
             node_dict (dict): Dictionary representation of the node.
-            X (array-like, optional): Input data (not used).
+            X (array-like, optional): Not used.
 
         Returns:
-            ShapeletTreeStumpRegressor: Reconstructed tree node.
+            The reconstructed stump.
         """
-        self = cls(
-            n_shapelets=node_dict["n_shapelets"],
-            n_shapelets_for_selection=node_dict["n_shapelets_for_selection"],
-            n_ts_for_selection_per_class=node_dict["n_ts_for_selection_per_class"],
-            sliding_window=node_dict["sliding_window"],
-            selection=node_dict["selection"],
-            distance=node_dict["distance"],
-            mi_n_neighbors=node_dict["mi_n_neighbors"],
-            random_state=node_dict["random_state"],
-            n_jobs=node_dict["n_jobs"]
-        )
-
-        self.st.shapelets = np.array(node_dict.get("shapelets", []))
-
-        self.feature_original = None
-        if 'feature_idx' in node_dict:
-            self.feature_original = np.ones(3, dtype=int) * -2
-            self.feature_original[0] = node_dict.get('feature_idx', -2)
-
-        self.threshold_original = None
-        if 'threshold' in node_dict:
-            self.threshold_original = np.ones(3) * -2
-            self.threshold_original[0] = node_dict.get('threshold', -2)
-
-        args = copy.deepcopy(node_dict["args"])
-        self.kwargs = args
-        self._restore_data_type(node_dict)
+        self = super().dict_to_node(node_dict)
+        if "shapelets" in node_dict:
+            self.st.shapelets = np.array(node_dict["shapelets"])
 
         return self
 

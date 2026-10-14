@@ -85,7 +85,8 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
 
         comparison = "<=" if not self.is_categorical else "="
         not_comparison = ">" if not self.is_categorical else "!="
-        rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
+        rounded_value = str(rule["threshold"]) if float_precision is None or self.is_categorical else (
+            round(rule["threshold"], float_precision))
         if scaler is not None:
             rounded_value = str(rule["threshold_scaled"]) if float_precision is None else (
                 round(rule["threshold_scaled"], float_precision))
@@ -154,24 +155,9 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         Raises:
             AssertionError: If required fields are missing from the dictionary.
         """
-        self = cls(**node_dict["args"])
-
-        self.feature_original = None
-        if 'feature_idx' in node_dict:
-            self.feature_original = np.ones(3, dtype=int) * -2
-            self.feature_original[0] = node_dict.get('feature_idx', -2)
-
-        self.threshold_original = None
-        if 'threshold' in node_dict:
-            self.threshold_original = np.ones(3) * -2
-            self.threshold_original[0] = node_dict.get('threshold', -2)
-
-        self.is_categorical = node_dict.get('is_categorical', None)
-        self._restore_data_type(node_dict)
-
-        args = copy.deepcopy(node_dict.get("args", {}))
-        self.impurity = args.pop("impurity", np.nan)
-        self.kwargs = args
+        self = cls(**copy.deepcopy(node_dict.get("args", {})))
+        self._restore_split(node_dict)
+        self.impurity = node_dict.get("impurity", np.nan)
 
         return self
 
