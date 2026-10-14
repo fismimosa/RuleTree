@@ -4,34 +4,34 @@ RuleTree.ensemble package
 Submodules
 ----------
 
-RuleTree.ensemble.RuleForestClassifier module
----------------------------------------------
+RuleTree.ensemble.EBMRegressor module
+-------------------------------------
 
-.. automodule:: RuleTree.ensemble.RuleForestClassifier
+.. automodule:: RuleTree.ensemble.EBMRegressor
    :members:
    :show-inheritance:
    :undoc-members:
 
-RuleTree.ensemble.RuleForestRegressor module
---------------------------------------------
+RuleTree.ensemble.GBoostClassifier module
+-----------------------------------------
 
-.. automodule:: RuleTree.ensemble.RuleForestRegressor
+.. automodule:: RuleTree.ensemble.GBoostClassifier
    :members:
    :show-inheritance:
    :undoc-members:
 
-RuleTree.ensemble.RuleTreeAdaBoostClassifier module
----------------------------------------------------
+RuleTree.ensemble.GBoostRegressor module
+----------------------------------------
 
-.. automodule:: RuleTree.ensemble.RuleTreeAdaBoostClassifier
+.. automodule:: RuleTree.ensemble.GBoostRegressor
    :members:
    :show-inheritance:
    :undoc-members:
 
-RuleTree.ensemble.RuleTreeAdaBoostRegressor module
---------------------------------------------------
+RuleTree.ensemble.XGBoostRegressor module
+-----------------------------------------
 
-.. automodule:: RuleTree.ensemble.RuleTreeAdaBoostRegressor
+.. automodule:: RuleTree.ensemble.XGBoostRegressor
    :members:
    :show-inheritance:
    :undoc-members:

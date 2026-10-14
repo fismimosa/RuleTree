@@ -33,7 +33,7 @@ if __name__ == "__main__":
         max_depth=4,
         stump_selection="best",
         random_state=random_state,
-        base_stumps=PivotTreeStumpClassifier(max_depth=1, random_state=random_state),
+        base_stumps=PivotTreeStumpClassifier(random_state=random_state),
     )
 
     clf_std.fit(X_train_clf, y_train_clf)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         max_depth=4,
         stump_selection="best",
         random_state=random_state,
-        base_stumps=PivotTreeStumpRegressor(max_depth=1, random_state=random_state),
+        base_stumps=PivotTreeStumpRegressor(random_state=random_state),
     )
 
     reg_std.fit(X_train_reg, y_train_reg)

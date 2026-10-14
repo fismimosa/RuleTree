@@ -16,7 +16,6 @@
       ~RuleTreeBaseStump.__init__
       ~RuleTreeBaseStump.apply
       ~RuleTreeBaseStump.dict_to_node
-      ~RuleTreeBaseStump.feature_analysis
       ~RuleTreeBaseStump.fit
       ~RuleTreeBaseStump.get_metadata_routing
       ~RuleTreeBaseStump.get_params

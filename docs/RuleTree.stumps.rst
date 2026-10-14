@@ -10,14 +10,15 @@ Subpackages
    RuleTree.stumps.classification
    RuleTree.stumps.regression
    RuleTree.stumps.splitters
+   RuleTree.stumps.transformers
 
 Submodules
 ----------
 
-RuleTree.stumps.instance\_stumps module
----------------------------------------
+RuleTree.stumps.Stump module
+----------------------------
 
-.. automodule:: RuleTree.stumps.instance_stumps
+.. automodule:: RuleTree.stumps.Stump
    :members:
    :show-inheritance:
    :undoc-members:

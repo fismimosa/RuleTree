@@ -20,18 +20,10 @@ RuleTree.stumps.regression.FairTreeStumpRegressor module
    :show-inheritance:
    :undoc-members:
 
-RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor module
--------------------------------------------------------------------
+RuleTree.stumps.regression.PivotTreeStumpRegressor module
+---------------------------------------------------------
 
-.. automodule:: RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-RuleTree.stumps.regression.ProximityTreeStumpRegressor module
--------------------------------------------------------------
-
-.. automodule:: RuleTree.stumps.regression.ProximityTreeStumpRegressor
+.. automodule:: RuleTree.stumps.regression.PivotTreeStumpRegressor
    :members:
    :show-inheritance:
    :undoc-members:
@@ -40,6 +32,14 @@ RuleTree.stumps.regression.ShapeletTreeStumpRegressor module
 ------------------------------------------------------------
 
 .. automodule:: RuleTree.stumps.regression.ShapeletTreeStumpRegressor
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+RuleTree.stumps.regression.XGBoostStumpRegressor module
+-------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.regression.XGBoostStumpRegressor
    :members:
    :show-inheritance:
    :undoc-members:

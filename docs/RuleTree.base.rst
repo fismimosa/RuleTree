@@ -10,7 +10,9 @@ API reference
 
    RuleTree.base.RuleTreeBase.RuleTreeBase
    RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit
+   RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter
    RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump
+   RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer
 
 Submodules
 ----------
@@ -37,6 +39,24 @@ RuleTree.base.RuleTreeBaseStump module
 --------------------------------------
 
 .. automodule:: RuleTree.base.RuleTreeBaseStump
+   :members:
+   :show-inheritance:
+   :undoc-members:
+   :no-index:
+
+RuleTree.base.RuleTreeBaseSplitter module
+-----------------------------------------
+
+.. automodule:: RuleTree.base.RuleTreeBaseSplitter
+   :members:
+   :show-inheritance:
+   :undoc-members:
+   :no-index:
+
+RuleTree.base.RuleTreeBaseTransformer module
+--------------------------------------------
+
+.. automodule:: RuleTree.base.RuleTreeBaseTransformer
    :members:
    :show-inheritance:
    :undoc-members:

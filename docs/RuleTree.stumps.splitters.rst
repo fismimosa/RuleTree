@@ -4,42 +4,18 @@ RuleTree.stumps.splitters package
 Submodules
 ----------
 
-RuleTree.stumps.splitters.MultipleObliquePivotSplit module
-----------------------------------------------------------
+RuleTree.stumps.splitters.ClassificationSplitter module
+-------------------------------------------------------
 
-.. automodule:: RuleTree.stumps.splitters.MultipleObliquePivotSplit
+.. automodule:: RuleTree.stumps.splitters.ClassificationSplitter
    :members:
    :show-inheritance:
    :undoc-members:
 
-RuleTree.stumps.splitters.MultiplePivotSplit module
----------------------------------------------------
+RuleTree.stumps.splitters.FairSplitter module
+---------------------------------------------
 
-.. automodule:: RuleTree.stumps.splitters.MultiplePivotSplit
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-RuleTree.stumps.splitters.ObliqueBivariateSplit module
-------------------------------------------------------
-
-.. automodule:: RuleTree.stumps.splitters.ObliqueBivariateSplit
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-RuleTree.stumps.splitters.ObliqueHouseHolderSplit module
---------------------------------------------------------
-
-.. automodule:: RuleTree.stumps.splitters.ObliqueHouseHolderSplit
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-RuleTree.stumps.splitters.ObliquePivotSplit module
---------------------------------------------------
-
-.. automodule:: RuleTree.stumps.splitters.ObliquePivotSplit
+.. automodule:: RuleTree.stumps.splitters.FairSplitter
    :members:
    :show-inheritance:
    :undoc-members:
@@ -48,6 +24,22 @@ RuleTree.stumps.splitters.PivotSplit module
 -------------------------------------------
 
 .. automodule:: RuleTree.stumps.splitters.PivotSplit
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+RuleTree.stumps.splitters.RegressionSplitter module
+---------------------------------------------------
+
+.. automodule:: RuleTree.stumps.splitters.RegressionSplitter
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+RuleTree.stumps.splitters.XGBoostSplitter module
+------------------------------------------------
+
+.. automodule:: RuleTree.stumps.splitters.XGBoostSplitter
    :members:
    :show-inheritance:
    :undoc-members:
