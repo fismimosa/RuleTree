@@ -1,5 +1,4 @@
 import heapq
-import warnings
 from typing import Union, Optional
 
 import numpy as np
@@ -234,10 +233,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
         RuleTreeNode
             The prepared node with prediction and other metadata.
         """
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            prediction = float(np.mean(y[idx]))
-            prediction_std = float(np.std(y[idx]))
+        prediction = float(np.mean(y[idx]))
+        prediction_std = float(np.std(y[idx]))
 
         if node is not None:
             node.prediction = prediction

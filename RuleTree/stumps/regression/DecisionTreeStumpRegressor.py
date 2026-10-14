@@ -1,11 +1,6 @@
 import copy
-import warnings
 
 import numpy as np
-try:
-    from line_profiler_pycharm import profile
-except ModuleNotFoundError:
-    pass
 from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
 
@@ -297,18 +292,18 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                 for value in np.unique(X[:, i]):
                     X_split = X[:, i:i+1] == value
                     len_left = np.sum(X_split)
+                    if len_left == 0 or len_left == len_x:  # degenerate split, one side would be empty
+                        continue
                     curr_pred = np.ones((len(y), ))*np.mean(y)
-                    with warnings.catch_warnings():
-                        warnings.simplefilter('ignore')
-                        l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
-                        r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
+                    l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
+                    r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
 
-                        info_gain = _get_info_gain(self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
-                                                   self._impurity_fun(self.impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
-                                                   self._impurity_fun(self.impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
-                                                   len_x,
-                                                   len_left,
-                                                   len_x - len_left)
+                    info_gain = _get_info_gain(self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
+                                               self._impurity_fun(self.impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
+                                               self._impurity_fun(self.impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
+                                               len_x,
+                                               len_left,
+                                               len_x - len_left)
 
                     if info_gain > best_info_gain:
                         best_info_gain = info_gain

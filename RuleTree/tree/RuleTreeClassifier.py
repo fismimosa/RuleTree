@@ -25,7 +25,7 @@ from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
-from RuleTree.utils.data_utils import calculate_mode, get_info_gain
+from RuleTree.utils.data_utils import calculate_mode, get_info_gain, log_odds
 
 
 class RuleTreeClassifier(RuleTree, ClassifierMixin):
@@ -188,15 +188,14 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             RuleTreeNode: The prepared node.
         """
         prediction = calculate_mode(y[idx])
-        predict_proba = np.zeros((len(self.classes_), ))
-        log_odds = np.zeros((len(self.classes_), ))
-        for i, classe in enumerate(self.classes_):
-            predict_proba[i] = sum(np.where(y[idx] == classe, 1, 0)) / len(y[idx])
-            log_odds[i] = np.log(sum(np.where(y[idx] == classe, 1, 0)) / sum(np.where(y[idx] != classe, 1, 0)))
+        class_counts = np.array([np.sum(y[idx] == classe) for classe in self.classes_])
+        predict_proba = class_counts / len(y[idx])
+        node_log_odds = log_odds(class_counts, len(y[idx]))
 
         if node is not None:
             node.prediction = prediction
-            node.predict_proba = predict_proba
+            node.prediction_probability = predict_proba
+            node.log_odds = node_log_odds
             node.classes = self.classes_
             node.samples = len(y[idx])
 
@@ -207,7 +206,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             node_id=node_id,
             prediction=prediction,
             prediction_probability=predict_proba,
-            log_odds=log_odds,
+            log_odds=node_log_odds,
             classes=self.classes_,
             parent=None,
             stump=None,

@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.base import TransformerMixin
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.utils.data_utils import log_odds
 from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
 
 
@@ -204,8 +205,7 @@ class RuleTreeNode:
         if y_local.shape[0] > 0 and class_counts.sum() > 0:
             self.prediction = classes[np.argmax(class_counts)]
             self.prediction_probability = class_counts / y_local.shape[0]
-            with np.errstate(divide='ignore', invalid='ignore'):
-                self.log_odds = np.log(class_counts / (y_local.shape[0] - class_counts))
+            self.log_odds = log_odds(class_counts, y_local.shape[0])
         else:
             self.prediction = np.nan
             self.prediction_probability = np.zeros(len(classes), dtype=float)

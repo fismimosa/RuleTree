@@ -272,6 +272,36 @@ def calculate_mode(x: np.ndarray) -> Union[int, float, str]:
     idx = np.argmax(counts)
     return vals[idx]
 
+def log_odds(class_counts: np.ndarray, n_samples: int) -> np.ndarray:
+    """
+    Compute the log-odds log(n_c / (n - n_c)) of each class.
+
+    Pure cases are handled explicitly instead of dividing by zero: a class with no samples
+    gets -inf, a class with all the samples gets +inf, and an empty node gets nan.
+
+    Parameters
+    ----------
+    class_counts : numpy.ndarray
+        Number of samples of each class
+    n_samples : int
+        Total number of samples
+
+    Returns
+    -------
+    numpy.ndarray
+        Log-odds of each class
+    """
+    class_counts = np.asarray(class_counts, dtype=float)
+    other_counts = n_samples - class_counts
+
+    result = np.full(class_counts.shape, np.nan)
+    result[(class_counts == 0) & (other_counts > 0)] = -np.inf
+    result[(class_counts > 0) & (other_counts == 0)] = np.inf
+    both = (class_counts > 0) & (other_counts > 0)
+    result[both] = np.log(class_counts[both] / other_counts[both])
+
+    return result
+
 def get_info_gain(clf: Union[DecisionTreeClassifier, DecisionTreeRegressor]):
     """
     Calculate information gain from a decision tree split.

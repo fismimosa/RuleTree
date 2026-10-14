@@ -1,18 +1,13 @@
 """Principal Component Analysis (PCA)"""
 
-import warnings
-
 import numpy as np
 import pandas as pd
 from sklearn import base
 from sklearn import preprocessing
 from sklearn import utils
-from sklearn.exceptions import DataConversionWarning
 
 from . import svd
 from . import util
-
-warnings.filterwarnings('ignore',category=DataConversionWarning)
 
 class PCA(base.BaseEstimator, base.TransformerMixin):
 

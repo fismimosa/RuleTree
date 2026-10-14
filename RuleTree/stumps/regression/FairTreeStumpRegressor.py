@@ -1,34 +1,14 @@
 import copy
-import os
-import warnings
-
-import math
 from concurrent.futures.process import ProcessPoolExecutor
 from typing import Union
 
-import psutil
-from statsmodels.graphics.tukeyplot import results
-
-from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric, privacy_metric_all
-
-os.environ["COLUMNS"] = "1"
-
 import numpy as np
-import pandas as pd
-import numba
-from numba import jit
-from scipy.stats import wasserstein_distance
-from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
-from sklearn.preprocessing import KBinsDiscretizer
-from sklearn.tree import DecisionTreeRegressor
+import psutil
 
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
-from RuleTree.stumps.regression import DecisionTreeStumpRegressor
-
-from RuleTree.utils.data_utils import get_info_gain, _get_info_gain
-
-warnings.filterwarnings("ignore")
+from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
+from RuleTree.utils.data_utils import _get_info_gain
+from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric, privacy_metric_all
 
 
 class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
@@ -457,23 +437,21 @@ def _inner_loop_best_split(X: np.ndarray, y: np.ndarray, col_idx: int, threshold
         len_left = np.sum(X_split)
         curr_pred = np.ones((len(y),)) * np.mean(y)
 
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
-            r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
+        l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
+        r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
 
-            info_gain = _get_info_gain(FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y, y_pred=curr_pred),
-                                       FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y[X_split[:, 0]],
-                                                                            y_pred=l_pred),
-                                       FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y[~X_split[:, 0]],
-                                                                            y_pred=r_pred),
-                                       len_x,
-                                       len_left,
-                                       len_x - len_left)
+        info_gain = _get_info_gain(FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y, y_pred=curr_pred),
+                                   FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y[X_split[:, 0]],
+                                                                        y_pred=l_pred),
+                                   FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y[~X_split[:, 0]],
+                                                                        y_pred=r_pred),
+                                   len_x,
+                                   len_left,
+                                   len_x - len_left)
 
-            info_gain = 1 / (1 + np.exp(-info_gain))
+        info_gain = 1 / (1 + np.exp(-info_gain))
 
-            info_gain -= info_gain * (penalty_value * penalization_weight)
+        info_gain -= info_gain * (penalty_value * penalization_weight)
 
         if info_gain > best_info_gain:
             best_info_gain = info_gain
