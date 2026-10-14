@@ -2,7 +2,7 @@
 Module containing the RuleTree class.
 
 The RuleTree class implements a decision tree structure with additional functionality
-for handling custom stumps, feature importance computation, and local interpretation.
+for handling custom stumps and local interpretation.
 """
 
 import heapq
@@ -35,7 +35,7 @@ class RuleTree(RuleTreeBase, ABC):
 
     This class provides the core implementation of a RuleTree, including methods for
     fitting, predicting, and exporting the tree structure. It supports custom stumps
-    and advanced features like feature importance computation and local interpretation.
+    and advanced features like local interpretation.
 
     Attributes:
         max_leaf_nodes (int): Maximum number of leaf nodes in the tree.
@@ -647,65 +647,6 @@ class RuleTree(RuleTreeBase, ABC):
         
         return feats
         
-
-    def _compute_importances(self, current_node=None, importances=None):
-        """
-        Compute feature importances for the RuleTree.
-
-        Args:
-            current_node (RuleTreeNode): Current node in the tree.
-            importances (dict): Array to store importances.
-
-        Returns:
-            dict: Feature importances.
-        """
-        if importances is None:
-            importances = dict()
-
-        if current_node is None:
-            current_node = self.root
-
-        if not current_node.is_leaf():
-            #following the implementation of https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/tree/_tree.pyx#L1251
-            feature = current_node.stump.feature_original[0]
-           
-            imp_parent, imp_child_l, imp_child_r = current_node.stump.tree_.impurity
-            n_parent, n_child_l, n_child_r = current_node.stump.tree_.weighted_n_node_samples
-           
-            info_gain = (
-                n_parent * imp_parent
-                - n_child_l * imp_child_l
-                - n_child_r * imp_child_r
-            )
-
-            importances[feature] += info_gain
-
-            # Recur for left and right children
-            self._compute_importances(current_node.node_l, importances)
-            self._compute_importances(current_node.node_r, importances)
-
-        return importances 
-   
-    def compute_feature_importances(self, normalize=True):
-        """
-        Compute feature importances based on information gain.
-
-        Args:
-            normalize (bool): Whether to normalize the importances.
-
-        Returns:
-            np.ndarray: Array of feature importances.
-        """
-        importances = self._compute_importances()
-        root_weighted_samples = self.root.stump.tree_.weighted_n_node_samples[0]
-        importances /= root_weighted_samples
-        
-        if normalize:
-            total = np.sum(importances)
-            if total > 0.0:
-                importances /= total
-
-        return importances
         
     def local_interpretation(self, X, joint_contribution = False):
         """
