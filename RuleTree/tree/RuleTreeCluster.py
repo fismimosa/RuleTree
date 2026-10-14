@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 
+from RuleTree.utils.define import MODEL_TYPE_REG
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
@@ -77,7 +78,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
                  random_state=None,
                  distance_measure=None):
         if base_stumps is None:
-            base_stumps = DecisionTreeStumpRegressor(max_depth=1)
+            base_stumps = DecisionTreeStumpRegressor()
 
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
@@ -333,16 +334,14 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         self._labels_to_int(node.node_l)
         self._labels_to_int(node.node_r)
 
-    def _get_stumps_base_class(self):
+    def _get_stumps_task(self):
         """
-        Get the base class for the stumps used in the tree.
-        
-        Returns
-        -------
-        class
-            The RegressorMixin class.
+        Task of the stumps of the tree.
+
+        Returns:
+            str: MODEL_TYPE_REG.
         """
-        return RegressorMixin
+        return MODEL_TYPE_REG
 
     def _get_prediction_probas(self, current_node = None, probas=None):
         """

@@ -1,14 +1,11 @@
-from concurrent.futures.process import ProcessPoolExecutor
 from typing import Union
 
-import numpy as np
 import psutil
 
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
-from RuleTree.utils.data_utils import _get_info_gain
+from RuleTree.stumps.splitters.FairSplitter import FairSplitter
 from RuleTree.utils.define import DATA_TYPE_TABULAR
-from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric, privacy_metric_all
 
 
 class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
@@ -55,142 +52,42 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
     n_jobs : int, default=psutil.cpu_count(logical=False)
         Number of CPU cores to use for parallel processing.
 
-    **kwargs
-        Additional parameters passed to the parent DecisionTreeStumpRegressor class.
+    criterion : str or callable, default='squared_error'
+        Impurity measure (see RegressionSplitter).
     """
 
+    # sensible_attribute is a column of the tabular data
     supported_data_types = (DATA_TYPE_TABULAR,)
 
     def __init__(self,
                  penalty: str = None,
                  sensible_attribute: int = -1,
                  penalization_weight: float = 0.3,
-
                  ideal_distribution: dict = None,
-
                  k_anonymity: Union[int, float] = 2,
                  l_diversity: Union[int, float] = 2,
                  t_closeness: float = .2,
                  strict: bool = True,
-                 # if True -> no unfair split, if False==DTRegressor, if float == penalization weight
                  use_t: bool = True,
-
                  n_jobs: int = psutil.cpu_count(logical=False),
-                 # n_jobs:int=1,
-
-                 **kwargs):
-        super().__init__(**kwargs)
-        self.is_categorical = False
-        self.threshold_original = None
-        self.feature_original = None
-
+                 criterion='squared_error'):
         self.penalty = penalty
         self.sensible_attribute = sensible_attribute
         self.penalization_weight = penalization_weight
-
         self.ideal_distribution = ideal_distribution
-
         self.k_anonymity = k_anonymity
         self.l_diversity = l_diversity
         self.t_closeness = t_closeness
         self.strict = strict
         self.use_t = use_t
-
         self.n_jobs = n_jobs
+        self.criterion = criterion
 
-        self.kwargs = kwargs | {
-            "penalty": penalty,
-            "sensible_attribute": sensible_attribute,
-            "penalization_weight": penalization_weight,
-            "ideal_distribution": ideal_distribution,
-            "k_anonymity": k_anonymity,
-            "l_diversity": l_diversity,
-            "t_closeness": t_closeness,
-            "strict": strict,
-            "use_t": use_t,
-            "n_jobs": n_jobs,
-        }
-
-    def _fit_matrix(self, X, y, sample_weight=None, check_input=True):
-        """
-        Build a fair decision tree stump regressor from the training set (X, y).
-
-        The method searches for the best split that optimizes both prediction performance
-        and the fairness constraint specified by the penalty parameter.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The training input samples of the node.
-
-        y : array-like of shape (n_samples,)
-            The target values (real numbers).
-
-        sample_weight : array-like of shape (n_samples,), default=None
-            Sample weights. Currently not used.
-
-        check_input : bool, default=True
-            Allow to bypass several input checking. Don't use this parameter
-            unless you know what you do.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-        """
-        best_info_gain = -float('inf')
-        self.feature_original = [-2]
-
-        processes = []
-
-        with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-            for i in range(X.shape[1]):
-                if i == self.sensible_attribute:
-                    continue
-                sorted_arr = np.hstack([X, y.reshape(-1, 1)])
-                sorted_arr = sorted_arr[:, [i, -1]][np.lexsort((X[:, -1], X[:, i]))]
-                unique_sorted_array = np.unique(sorted_arr, axis=0)
-                if i not in self.categorical:
-                    values = [
-                        (np.mean(unique_sorted_array[j - 1:j + 1, 0]))
-                        for j in range(1, len(unique_sorted_array))
-                        if unique_sorted_array[j - 1, 1] != unique_sorted_array[j, 1]
-                           and unique_sorted_array[j - 1, 0] != unique_sorted_array[j, 0]
-                    ]
-
-                    n_values_per_core = max(10, len(values) // self.n_jobs)
-
-                    for start_idx in range(0, len(values), n_values_per_core):
-                        if self.n_jobs == 1:
-                            processes.append(_inner_loop_best_split(X, y, i,
-                                                                    values[start_idx:start_idx + n_values_per_core],
-                                                                    self.categorical, self.impurity_fun, self.penalty,
-                                                                    self.sensible_attribute, self.penalization_weight,
-                                                                    self.ideal_distribution, self.k_anonymity,
-                                                                    self.l_diversity, self.t_closeness, self.strict,
-                                                                    self.use_t)
-                                             )
-                        else:
-                            processes.append(
-                                executor.submit(_inner_loop_best_split, X, y, i,
-                                                values[start_idx:start_idx + n_values_per_core], self.categorical,
-                                                self.impurity_fun, self.penalty, self.sensible_attribute,
-                                                self.penalization_weight, self.ideal_distribution, self.k_anonymity,
-                                                self.l_diversity, self.t_closeness, self.strict, self.use_t)
-                            )
-
-            if self.n_jobs != 1:
-                processes = [x.result() for x in processes]
-
-        for info_gain, threshold, col_idx in processes:
-            if info_gain > best_info_gain:
-                best_info_gain = info_gain
-                self.feature_original = [col_idx, -2, -2]
-                self.threshold_original = np.array([threshold, -2, -2])
-                self.is_categorical = col_idx in self.categorical
-                self.fitted_ = True
-
-        return self
+    def _make_splitter(self):
+        return FairSplitter(penalty=self.penalty, sensible_attribute=self.sensible_attribute,
+                            penalization_weight=self.penalization_weight, ideal_distribution=self.ideal_distribution,
+                            k_anonymity=self.k_anonymity, l_diversity=self.l_diversity, t_closeness=self.t_closeness,
+                            strict=self.strict, use_t=self.use_t, n_jobs=self.n_jobs, criterion=self.criterion)
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
@@ -217,175 +114,3 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
                                                     columns_names=columns_names,
                                                     scaler=scaler,
                                                     float_precision=float_precision)
-
-def _check_balance(labels: np.ndarray, prot_attr: np.ndarray):
-    """
-    Check if a split satisfies balance (statistical parity) fairness constraint.
-
-    Parameters
-    ----------
-    labels : np.ndarray
-        Binary array indicating sample assignments (True for left node, False for right)
-    prot_attr : np.ndarray
-        Protected attribute values for each sample
-
-    Returns
-    -------
-    tuple
-        (is_fair, fairness_score) where is_fair is always True and
-        fairness_score is the complement of the balance metric (higher is better)
-    """
-    return True, 1 - balance_metric(labels, prot_attr)
-
-
-def _check_max_fairness_cost(labels: np.ndarray, prot_attr: np.ndarray, ideal_dist: dict):
-    """
-    Check if a split satisfies the maximum fairness cost constraint.
-
-    Parameters
-    ----------
-    labels : np.ndarray
-        Binary array indicating sample assignments (True for left node, False for right)
-    prot_attr : np.ndarray
-        Protected attribute values for each sample
-    ideal_dist : dict
-        Dictionary specifying the ideal distribution for different groups
-
-    Returns
-    -------
-    tuple
-        (is_fair, fairness_score) where is_fair is always True and
-        fairness_score is the maximum fairness cost (lower is better)
-    """
-    return True, max_fairness_cost(labels, prot_attr, ideal_dist)
-
-
-def _check_privacy(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict, categorical, use_t):
-    """
-    Check if a split satisfies privacy constraints (k-anonymity, l-diversity, t-closeness).
-
-    Parameters
-    ----------
-    X : np.ndarray
-        Input feature matrix
-    X_bool : np.ndarray
-        Binary array indicating sample assignments (True for left node, False for right)
-    sensible_attribute : int
-        Index of the sensitive attribute column in X
-    k_anonymity : int or float
-        Minimum group size required for k-anonymity
-    l_diversity : int or float
-        Minimum distinct values required for l-diversity
-    t_closeness : float
-        Maximum earth mover's distance allowed for t-closeness
-    strict : bool
-        If True, strictly enforce privacy constraints
-    categorical : set
-        Set of indices of categorical features
-    use_t : bool
-        Whether to use t-closeness in constraint calculations
-
-    Returns
-    -------
-    tuple
-        (is_fair, fairness_score) where is_fair indicates if privacy constraints are satisfied
-        and fairness_score is the normalized maximum privacy metric
-    """
-    can_split, k, l, t = privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict,
-                                        categorical, use_t)
-    if not use_t:
-        t = t_closeness
-
-    if not can_split:
-        return False, np.nan
-    return can_split, np.max(privacy_metric_all(k, k_anonymity, l, l_diversity, t, t_closeness))  # /3
-
-
-def _inner_loop_best_split(X: np.ndarray, y: np.ndarray, col_idx: int, thresholds: list, categorical: set, impurity_fun,
-                           penalty: str, sensible_attribute: int, penalization_weight: float, ideal_distribution: dict,
-                           k_anonymity, l_diversity, t_closeness, strict, use_t):
-    """
-    Find the best split for a feature column considering fairness constraints.
-
-    Parameters
-    ----------
-    X : np.ndarray
-        Input feature matrix
-    y : np.ndarray
-        Target values
-    col_idx : int
-        Index of the feature column to split on
-    thresholds : list
-        List of candidate threshold values to evaluate
-    categorical : set
-        Set of indices of categorical features
-    impurity_fun : callable
-        Function to calculate impurity (e.g., mse, mae)
-    penalty : str
-        Type of fairness constraint to apply ("balance", "mfc", or "privacy")
-    sensible_attribute : int
-        Index of the sensitive attribute column
-    penalization_weight : float
-        Weight for the fairness penalty term
-    ideal_distribution : dict
-        Ideal distribution when using "mfc" penalty
-    k_anonymity, l_diversity, t_closeness : Various types
-        Privacy constraint parameters when using "privacy" penalty
-    strict : bool
-        Whether to strictly enforce privacy constraints
-    use_t : bool
-        Whether to use t-closeness in privacy constraints
-
-    Returns
-    -------
-    tuple
-        (best_info_gain, best_threshold, col_idx) representing the best split found
-    """
-    len_x = len(X)
-
-    best_info_gain = -np.inf
-    best_threshold = -1
-    for value in thresholds:
-        if col_idx in categorical:
-            X_split = X[:, col_idx:col_idx + 1] == value
-        else:
-            X_split = X[:, col_idx:col_idx + 1] <= value
-
-        if np.sum(X_split) * np.sum(~X_split) == 0:
-            continue
-
-        if penalty == "balance":
-            ok_to_split, penalty_value = _check_balance(X_split[:, 0], X[:, sensible_attribute])
-        elif penalty == "mfc":
-            ok_to_split, penalty_value = _check_max_fairness_cost(X_split[:, 0], X[:, sensible_attribute],
-                                                                  ideal_distribution)
-        else:
-            ok_to_split, penalty_value = _check_privacy(X, X_split, sensible_attribute, k_anonymity, l_diversity,
-                                                        t_closeness, strict, categorical, use_t)
-        if not ok_to_split:
-            continue
-
-        len_left = np.sum(X_split)
-        curr_pred = np.ones((len(y),)) * np.mean(y)
-
-        l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
-        r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
-
-        info_gain = _get_info_gain(FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y, y_pred=curr_pred),
-                                   FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y[X_split[:, 0]],
-                                                                        y_pred=l_pred),
-                                   FairTreeStumpRegressor._impurity_fun(impurity_fun, y_true=y[~X_split[:, 0]],
-                                                                        y_pred=r_pred),
-                                   len_x,
-                                   len_left,
-                                   len_x - len_left)
-
-        info_gain = 1 / (1 + np.exp(-info_gain))
-
-        info_gain -= info_gain * (penalty_value * penalization_weight)
-
-        if info_gain > best_info_gain:
-            best_info_gain = info_gain
-            best_threshold = value
-
-    return best_info_gain, best_threshold, col_idx

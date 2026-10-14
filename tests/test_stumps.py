@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import pytest
+import sklearn
 
 from RuleTree import RuleTreeClassifier, RuleTreeRegressor
 from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, PartialPivotTreeStumpClassifier,
@@ -9,8 +10,12 @@ from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, Partial
 from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor, PivotTreeStumpRegressor,
                                         ShapeletTreeStumpRegressor)
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
+from RuleTree.stumps.Stump import Stump
+from RuleTree.stumps.splitters import FairSplitter, RegressionSplitter
+from RuleTree.stumps.transformers import MatrixTransformer, PivotTransformer
+from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.utils.data_utils import json_numpy_encoder
-from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS
+from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_REG
 
 
 def shapelet_kwargs():
@@ -139,3 +144,65 @@ def test_serialization_keeps_parameters(stump):
 
     assert loaded.criterion == "entropy"
     assert loaded.get_params() == stump.get_params()
+
+
+def test_composed_stump(diabetes):
+    """Any transformer with any splitter: here pivots with a fairness constraint."""
+    X, y = diabetes
+    X = np.column_stack([X, X[:, 1] > 0])
+    stump = Stump(PivotTransformer(MODEL_TYPE_REG, tree_params={"random_state": 0}),
+                  FairSplitter(penalty="balance", sensible_attribute=0, n_jobs=1))
+    assert stump.task == MODEL_TYPE_REG
+    assert stump.supported_data_types == (DATA_TYPE_TABULAR,)
+
+    model = RuleTreeRegressor(max_depth=2, base_stumps=stump).fit(X, y)
+    loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))
+
+    assert len(model.get_leaf_nodes()) > 1
+    assert np.array_equal(loaded.predict(X), model.predict(X))
+    assert type(loaded.root.stump.transformer) is PivotTransformer
+
+
+def test_stump_task_must_match_the_tree(iris):
+    X, y = iris
+
+    with pytest.raises(TypeError, match="not a stump for"):
+        RuleTreeClassifier(base_stumps=Stump(MatrixTransformer(), RegressionSplitter())).fit(X, y)
+    with pytest.raises(TypeError, match="not a stump for"):
+        RuleTreeRegressor(base_stumps=DecisionTreeStumpClassifier()).fit(X, y)
+
+
+def test_stumps_have_explicit_parameters():
+    stump = DecisionTreeStumpClassifier(criterion="entropy", min_samples_leaf=5)
+
+    assert stump.get_params()["min_samples_leaf"] == 5
+    assert sklearn.clone(stump).get_params() == stump.get_params()
+    with pytest.raises(TypeError):
+        DecisionTreeStumpClassifier(max_depth=1)  # stumps always have depth 1
+
+
+def test_old_stump_parameters_are_dropped_when_loading():
+    with pytest.warns(UserWarning, match="ignores the parameters"):
+        stump = DecisionTreeStumpClassifier.dict_to_node({"args": {"max_depth": 1, "ccp_alpha": 0.1}})
+
+    assert stump.get_params() == DecisionTreeStumpClassifier().get_params()
+
+
+@pytest.mark.parametrize("base_stumps, dataset", [
+    (DecisionTreeStumpClassifier(), "categorical"),
+    ([DecisionTreeStumpRegressor(random_state=0),
+      FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1, n_jobs=1)], "fair"),
+], ids=["only-categorical", "fair"])
+def test_best_selection_uses_the_gain_of_any_stump(base_stumps, dataset, iris, diabetes):
+    if dataset == "categorical":
+        X, y = iris
+        X = np.where(X > np.median(X, axis=0), "high", "low").astype(object)
+        model = RuleTreeClassifier(max_depth=2, stump_selection="best", base_stumps=base_stumps)
+    else:
+        X, y = diabetes
+        X = np.column_stack([X, X[:, 1] > 0])
+        model = RuleTreeRegressor(max_depth=2, stump_selection="best", base_stumps=base_stumps)
+
+    model.fit(X, y)
+
+    assert len(model.get_leaf_nodes()) > 1

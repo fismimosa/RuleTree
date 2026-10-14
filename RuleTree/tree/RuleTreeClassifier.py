@@ -16,6 +16,7 @@ import copy
 #from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
 #from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
 #from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
+from RuleTree.utils.define import MODEL_TYPE_CLF
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
@@ -59,7 +60,7 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             distance_measure (str): Distance metric for medoid computation.
         """
         if base_stumps is None:
-            base_stumps = DecisionTreeStumpClassifier(max_depth=1)
+            base_stumps = DecisionTreeStumpClassifier()
 
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
@@ -231,14 +232,14 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
         
         
         
-    def _get_stumps_base_class(self):
+    def _get_stumps_task(self):
         """
-        Get the base class for stumps.
+        Task of the stumps of the tree.
 
         Returns:
-            type: The base class for stumps.
+            str: MODEL_TYPE_CLF.
         """
-        return ClassifierMixin
+        return MODEL_TYPE_CLF
 
     def _get_prediction_probas(self, current_node = None, probas=None):
         """

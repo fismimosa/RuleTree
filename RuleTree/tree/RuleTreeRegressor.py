@@ -4,6 +4,7 @@ from typing import Union, Optional
 import numpy as np
 from sklearn.base import RegressorMixin
 
+from RuleTree.utils.define import MODEL_TYPE_REG
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
@@ -89,7 +90,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                  ):
 
         if base_stumps is None:
-            base_stumps = DecisionTreeStumpRegressor(max_depth=1)
+            base_stumps = DecisionTreeStumpRegressor()
 
         super().__init__(max_leaf_nodes=max_leaf_nodes,
                          min_samples_split=min_samples_split,
@@ -176,16 +177,14 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             classes=self.classes_,
         )
 
-    def _get_stumps_base_class(self):
+    def _get_stumps_task(self):
         """
-        Get the base class for stumps used in the regressor.
-        
-        Returns
-        -------
-        class
-            The RegressorMixin class.
+        Task of the stumps of the tree.
+
+        Returns:
+            str: MODEL_TYPE_REG.
         """
-        return RegressorMixin
+        return MODEL_TYPE_REG
         
     def _get_prediction_probas(self, current_node = None, probas=None):
         """

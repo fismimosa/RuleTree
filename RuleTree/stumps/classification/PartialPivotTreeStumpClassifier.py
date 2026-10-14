@@ -1,29 +1,42 @@
-import random
-import warnings
 from typing import Optional
 
 import numpy as np
 import psutil
 
-
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
-from RuleTree.utils.define import DATA_TYPE_TABULAR
-from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
+from RuleTree.stumps.transformers.PartialPivotTransformer import PartialPivotTransformer
 
 
 class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
-    supported_data_types = (DATA_TYPE_TABULAR,)
+    """
+    Partial-pivot stump for classification of tabular data: the split compares the distance of the
+    instances from a partial pivot, an instance of the node restricted to a subset of the features.
+
+    It is made of a PartialPivotTransformer and a ClassificationSplitter.
+
+    Parameters
+    ----------
+    n_shapelets, n_ts_for_selection, n_features_strategy, selection, distance, scaler, use_combination,
+    random_state, n_jobs
+        Parameters of the selection of the partial pivots (see TabularShapelets and PartialPivotTransformer).
+    criterion, min_samples_leaf, min_weight_fraction_leaf, max_features, min_impurity_decrease, class_weight
+        As in DecisionTreeStumpClassifier.
+    """
 
     def __init__(self,
                  n_shapelets=psutil.cpu_count(logical=False)*2,
-                 n_ts_for_selection=100,  #int, inf
+                 n_ts_for_selection=100,  # int, inf
                  n_features_strategy=2,
-                 selection='random',  #random, mi_clf, mi_reg, cluster
+                 selection='random',  # random, cluster, all
                  distance='euclidean',
-                 scaler = None,
+                 scaler=None,
                  use_combination=True,
                  random_state=42, n_jobs=1,
-                 **kwargs):
+                 criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
+                 min_impurity_decrease=0.0, class_weight=None):
+        if selection not in ["random", "cluster", "all"]:
+            raise ValueError("'selection' must be 'random', 'all' or 'cluster'")
+
         self.n_shapelets = n_shapelets
         self.n_ts_for_selection = n_ts_for_selection
         self.n_features_strategy = n_features_strategy
@@ -33,76 +46,32 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         self.use_combination = use_combination
         self.random_state = random_state
         self.n_jobs = n_jobs
+        self.criterion = criterion
+        self.min_samples_leaf = min_samples_leaf
+        self.min_weight_fraction_leaf = min_weight_fraction_leaf
+        self.max_features = max_features
+        self.min_impurity_decrease = min_impurity_decrease
+        self.class_weight = class_weight
 
-        if "max_depth" in kwargs and kwargs["max_depth"] > 1:
-            warnings.warn("max_depth must be 1")
+    def _splitter_params(self):
+        # random_state is the one of the selection of the partial pivots
+        return super()._splitter_params() | {"random_state": None}
 
-        kwargs["max_depth"] = 1
+    def _make_transformer(self):
+        return PartialPivotTransformer(n_shapelets=self.n_shapelets,
+                                       n_ts_for_selection=self.n_ts_for_selection,
+                                       n_features_strategy=self.n_features_strategy,
+                                       selection=self.selection,
+                                       distance=self.distance,
+                                       scaler=self.scaler,
+                                       use_combination=self.use_combination,
+                                       random_state=self.random_state,
+                                       n_jobs=self.n_jobs)
 
-        if selection not in ["random", "cluster", "all"]:
-            raise ValueError("'selection' must be 'random', 'all' or 'cluster'")
-
-        self.st = TabularShapelets(n_shapelets=self.n_shapelets,
-                                   n_ts_for_selection=self.n_ts_for_selection,
-                                   n_features_strategy=self.n_features_strategy,
-                                   selection=self.selection,
-                                   distance=self.distance,
-                                   random_state=self.random_state,
-                                   use_combination=self.use_combination,
-                                   n_jobs=self.n_jobs
-                                   )
-
-        super().__init__(**kwargs)
-
-        self.kwargs |= {
-            "n_shapelets": n_shapelets,
-            "n_ts_for_selection": n_ts_for_selection,
-            "n_features_strategy": n_features_strategy,
-            "selection": selection,
-            "distance": distance,
-            "scaler": scaler,
-            "use_combination": use_combination,
-            "random_state": random_state,
-            "n_jobs": n_jobs,
-        }
-
-    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
-        X, _ = self._resolve_fit_data(data, data_type)
-        if self.scaler is not None:
-            self.scaler.fit(X)
-
-        if idx is None:
-            idx = slice(None)
-
-        X = X[idx]
-        y = y[idx]
-        sample_weight = None if sample_weight is None else sample_weight[idx]
-        if self.scaler is not None:
-            X = self.scaler.transform(X)
-
-        random.seed(self.random_state)
-        if sample_weight is not None:
-            warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
-
-        X_transform = self.st.fit_transform(X, y)
-        self.numerical, self.categorical = list(range(X_transform.shape[1])), []
-        self._fit_matrix(X_transform, y, sample_weight=sample_weight, check_input=check_input)
-        selected_shape = self.tree_.feature[0]
-        if selected_shape == -2:
-            raise ValueError("No split found")
-
-        self.st._optimize_memory(np.array([selected_shape]))
-        X_transform = self.st.transform(X, y)
-        self.numerical, self.categorical = list(range(X_transform.shape[1])), []
-        self._fit_matrix(X_transform, y, sample_weight=sample_weight, check_input=check_input)
-
-        return self
-
-    def _transform(self, X):
-        if self.scaler is not None:
-            X = self.scaler.transform(X)
-
-        return self.st.transform(X)
+    @property
+    def st(self):
+        """The fitted transform of the partial pivots."""
+        return self.transformer_.st_
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         rule = {
@@ -144,36 +113,3 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         }
 
         return rule
-
-    def node_to_dict(self):
-        """
-        Convert the stump to a dictionary representation: the split, the constructor arguments
-        and the selected shapelets.
-
-        Returns:
-            dict: Dictionary representation of the node.
-        """
-        rule = super().node_to_dict()
-        if self.feature_original is not None:
-            rule["shapelets"] = self.st.shapelets.tolist()
-
-        return rule
-
-    @classmethod
-    def dict_to_node(cls, node_dict, X=None):
-        """
-        Create a stump from a dictionary created by node_to_dict.
-
-        Args:
-            node_dict (dict): Dictionary representation of the node.
-            X (array-like, optional): Not used.
-
-        Returns:
-            The reconstructed stump.
-        """
-        self = super().dict_to_node(node_dict)
-        if "shapelets" in node_dict:
-            self.st.shapelets = np.array(node_dict["shapelets"])
-
-        return self
-

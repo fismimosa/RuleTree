@@ -1,40 +1,47 @@
-import copy
-
-import numpy as np
-from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_poisson_deviance
-from sklearn.tree import DecisionTreeRegressor
-
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.exceptions import NoSplitFoundWarning
+from RuleTree.stumps.Stump import Stump
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
+from RuleTree.stumps.splitters.RegressionSplitter import RegressionSplitter
+from RuleTree.stumps.transformers.MatrixTransformer import MatrixTransformer
 
-from RuleTree.utils.data_utils import get_info_gain, _get_info_gain
-from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS
 
-
-class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
+class DecisionTreeStumpRegressor(Stump):
     """
-    A decision tree stump regressor that implements a single-level decision tree.
-    
-    This class extends both scikit-learn's DecisionTreeRegressor and RuleTreeBaseStump
-    to provide functionality for creating single-level decision trees for regression tasks
-    that can handle both numerical and categorical features. It supports extracting rules 
-    and serialization to/from dictionary format.
-    
+    A decision tree stump for regression: a single split on one feature.
+
+    Numerical features are split with a threshold (``x <= t``), categorical features on a value
+    (``x == v``): the split with the highest decrease of impurity is selected. Time series and
+    images are flattened into one feature per value.
+
+    It is made of a MatrixTransformer and a RegressionSplitter.
+
     Parameters
     ----------
-    **kwargs : dict
-        Additional parameters to pass to scikit-learn's DecisionTreeRegressor.
-        Notable parameters include:
-        - criterion: Function to measure the quality of a split ("squared_error", 
-          "friedman_mse", "absolute_error", "poisson", default="squared_error")
+    criterion : {'squared_error', 'absolute_error', 'poisson'}, default='squared_error'
+        Impurity measure.
+    min_samples_leaf, min_weight_fraction_leaf, max_features, random_state, min_impurity_decrease
+        As in sklearn.tree.DecisionTreeRegressor, for the numerical features. With random_state=None,
+        ties between features with the same gain are broken at random.
     """
 
-    # time series and images are flattened into one feature per value
-    supported_data_types = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
+    def __init__(self, criterion='squared_error', min_samples_leaf=1, min_weight_fraction_leaf=0.0,
+                 max_features=None, random_state=None, min_impurity_decrease=0.0):
+        self.criterion = criterion
+        self.min_samples_leaf = min_samples_leaf
+        self.min_weight_fraction_leaf = min_weight_fraction_leaf
+        self.max_features = max_features
+        self.random_state = random_state
+        self.min_impurity_decrease = min_impurity_decrease
 
-    # sklearn's DecisionTreeRegressor.apply comes first in the MRO
-    apply = RuleTreeBaseStump.apply
+    def _splitter_params(self) -> dict:
+        return dict(criterion=self.criterion, min_samples_leaf=self.min_samples_leaf,
+                    min_weight_fraction_leaf=self.min_weight_fraction_leaf, max_features=self.max_features,
+                    random_state=self.random_state, min_impurity_decrease=self.min_impurity_decrease)
+
+    def _make_transformer(self):
+        return MatrixTransformer()
+
+    def _make_splitter(self):
+        return RegressionSplitter(**self._splitter_params())
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
@@ -60,324 +67,3 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                                                     columns_names=columns_names,
                                                     scaler=scaler,
                                                     float_precision=float_precision)
-
-    def node_to_dict(self):
-        """
-        Convert the stump to a dictionary representation for serialization.
-        
-        Returns
-        -------
-        dict
-            Dictionary representation of the stump including all parameters
-            needed to reconstruct it.
-        """
-        if self.feature_original is None:
-            return {
-                "stump_type": self.__class__.__module__,
-                "args": self.kwargs,
-            }
-
-        rule = self.get_rule(float_precision=None)
-
-        rule["stump_type"] = self.__class__.__module__
-        rule["data_type"] = self.data_type_
-        rule["impurity"] = getattr(self, "impurity", None)  # not computed by every stump (e.g. Fair, XGBoost)
-
-        rule["args"] = self.kwargs
-
-        rule["split"] = {
-            "args": {}
-        }
-
-        return rule
-
-    @classmethod
-    def dict_to_node(cls, node_dict, X=None):
-        """
-         Deserializes a dictionary into a DecisionTreeStumpRegressor node.
-
-        This is essentially the inverse operation of node_to_dict(), recreating
-        a stump instance from a serialized dictionary representation.
-        
-        Parameters
-        ----------
-        node_dict : dict
-            Dictionary containing the stump parameters.
-        X : array-like, optional
-            Input data that may be used for additional fitting.
-            
-        Returns
-        -------
-        None
-        """
-        self = cls(**copy.deepcopy(node_dict.get("args", {})))
-        self._restore_split(node_dict)
-        self.impurity = node_dict.get('impurity', np.nan)
-
-        return self
-
-    def __init__(self, **kwargs):
-        """
-        Initialize a new DecisionTreeStumpRegressor.
-        
-        Parameters
-        ----------
-        **kwargs : dict
-            Additional parameters to pass to scikit-learn's DecisionTreeRegressor.
-            Notable parameters include:
-            - criterion: Function to measure the quality of a split ("squared_error", 
-              "friedman_mse", "absolute_error", "poisson", default="squared_error")
-        """
-        if 'max_depth' not in kwargs:
-            kwargs['max_depth'] = 1
-
-        super().__init__(**kwargs)
-        self.is_categorical = False
-        self.kwargs = kwargs
-        self.threshold_original = None
-        self.feature_original = None
-
-        self.impurity_fun = kwargs['criterion'] if 'criterion' in kwargs else "squared_error"
-
-    @classmethod
-    def _get_impurity_fun(cls, imp):
-        """
-        Get the appropriate impurity function based on the criterion name.
-        
-        Parameters
-        ----------
-        imp : str or callable
-            The name of the impurity criterion or a callable function.
-            
-        Returns
-        -------
-        callable
-            The impurity function to use for evaluating splits.
-            
-        Raises
-        ------
-        Exception
-            If an unimplemented criterion is requested.
-        """
-        if imp == "squared_error":
-            return mean_squared_error
-        elif imp == "friedman_mse":
-            raise NotImplementedError("not implemented") # TODO: implement in DecisionTreeRegressor?
-        elif imp == "absolute_error":
-            return mean_absolute_error
-        elif imp == "poisson":
-            return mean_poisson_deviance
-        else:
-            return imp
-
-
-    @classmethod
-    def _impurity_fun(cls, impurity_fun, **x):
-        """
-        Apply the impurity function to the provided data.
-        
-        Parameters
-        ----------
-        impurity_fun : str or callable
-            The name of the impurity criterion or a callable function.
-        **x : dict
-            Arguments to pass to the impurity function.
-            
-        Returns
-        -------
-        float
-            The calculated impurity value.
-        """
-        f = cls._get_impurity_fun(impurity_fun)
-        return f(**x) if len(x["y_true"]) > 0 else 0 # TODO: check
-
-    def get_params(self, deep=True):
-        """
-        Get parameters for this estimator.
-        
-        Parameters
-        ----------
-        deep : bool, default=True
-            Not used, kept for API consistency.
-            
-        Returns
-        -------
-        dict
-            Parameter names mapped to their values.
-        """
-        return self.kwargs
-
-    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
-        """
-        Build a decision stump by fitting to the input data.
-
-        The method first tries to find the best split with numerical features using
-        scikit-learn's implementation, then checks if categorical features might provide
-        a better split.
-
-        Parameters
-        ----------
-        data : dict or array-like
-            Whole data set, as ``{data_type: array}``.
-        y : array-like of shape (n_samples,)
-            The target values (continuous values) of the whole data set.
-        idx : array-like, optional
-            Indices of samples to use for training. If None, all samples are used.
-        context : RuleTree, optional
-            Tree being built, used to cache the feature types.
-        data_type : str, optional
-            Data type to use. Defaults to the first supported type in data.
-        sample_weight : array-like of shape (n_samples,), optional
-            Sample weights of the whole data set.
-        check_input : bool, default=True
-            Whether to check input consistency.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-        """
-        X, _ = self._resolve_fit_data(data, data_type)
-        X = self._transform(X)
-        self._set_feature_types(X, context)
-
-        if idx is None:
-            idx = slice(None)
-
-        return self._fit_matrix(X[idx], y[idx], None if sample_weight is None else sample_weight[idx], check_input)
-
-    def _transform(self, X):
-        """Flatten time series and images into one feature per value."""
-        return X if X.ndim <= 2 else X.reshape(X.shape[0], -1)
-
-    def _fit_matrix(self, X, y, sample_weight=None, check_input=True):
-        """
-        Fit the stump on a feature matrix, using the feature types in ``numerical`` and ``categorical``.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The training input samples.
-        y : array-like of shape (n_samples,)
-            The target values (continuous values).
-        sample_weight : array-like of shape (n_samples,), optional
-            Sample weights.
-        check_input : bool, default=True
-            Whether to check input consistency.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-        """
-        best_info_gain = -float('inf')
-
-        if len(self.numerical) > 0:
-            super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
-            self.feature_original = [self.numerical[x] if x != -2 else x for x in self.tree_.feature]
-            self.threshold_original = self.tree_.threshold
-            self.n_node_samples = self.tree_.n_node_samples
-            best_info_gain = get_info_gain(self)
-
-            #no split
-            if len(self.feature_original) == 1:
-                raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
-
-            curr_pred = np.ones((len(y),)) * np.mean(y)
-            idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
-            idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
-            l_pred = np.ones((len(y[idx_l]),)) * np.mean(y[idx_l])
-            r_pred = np.ones((len(y[idx_r]),)) * np.mean(y[idx_r])
-            self.impurity = [
-                self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
-                self._impurity_fun(self.impurity_fun, y_true=y[idx_l], y_pred=l_pred),
-                self._impurity_fun(self.impurity_fun, y_true=y[idx_r], y_pred=r_pred),
-            ]
-            
-        self._fit_cat(X, y, best_info_gain)
-
-        return self
-
-    def _fit_cat(self, X, y, best_info_gain):
-        """
-        Find the best split using categorical features.
-        
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The training input samples.
-        y : array-like of shape (n_samples,)
-            The target values.
-        best_info_gain : float
-            Current best information gain from numerical features.
-        """
-        len_x = len(X)
-
-        if len(self.categorical) > 0 and best_info_gain != float('inf'):
-            for i in self.categorical:
-                for value in np.unique(X[:, i]):
-                    X_split = X[:, i:i+1] == value
-                    len_left = np.sum(X_split)
-                    if len_left == 0 or len_left == len_x:  # degenerate split, one side would be empty
-                        continue
-                    curr_pred = np.ones((len(y), ))*np.mean(y)
-                    l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
-                    r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
-
-                    info_gain = _get_info_gain(self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
-                                               self._impurity_fun(self.impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
-                                               self._impurity_fun(self.impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
-                                               len_x,
-                                               len_left,
-                                               len_x - len_left)
-
-                    if info_gain > best_info_gain:
-                        best_info_gain = info_gain
-                        self.feature_original = [i, -2, -2]
-                        self.threshold_original = np.array([value, -2, -2])
-                        self.is_categorical = True
-                        self.impurity = [
-                            self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
-                            self._impurity_fun(self.impurity_fun, y_true=y[X_split[:, 0]], y_pred=l_pred),
-                            self._impurity_fun(self.impurity_fun, y_true=y[~X_split[:, 0]], y_pred=r_pred),
-                        ]
-
-
-    def _apply_matrix(self, X):
-        """
-        Apply the decision stump to a feature matrix.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The input samples.
-
-        Returns
-        -------
-        y : array-like of shape (n_samples,)
-            The predicted node indices (1 for left node, 2 for right node).
-        """
-        if len(self.feature_original) < 3:
-            return np.ones(X.shape[0], dtype=int)
-
-        X_feature = X[:, self.feature_original[0]]
-        if not self.is_categorical:
-            return np.where(X_feature <= self.threshold_original[0], 1, 2)
-        else:
-            return np.where(X_feature == self.threshold_original[0], 1, 2)
-
-    def _update_statistics_matrix(self, X, y, sample_weight=None):
-        curr_pred = np.ones((len(y),)) * np.mean(y)
-        if self.is_categorical:
-            idx_l = X[:, self.feature_original[0]] == self.threshold_original[0]
-            idx_r = X[:, self.feature_original[0]] != self.threshold_original[0]
-        else:
-            idx_l = X[:, self.feature_original[0]] <= self.threshold_original[0]
-            idx_r = X[:, self.feature_original[0]] > self.threshold_original[0]
-        l_pred = np.ones((len(y[idx_l]),)) * np.mean(y[idx_l])
-        r_pred = np.ones((len(y[idx_r]),)) * np.mean(y[idx_r])
-        self.impurity = [
-            self._impurity_fun(self.impurity_fun, y_true=y, y_pred=curr_pred),
-            self._impurity_fun(self.impurity_fun, y_true=y[idx_l], y_pred=l_pred),
-            self._impurity_fun(self.impurity_fun, y_true=y[idx_r], y_pred=r_pred),
-        ]

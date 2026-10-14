@@ -7,7 +7,9 @@ import psutil
 from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.splitters.RegressionSplitter import RegressionSplitter
+from RuleTree.utils.data_utils import _get_info_gain
 from RuleTree.utils.define import MODEL_TYPE_REG
+from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric, privacy_metric_all
 
 
 class FairSplitter(RuleTreeBaseSplitter):
@@ -70,9 +72,6 @@ class FairSplitter(RuleTreeBaseSplitter):
         self.criterion = criterion
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
-        # the thresholds are evaluated by the functions of the Fair stump module
-        from RuleTree.stumps.regression.FairTreeStumpRegressor import _inner_loop_best_split
-
         best_info_gain = -float('inf')
         self.feature_, self.threshold_, self.is_categorical_, self.impurity_ = None, None, False, None
 
@@ -124,3 +123,176 @@ class FairSplitter(RuleTreeBaseSplitter):
 
     def update_statistics(self, X, y, sample_weight=None):
         self.impurity_ = RegressionSplitter._split_impurity(self.criterion, y, self.apply(X) == 1)
+
+
+def _check_balance(labels: np.ndarray, prot_attr: np.ndarray):
+    """
+    Check if a split satisfies balance (statistical parity) fairness constraint.
+
+    Parameters
+    ----------
+    labels : np.ndarray
+        Binary array indicating sample assignments (True for left node, False for right)
+    prot_attr : np.ndarray
+        Protected attribute values for each sample
+
+    Returns
+    -------
+    tuple
+        (is_fair, fairness_score) where is_fair is always True and
+        fairness_score is the complement of the balance metric (higher is better)
+    """
+    return True, 1 - balance_metric(labels, prot_attr)
+
+
+def _check_max_fairness_cost(labels: np.ndarray, prot_attr: np.ndarray, ideal_dist: dict):
+    """
+    Check if a split satisfies the maximum fairness cost constraint.
+
+    Parameters
+    ----------
+    labels : np.ndarray
+        Binary array indicating sample assignments (True for left node, False for right)
+    prot_attr : np.ndarray
+        Protected attribute values for each sample
+    ideal_dist : dict
+        Dictionary specifying the ideal distribution for different groups
+
+    Returns
+    -------
+    tuple
+        (is_fair, fairness_score) where is_fair is always True and
+        fairness_score is the maximum fairness cost (lower is better)
+    """
+    return True, max_fairness_cost(labels, prot_attr, ideal_dist)
+
+
+def _check_privacy(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict, categorical, use_t):
+    """
+    Check if a split satisfies privacy constraints (k-anonymity, l-diversity, t-closeness).
+
+    Parameters
+    ----------
+    X : np.ndarray
+        Input feature matrix
+    X_bool : np.ndarray
+        Binary array indicating sample assignments (True for left node, False for right)
+    sensible_attribute : int
+        Index of the sensitive attribute column in X
+    k_anonymity : int or float
+        Minimum group size required for k-anonymity
+    l_diversity : int or float
+        Minimum distinct values required for l-diversity
+    t_closeness : float
+        Maximum earth mover's distance allowed for t-closeness
+    strict : bool
+        If True, strictly enforce privacy constraints
+    categorical : set
+        Set of indices of categorical features
+    use_t : bool
+        Whether to use t-closeness in constraint calculations
+
+    Returns
+    -------
+    tuple
+        (is_fair, fairness_score) where is_fair indicates if privacy constraints are satisfied
+        and fairness_score is the normalized maximum privacy metric
+    """
+    can_split, k, l, t = privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_closeness, strict,
+                                        categorical, use_t)
+    if not use_t:
+        t = t_closeness
+
+    if not can_split:
+        return False, np.nan
+    return can_split, np.max(privacy_metric_all(k, k_anonymity, l, l_diversity, t, t_closeness))  # /3
+
+
+def _inner_loop_best_split(X: np.ndarray, y: np.ndarray, col_idx: int, thresholds: list, categorical: set, impurity_fun,
+                           penalty: str, sensible_attribute: int, penalization_weight: float, ideal_distribution: dict,
+                           k_anonymity, l_diversity, t_closeness, strict, use_t):
+    """
+    Find the best split for a feature column considering fairness constraints.
+
+    Parameters
+    ----------
+    X : np.ndarray
+        Input feature matrix
+    y : np.ndarray
+        Target values
+    col_idx : int
+        Index of the feature column to split on
+    thresholds : list
+        List of candidate threshold values to evaluate
+    categorical : set
+        Set of indices of categorical features
+    impurity_fun : callable
+        Function to calculate impurity (e.g., mse, mae)
+    penalty : str
+        Type of fairness constraint to apply ("balance", "mfc", or "privacy")
+    sensible_attribute : int
+        Index of the sensitive attribute column
+    penalization_weight : float
+        Weight for the fairness penalty term
+    ideal_distribution : dict
+        Ideal distribution when using "mfc" penalty
+    k_anonymity, l_diversity, t_closeness : Various types
+        Privacy constraint parameters when using "privacy" penalty
+    strict : bool
+        Whether to strictly enforce privacy constraints
+    use_t : bool
+        Whether to use t-closeness in privacy constraints
+
+    Returns
+    -------
+    tuple
+        (best_info_gain, best_threshold, col_idx) representing the best split found
+    """
+    len_x = len(X)
+
+    best_info_gain = -np.inf
+    best_threshold = -1
+    for value in thresholds:
+        if col_idx in categorical:
+            X_split = X[:, col_idx:col_idx + 1] == value
+        else:
+            X_split = X[:, col_idx:col_idx + 1] <= value
+
+        if np.sum(X_split) * np.sum(~X_split) == 0:
+            continue
+
+        if penalty == "balance":
+            ok_to_split, penalty_value = _check_balance(X_split[:, 0], X[:, sensible_attribute])
+        elif penalty == "mfc":
+            ok_to_split, penalty_value = _check_max_fairness_cost(X_split[:, 0], X[:, sensible_attribute],
+                                                                  ideal_distribution)
+        else:
+            ok_to_split, penalty_value = _check_privacy(X, X_split, sensible_attribute, k_anonymity, l_diversity,
+                                                        t_closeness, strict, categorical, use_t)
+        if not ok_to_split:
+            continue
+
+        len_left = np.sum(X_split)
+        curr_pred = np.ones((len(y),)) * np.mean(y)
+
+        l_pred = np.ones((len(y[X_split[:, 0]]),)) * np.mean(y[X_split[:, 0]])
+        r_pred = np.ones((len(y[~X_split[:, 0]]),)) * np.mean(y[~X_split[:, 0]])
+
+        info_gain = _get_info_gain(RegressionSplitter._impurity_fun(impurity_fun, y_true=y, y_pred=curr_pred),
+                                   RegressionSplitter._impurity_fun(impurity_fun, y_true=y[X_split[:, 0]],
+                                                                        y_pred=l_pred),
+                                   RegressionSplitter._impurity_fun(impurity_fun, y_true=y[~X_split[:, 0]],
+                                                                        y_pred=r_pred),
+                                   len_x,
+                                   len_left,
+                                   len_x - len_left)
+
+        info_gain = 1 / (1 + np.exp(-info_gain))
+
+        info_gain -= info_gain * (penalty_value * penalization_weight)
+
+        if info_gain > best_info_gain:
+            best_info_gain = info_gain
+            best_threshold = value
+
+    return best_info_gain, best_threshold, col_idx

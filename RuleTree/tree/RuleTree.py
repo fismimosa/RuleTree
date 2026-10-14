@@ -25,7 +25,7 @@ from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.utils.data_utils import get_info_gain, json_numpy_encoder
+from RuleTree.utils.data_utils import json_numpy_encoder
 
 
 class RuleTree(RuleTreeBase, ABC):
@@ -101,11 +101,11 @@ class RuleTree(RuleTreeBase, ABC):
         it supports.
 
         Raises:
-            TypeError: If an entry is not a stump compatible with the tree.
+            TypeError: If an entry is not a stump for the task of the tree (see _get_stumps_task).
             ValueError: If an entry is malformed, a stump does not support the requested data types, or
                 the probabilities do not sum to 1.
         """
-        class_to_check = self._get_stumps_base_class()
+        task = self._get_stumps_task()
         entries = self.base_stumps if isinstance(self.base_stumps, list) else [self.base_stumps]
         if len(entries) == 0:
             raise ValueError("base_stumps is empty.")
@@ -121,8 +121,8 @@ class RuleTree(RuleTreeBase, ABC):
                 raise ValueError(f"Invalid base_stumps entry {entry!r}: expected a stump, (probability, stump) "
                                  f"or (probability, stump, data_types).")
 
-            if not isinstance(stump, RuleTreeBaseStump) or not isinstance(stump, class_to_check):
-                raise TypeError(f"{stump!r} is not a {class_to_check.__name__} stump.")
+            if not isinstance(stump, RuleTreeBaseStump) or stump.task != task:
+                raise TypeError(f"{stump!r} is not a stump for {task} (task {getattr(stump, 'task', None)}).")
 
             if data_types is not None:
                 data_types = (data_types,) if isinstance(data_types, str) else tuple(data_types)
@@ -381,7 +381,7 @@ class RuleTree(RuleTreeBase, ABC):
                     stump = sklearn.clone(stump)
                     stump.fit(data, y, idx=idx, context=self, data_type=data_type, sample_weight=sample_weight)
 
-                    info_gains.append(get_info_gain(stump))
+                    info_gains.append(stump.gain_)
                     clfs.append(stump)
                 except NoSplitFoundWarning:
                     continue
@@ -608,14 +608,13 @@ class RuleTree(RuleTreeBase, ABC):
         pass
 
     @abstractmethod
-    def _get_stumps_base_class(self):
+    def _get_stumps_task(self) -> str:
         """
-        Get the base class for stumps.
+        Task of the stumps of the tree (the task of their splitter).
 
         Returns:
-            type: Base class for stumps.
+            str: MODEL_TYPE_CLF or MODEL_TYPE_REG.
         """
-        return RuleTreeBaseStump
 
     def _get_tree_paths(self, current_node = None):
         """

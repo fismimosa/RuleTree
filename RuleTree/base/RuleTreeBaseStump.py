@@ -9,7 +9,6 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 import numpy as np
-import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from RuleTree.utils.define import DATA_TYPE_TABULAR
@@ -36,13 +35,13 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
     Subclasses that work on a 2D matrix can implement ``_transform`` (data of the stump's data
     type -> matrix) and ``_apply_matrix`` (matrix -> 1/2 labels) and reuse :meth:`apply` and
-    :meth:`update_statistics`.
+    :meth:`update_statistics`. The stumps of the library are made of a transformer and a splitter
+    (see RuleTree.stumps.Stump).
 
     Attributes:
         supported_data_types (tuple): Data types the stump can be fitted on.
+        task (str): Kind of target, MODEL_TYPE_CLF (classification) or MODEL_TYPE_REG (regression).
         data_type_ (str): Data type the stump has been fitted on.
-        numerical (list): List of indices for numerical features.
-        categorical (list): List of indices for categorical features.
     """
 
     supported_data_types = (DATA_TYPE_TABULAR,)
@@ -106,8 +105,12 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         raise NotImplementedError("The dict_to_node method must be implemented in subclasses.")
 
-    @classmethod
-    def supports(cls, data_type:str) -> bool:
+    @property
+    def task(self) -> str:
+        """Kind of target of the stump: MODEL_TYPE_CLF or MODEL_TYPE_REG."""
+        raise NotImplementedError(f"{self.__class__.__name__} must define its task.")
+
+    def supports(self, data_type:str) -> bool:
         """
         Checks if the given data type is supported by this model.
 
@@ -117,7 +120,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Returns:
             bool: True if supported, False otherwise.
         """
-        return data_type in cls.supported_data_types
+        return data_type in self.supported_data_types
 
     def apply(self, data, idx=None) -> np.ndarray:
         """
@@ -194,19 +197,6 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """Return the data of the type the stump has been fitted on."""
         return np.asarray(data[self.data_type_]) if isinstance(data, dict) else np.asarray(data)
 
-    def _set_feature_types(self, X: np.ndarray, context=None) -> None:
-        """
-        Set ``numerical`` and ``categorical`` for X, the data of the stump's data type (all the
-        instances). The result is cached in the tree, so it is computed once per data type.
-        """
-        cache = self._get_cache(context)
-        key = ("feature_types", self.data_type_)
-        if key not in cache:
-            self.feature_analysis(X, None)
-            cache[key] = (self.numerical, self.categorical)
-
-        self.numerical, self.categorical = cache[key]
-
     def _get_cache(self, context) -> dict:
         """
         Cache shared by the stumps of this class in the tree ``context`` (namespace: the class name).
@@ -217,46 +207,6 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     def _restore_data_type(self, node_dict: dict) -> None:
         """Set ``data_type_`` from a dictionary created by node_to_dict (older ones have none)."""
         self.data_type_ = node_dict.get("data_type", self.supported_data_types[0])
-
-    def _restore_split(self, node_dict: dict) -> None:
-        """
-        Set the split (``feature_original``, ``threshold_original``, ``is_categorical``, ``data_type_``)
-        from a dictionary created by node_to_dict. Unfitted stumps have no split.
-        """
-        self.feature_original = None
-        if 'feature_idx' in node_dict:
-            self.feature_original = np.array([node_dict['feature_idx'], -2, -2], dtype=int)
-
-        self.threshold_original = None
-        if 'threshold' in node_dict:
-            threshold = node_dict['threshold']
-            # categorical splits compare with a value of the feature, e.g. a string
-            self.threshold_original = np.array([threshold, -2, -2], dtype=float if _is_number(threshold) else object)
-
-        self.is_categorical = node_dict.get('is_categorical', False)
-        self._restore_data_type(node_dict)
-
-    def feature_analysis(self, X:np.ndarray, y:np.ndarray) -> None:
-        """
-        Analyzes features of input data and categorizes them into numerical and categorical types.
-
-        Args:
-            X (pd.DataFrame): Input feature matrix.
-            y (pd.Series): Target labels.
-
-        Sets the following attributes:
-            self.numerical (list): Indices of numerical features.
-            self.categorical (list): Indices of categorical features.
-        """
-        if np.issubdtype(np.asarray(X).dtype, np.number):  # fast path, e.g. for time series and images
-            self.numerical = list(range(X.shape[1]))
-            self.categorical = []
-            return
-
-        dtypes = pd.DataFrame(X).infer_objects().dtypes
-        self.numerical = [i for i, x in enumerate(dtypes) if pd.api.types.is_numeric_dtype(x)]
-        self.categorical = [i for i, x in enumerate(dtypes) if not pd.api.types.is_numeric_dtype(x)]
-
 
 def _is_number(value) -> bool:
     return isinstance(value, (int, float, np.number)) and not isinstance(value, bool)

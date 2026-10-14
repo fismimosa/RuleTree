@@ -1,40 +1,50 @@
-import copy
-
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier
+
+from RuleTree.stumps.Stump import Stump
+from RuleTree.stumps.splitters.ClassificationSplitter import ClassificationSplitter
+from RuleTree.stumps.transformers.MatrixTransformer import MatrixTransformer
 
 
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS
-
-from RuleTree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
-
-
-class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
+class DecisionTreeStumpClassifier(Stump):
     """
-    A decision tree stump classifier that extends sklearn's DecisionTreeClassifier and RuleTreeBaseStump.
+    A decision tree stump for classification: a single split on one feature.
 
-    A decision tree stump is a decision tree with a maximum depth of 1 (a single split), making
-    it a simple interpretable model. This implementation supports both numerical and categorical features,
-    provides methods for rule extraction, and can be used as a building block in more complex ensembles.
+    Numerical features are split with a threshold (``x <= t``), categorical features on a value
+    (``x == v``): the split with the highest information gain is selected. Time series and images
+    are flattened into one feature per value.
 
-    The class handles both numerical splits (using ≤ comparisons) and categorical splits (using = comparisons),
-    and automatically selects the feature and split that maximizes information gain.
+    It is made of a MatrixTransformer and a ClassificationSplitter.
 
-    Attributes:
-        is_categorical (bool): Whether the selected split is categorical.
-        kwargs (dict): Additional arguments passed to DecisionTreeClassifier.
-        threshold_original (array): Split threshold values.
-        feature_original (array): Feature indices used for splits.
-        impurity_fun (function): Function used to calculate impurity (gini, entropy, etc.).
+    Parameters
+    ----------
+    criterion : {'gini', 'entropy'}, default='gini'
+        Impurity measure.
+    min_samples_leaf, min_weight_fraction_leaf, max_features, random_state, min_impurity_decrease, class_weight
+        As in sklearn.tree.DecisionTreeClassifier, for the numerical features. With random_state=None,
+        ties between features with the same gain are broken at random.
     """
 
-    # time series and images are flattened into one feature per value
-    supported_data_types = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
+    def __init__(self, criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
+                 random_state=None, min_impurity_decrease=0.0, class_weight=None):
+        self.criterion = criterion
+        self.min_samples_leaf = min_samples_leaf
+        self.min_weight_fraction_leaf = min_weight_fraction_leaf
+        self.max_features = max_features
+        self.random_state = random_state
+        self.min_impurity_decrease = min_impurity_decrease
+        self.class_weight = class_weight
 
-    # sklearn's DecisionTreeClassifier.apply comes first in the MRO
-    apply = RuleTreeBaseStump.apply
+    def _splitter_params(self) -> dict:
+        return dict(criterion=self.criterion, min_samples_leaf=self.min_samples_leaf,
+                    min_weight_fraction_leaf=self.min_weight_fraction_leaf, max_features=self.max_features,
+                    random_state=self.random_state, min_impurity_decrease=self.min_impurity_decrease,
+                    class_weight=self.class_weight)
+
+    def _make_transformer(self):
+        return MatrixTransformer()
+
+    def _make_splitter(self):
+        return ClassificationSplitter(**self._splitter_params())
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
@@ -103,297 +113,3 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         }
 
         return rule
-
-    def node_to_dict(self):
-        """
-        Serializes the current node into a dictionary representation.
-
-        This method captures all information necessary to reconstruct the stump,
-        including feature index, threshold, metadata, and additional parameters.
-
-        Returns:
-            dict: A dictionary containing the node's attributes and metadata with the following keys:
-                - All fields from the get_rule() method
-                - stump_type: The fully qualified class name
-                - impurity: Node impurity value
-                - args: Dictionary with constructor arguments and parameters
-                - split: Dictionary with split information
-        """
-        if self.feature_original is None:
-            return {
-                "stump_type": self.__class__.__module__,
-                "args": self.kwargs,
-            }
-
-        rule = self.get_rule(float_precision=None)
-
-        rule["stump_type"] = self.__class__.__module__
-        rule["data_type"] = self.data_type_
-        rule["impurity"] = self.impurity
-
-        rule["args"] = self.kwargs
-
-        return rule
-
-    @classmethod
-    def dict_to_node(cls, node_dict, X=None):
-        """
-        Deserializes a dictionary into a DecisionTreeStumpClassifier node.
-
-        This is essentially the inverse operation of node_to_dict(), recreating
-        a stump instance from a serialized dictionary representation.
-
-        Args:
-            node_dict (dict): Dictionary containing node attributes, typically created
-                             with the node_to_dict() method.
-            X (array-like, optional): Feature matrix for additional context.
-                                     Not typically used but available for subclass implementations.
-
-        Returns:
-            DecisionTreeStumpClassifier: An instance of the class initialized with the node's attributes.
-
-        Raises:
-            AssertionError: If required fields are missing from the dictionary.
-        """
-        self = cls(**copy.deepcopy(node_dict.get("args", {})))
-        self._restore_split(node_dict)
-        self.impurity = node_dict.get("impurity", np.nan)
-
-        return self
-
-
-    def __init__(self, **kwargs):
-        """
-        Initializes the DecisionTreeStumpClassifier.
-
-        This constructor sets up the decision tree stump with default values and
-        interprets the provided keyword arguments for configuration.
-
-        Args:
-            **kwargs: Additional arguments for the DecisionTreeClassifier. Common parameters include:
-                - criterion (str): Function to measure the quality of a split ('gini' or 'entropy')
-                - min_samples_leaf (int): Minimum samples required to be at a leaf node
-                - class_weight (dict or 'balanced'): Weights associated with classes
-                - random_state (int): Seed for the random number generator
-        """
-        if 'max_depth' not in kwargs:
-            kwargs['max_depth'] = 1
-
-        super().__init__(**kwargs)
-
-        self.is_categorical = None
-
-        self.kwargs = kwargs
-
-        self.threshold_original = None
-        self.feature_original = None
-
-        if 'criterion' not in kwargs or kwargs['criterion'] == "gini":
-            self.impurity_fun = gini
-        elif kwargs['criterion'] == "entropy":
-            self.impurity_fun = entropy
-        else:
-            self.impurity_fun = kwargs['criterion']
-
-    def get_params(self, deep=True):
-        """
-        Returns the parameters of the classifier.
-
-        This method overrides the parent method to ensure proper parameter retrieval
-        for hyperparameter tuning and model inspection.
-
-        Args:
-            deep (bool, optional): If True, will return the parameters for this estimator and contained subobjects.
-                                  Default is True.
-
-        Returns:
-            dict: A dictionary of parameters, with parameter names mapped to their values.
-        """
-        return self.kwargs
-
-    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
-        """
-        Fits the decision tree stump to the provided data.
-
-        This method finds the optimal single-feature split that maximizes information gain
-        for both numerical and categorical features.
-
-        Args:
-            data (dict | array-like): Whole data set, as ``{data_type: array}``.
-            y (array-like): Target vector of the whole data set.
-            idx (array-like, optional): Indices of the instances to fit on. If None, all samples are used.
-            context (RuleTree, optional): Tree being built, used to cache the feature types.
-            data_type (str, optional): Data type to use. Defaults to the first supported type in data.
-            sample_weight (array-like, optional): Sample weights of the whole data set.
-                                                 If None, samples are equally weighted.
-            check_input (bool, optional): Whether to check the input data. Default is True.
-
-        Returns:
-            DecisionTreeStumpClassifier: The fitted classifier (self).
-        """
-        X, _ = self._resolve_fit_data(data, data_type)
-        X = self._transform(X)
-        self._set_feature_types(X, context)
-
-        if idx is None:
-            idx = slice(None)
-
-        return self._fit_matrix(X[idx], y[idx], None if sample_weight is None else sample_weight[idx], check_input)
-
-    def _transform(self, X):
-        """Flatten time series and images into one feature per value."""
-        return X if X.ndim <= 2 else X.reshape(X.shape[0], -1)
-
-    def _fit_matrix(self, X, y, sample_weight=None, check_input=True):
-        """
-        Fits the stump on a feature matrix, using the feature types in ``numerical`` and ``categorical``.
-
-        Args:
-            X (array-like): Feature matrix of shape (n_samples, n_features).
-            y (array-like): Target vector of shape (n_samples,).
-            sample_weight (array-like, optional): Sample weights of shape (n_samples,).
-            check_input (bool, optional): Whether to check the input data. Default is True.
-
-        Returns:
-            DecisionTreeStumpClassifier: The fitted classifier (self).
-        """
-        len_x = len(X)
-
-        class_weight = None
-        if self.class_weight == "balanced":
-            class_weight = {}
-            for class_label in np.unique(y):
-                class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
-
-        best_info_gain = -float('inf')
-
-        if len(self.numerical) > 0:
-            super().fit(X[:, self.numerical], y, sample_weight=sample_weight, check_input=check_input)
-            self.feature_original = [self.numerical[x] if x != -2 else x for x in self.tree_.feature]
-            self.threshold_original = self.tree_.threshold
-            best_info_gain = get_info_gain(self)
-
-            # no split
-            if len(self.feature_original) == 1:
-                raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
-
-            self.impurity = [
-                self.impurity_fun(y, sample_weight, class_weight),
-                self.impurity_fun(y[X[:, self.feature_original[0]] <= self.threshold_original[0]], None, class_weight),
-                self.impurity_fun(y[X[:, self.feature_original[0]] > self.threshold_original[0]], None, class_weight)
-            ]
-
-        self._fit_cat(X, y, best_info_gain)
-
-        feat = self.feature_original[0]
-        X_feat = X[:, feat]
-        if len(np.unique(X_feat)) == 2 and not self.is_categorical:
-            self.threshold_original = np.array([(X_feat.max()+X_feat.min())/2, -2, -2])
-
-        return self
-
-    def _fit_cat(self, X, y, best_info_gain, sample_weight=None):
-        """
-        Fits the stump for categorical features.
-
-        This method evaluates categorical splits and updates the model if a better split
-        (higher information gain) is found compared to the best numerical split.
-
-        Args:
-            X (array-like): Feature matrix of shape (n_samples, n_features).
-            y (array-like): Target vector of shape (n_samples,).
-            best_info_gain (float): Best information gain observed so far from numerical splits.
-            sample_weight (array-like, optional): Sample weights of shape (n_samples,).
-                                                 If None, samples are equally weighted.
-
-        """
-        if len(self.categorical) > 0 and best_info_gain != float('inf'):
-            len_x = len(X)
-
-            class_weight = None
-            if self.class_weight == "balanced":
-                class_weight = {}
-                for class_label in np.unique(y):
-                    class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
-
-
-            for i in self.categorical:
-                for value in np.unique(X[:, i]):
-                    X_split = X[:, i:i+1] == value
-
-                    len_left = np.sum(X_split)
-
-                    if sample_weight is not None:
-                        if _my_counts(y, sample_weight) - (_my_counts(y[X_split[:, 0]], sample_weight)
-                                                           + _my_counts(y[~X_split[:, 0]], sample_weight)) <= 0:
-                            continue
-
-                        if sum(sample_weight[X_split[:, 0]]) < self.min_weight_fraction_leaf \
-                            or sum(sample_weight[~X_split[:, 0]]) < self.min_weight_fraction_leaf:
-                            continue
-
-                        if ((_my_counts(y[X_split[:, 0]], sample_weight) <= 0).any()
-                                or (_my_counts(y[~X_split[:, 0]], sample_weight) <= 0).any()):
-                            continue
-
-                        info_gain = _get_info_gain(self.impurity_fun(y, sample_weight, class_weight),
-                                                   self.impurity_fun(y[X_split[:, 0]],
-                                                                     sample_weight[X_split[:, 0]],
-                                                                     class_weight),
-                                                   self.impurity_fun(y[~X_split[:, 0]],
-                                                                     sample_weight[~X_split[:, 0]],
-                                                                     class_weight),
-                                                   len_x,
-                                                   len_left,
-                                                   len_x-len_left)
-                    else:
-                        info_gain = _get_info_gain(self.impurity_fun(y, sample_weight, class_weight),
-                                                   self.impurity_fun(y[X_split[:, 0]], None, class_weight),
-                                                   self.impurity_fun(y[~X_split[:, 0]], None, class_weight),
-                                                   len_x,
-                                                   len_left,
-                                                   len_x - len_left)
-
-                    if info_gain > best_info_gain:
-                        best_info_gain = info_gain
-                        self.feature_original = [i, -2, -2]
-                        self.threshold_original = np.array([value, -2, -2])
-                        self.is_categorical = True
-                        self.impurity = [
-                            self.impurity_fun(y, sample_weight, class_weight),
-                            self.impurity_fun(y[X_split[:, 0]], None, class_weight),
-                            self.impurity_fun(y[~X_split[:, 0]], None, class_weight)
-                        ]
-
-
-    def _apply_matrix(self, X):
-        if len(self.feature_original) < 3:
-            return np.ones(X.shape[0], dtype=int)
-
-        X_feature = X[:, self.feature_original[0]]
-        if not self.is_categorical:
-            return np.where(X_feature <= self.threshold_original[0], 1, 2)
-        else:
-            return np.where(X_feature == self.threshold_original[0], 1, 2)
-
-    def _update_statistics_matrix(self, X, y, sample_weight=None):
-        len_x = len(X)
-
-        class_weight = None
-        if self.class_weight == "balanced":
-            class_weight = {}
-            for class_label in np.unique(y):
-                class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
-
-        if self.is_categorical:
-            self.impurity = [
-                self.impurity_fun(y, sample_weight, class_weight),
-                self.impurity_fun(y[X[:, self.feature_original[0]] == self.threshold_original[0]], None, class_weight),
-                self.impurity_fun(y[X[:, self.feature_original[0]] != self.threshold_original[0]], None, class_weight)
-            ]
-        else:
-            self.impurity = [
-                self.impurity_fun(y, sample_weight, class_weight),
-                self.impurity_fun(y[X[:, self.feature_original[0]] <= self.threshold_original[0]], None, class_weight),
-                self.impurity_fun(y[X[:, self.feature_original[0]] > self.threshold_original[0]], None, class_weight)
-            ]
