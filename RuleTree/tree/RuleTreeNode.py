@@ -396,7 +396,8 @@ class RuleTreeNode:
 
         else:
             labels, leaves, proba = (
-                np.full(n, fill_value=-1, dtype=object if type(self.prediction) is str else type(self.prediction)),
+                # isinstance also matches np.str_: a fixed-size string dtype would truncate longer labels
+                np.full(n, fill_value=-1, dtype=object if isinstance(self.prediction, str) else type(self.prediction)),
                 np.zeros(n, dtype=object),
                 np.ones((
                     n,
@@ -440,12 +441,12 @@ class RuleTreeNode:
         """
         if self.node_id == node_id:
             return self
-        elif self.is_leaf():
-            return None
-        elif self.node_l is not None:
-            return self.node_l.get_node_by_id(node_id)
-        elif self.node_r is not None:
-            return self.node_r.get_node_by_id(node_id)
+
+        for child in (self.node_l, self.node_r):
+            if child is not None:
+                node = child.get_node_by_id(node_id)
+                if node is not None:
+                    return node
 
         return None
 
