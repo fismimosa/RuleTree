@@ -92,7 +92,9 @@ class TabularShapelets(TransformerMixin):
         self : TabularShapelets
             Returns self.
         """
+        # as in Shapelets.fit: the selection also uses numpy's global random generator
         random.seed(self.random_state)
+        np.random.seed(self.random_state)
 
         n_ts_for_selection = self.n_ts_for_selection
         if isinstance(n_ts_for_selection, float):
