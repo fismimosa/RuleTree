@@ -461,6 +461,7 @@ def entropy(x, sample_weight:np.ndarray=None, class_weight:dict=None):
     counts = _my_counts(x, sample_weight=sample_weight, class_weight=class_weight)
 
     p_j = counts/sum(counts)
+    p_j = p_j[p_j > 0]  # 0 * log(0) = 0: classes without instances (e.g. with class_weight)
     p_j_log = np.log2(p_j)
 
     return - p_j @ p_j_log

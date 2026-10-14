@@ -1,4 +1,5 @@
 import json
+import warnings
 
 import numpy as np
 import pytest
@@ -6,7 +7,7 @@ import sklearn
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.splitters import ClassificationSplitter, FairSplitter, RegressionSplitter, XGBoostSplitter
-from RuleTree.utils.data_utils import json_numpy_encoder
+from RuleTree.utils.data_utils import entropy, json_numpy_encoder
 from RuleTree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 # column 0: noise, column 1: separates the classes at 5, column 2: categorical, "a" for the class 1
@@ -98,3 +99,14 @@ def test_parameters():
 
     assert sklearn.clone(splitter).get_params() == splitter.get_params()
     assert splitter.get_params()["min_samples_leaf"] == 3
+
+
+def test_entropy_with_classes_without_instances():
+    """With class_weight, the impurity also counts the classes absent from the node."""
+    y = np.array([0, 0, 1])
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        impurity = entropy(y, None, {0: 1.0, 1: 1.0, 2: 1.0})
+
+    assert impurity == pytest.approx(entropy(y))
