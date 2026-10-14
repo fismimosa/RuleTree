@@ -2,8 +2,7 @@
 
 import numpy as np
 
-from RuleTree.stumps.classification import DecisionTreeStumpClassifier
-from RuleTree.stumps.regression import DecisionTreeStumpRegressor
+from RuleTree.stumps.transformers import MatrixTransformer
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 
 
@@ -24,45 +23,46 @@ def get_nodes_in_path(leaf_node_id: str):
     return [leaf_node_id[:i] for i in range(1, len(leaf_node_id))]
 
 
-def get_feature_node_matrix(rules: dict[str, RuleTreeNode]) -> np.ndarray:
+def get_feature_node_matrix(rules: dict[str, RuleTreeNode], n_features: int) -> np.ndarray:
     """
-    Matrix of the features used by the splits: entry (feature, rule) is 1 if the rule uses the feature.
+    Feature of each split, as a matrix: entry (feature, rule) is 1 if the rule splits on the feature.
+
+    Together with :func:`get_thresholds_matrix`, the splits of all the rules are evaluated at once:
+    ``X @ A <= B`` is True where an instance satisfies a rule.
 
     Parameters
     ----------
     rules : dict
-        Node id -> internal RuleTreeNode, e.g. RuleTree.get_predicates().
+        Node id -> internal RuleTreeNode, e.g. ``RuleTree.get_predicates()``. The splits must be
+        thresholds on columns of tabular data.
+    n_features : int
+        Number of features of the data.
 
     Returns
     -------
     feature_matrix : numpy.ndarray of shape (n_features, n_rules)
 
-    Notes
-    -----
-    Reads the number of features from the attribute ``n_features`` of the nodes, which the trees do
-    not set: it must be set on the nodes before calling this function.
+    Raises
+    ------
+    ValueError
+        If a split is not a threshold on a column of the data.
     """
-    num_rules = len(rules)
-    num_features = list(rules.values())[0].n_features
-    feature_matrix = np.zeros((num_features, num_rules), dtype=int)
-
-    for idx_rule, (rule_id, rule) in enumerate(rules.items()):
-        for feature_idx in rule.stump.feature_original:
-            if feature_idx >= 0:
-                feature_matrix[feature_idx, idx_rule] = 1
+    feature_matrix = np.zeros((n_features, len(rules)), dtype=int)
+    for idx_rule, rule in enumerate(rules.values()):
+        feature_matrix[_split_column(rule), idx_rule] = 1
 
     return feature_matrix
 
 
 def get_thresholds_matrix(rules: dict[str, RuleTreeNode]) -> np.ndarray:
     """
-    Threshold of each split, for univariate decision tree stumps.
+    Threshold of each split (see :func:`get_feature_node_matrix`).
 
     Parameters
     ----------
     rules : dict
-        Node id -> internal RuleTreeNode with a DecisionTreeStumpClassifier or
-        DecisionTreeStumpRegressor, e.g. RuleTree.get_predicates().
+        Node id -> internal RuleTreeNode, e.g. ``RuleTree.get_predicates()``. The splits must be
+        thresholds on columns of tabular data.
 
     Returns
     -------
@@ -71,25 +71,20 @@ def get_thresholds_matrix(rules: dict[str, RuleTreeNode]) -> np.ndarray:
     Raises
     ------
     ValueError
-        If a node has another kind of stump.
-
-    Notes
-    -----
-    As get_feature_node_matrix, requires the attribute ``n_features`` on the nodes.
+        If a split is not a threshold on a column of the data.
     """
-    num_rules = len(rules)
-    num_features = list(rules.values())[0].n_features
-    thresholds_matrix = np.zeros((num_features, num_rules), dtype=float)
+    for rule in rules.values():
+        _split_column(rule)
 
-    for idx_rule, (rule_id, rule) in enumerate(rules.items()):
-        if type(rule.stump) not in [DecisionTreeStumpClassifier, DecisionTreeStumpRegressor]:
-            raise ValueError(f"Unsupported rule stump type: {type(rule)}")
+    return np.array([rule.stump.threshold_original for rule in rules.values()], dtype=float)
 
-        for feature_idx, threshold in zip(rule.stump.feature_original, rule.stump.threshold_original):
-            if feature_idx >= 0:
-                thresholds_matrix[feature_idx, idx_rule] = threshold
 
-    return np.sum(thresholds_matrix, axis=0)
+def _split_column(rule: RuleTreeNode) -> int:
+    """Column of the data split by a rule, checking that the split is a threshold on that column."""
+    feature = rule.stump.feature_original
+    if not isinstance(rule.stump.transformer_, MatrixTransformer) or rule.stump.is_categorical:
+        raise ValueError(f"The split of node {rule.node_id} is not a threshold on a column of the data.")
+    return int(feature)
 
 
 def get_leaf_internal_node_matrix(leaf_nodes: dict[str, RuleTreeNode]) -> [np.ndarray, list]:
@@ -150,32 +145,32 @@ def get_leaf_prediction_matrix(leaf_nodes: dict[str, RuleTreeNode], return_proba
 
     return leaf_prediction_matrix
 
-def _eval_rule(X: np.ndarray, rule: RuleTreeNode, return_probababilities=False):
+def _eval_rule(X: np.ndarray, rule: RuleTreeNode) -> np.ndarray:
     """
-    Evaluate the split of an internal node.
+    Apply the split of an internal node to the instances of X.
 
     Parameters
     ----------
     X : numpy.ndarray
-        Data.
+        Data of the type used by the split.
     rule : RuleTreeNode
         Internal node.
-    return_probababilities : bool, default=False
-        Not used.
+
+    Returns
+    -------
+    labels : numpy.ndarray of shape (n_samples,)
+        1 for the instances that go to the left child, 2 for the ones that go to the right child.
 
     Raises
     ------
     ValueError
         If the node is a leaf.
-
-    Notes
-    -----
-    Calls ``stump.predict``, which the stumps do not implement (they implement ``apply``).
     """
     if rule.is_leaf():
         raise ValueError("The rule is a leaf node, cannot evaluate.")
 
-    rule.stump.predict(X)
+    return rule.stump.apply(X)
+
 
 def xgboost_similarity_score_regression(residuals:np.ndarray, cover:int, _lambda:int=0) -> float:
     """

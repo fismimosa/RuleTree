@@ -405,43 +405,22 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         Returns
         -------
         trees : dict
-            (feature, threshold) of the split -> RuleTreeClassifier.
+            (feature, threshold) of the split -> RuleTreeClassifier with that split as root.
         """
         trees = {}
-      
-        for k, v in balanced_nodes.items():
-            rt = self.__class__()
-            rt.classes_ = self.classes_
-            
-            node = copy.deepcopy(v[0])
-            node_l = copy.deepcopy(node.node_l)
-            node_r = copy.deepcopy(node.node_r)
-                        
-            feat = tuple(node.stump.feature_original)
+        for node, _ in balanced_nodes.values():
+            tree = self.__class__(**self.get_params(deep=False))
+            tree.classes_, tree.n_classes_ = self.classes_, self.n_classes_
 
-            thr = (node.stump.threshold_original,)
-            
-            rt.root = node
-            rt.root.node_l = node_l
-            rt.root.node_r = node_r
-            
-            rt.root.node_l.make_leaf()
-            rt.root.node_r.make_leaf()
-            
-            rt.root.node_id, rt.root.node_l.node_id, rt.root.node_r.node_id = 'R', 'Rl', 'Rr'
-            
+            tree.root = copy.deepcopy(node, memo={id(node.parent): None})  # the subtree, without the ancestors
+            tree.root.node_l.make_leaf()
+            tree.root.node_r.make_leaf()
+            tree.root.node_id, tree.root.node_l.node_id, tree.root.node_r.node_id = 'R', 'Rl', 'Rr'
 
-            trees[(feat, thr)] = rt
-            
+            trees[(node.stump.feature_original, node.stump.threshold_original)] = tree
+
         return trees
-            
-        
-        
-    
-    
 
-        
-    
     @classmethod
     def complete_tree(cls, node, X, y, n_classes_):
         """

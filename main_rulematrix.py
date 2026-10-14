@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     rt.export_graphviz()
 
-    A = get_feature_node_matrix(predicates)
+    A = get_feature_node_matrix(predicates, X.shape[1])
     B = get_thresholds_matrix(predicates)
     C, _ = get_leaf_internal_node_matrix(leaf_nodes)
     D = np.copy(C)
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     D = np.sum(D, axis=0)
     E = get_leaf_prediction_matrix(leaf_nodes, return_proba=True)
 
-    y_pred_matrix = (((X_test @ A < B) @ C) == D) @ E
+    y_pred_matrix = (((X_test @ A <= B) @ C) == D) @ E
 
     y_pred_matrix = rt.classes_[np.argmax(y_pred_matrix, axis=1)]
 
