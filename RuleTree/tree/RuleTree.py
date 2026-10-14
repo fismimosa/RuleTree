@@ -8,6 +8,7 @@ for handling custom stumps and local interpretation.
 import heapq
 import importlib
 import json
+import numbers
 import random
 import traceback
 import warnings
@@ -19,6 +20,7 @@ from typing import Optional
 import numpy as np
 import sklearn
 from sklearn.base import ClassifierMixin
+from sklearn.utils import check_random_state
 from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory
 
@@ -74,7 +76,8 @@ class RuleTree(RuleTreeBase, ABC):
                   By default, a stump is used on every data type it supports. The probability of a stump
                   is split equally among its data types.
             stump_selection (str): Stump selection strategy ('random' or 'best').
-            random_state (int): Random seed for reproducibility.
+            random_state (int): Random seed for reproducibility: used to choose the stumps (stump_selection=
+                'random') and given to the stumps whose random_state is None.
         """
         self.tiebreaker = count()
         self.root:Optional[RuleTreeNode] = None
@@ -151,7 +154,9 @@ class RuleTree(RuleTreeBase, ABC):
             UserWarning: For each provided data type that no stump uses.
         """
         candidates = []
+        seed = self._seed if hasattr(self, "_seed") else self._stumps_seed()
         for p, stump, data_types in self._parse_base_stumps():
+            stump = self._seeded(stump, seed)
             usable = [t for t in (data_types or stump.supported_data_types) if t in data]
             candidates += [(p / len(usable), stump, t) for t in usable]
 
@@ -163,6 +168,28 @@ class RuleTree(RuleTreeBase, ABC):
 
         total = sum(p for p, _, _ in candidates)
         self.candidate_splits_ = [(p / total, stump, t) for p, stump, t in candidates]
+
+    def _stumps_seed(self):
+        """
+        Seed of the random choices of the tree and of the stumps without a random_state, from the tree's
+        random_state: an int is used as is, from a RandomState an int is drawn.
+        """
+        if self.random_state is None or isinstance(self.random_state, numbers.Integral):
+            return self.random_state
+        return int(check_random_state(self.random_state).randint(np.iinfo(np.int32).max))
+
+    @staticmethod
+    def _seeded(stump: RuleTreeBaseStump, seed) -> RuleTreeBaseStump:
+        """
+        The stump, or a copy of it where every random_state left to None (also of its components)
+        is set to seed: with the tree's random_state, the stumps do not break ties at random.
+        """
+        if seed is None:
+            return stump
+
+        unset = {name: seed for name, value in stump.get_params(deep=True).items()
+                 if (name == "random_state" or name.endswith("__random_state")) and value is None}
+        return sklearn.clone(stump).set_params(**unset) if unset else stump
 
     def _get_random_split(self) -> tuple[RuleTreeBaseStump, str]:
         """
@@ -224,7 +251,8 @@ class RuleTree(RuleTreeBase, ABC):
         self.clear_cache()
         self.tiebreaker = count()
         self.queue = []
-        self._random = random.Random(self.random_state)
+        self._seed = self._stumps_seed()
+        self._random = random.Random(self._seed)
         self._set_classes(y)
         self._set_candidate_splits(data)
 
@@ -263,8 +291,10 @@ class RuleTree(RuleTreeBase, ABC):
 
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
+        if not hasattr(self, "_seed"):
+            self._seed = self._stumps_seed()
         if not hasattr(self, "_random"):
-            self._random = random.Random(self.random_state)
+            self._random = random.Random(self._seed)
         if not hasattr(self, "classes_"):
             self._set_classes(y)
         self._set_candidate_splits(data)

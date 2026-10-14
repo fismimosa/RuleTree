@@ -5,6 +5,10 @@ import pytest
 import sklearn
 
 from RuleTree import RuleTreeClassifier
+from RuleTree.stumps.Stump import Stump
+from RuleTree.stumps.classification import DecisionTreeStumpClassifier
+from RuleTree.stumps.splitters import ClassificationSplitter
+from RuleTree.stumps.transformers import MatrixTransformer
 
 
 def test_fit_predict(iris):
@@ -112,3 +116,51 @@ def test_sklearn_clone(iris):
 
     assert clone.get_params()["max_depth"] == 2
     assert np.array_equal(clone.fit(X, y).predict(X), model.fit(X, y).predict(X))
+
+
+def test_random_state_given_to_the_stumps(iris):
+    X, y = iris
+    stump = DecisionTreeStumpClassifier()
+
+    model = RuleTreeClassifier(max_depth=3, random_state=7, base_stumps=stump).fit(X, y)
+
+    assert all(node.stump.random_state == 7 for node in model.get_predicates().values())
+    assert stump.random_state is None  # base_stumps are not modified
+
+
+def test_stump_random_state_is_kept(iris):
+    X, y = iris
+
+    model = RuleTreeClassifier(max_depth=2, random_state=7,
+                               base_stumps=DecisionTreeStumpClassifier(random_state=3)).fit(X, y)
+
+    assert all(node.stump.random_state == 3 for node in model.get_predicates().values())
+
+
+def test_random_state_of_composed_stumps(iris):
+    X, y = iris
+    stump = Stump(MatrixTransformer(), ClassificationSplitter())
+
+    model = RuleTreeClassifier(max_depth=2, random_state=7, base_stumps=stump).fit(X, y)
+
+    assert model.root.stump.splitter.random_state == 7
+
+
+def test_without_random_state_the_stumps_are_not_seeded(iris):
+    X, y = iris
+
+    model = RuleTreeClassifier(max_depth=2).fit(X, y)
+
+    assert model.root.stump.random_state is None
+
+
+@pytest.mark.parametrize("random_state", [0, np.random.RandomState(0)], ids=["int", "RandomState"])
+def test_random_state_makes_trees_reproducible(iris, random_state):
+    """On iris, petal length and width have the same gain at the root: without a seed, the choice is random."""
+    X, y = iris
+
+    trees = [RuleTreeClassifier(max_depth=4, random_state=random_state).fit(X, y) for _ in range(5)]
+
+    rules = {str(tree.get_rules()) for tree in trees} if isinstance(random_state, int) else None
+    assert rules is None or len(rules) == 1
+    assert all(isinstance(tree.root.stump.random_state, int) for tree in trees)  # an int drawn from RandomState
