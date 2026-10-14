@@ -21,7 +21,7 @@ def test_leaves_predict_training_mean(diabetes):
     X, y = diabetes
     model = RuleTreeRegressor(max_depth=2).fit(X, y)
 
-    _, leaves, _ = model.root.predict(X)
+    leaves = model.apply(X)
 
     for leaf_id, leaf in model.get_leaf_nodes().items():
         assert leaf.prediction == pytest.approx(y[leaves == leaf_id].mean())

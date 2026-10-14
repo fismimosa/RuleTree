@@ -9,6 +9,7 @@ import heapq
 import importlib
 import json
 import random
+import traceback
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
@@ -17,7 +18,6 @@ from typing import Optional
 
 import numpy as np
 import sklearn
-from sklearn import tree
 from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory
 
@@ -25,8 +25,7 @@ from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.utils.data_utils import json_numpy_encoder
-from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS
+from RuleTree.utils.data_utils import get_info_gain, json_numpy_encoder
 
 
 class RuleTree(RuleTreeBase, ABC):
@@ -51,8 +50,7 @@ class RuleTree(RuleTreeBase, ABC):
                  min_samples_split,
                  max_depth,
                  prune_useless_leaves,
-                 base_stumps, #isinstance of RuleTreeBaseStump, list of instances of RuleTreeBaseStump,
-                                # list of tuple (probability, RuleTreeBaseStump) where sum(probabilities)==1
+                 base_stumps,
                  stump_selection, # ['random', 'best']
                  random_state,
                  distance_measure=None,
@@ -66,7 +64,14 @@ class RuleTree(RuleTreeBase, ABC):
             min_samples_split (int): Minimum samples required to split a node.
             max_depth (int): Maximum depth of the tree.
             prune_useless_leaves (bool): Whether to prune useless leaves.
-            base_stumps (list): List of base stumps or their configurations.
+            base_stumps: Stumps used to split the nodes. One of:
+                - a stump;
+                - a list of stumps, chosen with equal probability;
+                - a list of tuples ``(probability, stump)`` or ``(probability, stump, data_types)``, where
+                  the probabilities sum to 1 and ``data_types`` (a data type or a list of data types, see
+                  :data:`RuleTree.utils.define.DATA_INPUT_TYPES`) restricts the data the stump is used on.
+                  By default, a stump is used on every data type it supports. The probability of a stump
+                  is split equally among its data types.
             stump_selection (str): Stump selection strategy ('random' or 'best').
             random_state (int): Random seed for reproducibility.
         """
@@ -87,167 +92,218 @@ class RuleTree(RuleTreeBase, ABC):
         if exceptions not in ['raise', 'ignore']:
             raise ValueError("exception must me either raise or ignore")
         self.exceptions = exceptions
-        random.seed(random_state)
 
-    def _set_stump(self):
+    def _parse_base_stumps(self) -> list[tuple[float, RuleTreeBaseStump, Optional[tuple]]]:
         """
-        Set the base stumps for the RuleTree.
+        Normalize ``base_stumps`` into a list of ``(probability, stump, data_types)``.
 
-        This method validates and processes the base stumps provided during initialization.
+        ``data_types`` is a tuple of data types, or None when the stump can be used on every data type
+        it supports.
+
+        Raises:
+            TypeError: If an entry is not a stump compatible with the tree.
+            ValueError: If an entry is malformed, a stump does not support the requested data types, or
+                the probabilities do not sum to 1.
         """
         class_to_check = self._get_stumps_base_class()
-        _base_stump = []
-        _p = []
-        if isinstance(self.base_stumps, RuleTreeBaseStump):
-            assert isinstance(self.base_stumps, class_to_check)
-            _base_stump.append(self.base_stumps)
-            _p.append(1.)
-        elif isinstance(self.base_stumps, list):
-            assert len(self.base_stumps) > 0
-            _equal_p = 1 / len(self.base_stumps)
-            for el in self.base_stumps:
-                if isinstance(el, Sequence):
-                    assert isinstance(el[1], RuleTreeBaseStump)
-                    assert isinstance(el[1], class_to_check)
-                    _p.append(el[0])
-                    _base_stump.append(el[1])
-                else:
-                    assert isinstance(el, RuleTreeBaseStump)
-                    assert isinstance(el, class_to_check)
-                    _p.append(_equal_p)
-                    _base_stump.append(el)
+        entries = self.base_stumps if isinstance(self.base_stumps, list) else [self.base_stumps]
+        if len(entries) == 0:
+            raise ValueError("base_stumps is empty.")
 
-        assert np.isclose(np.sum(_p), 1.)
-        self.base_stumps = [(p, stump) for p, stump in zip(np.cumsum(_p), _base_stump)]
+        parsed = []
+        for entry in entries:
+            if isinstance(entry, RuleTreeBaseStump):
+                p, stump, data_types = 1 / len(entries), entry, None
+            elif isinstance(entry, Sequence) and len(entry) in (2, 3):
+                p, stump = entry[0], entry[1]
+                data_types = entry[2] if len(entry) == 3 else None
+            else:
+                raise ValueError(f"Invalid base_stumps entry {entry!r}: expected a stump, (probability, stump) "
+                                 f"or (probability, stump, data_types).")
 
-    def _get_random_stump(self, X):
+            if not isinstance(stump, RuleTreeBaseStump) or not isinstance(stump, class_to_check):
+                raise TypeError(f"{stump!r} is not a {class_to_check.__name__} stump.")
+
+            if data_types is not None:
+                data_types = (data_types,) if isinstance(data_types, str) else tuple(data_types)
+                unsupported = [t for t in data_types if not stump.supports(t)]
+                if unsupported:
+                    raise ValueError(f"{stump.__class__.__name__} does not support {unsupported} data, "
+                                     f"only {list(stump.supported_data_types)}.")
+
+            parsed.append((p, stump, data_types))
+
+        if not np.isclose(sum(p for p, _, _ in parsed), 1.):
+            raise ValueError("The probabilities in base_stumps must sum to 1.")
+
+        return parsed
+
+    def _set_candidate_splits(self, data: dict):
         """
-        Get a random stump compatible with the input data.
+        Compute the pairs (stump, data type) that can split ``data``, with their selection probability,
+        and store them in ``candidate_splits_``.
 
-        Args:
-            X (np.ndarray): Feature matrix.
+        Raises:
+            ValueError: If no stump supports the provided data.
+
+        Warns:
+            UserWarning: For each provided data type that no stump uses.
+        """
+        candidates = []
+        for p, stump, data_types in self._parse_base_stumps():
+            usable = [t for t in (data_types or stump.supported_data_types) if t in data]
+            candidates += [(p / len(usable), stump, t) for t in usable]
+
+        if not candidates:
+            raise ValueError(f"None of the base stumps supports the provided data ({', '.join(data)}).")
+
+        for data_type in data.keys() - {t for _, _, t in candidates}:
+            warnings.warn(f"No base stump uses the {data_type} data: it will be ignored.", UserWarning)
+
+        total = sum(p for p, _, _ in candidates)
+        self.candidate_splits_ = [(p / total, stump, t) for p, stump, t in candidates]
+
+    def _get_random_split(self) -> tuple[RuleTreeBaseStump, str]:
+        """
+        Draw a pair (stump, data type) from ``candidate_splits_`` according to their probabilities.
 
         Returns:
-            RuleTreeBaseStump: A randomly selected stump.
+            tuple[RuleTreeBaseStump, str]: An unfitted copy of the stump and the data type to use.
         """
-        val = random.random()
+        _, stump, data_type = self._random.choices(self.candidate_splits_,
+                                                    weights=[p for p, _, _ in self.candidate_splits_])[0]
+        return sklearn.clone(stump), data_type
 
-        supported_stumps = self._filter_types(X)
-
-        for p, clf in supported_stumps:
-            if val <= p:
-                return sklearn.clone(clf)
-
-    def _filter_types(self, X) -> list[tuple[float, RuleTreeBaseStump]]:
+    def get_cache(self, namespace: str) -> dict:
         """
-        Filter stumps based on the data type of the input.
+        Dictionary where the stumps can store values shared among the splits, e.g. embeddings of the
+        whole data set. The cache is cleared at every :meth:`fit`, kept by :meth:`partial_fit`, and can
+        be cleared manually with :meth:`clear_cache`.
 
         Args:
-            X (np.ndarray): Feature matrix.
+            namespace (str): Name of the cache, e.g. the kind of stump using it.
 
         Returns:
-            list[tuple[float, RuleTreeBaseStump]]: List of compatible stumps.
+            dict: The cache of the namespace.
         """
-        if len(X.shape) == 2:
-            data_type = DATA_TYPE_TABULAR
-        elif len(X.shape) == 3:
-            data_type = DATA_TYPE_TS
-        elif len(X.shape) == 4:
-            data_type = DATA_TYPE_IMAGE
-        else:
-            raise TypeError(f"Invalid data type for shape {X.shape}")
+        if not hasattr(self, "cache_"):
+            self.cache_ = {}
 
-        compatible_stumps = [(p, x) for p, x in self.base_stumps if x.supports(data_type)]
+        return self.cache_.setdefault(namespace, {})
 
-        if len(compatible_stumps) == 0:
-            raise TypeError(f"No compatible stumps found for "
-                            f"shape {X.shape}.\r\n{[x.__name__ for _, x in self.base_stumps]}")
-
-        p_total = sum([x for x, _ in compatible_stumps])
-        if p_total < 1:
-            compatible_stumps = [(p/p_total, x) for p, x in compatible_stumps]
-
-        return compatible_stumps
-
-    
-    def _incremental_fit(self, root: RuleTreeNode, X: np.ndarray, X_ts: np.ndarray, X_img: np.ndarray, X_txt,
-                         idx: np.ndarray):
-        if root.is_leaf():
-            self.queue_push(root, idx)
-            return 1
-        else:
-            labels = root.stump.apply(X[idx])
-            return (
-                    1 +
-                    self._incremental_fit(root.node_l, X, X_ts, X_img, X_txt, idx[labels==1]) +
-                    self._incremental_fit(root.node_r, X, X_ts, X_img, X_txt, idx[labels==2])
-            )
-
+    def clear_cache(self):
+        """Remove all the values cached by the stumps (see :meth:`get_cache`)."""
+        self.cache_ = {}
 
     def fit(self, X:np.ndarray|None=None, y:np.ndarray|None=None,
-            X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None, X_txt:np.ndarray|None=None, **kwargs):
+            X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None, X_txt:np.ndarray|None=None, sample_weight=None):
         """
-        Fit the RuleTree to the provided data.
+        Fit the RuleTree to the provided data, starting from an empty tree.
 
         Args:
-            X (np.array): Feature matrix.
-            y (np.array): Target labels.
-            **kwargs: Additional arguments for fitting.
+            X (np.ndarray): Tabular data.
+            y (np.ndarray): Target.
+            X_ts (np.ndarray): Time series.
+            X_img (np.ndarray): Images.
+            X_txt (np.ndarray): Texts.
+            sample_weight (np.ndarray): Sample weights.
 
         Returns:
             RuleTree: The fitted RuleTree instance.
         """
-        self.classes_ = self.classes_ if hasattr(self, 'classes_') else np.unique(y)
-        self.n_classes_ = self.n_classes_ if hasattr(self, 'n_classes_') else len(self.classes_)
-        self._set_stump()
+        data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
-        if y is not None:
-            idx = np.arange(y.shape[0])
-        elif X is not None:
-            idx = np.arange(X.shape[0])
-        elif X_ts is not None:
-            idx = np.arange(X_ts.shape[0])
-        elif X_img is not None:
-            idx = np.arange(X_img.shape[0])
-        elif X_txt is not None:
-            idx = np.arange(X_txt.shape[0])
+        self.clear_cache()
+        self.tiebreaker = count()
+        self.queue = []
+        self._random = random.Random(self.random_state)
+        self.classes_ = np.unique(y)
+        self.n_classes_ = len(self.classes_)
+        self._set_candidate_splits(data)
 
+        idx = np.arange(self._n_samples(data))
+        self.root = self.prepare_node(y=y, idx=idx, node_id="R")
+        self.queue_push(self.root, idx)
 
+        self._grow(data, y, sample_weight)
+
+        return self
+
+    def partial_fit(self, X:np.ndarray|None=None, y:np.ndarray|None=None,
+                    X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None, X_txt:np.ndarray|None=None,
+                    sample_weight=None):
+        """
+        Continue growing the fitted tree: the current leaves are split further using the provided
+        data, within the limits of max_depth and max_leaf_nodes (e.g. after increasing them with
+        set_params). The existing splits are not changed. If the tree is not fitted, this is :meth:`fit`.
+
+        The cache of the stumps (see :meth:`get_cache`) is kept: call :meth:`clear_cache` first if the
+        data differ from those used to fill it.
+
+        Args:
+            X (np.ndarray): Tabular data.
+            y (np.ndarray): Target.
+            X_ts (np.ndarray): Time series.
+            X_img (np.ndarray): Images.
+            X_txt (np.ndarray): Texts.
+            sample_weight (np.ndarray): Sample weights.
+
+        Returns:
+            RuleTree: The fitted RuleTree instance.
+        """
         if self.root is None:
-            self.root = self.prepare_node(y=y, idx=idx, node_id="R")
-            self.queue_push(self.root, idx)
-            nbr_curr_nodes = 0
-        else:
-            nbr_curr_nodes = self._incremental_fit(root=self.root, X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx)
+            return self.fit(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, sample_weight=sample_weight)
 
+        data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
+        if not hasattr(self, "_random"):
+            self._random = random.Random(self.random_state)
+        if not hasattr(self, "classes_"):
+            self.classes_ = np.unique(y)
+            self.n_classes_ = len(self.classes_)
+        self._set_candidate_splits(data)
+
+        self.queue = []
+        self._push_leaves(self.root, data, np.arange(self._n_samples(data)))
+
+        self._grow(data, y, sample_weight)
+
+        return self
+
+    def _push_leaves(self, node: RuleTreeNode, data: dict, idx: np.ndarray):
+        """Push the leaves of the subtree rooted at node into the queue, with the instances reaching them."""
+        if node.is_leaf():
+            self.queue_push(node, idx)
+            return
+
+        labels = node.stump.apply(data, idx)
+        self._push_leaves(node.node_l, data, idx[labels == 1])
+        self._push_leaves(node.node_r, data, idx[labels == 2])
+
+    def _grow(self, data: dict, y: np.ndarray|None, sample_weight=None):
+        """
+        Split the nodes in the queue until a stopping condition is met.
+
+        Args:
+            data (dict): Whole data set, as ``{data_type: array}``.
+            y (np.ndarray): Target of the whole data set.
+            sample_weight (np.ndarray): Sample weights of the whole data set.
+        """
+        nbr_curr_nodes = 0
         while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
             idx, current_node = self.queue_pop()
-            
-            if len(idx) < self.min_samples_split:
+
+            if (len(idx) < self.min_samples_split
+                    or nbr_curr_nodes + len(self.queue) + 1 >= self.max_leaf_nodes
+                    or (self.max_depth is not None and current_node.get_depth() >= self.max_depth)
+                    or self.check_additional_halting_condition(y=y, curr_idx=idx)):
                 self.make_leaf(current_node)
-                #current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs) #  TODO: questo va nello stump
-                nbr_curr_nodes += 1
-                continue
-
-            if nbr_curr_nodes + len(self.queue) + 1 >= self.max_leaf_nodes:
-                self.make_leaf(node=current_node)
-                nbr_curr_nodes += 1
-                continue
-
-            if self.max_depth is not None and current_node.get_depth() >= self.max_depth:
-                self.make_leaf(node=current_node)
-                nbr_curr_nodes += 1
-                continue
-
-            if self.check_additional_halting_condition(y=y, curr_idx=idx):
-                self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
                 continue
 
             try:
-                clf = self.make_split(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx, **kwargs)
-                labels = clf.apply(X, X_ts, X_img, X_txt, idx=idx)
+                clf = self.make_split(data, y, idx, sample_weight=sample_weight)
+                labels = clf.apply(data, idx)
             except NoSplitFoundWarning:
                 self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
@@ -262,22 +318,12 @@ class RuleTree(RuleTreeBase, ABC):
                 warnings.warn(warning)
                 continue
 
-           
-            #name_clf = clf.__class__.__module__.split('.')[-1]
-
-            #if name_clf in ['ObliqueDecisionTreeStumpClassifier', TODO: vedi sopra
-            #                'DecisionTreeStumpClassifier']:
-            #    current_node.medoids_index = self.compute_medoids(X, y, idx=idx, **kwargs)
-                
-                
-            global_labels = clf.apply(X) #  TODO: Questo non si può fare a livello di nodo/stump o come metodo separato? vorrei mantenere la fit quanto più pulita possibile
-            current_node.balance_score_global = (np.min(np.unique(global_labels, return_counts= True)[1]) / global_labels.shape[0])
-            current_node.balance_score = current_node.balance_score_global
-
-            if self.is_split_useless(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, clf=clf, idx=idx):
+            if self.is_split_useless(data, idx, labels):
                 self.make_leaf(current_node)
                 nbr_curr_nodes += 1
                 continue
+
+            self._set_balance_score(current_node, clf, data)
 
             idx_l, idx_r = idx[labels == 1], idx[labels == 2]
 
@@ -289,24 +335,97 @@ class RuleTree(RuleTreeBase, ABC):
             self.queue_push(current_node.node_l, idx_l)
             self.queue_push(current_node.node_r, idx_r)
 
+        self.queue = []
+
         if self.prune_useless_leaves:
             self.root = self.root.simplify()
 
         self._post_fit_fix()
 
-        return self
+    @staticmethod
+    def _set_balance_score(node: RuleTreeNode, stump: RuleTreeBaseStump, data: dict):
+        """Fraction of the whole data set in the smaller side of the split (see get_balanced_stumps)."""
+        _, counts = np.unique(stump.apply(data), return_counts=True)
+        node.balance_score_global = counts.min() / counts.sum()
+        node.balance_score = node.balance_score_global
+
+    def make_split(self, data: dict, y: np.ndarray|None, idx: np.ndarray, sample_weight=None) -> RuleTreeBaseStump:
+        """
+        Fit a split on the instances idx, choosing among ``candidate_splits_`` according to
+        ``stump_selection``: a random pair (stump, data type), or the pair with the best information gain.
+
+        Args:
+            data (dict): Whole data set, as ``{data_type: array}``.
+            y (np.ndarray): Target of the whole data set.
+            idx (np.ndarray): Indices of the instances in the node.
+            sample_weight (np.ndarray): Sample weights of the whole data set.
+
+        Returns:
+            RuleTreeBaseStump: The fitted stump.
+
+        Raises:
+            NoSplitFoundWarning: If no stump can split the node.
+        """
+        if self.stump_selection == 'random':
+            stump, data_type = self._get_random_split()
+            stump.fit(data, y, idx=idx, context=self, data_type=data_type, sample_weight=sample_weight)
+
+            return stump
+
+        elif self.stump_selection == 'best':
+            clfs = []
+            info_gains = []
+            for _, stump, data_type in self.candidate_splits_:
+                try:
+                    stump = sklearn.clone(stump)
+                    stump.fit(data, y, idx=idx, context=self, data_type=data_type, sample_weight=sample_weight)
+
+                    info_gains.append(get_info_gain(stump))
+                    clfs.append(stump)
+                except NoSplitFoundWarning:
+                    continue
+                except Exception as e:
+                    if self.exceptions == 'raise':
+                        raise e
+                    traceback.print_exc()
+                    continue
+
+            if len(clfs) == 0:
+                raise NoSplitFoundWarning('No splits found')
+
+            return clfs[np.argmax(info_gains)]
+
+        else:
+            raise TypeError('Unknown stump selection method')
+
+    def is_split_useless(self, data: dict, idx: np.ndarray, labels: np.ndarray) -> bool:
+        """
+        Check if a split is useless, i.e. if all the instances go to the same child.
+
+        Args:
+            data (dict): Whole data set, as ``{data_type: array}``.
+            idx (np.ndarray): Indices of the instances in the node.
+            labels (np.ndarray): Result of the split on idx (1 left, 2 right).
+
+        Returns:
+            bool: Whether the split is useless.
+        """
+        return len(np.unique(labels)) == 1
 
     def predict(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
-        Predict class labels for the input data.
+        Predict the output for the input data.
 
         Args:
-            X (np.ndarray): Feature matrix.
+            X (np.ndarray): Tabular data.
+            X_ts (np.ndarray): Time series.
+            X_img (np.ndarray): Images.
+            X_txt (np.ndarray): Texts.
 
         Returns:
-            np.ndarray: Predicted class labels.
+            np.ndarray: Predicted outputs.
         """
-        labels, _, _ = self.root.predict(X)
+        labels, _, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
 
         return labels
 
@@ -315,23 +434,27 @@ class RuleTree(RuleTreeBase, ABC):
         Apply the RuleTree to the input data.
 
         Args:
-            X (np.ndarray): Feature matrix.
+            X (np.ndarray): Tabular data.
+            X_ts (np.ndarray): Time series.
+            X_img (np.ndarray): Images.
+            X_txt (np.ndarray): Texts.
 
         Returns:
-            np.ndarray: Leaf indices for each sample.
+            np.ndarray: Leaf ids for each sample.
         """
-        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        _, leaves, _ = self.root.predict(X)
+        _, leaves, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
 
         return leaves
 
-    def update_statistics(self, X: np.ndarray, y: np.ndarray):
+    def update_statistics(self, X: np.ndarray|None = None, y: np.ndarray|None = None,
+                          X_ts=None, X_img=None, X_txt=None):
+        data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
 
-        self._update_statistics(X, y, self.root, np.arange(X.shape[0]))
+        self._update_statistics(data, y, self.root, np.arange(self._n_samples(data)))
 
-    def _update_statistics(self, X: np.ndarray, y: np.ndarray, node: RuleTreeNode, idx: np.ndarray):
+    def _update_statistics(self, data: dict, y: np.ndarray, node: RuleTreeNode, idx: np.ndarray):
         if node is None:
             return
 
@@ -339,28 +462,16 @@ class RuleTree(RuleTreeBase, ABC):
         if node.stump is not None and hasattr(node.stump, "classes_"):
             node.stump.classes_ = self.classes_
 
-        node.update_statistics(X, y, idx, self)
+        node.update_statistics(data, y, idx, self)
         if node.is_leaf() or node.stump is None:
             return
 
-        labels = node.stump.apply(X[idx])
+        labels = node.stump.apply(data, idx)
         idx_l = idx[labels == 1]
         idx_r = idx[labels == 2]
 
-        self._update_statistics(X, y, node.node_l, idx_l)
-        self._update_statistics(X, y, node.node_r, idx_r)
-
-    def _get_node(self, node_id: str):
-        if not hasattr(self, 'opportunistic_node_map'):
-            def __fill_map(curr: RuleTreeNode):
-                if curr is None:
-                    return dict()
-                return {curr.node_id: curr} | __fill_map(curr.node_l) | __fill_map(curr.node_r)
-            self.opportunistic_node_map = __fill_map(self.root)
-        return self.opportunistic_node_map[node_id]
-
-
-
+        self._update_statistics(data, y, node.node_l, idx_l)
+        self._update_statistics(data, y, node.node_r, idx_r)
 
     def predict_proba(self, X: np.ndarray|None=None, X_ts: np.ndarray|None=None, X_img: np.ndarray|None=None,
                       X_txt: np.ndarray|None=None):
@@ -368,13 +479,17 @@ class RuleTree(RuleTreeBase, ABC):
         Predict class probabilities for the input data.
 
         Args:
-            X (np.ndarray): Feature matrix.
+            X (np.ndarray): Tabular data.
+            X_ts (np.ndarray): Time series.
+            X_img (np.ndarray): Images.
+            X_txt (np.ndarray): Texts.
 
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        labels, _, proba = self.root.predict(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        proba_matrix = np.zeros((X.shape[0], self.n_classes_))
+        data = self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+        labels, _, proba = self.root.predict(data)
+        proba_matrix = np.zeros((self._n_samples(data), self.n_classes_))
         for classe in self.classes_:
             proba_matrix[labels == classe, self.classes_ == classe] = proba[labels == classe]
 
@@ -466,23 +581,6 @@ class RuleTree(RuleTreeBase, ABC):
         """
 
     @abstractmethod
-    def make_split(self, X: np.ndarray|None, X_ts: np.ndarray|None, X_img: np.ndarray|None, X_txt: np.ndarray|None,
-                   y: np.ndarray|None, idx: np.ndarray, **kwargs) -> tree:
-        """
-        Create a split in the RuleTree.
-
-        Args:
-            X (np.ndarray): Feature matrix.
-            y: Target labels.
-            idx (np.ndarray): Indices of the samples.
-            **kwargs: Additional arguments.
-
-        Returns:
-            tree: Decision tree stump.
-        """
-        pass
-
-    @abstractmethod
     def prepare_node(self, y: np.ndarray|None, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Prepare a node in the RuleTree.
@@ -505,22 +603,6 @@ class RuleTree(RuleTreeBase, ABC):
         Args:
             node (RuleTreeNode): Node to be pushed.
             idx (np.ndarray): Indices of the samples.
-        """
-        pass
-
-    @abstractmethod
-    def is_split_useless(self, X: np.ndarray|None, X_ts:np.ndarray|None, X_img:np.ndarray|None, X_txt:np.ndarray|None,
-                         clf: RuleTreeBaseStump, idx: np.ndarray):
-        """
-        Check if a split is useless.
-
-        Args:
-            X (np.ndarray): Feature matrix.
-            clf (tree): Decision tree stump.
-            idx (np.ndarray): Indices of the samples.
-
-        Returns:
-            bool: Whether the split is useless.
         """
         pass
 
@@ -786,7 +868,7 @@ class RuleTree(RuleTreeBase, ABC):
         # constructor parameters of the concrete class, so that from_dict can call its __init__
         args = {k: v for k, v in self.get_params(deep=False).items() if k != "base_stumps"}
         args["base_stumps"] = [
-            (p, stump.node_to_dict()) for p, stump in self.base_stumps if isinstance(stump, RuleTreeBaseStump)
+            (p, stump.node_to_dict(), data_types) for p, stump, data_types in self._parse_base_stumps()
         ]
 
         dictionary = {
@@ -832,17 +914,19 @@ class RuleTree(RuleTreeBase, ABC):
         # older dictionaries have no "tree_class": the class is named as its module
         class_name = dictionary.get('tree_class', dictionary['tree_type'].split('.')[-1])
         class_c = getattr(importlib.import_module(dictionary['tree_type']), class_name)
-        tree = class_c(**dictionary.get('args', {}))
+
+        # base_stumps entries: (p, stump_dict) or, from newer dictionaries, (p, stump_dict, data_types)
+        args = dict(dictionary.get('args', {}))
+        args['base_stumps'] = []
+        for p, stump_dict, *data_types in dictionary['args']['base_stumps']:
+            stump_class = getattr(importlib.import_module(stump_dict['stump_type']), stump_dict['stump_type'].split('.')[-1])
+            args['base_stumps'].append((p, stump_class.dict_to_node(stump_dict), *data_types))
+
+        tree = class_c(**args)
         tree.classes_ = dictionary.get('classes_', None)
         tree.n_classes_ = dictionary.get('n_classes_', None)
 
         nodes = {node["node_id"]: RuleTreeNode.dict_to_node(node) for node in dictionary['nodes']}
-
-        tree.base_stumps = []
-        for p, stump_dict in dictionary['args']['base_stumps']:
-            stump_class = getattr(importlib.import_module(stump_dict['stump_type']), stump_dict['stump_type'].split('.')[-1])
-            stump_instance = stump_class.dict_to_node(stump_dict)
-            tree.base_stumps.append((p, stump_instance))
 
         for node_instance, node_info in zip(nodes.values(), dictionary['nodes']):
             if not node_info["is_leaf"]:

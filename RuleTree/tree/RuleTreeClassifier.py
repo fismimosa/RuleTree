@@ -6,25 +6,20 @@ functionality, including methods for handling class probabilities and medoid com
 """
 
 import heapq
-import traceback
 from typing import Union, Optional
 
 import numpy as np
-import sklearn
-from sklearn import tree
 from sklearn.base import ClassifierMixin
 import copy
 
 
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.exceptions import NoSplitFoundWarning
 #from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
 #from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
 #from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
-from RuleTree.utils.data_utils import calculate_mode, get_info_gain, log_odds
+from RuleTree.utils.data_utils import calculate_mode, log_odds
 
 
 class RuleTreeClassifier(RuleTree, ClassifierMixin):
@@ -75,23 +70,6 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
                          random_state=random_state,
                          distance_measure=distance_measure)
 
-    def is_split_useless(self, X: np.ndarray | None, X_ts: np.ndarray | None, X_img: np.ndarray | None,
-                         X_txt: np.ndarray | None, clf: RuleTreeBaseStump, idx: np.ndarray):
-        """
-        Check if a split is useless.
-
-        Args:
-            X (np.ndarray): Feature matrix.
-            clf (tree): Classifier used for splitting.
-            idx (np.ndarray): Indices of the samples to consider.
-
-        Returns:
-            bool: True if the split is useless, False otherwise.
-        """
-        labels = clf.apply(X[idx])
-
-        return len(np.unique(labels)) == 1
-
     def check_additional_halting_condition(self, y, curr_idx: np.ndarray):
         """
         Check additional halting condition for splitting.
@@ -114,65 +92,6 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             idx (np.ndarray): Indices of the samples associated with the node.
         """
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
-
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray, medoids_index = None, sample_weight=None, **kwargs) -> tree:
-        """
-        Create a split using the selected stump.
-
-        Args:
-            X (np.ndarray): Feature matrix.
-            y (np.ndarray): Target labels.
-            idx (np.ndarray): Indices of the samples to consider.
-            medoids_index (list): Indices of medoids.
-            sample_weight (np.ndarray): Sample weights.
-            **kwargs: Additional arguments for splitting.
-
-        Returns:
-            tree: The selected stump after fitting.
-        """
-        
-    
-        if self.stump_selection == 'random':
-            stump = self._get_random_stump(X)
-        
-            stump.fit(X=X,
-                      y=y,
-                      idx=idx,
-                      context = self,
-                      sample_weight=None if sample_weight is None else sample_weight[idx])
-                
-        elif self.stump_selection == 'best':
-            clfs = []
-            info_gains = []
-            for _, stump in self._filter_types(X):
-                try:
-                    stump = sklearn.clone(stump)
-
-                    stump.fit(X=X,
-                              y=y,
-                              idx=idx,
-                              context=self,
-                              sample_weight=None if sample_weight is None else sample_weight[idx])
-
-                    gain = get_info_gain(stump)
-                    info_gains.append(gain)
-
-                    clfs.append(stump)
-                except NoSplitFoundWarning:
-                    continue
-                except Exception as e:
-                    if self.exceptions == 'raise':
-                        raise e
-                    traceback.print_exc()
-                    continue
-
-            if len(clfs) == 0:
-                raise NoSplitFoundWarning('No splits found')
-            stump = clfs[np.argmax(info_gains)]
-        else:
-            raise TypeError('Unknown stump selection method')
-
-        return stump
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
@@ -214,44 +133,20 @@ class RuleTreeClassifier(RuleTree, ClassifierMixin):
             samples=len(y[idx]),
         )
 
-    def fit(self, X: np.array = None, y: np.array = None,
-            X_ts=None, X_img=None, X_txt=None, sample_weight=None, **kwargs):
-        """
-        Fit the RuleTreeClassifier to the provided data.
-
-        Args:
-            X (np.array): Feature matrix.
-            y (np.array): Target labels.
-            sample_weight (np.array): Sample weights.
-            **kwargs: Additional arguments for fitting.
-
-        Returns:
-            RuleTreeClassifier: The fitted RuleTreeClassifier instance.
-        """
-        super().fit(
-            X=X,
-            y=y,
-            X_ts=X_ts,
-            X_img=X_img,
-            X_txt=X_txt,
-            sample_weight=sample_weight,
-            **kwargs,
-        )
-
-        return self
-
-
-    def predict_proba(self, X: np.ndarray):
+    def predict_proba(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
         Predict class probabilities for the input data.
 
         Args:
-            X (np.ndarray): Feature matrix.
+            X (np.ndarray): Tabular data.
+            X_ts (np.ndarray): Time series.
+            X_img (np.ndarray): Images.
+            X_txt (np.ndarray): Texts.
 
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        _, _, proba = self.root.predict(X)
+        _, _, proba = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
 
         return proba
 

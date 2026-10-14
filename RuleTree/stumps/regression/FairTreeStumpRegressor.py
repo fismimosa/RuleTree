@@ -8,6 +8,7 @@ import psutil
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.utils.data_utils import _get_info_gain
+from RuleTree.utils.define import DATA_TYPE_TABULAR
 from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric, privacy_metric_all
 
 
@@ -59,6 +60,8 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         Additional parameters passed to the parent DecisionTreeStumpRegressor class.
     """
 
+    supported_data_types = (DATA_TYPE_TABULAR,)
+
     def __init__(self,
                  penalty: str = None,
                  sensible_attribute: int = -1,
@@ -109,7 +112,7 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
             "n_jobs": n_jobs,
         }
 
-    def fit(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
+    def _fit_matrix(self, X, y, sample_weight=None, check_input=True):
         """
         Build a fair decision tree stump regressor from the training set (X, y).
 
@@ -119,15 +122,10 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            The training input samples.
+            The training input samples of the node.
 
         y : array-like of shape (n_samples,)
             The target values (real numbers).
-
-        idx : slice or array-like, default=None
-            Indices of samples to use for training. If None, all samples are used.
-
-        context : Not used, present for API consistency by convention.
 
         sample_weight : array-like of shape (n_samples,), default=None
             Sample weights. Currently not used.
@@ -141,12 +139,6 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         self : object
             Fitted estimator.
         """
-        if idx is None:
-            idx = slice(None)
-        X = X[idx]
-        y = y[idx]
-
-        self.feature_analysis(X, y)
         best_info_gain = -float('inf')
         self.feature_original = [-2]
 

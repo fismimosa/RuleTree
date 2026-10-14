@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from RuleTree import RuleTreeClassifier
@@ -64,3 +65,32 @@ def test_export_graphviz(model):
     graph = model.root.export_graphviz()
 
     assert "R ->" in graph.source
+
+
+def test_apply(model, iris):
+    X, _ = iris
+
+    leaves = model.apply(X)
+
+    assert leaves.shape == (X.shape[0],)
+    assert set(leaves) == set(model.get_leaf_nodes())
+
+
+def test_local_interpretation(model, iris):
+    X, _ = iris
+
+    direct_prediction, biases, contributions = model.local_interpretation(X)
+
+    assert contributions.shape == (X.shape[0], X.shape[1], len(model.classes_))
+    assert np.allclose(direct_prediction, biases + contributions.sum(axis=1))
+
+
+def test_update_statistics(model, iris):
+    X, y = iris
+    subset = np.arange(0, len(y), 2)
+    predictions = model.predict(X)
+
+    model.update_statistics(X[subset], y[subset])
+
+    assert model.root.samples == len(subset)
+    assert np.array_equal(model.predict(X), predictions)  # same splits, same majority classes

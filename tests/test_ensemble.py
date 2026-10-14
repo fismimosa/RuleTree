@@ -4,6 +4,7 @@ from sklearn.metrics import r2_score
 
 from RuleTree import RuleTreeRegressor
 from RuleTree.ensemble.EBMRegressor import EBMRegressor
+from RuleTree.ensemble.GBoostClassifier import GBoostClassifier
 from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
 from RuleTree.ensemble.XGBoostRegressor import XGBoostRegressor
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
@@ -33,3 +34,19 @@ def test_xgboost_regressor_default_base_estimator():
     assert model.get_params()["base_estimator"] is None
     assert isinstance(base_estimator, RuleTreeXGBoostRegressor)
     assert isinstance(base_estimator.base_stumps, XGBoostStumpRegressor)
+
+
+def test_gboost_classifier(iris):
+    X, y = iris
+    y = (y == 1).astype(int)
+
+    model = GBoostClassifier(base_estimator=RuleTreeRegressor(max_depth=2), n_estimators=5).fit(X, y)
+
+    assert set(model.predict(X)) <= {0, 1}
+
+
+def test_xgboost_regressor(diabetes):
+    X, y = diabetes
+    model = XGBoostRegressor(n_estimators=3).fit(X, y)
+
+    assert model.predict(X).shape == y.shape

@@ -2,15 +2,11 @@ import heapq
 from typing import Union, Optional
 
 import numpy as np
-import sklearn
-from sklearn import tree
 from sklearn.base import RegressorMixin
 
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
-from RuleTree.utils.data_utils import get_info_gain
 
 
 class RuleTreeRegressor(RuleTree, RegressorMixin):
@@ -104,28 +100,6 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
                          random_state=random_state,
                          distance_measure=distance_measure)
 
-    def is_split_useless(self, X: np.ndarray|None, X_ts:np.ndarray|None, X_img:np.ndarray|None, X_txt:np.ndarray|None,
-                         clf: RuleTreeBaseStump, idx: np.ndarray):
-        """
-        Determine if a split is useless by checking if all samples end up in the same leaf.
-        
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The input samples.
-        clf : sklearn.tree estimator
-            The classifier to evaluate.
-        idx : array-like
-            Indices of the samples to consider.
-            
-        Returns
-        -------
-        bool
-            True if the split is useless, False otherwise.
-        """
-        labels = clf.apply(X[idx])
-        return len(np.unique(labels)) == 1
-
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
         Push a node to the priority queue for processing.
@@ -138,61 +112,6 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             Indices of the samples that reach this node.
         """
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
-
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
-        """
-        Make a split by selecting and fitting a stump on the data.
-        
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The input samples.
-        y : array-like of shape (n_samples,)
-            The target values.
-        idx : array-like
-            Indices of the samples to consider.
-        **kwargs : dict
-            Additional parameters to pass to the stump's fit method.
-            
-        Returns
-        -------
-        tree
-            The fitted stump.
-            
-        Raises
-        ------
-        TypeError
-            If an unknown stump selection method is specified.
-        """
-        if self.stump_selection == 'random':
-            stump = self._get_random_stump(X)
-            stump.fit(X=X,
-                      y=y,
-                      idx=idx,
-                      context=self,
-                      **kwargs)
-        elif self.stump_selection == 'best':
-            clfs = []
-            info_gains = []
-            for _, stump in self._filter_types(X):
-                stump = sklearn.clone(stump)
-                stump.fit(X=X,
-                          y=y,
-                          idx=idx,
-                          context=self,
-                          **kwargs)
-
-                gain = get_info_gain(stump)
-                info_gains.append(gain)
-                
-                clfs.append(stump)
-
-            stump = clfs[np.argmax(info_gains)]
-        else:
-            raise TypeError('Unknown stump selection method')
-
-        return stump
-
 
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """

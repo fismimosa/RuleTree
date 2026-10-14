@@ -6,6 +6,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
+from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS
 
 from RuleTree.utils.data_utils import get_info_gain, _get_info_gain, gini, entropy, _my_counts
 
@@ -28,6 +29,12 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         feature_original (array): Feature indices used for splits.
         impurity_fun (function): Function used to calculate impurity (gini, entropy, etc.).
     """
+
+    # time series and images are flattened into one feature per value
+    supported_data_types = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
+
+    # sklearn's DecisionTreeClassifier.apply comes first in the MRO
+    apply = RuleTreeBaseStump.apply
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
@@ -120,6 +127,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         rule = self.get_rule(float_precision=None)
 
         rule["stump_type"] = self.__class__.__module__
+        rule["data_type"] = self.data_type_
         rule["impurity"] = self.impurity
 
         rule["args"] = self.kwargs
@@ -159,6 +167,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             self.threshold_original[0] = node_dict.get('threshold', -2)
 
         self.is_categorical = node_dict.get('is_categorical', None)
+        self._restore_data_type(node_dict)
 
         args = copy.deepcopy(node_dict.get("args", {}))
         self.impurity = args.pop("impurity", np.nan)
@@ -216,8 +225,7 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         """
         return self.kwargs
 
-    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
-            idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
         """
         Fits the decision tree stump to the provided data.
 
@@ -225,22 +233,44 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
         for both numerical and categorical features.
 
         Args:
-            X (array-like): Feature matrix of shape (n_samples, n_features).
-            y (array-like): Target vector of shape (n_samples,).
-            idx (slice, optional): Indices for slicing the data. If None, all samples are used.
-            context (object, optional): Additional context for fitting (not used directly).
-            sample_weight (array-like, optional): Sample weights of shape (n_samples,).
+            data (dict | array-like): Whole data set, as ``{data_type: array}``.
+            y (array-like): Target vector of the whole data set.
+            idx (array-like, optional): Indices of the instances to fit on. If None, all samples are used.
+            context (RuleTree, optional): Tree being built, used to cache the feature types.
+            data_type (str, optional): Data type to use. Defaults to the first supported type in data.
+            sample_weight (array-like, optional): Sample weights of the whole data set.
                                                  If None, samples are equally weighted.
             check_input (bool, optional): Whether to check the input data. Default is True.
 
         Returns:
             DecisionTreeStumpClassifier: The fitted classifier (self).
         """
+        X, _ = self._resolve_fit_data(data, data_type)
+        X = self._transform(X)
+        self._set_feature_types(X, context)
+
         if idx is None:
             idx = slice(None)
-        X = X[idx]
-        y = y[idx]
 
+        return self._fit_matrix(X[idx], y[idx], None if sample_weight is None else sample_weight[idx], check_input)
+
+    def _transform(self, X):
+        """Flatten time series and images into one feature per value."""
+        return X if X.ndim <= 2 else X.reshape(X.shape[0], -1)
+
+    def _fit_matrix(self, X, y, sample_weight=None, check_input=True):
+        """
+        Fits the stump on a feature matrix, using the feature types in ``numerical`` and ``categorical``.
+
+        Args:
+            X (array-like): Feature matrix of shape (n_samples, n_features).
+            y (array-like): Target vector of shape (n_samples,).
+            sample_weight (array-like, optional): Sample weights of shape (n_samples,).
+            check_input (bool, optional): Whether to check the input data. Default is True.
+
+        Returns:
+            DecisionTreeStumpClassifier: The fitted classifier (self).
+        """
         len_x = len(X)
 
         class_weight = None
@@ -249,13 +279,6 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
             for class_label in np.unique(y):
                 class_weight[class_label] = len_x / (len(self.classes_) * len(y[y == class_label]))
 
-        if hasattr(context, 'categorical'):
-            self.categorical = context.categorical
-            self.numerical = context.numerical
-        else:
-            self.feature_analysis(X, y)
-            context.categorical = self.categorical
-            context.numerical = self.numerical
         best_info_gain = -float('inf')
 
         if len(self.numerical) > 0:
@@ -357,33 +380,17 @@ class DecisionTreeStumpClassifier(DecisionTreeClassifier, RuleTreeBaseStump):
                         ]
 
 
-    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, idx=None, check_input=False):
-        if idx is not None:
-            X = X[idx]
-
+    def _apply_matrix(self, X):
         if len(self.feature_original) < 3:
-            return np.ones(X.shape[0])
+            return np.ones(X.shape[0], dtype=int)
 
+        X_feature = X[:, self.feature_original[0]]
         if not self.is_categorical:
-            y_pred = (np.ones(X.shape[0]) * 2)
-            X_feature = X[:, self.feature_original[0]]
-            y_pred[X_feature <= self.threshold_original[0]] = 1
-
-            return y_pred
-
+            return np.where(X_feature <= self.threshold_original[0], 1, 2)
         else:
-            y_pred = np.ones(X.shape[0]) * 2
-            X_feature = X[:, self.feature_original[0]]
-            y_pred[X_feature == self.threshold_original[0]] = 1
+            return np.where(X_feature == self.threshold_original[0], 1, 2)
 
-            return y_pred
-
-    def update_statistics(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
-                          idx=None, context=None, sample_weight=None, check_input=True):
-        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        X = X[idx]
-        y = y[idx]
-
+    def _update_statistics_matrix(self, X, y, sample_weight=None):
         len_x = len(X)
 
         class_weight = None

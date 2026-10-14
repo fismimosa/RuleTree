@@ -1,43 +1,53 @@
 from sklearn.preprocessing import StandardScaler
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.exceptions import NoSplitFoundWarning
+from RuleTree.stumps.classification.PivotTreeStumpClassifier import _pivot_cache
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.stumps.splitters.PivotSplit import PivotSplit
 from RuleTree.utils import MODEL_TYPE_REG
+from RuleTree.utils.define import DATA_TYPE_TABULAR
 from sklearn.metrics.pairwise import pairwise_distances
 import numpy as np
 import copy
-from types import SimpleNamespace
 
 
 class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
+    supported_data_types = (DATA_TYPE_TABULAR,)
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.pivot_split = PivotSplit(ml_task=MODEL_TYPE_REG, **kwargs)
         self.distance_measure = kwargs.get('distance_measure', 'euclidean')
         self.X_split_instance = None
 
-    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
-            idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
         """
-        Fit the classifier to the training data.
+        Fit the regressor to the training data.
 
         This method implements the model training process by:
         1. Analyzing the features in the input data
-        2. Computing pivot-based splits using the provided distance matrix
-        3. Transforming the data based on distances to the pivot instance
+        2. Computing pivot-based splits using the distance matrix of the whole data set
+        3. Transforming the data based on distances to the pivot instances
         4. Fitting the underlying decision tree stump to the transformed data
+
+        The scaler and the distance matrix are computed once on the whole data set and cached in
+        the tree (``context``), so that all the splits share them.
 
         Parameters
         ----------
-        X : numpy.ndarray
-            Feature matrix of shape (n_samples, n_features).
+        data : dict or numpy.ndarray
+            Whole data set, as ``{data_type: array}``.
         y : numpy.ndarray
-            Target labels of shape (n_samples,).
-        idx : int
-            Index of the pivot instance in the dataset.
+            Target values of the whole data set.
+        idx : numpy.ndarray, optional
+            Indices of the instances to fit on. Default is all.
+        context : RuleTree, optional
+            Tree being built, used to cache the scaler and the distance matrix.
+        data_type : str, optional
+            Data type to use. Default is the first supported type in data.
         sample_weight : numpy.ndarray, optional
-            Sample weights of shape (n_samples,). Default is None.
+            Sample weights of the whole data set. Default is None.
         check_input : bool, optional
             Whether to validate input data. Default is True.
 
@@ -46,66 +56,44 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
         self : PivotTreeStumpRegressor
             Fitted regressor instance.
         """
-        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        X = X[idx]
-        y = y[idx]
-        self.feature_analysis(X, y)
+        X, _ = self._resolve_fit_data(data, data_type)
+        if idx is None:
+            idx = np.arange(len(X))
+        self._set_feature_types(X, context)
         self.num_pre_transformed = self.numerical
         self.cat_pre_transformed = self.categorical
 
-        if context is None:
-            raise ValueError("Context must be provided for PivotTreeStumpRegressor.")
-        if not hasattr(context, "PivotTreeStumpRegressor_scaler"):
-            context.PivotTreeStumpRegressor_scaler = StandardScaler().fit(X)
-            context.distance_matrix = pairwise_distances(X[:, self.numerical], metric=self.distance_measure)
+        if len(self.numerical) == 0:
+            raise NoSplitFoundWarning(f"{self.__class__.__name__} needs numerical features")
 
-        self.scaler = context.PivotTreeStumpRegressor_scaler
-        distance_matrix = context.distance_matrix[np.ix_(idx, idx)]
-        X_scaled = context.PivotTreeStumpRegressor_scaler.transform(X[:, self.numerical])
+        self.scaler, distance_matrix = _pivot_cache(X, self.numerical, self.distance_measure, self.data_type_, context)
 
+        y = y[idx]
+        sample_weight = None if sample_weight is None else sample_weight[idx]
+        X_scaled = self.scaler.transform(X[idx][:, self.numerical])
 
-        if len(self.numerical) > 0:
-            self.pivot_split.fit(X_scaled, y, distance_matrix, self.distance_measure, idx, sample_weight=sample_weight,
-                                 check_input=check_input)
-            X_transform = self.pivot_split.transform(X_scaled, self.distance_measure)
-            candidate_names = self.pivot_split.get_candidates_names()
-            transformed_context = SimpleNamespace()
-            super().fit(X_transform, y, context=transformed_context, sample_weight=sample_weight, check_input=check_input)
+        self.pivot_split.fit(X_scaled, y, distance_matrix[np.ix_(idx, idx)], self.distance_measure, idx,
+                             sample_weight=sample_weight, check_input=check_input)
+        X_transform = self.pivot_split.transform(X_scaled, self.distance_measure)
+        candidate_names = self.pivot_split.get_candidates_names()
 
-            self.feature_original = [f'{candidate_names[self.tree_.feature[0]]}', -2, -2]
-            self.threshold_original = self.tree_.threshold
+        self.numerical, self.categorical = list(range(X_transform.shape[1])), []
+        self._fit_matrix(X_transform, y, sample_weight=sample_weight, check_input=check_input)
 
-            self.X_split_instance = self.pivot_split.X_candidates[self.tree_.feature[0]]
+        self.feature_original = [f'{candidate_names[self.tree_.feature[0]]}', -2, -2]
+        self.threshold_original = self.tree_.threshold
+        self.X_split_instance = self.pivot_split.X_candidates[self.tree_.feature[0]]
 
         return self
 
-    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None):
-        """
-        Apply the fitted classifier to the input data.
+    def _transform(self, X):
+        """Distance of each instance from the pivot."""
+        return pairwise_distances(self.scaler.transform(X[:, self.num_pre_transformed]),
+                                  self.X_split_instance.reshape(1, -1),
+                                  metric=self.distance_measure)
 
-        This method transforms the input data using the pivot-based approach
-        and then applies the classifier decision rule.
-
-        Parameters
-        ----------
-        X : numpy.ndarray
-            Feature matrix of shape (n_samples, n_features).
-
-        Returns
-        -------
-        numpy.ndarray
-            Predicted node ids (1 for left branch, 2 for right branch).
-        """
-        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        X_transformed = pairwise_distances(self.scaler.transform(X[:, self.num_pre_transformed]),
-                                           self.X_split_instance.reshape(1, -1),
-                                           metric=self.distance_measure)
-
-        y_pred = (np.ones(X_transformed.shape[0]) * 2)
-        X_feature = X_transformed[:, 0]
-        y_pred[X_feature <= self.threshold_original[0]] = 1
-
-        return y_pred
+    def _apply_matrix(self, X):
+        return np.where(X[:, 0] <= self.threshold_original[0], 1, 2)
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
@@ -201,8 +189,9 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
                        } | self.kwargs
 
         if self.X_split_instance is not None:
-            rule['num_pre_transformed'] = self.num_pre_transformed.tolist()
-            rule['cat_pre_transformed'] = self.cat_pre_transformed.tolist()
+            rule['num_pre_transformed'] = list(self.num_pre_transformed)
+            rule['cat_pre_transformed'] = list(self.cat_pre_transformed)
+            rule['data_type'] = self.data_type_
             rule["X_split_instance"] = self.X_split_instance
 
             rule['scaler'] = {
@@ -253,6 +242,7 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
             self.X_split_instance = np.array(node_dict["X_split_instance"])
 
             self.distance_measure = self.kwargs.pop("distance_measure")
+            self._restore_data_type(node_dict)
 
             self.scaler = StandardScaler()
             self.scaler.mean_ = np.array(node_dict['scaler']['mean_'])

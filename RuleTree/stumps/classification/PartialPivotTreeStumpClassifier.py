@@ -13,6 +13,8 @@ from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
 
 
 class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
+    supported_data_types = (DATA_TYPE_TABULAR,)
+
     def __init__(self,
                  n_shapelets=psutil.cpu_count(logical=False)*2,
                  n_ts_for_selection=100,  #int, inf
@@ -65,8 +67,8 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
             "n_jobs": n_jobs,
         }
 
-    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
-            idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
+        X, _ = self._resolve_fit_data(data, data_type)
         if self.scaler is not None:
             self.scaler.fit(X)
 
@@ -75,6 +77,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         X = X[idx]
         y = y[idx]
+        sample_weight = None if sample_weight is None else sample_weight[idx]
         if self.scaler is not None:
             X = self.scaler.transform(X)
 
@@ -82,26 +85,25 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         if sample_weight is not None:
             warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
 
-        super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input,
-                    context=context)
+        X_transform = self.st.fit_transform(X, y)
+        self.numerical, self.categorical = list(range(X_transform.shape[1])), []
+        self._fit_matrix(X_transform, y, sample_weight=sample_weight, check_input=check_input)
         selected_shape = self.tree_.feature[0]
         if selected_shape == -2:
             raise ValueError("No split found")
+
         self.st._optimize_memory(np.array([selected_shape]))
-        super().fit(self.st.transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input, context=context)
+        X_transform = self.st.transform(X, y)
+        self.numerical, self.categorical = list(range(X_transform.shape[1])), []
+        self._fit_matrix(X_transform, y, sample_weight=sample_weight, check_input=check_input)
 
         return self
 
-    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, check_input=False):
-        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-
+    def _transform(self, X):
         if self.scaler is not None:
             X = self.scaler.transform(X)
 
-        return super().apply(self.st.transform(X), check_input=check_input)
-
-    def supports(self, data_type):
-        return data_type in [DATA_TYPE_TABULAR]
+        return self.st.transform(X)
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         rule = {
@@ -197,5 +199,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
             self.threshold_original[0] = node_dict["threshold"]
 
         self.kwargs = copy.deepcopy(node_dict["args"])
+        self._restore_data_type(node_dict)
 
         return self

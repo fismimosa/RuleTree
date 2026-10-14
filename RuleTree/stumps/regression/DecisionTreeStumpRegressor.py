@@ -9,6 +9,7 @@ from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 from RuleTree.utils.data_utils import get_info_gain, _get_info_gain
+from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS
 
 
 class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
@@ -28,6 +29,13 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         - criterion: Function to measure the quality of a split ("squared_error", 
           "friedman_mse", "absolute_error", "poisson", default="squared_error")
     """
+
+    # time series and images are flattened into one feature per value
+    supported_data_types = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
+
+    # sklearn's DecisionTreeRegressor.apply comes first in the MRO
+    apply = RuleTreeBaseStump.apply
+
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
         Extract the decision rule from the stump in human-readable format.
@@ -72,6 +80,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         rule = self.get_rule(float_precision=None)
 
         rule["stump_type"] = self.__class__.__module__
+        rule["data_type"] = self.data_type_
         rule["impurity"] = self.impurity
 
         rule["args"] = self.kwargs
@@ -113,6 +122,7 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
 
         self.is_categorical = node_dict.get('is_categorical', False)
         self.impurity = node_dict.get('impurity', np.nan)
+        self._restore_data_type(node_dict)
 
         return self
 
@@ -207,47 +217,69 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         """
         return self.kwargs
 
-    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
-            idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
         """
         Build a decision stump by fitting to the input data.
-        
+
         The method first tries to find the best split with numerical features using
         scikit-learn's implementation, then checks if categorical features might provide
         a better split.
-        
+
+        Parameters
+        ----------
+        data : dict or array-like
+            Whole data set, as ``{data_type: array}``.
+        y : array-like of shape (n_samples,)
+            The target values (continuous values) of the whole data set.
+        idx : array-like, optional
+            Indices of samples to use for training. If None, all samples are used.
+        context : RuleTree, optional
+            Tree being built, used to cache the feature types.
+        data_type : str, optional
+            Data type to use. Defaults to the first supported type in data.
+        sample_weight : array-like of shape (n_samples,), optional
+            Sample weights of the whole data set.
+        check_input : bool, default=True
+            Whether to check input consistency.
+
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+        """
+        X, _ = self._resolve_fit_data(data, data_type)
+        X = self._transform(X)
+        self._set_feature_types(X, context)
+
+        if idx is None:
+            idx = slice(None)
+
+        return self._fit_matrix(X[idx], y[idx], None if sample_weight is None else sample_weight[idx], check_input)
+
+    def _transform(self, X):
+        """Flatten time series and images into one feature per value."""
+        return X if X.ndim <= 2 else X.reshape(X.shape[0], -1)
+
+    def _fit_matrix(self, X, y, sample_weight=None, check_input=True):
+        """
+        Fit the stump on a feature matrix, using the feature types in ``numerical`` and ``categorical``.
+
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
             The training input samples.
         y : array-like of shape (n_samples,)
             The target values (continuous values).
-        idx : array-like, optional
-            Indices of samples to use for training.
-        context : object, optional
-            Additional context information that may be used during fitting.
         sample_weight : array-like of shape (n_samples,), optional
             Sample weights.
         check_input : bool, default=True
             Whether to check input consistency.
-            
+
         Returns
         -------
         self : object
             Fitted estimator.
         """
-        if idx is None:
-            idx = slice(None)
-        X = X[idx]
-        y = y[idx]
-
-        if hasattr(context, 'categorical'):
-            self.categorical = context.categorical
-            self.numerical = context.numerical
-        else:
-            self.feature_analysis(X, y)
-            context.categorical = self.categorical
-            context.numerical = self.numerical
         best_info_gain = -float('inf')
 
         if len(self.numerical) > 0:
@@ -321,47 +353,30 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
                         ]
 
 
-    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, idx=None, check_input=False):
+    def _apply_matrix(self, X):
         """
-        Apply the decision stump to X.
-        
+        Apply the decision stump to a feature matrix.
+
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
             The input samples.
-        check_input : bool, default=False
-            Whether to check input consistency.
-            
+
         Returns
         -------
         y : array-like of shape (n_samples,)
             The predicted node indices (1 for left node, 2 for right node).
         """
-        if idx is not None:
-            X = X[idx]
-
         if len(self.feature_original) < 3:
-            return np.ones(X.shape[0])
+            return np.ones(X.shape[0], dtype=int)
 
+        X_feature = X[:, self.feature_original[0]]
         if not self.is_categorical:
-            y_pred = np.ones(X.shape[0], dtype=int) * 2
-            X_feature = X[:, self.feature_original[0]]
-            y_pred[X_feature <= self.threshold_original[0]] = 1
-            
-            return y_pred
+            return np.where(X_feature <= self.threshold_original[0], 1, 2)
         else:
-            y_pred = np.ones(X.shape[0], dtype=int) * 2
-            X_feature = X[:, self.feature_original[0]]
-            y_pred[X_feature == self.threshold_original[0]] = 1
+            return np.where(X_feature == self.threshold_original[0], 1, 2)
 
-            return y_pred
-
-    def update_statistics(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
-                          idx=None, context=None, sample_weight=None, check_input=True):
-        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        X = X[idx]
-        y = y[idx]
-
+    def _update_statistics_matrix(self, X, y, sample_weight=None):
         curr_pred = np.ones((len(y),)) * np.mean(y)
         if self.is_categorical:
             idx_l = X[:, self.feature_original[0]] == self.threshold_original[0]

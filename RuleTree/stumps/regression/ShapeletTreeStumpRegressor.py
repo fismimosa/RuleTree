@@ -35,6 +35,8 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         n_jobs (int): Number of parallel jobs for computation.
     """
 
+    supported_data_types = (DATA_TYPE_TS,)
+
     def __init__(self, n_shapelets=psutil.cpu_count(logical=False)*2,
                  n_shapelets_for_selection=500, #int, inf, or 'stratified'
                  n_ts_for_selection_per_class=100, #int, inf
@@ -102,24 +104,23 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
             "n_jobs": n_jobs,
         }
 
-    def fit(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None,
-            idx=None, context=None, sample_weight=None, check_input=True):
+    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
         """
         Fit the regressor to the given data.
 
         Args:
-            X (array-like): Input time series data.
-            y (array-like): Target values.
-            idx (slice, optional): Indices to select a subset of data.
-            context (optional): Contextual information (not used).
+            data (dict | array-like): Whole data set, as ``{data_type: array}``.
+            y (array-like): Target of the whole data set.
+            idx (array-like, optional): Indices of the instances to fit on. Defaults to all.
+            context (optional): Tree being built (not used).
+            data_type (str, optional): Data type to use. Defaults to the first supported type in data.
             sample_weight (optional): Sample weights (not supported).
             check_input (bool): Whether to validate input data.
 
         Returns:
             self: Fitted regressor.
         """
-        X = self._resolve_data_input(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-
+        X, _ = self._resolve_fit_data(data, data_type)
         if idx is None:
             idx = slice(None)
         X = X[idx]
@@ -129,33 +130,14 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         if sample_weight is not None:
             raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")
 
-        return super().fit(self.st.fit_transform(X, y), y=y, sample_weight=sample_weight, check_input=check_input)
+        X_transform = self.st.fit_transform(X, y)
+        self.numerical, self.categorical = list(range(X_transform.shape[1])), []
 
-    def apply(self, X=None, X_ts=None, X_img=None, X_txt=None, check_input=False):
-        """
-        Apply the fitted model to the input data.
+        return self._fit_matrix(X_transform, y, check_input=check_input)
 
-        Args:
-            X (array-like): Input time series data.
-            check_input (bool): Whether to validate input data.
-
-        Returns:
-            array-like: Transformed data.
-        """
-        X = self._resolve_data_input(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        return super().apply(self.st.transform(X), check_input=check_input)
-
-    def supports(self, data_type):
-        """
-        Check if the regressor supports the given data type.
-
-        Args:
-            data_type: Data type to check.
-
-        Returns:
-            bool: True if supported, False otherwise.
-        """
-        return data_type in [DATA_TYPE_TS]
+    def _transform(self, X):
+        """Distance of each time series from each shapelet."""
+        return self.st.transform(X)
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """
@@ -218,8 +200,7 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         args = copy.deepcopy(node_dict["args"])
         self.kwargs = args
+        self._restore_data_type(node_dict)
 
         return self
 
-    def update_statistics(self, X, y, idx=None, context=None, sample_weight=None, check_input=True):
-        super().update_statistics(self.st.transform(X), y, idx, context, sample_weight, check_input)

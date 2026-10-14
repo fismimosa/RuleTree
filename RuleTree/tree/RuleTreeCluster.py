@@ -3,7 +3,6 @@ from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
-from sklearn import tree
 from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 
@@ -15,6 +14,7 @@ from RuleTree.tree.RuleTreeClassifier import RuleTreeClassifier
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 from RuleTree.tree.RuleTreeRegressor import RuleTreeRegressor
 from RuleTree.utils import bic, light_famd
+from RuleTree.utils.define import DATA_TYPE_TABULAR
 
 
 class RuleTreeCluster(RuleTree, ClusterMixin):
@@ -95,35 +95,40 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         if self.clus_impurity not in ['bic', 'r2']:
             raise ValueError('Unknown clustering impurity measure %s' % self.clus_impurity)
 
-    def is_split_useless(self, X: np.ndarray|None, X_ts:np.ndarray|None, X_img:np.ndarray|None, X_txt:np.ndarray|None,
-                         clf: RuleTreeBaseStump, idx: np.ndarray):
+    def is_split_useless(self, data: dict, idx: np.ndarray, labels: np.ndarray):
         """
         Determine if a split is useful based on BIC criteria.
         
         Parameters
         ----------
-        X : array-like
-            Input data samples.
-        clf : tree
-            Fitted tree classifier/regressor that defines the split.
+        data : dict
+            Whole data set, as ``{data_type: array}``.
         idx : ndarray
             Indices of samples in the current node.
+        labels : ndarray
+            Result of the split on idx (1 left, 2 right).
             
         Returns
         -------
         bool
             True if the split is considered useless, False otherwise.
         """
-        labels = clf.apply(X[idx])
-
         if len(np.unique(labels)) == 1:
             return True
 
         # CHECK BIC DECREASE
+        X = data[DATA_TYPE_TABULAR]
         bic_parent = bic(X[idx], [0] * len(idx))
         bic_children = bic(X[idx], (np.array(labels) - 1).tolist())
 
         return bic_parent < bic_children - self.bic_eps * np.abs(bic_parent)
+
+    def _set_candidate_splits(self, data: dict):
+        """Clustering is based on the principal components of the tabular data, the only type supported."""
+        if set(data) != {DATA_TYPE_TABULAR}:
+            raise ValueError(f"{self.__class__.__name__} supports only tabular data (X), got {', '.join(data)}.")
+
+        super()._set_candidate_splits(data)
 
     def fit_predict(self, X, y=None, **kwargs):
         """
@@ -165,7 +170,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         """
         heapq.heappush(self.queue, (-len(idx), next(self.tiebreaker), idx, node))
 
-    def make_split(self, X: np.ndarray, y, idx: np.ndarray, **kwargs) -> tree:
+    def make_split(self, data: dict, y, idx: np.ndarray, sample_weight=None) -> RuleTreeBaseStump:
         """
         Create a split for the current node using dimensionality reduction.
         
@@ -175,28 +180,21 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
-            Training data.
+        data : dict
+            Whole data set, as ``{data_type: array}`` (only tabular data).
         y : array-like
             Target values (ignored in clustering, but kept for API consistency).
         idx : ndarray
             Indices of samples in the current node.
-        **kwargs : dict
-            Additional parameters passed to the function.
+        sample_weight : ignored
+            Not used, present for API consistency.
             
         Returns
         -------
-        tree
-            The best decision tree stump for this split.
-            
-        Raises
-        ------
-        TypeError
-            If the input data has an unsupported shape.
+        RuleTreeBaseStump
+            The best stump for this split.
         """
-        if len(X.shape) != 2:
-            raise TypeError(f'Unsupported data type for shape {X.shape}')
-
+        X = data[DATA_TYPE_TABULAR]
         n_components_split = min(self.n_components, len(idx))
 
         dtypes = pd.DataFrame(X).infer_objects().dtypes
@@ -217,19 +215,14 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         best_clf = None
         best_score = float('inf')
         for i in range(n_components_split):
-            clf = self._get_random_stump(y_pca)
+            clf, data_type = self._get_random_split()
 
             try:
-                clf.fit(
-                    X=X,
-                    y=y_pca_all[:, i],
-                    idx=idx,
-                    context=self
-                )
+                clf.fit(data, y_pca_all[:, i], idx=idx, context=self, data_type=data_type)
             except NoSplitFoundWarning:
                 continue
 
-            labels = clf.apply(X[idx]).astype(int)
+            labels = clf.apply(data, idx)
             if self.clus_impurity == 'r2':
                 # fraction of the variance of the i-th component explained by the split
                 component = y_pca[:, i]
@@ -403,7 +396,7 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
         Nodes already predict class labels, so no post-processing is needed.
         """
 
-    def predict_proba(self, X: np.ndarray):
+    def predict_proba(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
         Predict class probabilities for the input data.
 
@@ -417,7 +410,7 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
         ndarray of shape (n_samples, n_classes)
             Class probabilities of the leaf reached by each sample.
         """
-        return RuleTreeClassifier.predict_proba(self, X)
+        return RuleTreeClassifier.predict_proba(self, X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
 
 class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):

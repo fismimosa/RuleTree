@@ -183,7 +183,7 @@ class RuleTreeNode:
     
         return rule
 
-    def update_statistics(self, X, y, idx=None, context=None):
+    def update_statistics(self, data, y, idx=None, context=None):
         if idx is None:
             idx = slice(None)
 
@@ -215,7 +215,7 @@ class RuleTreeNode:
         self.samples = len(y_local)
 
         if self.stump is not None and not self.is_leaf():
-            self.stump.update_statistics(X, y, idx=idx, context=context)
+            self.stump.update_statistics(data, y, idx=idx, context=context)
     
     def node_to_dict(self):
         """
@@ -352,19 +352,20 @@ class RuleTreeNode:
 
         return graph
 
-    def predict(self, X: np.ndarray|None=None, X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None,
-                X_txt:np.ndarray|None=None, idx:np.ndarray=None, prediction_step=np.inf):
+    def predict(self, data, idx:np.ndarray=None, prediction_step=np.inf):
         """
         Predict labels, leaf indices, and probabilities for the given input data.
 
         This method traverses the tree recursively to make predictions for each sample
-        in the input feature matrix. It stops at leaf nodes or when the specified
+        in the input data. It stops at leaf nodes or when the specified
         `prediction_step` depth is reached.
 
         Parameters
         ----------
-        X : np.ndarray
-            Feature matrix of shape (n_samples, n_features).
+        data : dict or np.ndarray
+            Data set, as ``{data_type: array}``. A single array is passed as is to the stumps.
+        idx : np.ndarray, optional
+            Indices of the instances to predict. Defaults to all.
         prediction_step : int, optional
             Maximum depth to traverse for prediction. Defaults to np.inf.
 
@@ -377,17 +378,8 @@ class RuleTreeNode:
             - np.ndarray: Predicted probabilities for each sample.
         """
         if idx is None:
-            if X is not None:
-                n = X.shape[0]
-            elif X_ts is not None:
-                n = X_ts.shape[0]
-            elif X_img is not None:
-                n = X_img.shape[0]
-            else:
-                n = len(X_txt)
-            idx = np.arange(n)
-        else:
-            n = len(idx)
+            idx = np.arange(len(next(iter(data.values()))) if isinstance(data, dict) else len(data))
+        n = len(idx)
 
         if self.is_leaf() or prediction_step < 1:
             return np.array([self.prediction] * n), \
@@ -405,15 +397,13 @@ class RuleTreeNode:
                 ), dtype=float) * -1
             )
 
-            labels_clf = self.stump.apply(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx)
+            labels_clf = self.stump.apply(data, idx)
             if sum(labels_clf == 1) != 0:
                 labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = (
-                    self.node_l.predict(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx[labels_clf == 1],
-                                        prediction_step=prediction_step-1))
+                    self.node_l.predict(data, idx=idx[labels_clf == 1], prediction_step=prediction_step - 1))
             if sum(labels_clf == 2) != 0:
                 labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = (
-                    self.node_r.predict(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt, idx=idx[labels_clf == 2],
-                                        prediction_step=prediction_step - 1))
+                    self.node_r.predict(data, idx=idx[labels_clf == 2], prediction_step=prediction_step - 1))
 
             return labels, leaves, proba
 
