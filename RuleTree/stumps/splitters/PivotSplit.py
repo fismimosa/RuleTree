@@ -1,3 +1,5 @@
+"""PivotSplit: the selection of the candidate pivots of the pivot stumps."""
+
 from abc import ABC
 
 import numpy as np
@@ -49,6 +51,17 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
             ml_task,
             **kwargs
     ):
+        """
+        Initialize the PivotSplit.
+
+        Parameters
+        ----------
+        ml_task : str
+            Task: MODEL_TYPE_CLF or MODEL_TYPE_REG.
+        **kwargs : dict
+            ``k``, ``reg_contrast_lambda`` and ``reg_max_thresholds`` (pivot selection for regression);
+            the others are parameters of the decision trees that find the discriminative pivots.
+        """
         super(RuleTreeBaseSplit, RuleTreeBaseSplit).__init__(ml_task)
         self.k = kwargs.pop("k", None)
         self.reg_contrast_lambda = kwargs.pop("reg_contrast_lambda", .2)
@@ -116,6 +129,19 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         return medoid_index
 
     def _resolve_knn_density_k(self, n_samples):
+        """
+        Number of neighbours used to measure the contrast of a pivot (regression).
+
+        Parameters
+        ----------
+        n_samples : int
+            Number of instances in the node.
+
+        Returns
+        -------
+        k : int
+            ``k``, or the square root of n_samples if k is None, between 5 and n_samples - 1.
+        """
         if self.k is None:
             k = int(np.sqrt(n_samples))
         else:
@@ -128,6 +154,19 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
 
     @staticmethod
     def _root_split_gain(tree_):
+        """
+        Decrease of impurity of the root split of a fitted scikit-learn tree.
+
+        Parameters
+        ----------
+        tree_ : sklearn.tree._tree.Tree
+            Fitted tree.
+
+        Returns
+        -------
+        gain : float
+            0 if the tree has no split.
+        """
         if tree_.feature[0] == -2:
             return 0.0
 
@@ -139,6 +178,24 @@ class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):
         return float(imp[0] - (w[1] / w[0]) * imp[1] - (w[2] / w[0]) * imp[2])
 
     def compute_descriptive_regression(self, sub_matrix, y, sample_weight=None):
+        """
+        Descriptive pivot for regression: the instance whose distance best separates the target (gain of a
+        depth-1 regression tree on the distances) and best contrasts near and far instances.
+
+        Parameters
+        ----------
+        sub_matrix : numpy.ndarray of shape (n_samples, n_samples)
+            Distances between the instances of the node.
+        y : numpy.ndarray
+            Target of the instances of the node.
+        sample_weight : numpy.ndarray, default=None
+            Sample weights.
+
+        Returns
+        -------
+        pivot : int
+            Index (in the node) of the descriptive pivot.
+        """
         n_samples = len(y)
         if n_samples <= 1:
             return 0

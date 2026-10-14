@@ -1,3 +1,5 @@
+"""RegressionSplitter: the best split for regression."""
+
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_poisson_deviance, mean_squared_error
 from sklearn.tree import DecisionTreeRegressor
@@ -26,6 +28,7 @@ class RegressionSplitter(RuleTreeBaseSplitter):
 
     def __init__(self, criterion='squared_error', min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                  max_features=None, random_state=None, min_impurity_decrease=0.0):
+        """Initialize the RegressionSplitter; see the class documentation for the parameters."""
         self.criterion = criterion
         self.min_samples_leaf = min_samples_leaf
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
@@ -35,7 +38,24 @@ class RegressionSplitter(RuleTreeBaseSplitter):
 
     @classmethod
     def _get_impurity_fun(cls, imp):
-        """Impurity function (y_true, y_pred) -> float of a criterion name or callable."""
+        """
+        Impurity function of a criterion.
+
+        Parameters
+        ----------
+        imp : str or callable
+            Name of the criterion, or the impurity function itself.
+
+        Returns
+        -------
+        impurity_fun : callable
+            Function (y_true, y_pred) -> impurity.
+
+        Raises
+        ------
+        NotImplementedError
+            For 'friedman_mse'.
+        """
         if imp == "squared_error":
             return mean_squared_error
         elif imp == "friedman_mse":
@@ -49,13 +69,42 @@ class RegressionSplitter(RuleTreeBaseSplitter):
 
     @classmethod
     def _impurity_fun(cls, impurity_fun, **x):
-        """Impurity of y_true predicted as y_pred (0 for no instances)."""
+        """
+        Impurity of y_true predicted as y_pred, 0 if there are no instances.
+
+        Parameters
+        ----------
+        impurity_fun : str or callable
+            Criterion.
+        **x : dict
+            ``y_true`` and ``y_pred``.
+
+        Returns
+        -------
+        impurity : float
+        """
         f = cls._get_impurity_fun(impurity_fun)
         return f(**x) if len(x["y_true"]) > 0 else 0  # TODO: check
 
     @classmethod
     def _split_impurity(cls, criterion, y, left):
-        """Impurity of the node and of the two children, each predicted with its mean (0 if empty)."""
+        """
+        Impurity of the node and of the two children, each predicted with its mean.
+
+        Parameters
+        ----------
+        criterion : str or callable
+            Criterion.
+        y : numpy.ndarray
+            Target of the instances in the node.
+        left : numpy.ndarray of bool
+            Instances that go to the left child.
+
+        Returns
+        -------
+        impurity : list of float
+            Impurity of the node, of the left child and of the right child (0 for an empty child).
+        """
         def impurity(y_true):
             y_pred = np.ones((len(y_true),)) * np.mean(y_true) if len(y_true) > 0 else np.ones((0,))
             return cls._impurity_fun(criterion, y_true=y_true, y_pred=y_pred)
@@ -63,6 +112,35 @@ class RegressionSplitter(RuleTreeBaseSplitter):
         return [impurity(y), impurity(y[left]), impurity(y[~left])]
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+        """
+        Find the best split: the threshold of the scikit-learn tree on the numerical features, replaced by a
+        categorical split if one has a higher decrease of impurity.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Target of the instances in the node.
+        numerical : list of int
+            Indices of the numerical columns of X.
+        categorical : list of int
+            Indices of the categorical columns of X.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights of the instances in the node.
+        check_input : bool, default=True
+            Whether to check the input data.
+
+        Returns
+        -------
+        self : RegressionSplitter
+            The fitted splitter.
+
+        Raises
+        ------
+        NoSplitFoundWarning
+            If no split is found.
+        """
         self.feature_, self.threshold_, self.is_categorical_, self.impurity_ = None, None, False, None
         best_info_gain = -float('inf')
 
@@ -91,7 +169,25 @@ class RegressionSplitter(RuleTreeBaseSplitter):
         return self
 
     def _fit_categorical(self, X, y, categorical, best_info_gain):
-        """Test each value of each categorical feature; keep the split if better than best_info_gain."""
+        """
+        Test each value of each categorical feature and keep the split if better than best_info_gain.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix.
+        y : numpy.ndarray
+            Target.
+        categorical : list of int
+            Indices of the categorical columns.
+        best_info_gain : float
+            Gain of the best split found so far.
+
+        Returns
+        -------
+        best_info_gain : float
+            Gain of the best split.
+        """
         len_x = len(X)
         for i in categorical:
             for value in np.unique(X[:, i]):
@@ -113,4 +209,16 @@ class RegressionSplitter(RuleTreeBaseSplitter):
         return best_info_gain
 
     def update_statistics(self, X, y, sample_weight=None):
+        """
+        Recompute the impurity of the node and of the two children.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Target of the instances in the node.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights of the instances in the node.
+        """
         self.impurity_ = self._split_impurity(self.criterion, y, self.apply(X) == 1)

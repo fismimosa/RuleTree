@@ -1,3 +1,5 @@
+"""XGBoostSplitter: the best split according to the XGBoost gain."""
+
 import numpy as np
 
 from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
@@ -30,6 +32,7 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
     _state = RuleTreeBaseSplitter._state + ('gain', 'root_similarity', 'similarity_l', 'similarity_r')
 
     def __init__(self, lam, approximation=None, n_quantiles=32, min_cover=1, n_jobs=1):
+        """Initialize the XGBoostSplitter; see the class documentation for the parameters."""
         if approximation is not None and approximation not in ['quantile']:
             raise ValueError('approximation must be None or quantile')
 
@@ -40,9 +43,36 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         self.n_jobs = n_jobs
 
     def _get_cover_similarity_fun(self):
+        """
+        Cover and similarity functions of regression.
+
+        Returns
+        -------
+        cover_fn : callable
+            Residuals -> cover (number of instances).
+        similarity_fn : callable
+            (residuals, cover, lambda) -> similarity score.
+        """
         return xgboost_cover_regression, xgboost_similarity_score_regression
 
     def get_threshold_values(self, X, feature_idx, categorical):
+        """
+        Values tested for a feature: its values (categorical), the midpoints between its consecutive values
+        (numerical) or, with approximation='quantile', n_quantiles quantiles.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix.
+        feature_idx : int
+            Column of the feature.
+        categorical : list of int
+            Indices of the categorical columns.
+
+        Returns
+        -------
+        thresholds : numpy.ndarray
+        """
         unique_val = np.unique(X[:, feature_idx])
         if feature_idx in categorical:
             return unique_val
@@ -54,6 +84,34 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
                 return np.quantile(X[:, feature_idx], np.linspace(0, 1, self.n_quantiles))
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+        """
+        Find the split with the highest XGBoost gain among all the features and thresholds.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Target of the instances in the node.
+        numerical : list of int
+            Indices of the numerical columns of X.
+        categorical : list of int
+            Indices of the categorical columns of X.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights of the instances in the node.
+        check_input : bool, default=True
+            Whether to check the input data.
+
+        Returns
+        -------
+        self : XGBoostSplitter
+            The fitted splitter.
+
+        Raises
+        ------
+        NoSplitFoundWarning
+            If no split is found.
+        """
         cover_fn, sim_fn = self._get_cover_similarity_fun()
 
         root_cover = cover_fn(y)
@@ -96,6 +154,18 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         return self
 
     def update_statistics(self, X, y, sample_weight=None):
+        """
+        Recompute the similarity scores and the gain of the split (``gain`` and ``gain_``).
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Target of the instances in the node.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights of the instances in the node.
+        """
         left = self.apply(X) == 1
 
         cover_fn, sim_fn = self._get_cover_similarity_fun()

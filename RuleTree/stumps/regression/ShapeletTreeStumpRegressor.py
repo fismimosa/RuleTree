@@ -1,3 +1,5 @@
+"""ShapeletTreeStumpRegressor: the split on the distance from a shapelet, for regression of time series."""
+
 from typing import Optional
 
 import psutil
@@ -33,6 +35,7 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
                  random_state=42, n_jobs=1,
                  criterion='squared_error', min_samples_leaf=1, min_weight_fraction_leaf=0.0,
                  max_features=None, min_impurity_decrease=0.0):
+        """Initialize the ShapeletTreeStumpRegressor; see the class documentation for the parameters."""
         if selection not in ['random', 'mi_reg', 'cluster']:
             raise ValueError("'selection' must be 'random', 'mi_reg' or 'cluster'")
 
@@ -52,10 +55,24 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         self.min_impurity_decrease = min_impurity_decrease
 
     def _splitter_params(self):
-        # random_state is the one of the shapelet selection
+        """
+        Parameters of the splitter: as in the decision tree stump, but without random_state, which is
+        the one of the shapelet selection.
+
+        Returns
+        -------
+        params : dict
+        """
         return super()._splitter_params() | {"random_state": None}
 
     def _make_transformer(self):
+        """
+        A new, unfitted ShapeletTransformer with the parameters of the stump.
+
+        Returns
+        -------
+        transformer : ShapeletTransformer
+        """
         return ShapeletTransformer(n_shapelets=self.n_shapelets,
                                    n_shapelets_for_selection=self.n_shapelets_for_selection,
                                    n_ts_for_selection_per_class=self.n_ts_for_selection_per_class,
@@ -73,14 +90,26 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """
-        Generate a rule representation of the tree stump.
+        Rule of the split, e.g. ``euclidean(TS, shp) <= 1.2``; the Graphviz node shows a plot of the
+        shapelet, drawn into a temporary PNG file.
 
-        Args:
-            columns_names (list, optional): Column names for features.
-            scaler (optional): Scaler for feature values (not supported).
-            float_precision (int, optional): Precision for floating-point values.
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Not used.
+        scaler : TransformerMixin, default=None
+            Not supported: must be None.
+        float_precision : int, default=3
+            Number of decimals of the threshold. If None, it is not rounded.
 
-        Returns:
-            dict: Rule representation.
+        Returns
+        -------
+        rule : dict
+            See RuleTreeBaseStump.get_rule.
+
+        Raises
+        ------
+        UnsupportedError
+            If a scaler is given.
         """
         return ShapeletTreeStumpClassifier.get_rule(self, columns_names, scaler, float_precision)

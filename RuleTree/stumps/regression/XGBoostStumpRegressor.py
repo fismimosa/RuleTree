@@ -1,3 +1,5 @@
+"""XGBoostStumpRegressor: the split of the trees of XGBoost."""
+
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.stumps.splitters.XGBoostSplitter import XGBoostSplitter
 
@@ -10,6 +12,7 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
     """
 
     def __init__(self, lam, approximation=None, n_quantiles=32, min_cover=1, n_jobs=1):
+        """Initialize the XGBoostStumpRegressor; see XGBoostSplitter for the parameters."""
         if approximation is not None and approximation not in ['quantile']:
             raise ValueError('approximation must be None or quantile')
 
@@ -20,6 +23,13 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
         self.n_jobs = n_jobs
 
     def _make_splitter(self):
+        """
+        A new, unfitted XGBoostSplitter with the parameters of the stump.
+
+        Returns
+        -------
+        splitter : XGBoostSplitter
+        """
         return XGBoostSplitter(lam=self.lam, approximation=self.approximation, n_quantiles=self.n_quantiles,
                                min_cover=self.min_cover, n_jobs=self.n_jobs)
 

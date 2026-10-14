@@ -1,3 +1,5 @@
+"""PivotTreeStumpClassifier: the split on the distance from a pivot instance, for classification."""
+
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.transformers.PivotTransformer import PivotTransformer
 from RuleTree.utils.define import MODEL_TYPE_CLF
@@ -24,6 +26,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier):
     def __init__(self, distance_measure='euclidean', k=None, reg_contrast_lambda=.2, reg_max_thresholds=None,
                  criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
                  random_state=None, min_impurity_decrease=0.0, class_weight=None):
+        """Initialize the PivotTreeStumpClassifier; see the class documentation for the parameters."""
         self.distance_measure = distance_measure
         self.k = k
         self.reg_contrast_lambda = reg_contrast_lambda
@@ -37,6 +40,14 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         self.class_weight = class_weight
 
     def _make_transformer(self):
+        """
+        A new, unfitted PivotTransformer with the parameters of the stump; its decision trees use the
+        parameters of the splitter.
+
+        Returns
+        -------
+        transformer : PivotTransformer
+        """
         return PivotTransformer(ml_task=MODEL_TYPE_CLF, distance_measure=self.distance_measure, k=self.k,
                                 reg_contrast_lambda=self.reg_contrast_lambda,
                                 reg_max_thresholds=self.reg_max_thresholds, tree_params=self._splitter_params())
@@ -52,9 +63,35 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         return self.transformer_.candidates_[0] if self._is_fitted() else None
 
     def _legacy_feature(self, node_dict):
+        """
+        Column of the feature matrix of a stump saved before the composition of the stumps: the
+        distance from the only pivot kept.
+
+        Parameters
+        ----------
+        node_dict : dict
+            Saved stump.
+
+        Returns
+        -------
+        feature : int
+            Always 0.
+        """
         return 0  # the distance from the only pivot kept
 
     def _legacy_transformer_state(self, node_dict):
+        """
+        State of the PivotTransformer of a stump saved before the composition of the stumps.
+
+        Parameters
+        ----------
+        node_dict : dict
+            Saved stump.
+
+        Returns
+        -------
+        state : dict
+        """
         return node_dict | {"pivot_name": node_dict["feature_idx"]}
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):

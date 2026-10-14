@@ -1,3 +1,5 @@
+"""GBoostClassifier: gradient boosting of RuleTrees for classification."""
+
 import copy
 from concurrent.futures import ProcessPoolExecutor
 from os import cpu_count
@@ -13,8 +15,50 @@ from RuleTree.base.RuleTreeBase import RuleTreeBase
 
 
 class GBoostClassifier(ClassifierMixin, RuleTreeBase):
+    """
+    Gradient boosting for classification with RuleTreeRegressors as base estimators (one-vs-rest,
+    logistic loss).
+
+    For each class, a boosting of regression trees is fitted on the residuals of the predicted
+    probability of the class; the leaves of each tree are given the Newton step of the log-odds.
+    The prediction is the class with the highest probability. The classes are fitted in parallel.
+
+    Parameters
+    ----------
+    base_estimator : RuleTreeRegressor, default=RuleTreeRegressor(max_depth=4)
+        Estimator fitted at each iteration.
+    n_estimators : int, default=100
+        Maximum number of estimators per class.
+    learning_rate : float, default=0.1
+        Shrinkage of the contribution of each estimator.
+    loss : 'squared_loss' or callable, default='squared_loss'
+        Checked but not used.
+    patience : int, default=5
+        Number of iterations without improvement before stopping.
+    val_size : float, default=0.15
+        Fraction of the training set used for validation (stratified).
+    n_jobs : int, default=os.cpu_count()
+        Number of processes (at most one per class).
+    random_state : int, default=42
+        Seed of the split between training and validation.
+
+    Attributes
+    ----------
+    classes_ : list
+        Classes of the target.
+    base_log_odds : numpy.ndarray
+        Initial log-odds of each class.
+    estimators_ : list of list
+        For each class, the fitted estimators with the value of each of their leaves.
+
+    Notes
+    -----
+    predict maps the index of the predicted class with ``classes_.index``: it returns the right
+    class only when the classes are 0, ..., n_classes - 1.
+    """
     def __init__(self, base_estimator=RuleTreeRegressor(max_depth=4), n_estimators=100, learning_rate=.1,
                  loss='squared_loss', patience=5, val_size=.15, n_jobs=cpu_count(), random_state=42):
+        """Initialize the GBoostClassifier; see the class documentation for the parameters."""
         self.base_estimator = base_estimator
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
@@ -27,6 +71,20 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
         self.random_state = random_state
 
     def fit(self, X: np.ndarray, y: np.ndarray):
+        """
+        Fit a boosting for each class.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
+        y : numpy.ndarray of shape (n_samples,)
+            Target.
+
+        Returns
+        -------
+        self : GBoostClassifier
+        """
         self.classes_ = np.unique(y).tolist()
         n_classes = len(self.classes_)
 
@@ -65,6 +123,18 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
 
 
     def predict(self, X: np.ndarray):
+        """
+        Predict the class with the highest probability.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
+
+        Returns
+        -------
+        y_pred : numpy.ndarray of shape (n_samples,)
+        """
         prediction = np.ones((X.shape[0], len(self.classes_)))*self.base_log_odds
 
         for i, (classe, estimators_el) in enumerate(zip(self.classes_, self.estimators_)):
@@ -79,6 +149,22 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
         return prediction
 
 def _train_one_class(args):
+    """
+    Fit the boosting of one class (one-vs-rest), run in a separate process.
+
+    Parameters
+    ----------
+    args : tuple
+        (index of the class, class, X, y, base estimator, initial probability, initial log-odds,
+        learning rate, number of estimators, validation size, patience, random state).
+
+    Returns
+    -------
+    i : int
+        Index of the class.
+    estimators : list of tuple
+        The fitted estimators with the value of each of their leaves.
+    """
     i, classe, X, y, base_estimator, base_pred, base_log_odds, lr, n_estimators, val_size, patience, random_state = args
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=val_size,

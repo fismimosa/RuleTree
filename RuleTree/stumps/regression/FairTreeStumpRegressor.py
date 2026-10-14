@@ -1,3 +1,5 @@
+"""FairTreeStumpRegressor: the split for regression under a fairness constraint."""
+
 from typing import Union
 
 import psutil
@@ -71,6 +73,7 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
                  use_t: bool = True,
                  n_jobs: int = psutil.cpu_count(logical=False),
                  criterion='squared_error'):
+        """Initialize the FairTreeStumpRegressor; see the class documentation for the parameters."""
         self.penalty = penalty
         self.sensible_attribute = sensible_attribute
         self.penalization_weight = penalization_weight
@@ -84,6 +87,13 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         self.criterion = criterion
 
     def _make_splitter(self):
+        """
+        A new, unfitted FairSplitter with the parameters of the stump.
+
+        Returns
+        -------
+        splitter : FairSplitter
+        """
         return FairSplitter(penalty=self.penalty, sensible_attribute=self.sensible_attribute,
                             penalization_weight=self.penalization_weight, ideal_distribution=self.ideal_distribution,
                             k_anonymity=self.k_anonymity, l_diversity=self.l_diversity, t_closeness=self.t_closeness,

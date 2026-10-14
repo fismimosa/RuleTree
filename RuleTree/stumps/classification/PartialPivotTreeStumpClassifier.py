@@ -1,3 +1,5 @@
+"""PartialPivotTreeStumpClassifier: the split on the distance from a partial pivot, for classification."""
+
 from typing import Optional
 
 import numpy as np
@@ -34,6 +36,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
                  random_state=42, n_jobs=1,
                  criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
                  min_impurity_decrease=0.0, class_weight=None):
+        """Initialize the PartialPivotTreeStumpClassifier; see the class documentation for the parameters."""
         if selection not in ["random", "cluster", "all"]:
             raise ValueError("'selection' must be 'random', 'all' or 'cluster'")
 
@@ -54,10 +57,24 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         self.class_weight = class_weight
 
     def _splitter_params(self):
-        # random_state is the one of the selection of the partial pivots
+        """
+        Parameters of the splitter: as in the decision tree stump, but without random_state, which is
+        the one of the selection of the partial pivots.
+
+        Returns
+        -------
+        params : dict
+        """
         return super()._splitter_params() | {"random_state": None}
 
     def _make_transformer(self):
+        """
+        A new, unfitted PartialPivotTransformer with the parameters of the stump.
+
+        Returns
+        -------
+        transformer : PartialPivotTransformer
+        """
         return PartialPivotTransformer(n_shapelets=self.n_shapelets,
                                        n_ts_for_selection=self.n_ts_for_selection,
                                        n_features_strategy=self.n_features_strategy,
@@ -74,6 +91,24 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         return self.transformer_.st_
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
+        """
+        Rule of the split, e.g. ``SP0(d: sepal length=5.1, petal width=0.2) <= 0.8``: the distance from
+        the partial pivot, described by the values of its features.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the features. If None, ``Feat. <index>``.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the values of the pivot are shown in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the threshold. If None, it is not rounded.
+
+        Returns
+        -------
+        rule : dict
+            See RuleTreeBaseStump.get_rule.
+        """
         rule = {
             "feature_idx": self.feature_original[0],
             "threshold": self.threshold_original[0],

@@ -39,6 +39,7 @@ class Stump(RuleTreeBaseStump):
     """
 
     def __init__(self, transformer=None, splitter=None):
+        """Initialize the stump; see the class documentation for the parameters."""
         self.transformer = transformer
         self.splitter = splitter
 
@@ -52,13 +53,48 @@ class Stump(RuleTreeBaseStump):
 
     @property
     def supported_data_types(self):
+        """Data types supported by the stump: the ones of its transformer."""
         return self._make_transformer().supported_data_types
 
     @property
     def task(self):
+        """Task of the stump: the one of its splitter (MODEL_TYPE_CLF or MODEL_TYPE_REG)."""
         return self._make_splitter().task
 
     def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
+        """
+        Fit the stump on the instances ``idx`` of ``data``: the transformer on the whole data set of the
+        selected type (with the indices of the node and the cache of the tree), the splitter on the
+        feature matrix of the node; then the transformer keeps only what is needed by the chosen feature
+        (and the splitter is fitted again if the feature matrix changes).
+
+        Parameters
+        ----------
+        data : dict or numpy.ndarray
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray, default=None
+            Indices of the instances reaching the node. If None, all the instances.
+        context : RuleTree, default=None
+            Tree being built, whose cache is shared by the stumps of the same class.
+        data_type : str, default=None
+            Data type to use. If None, the first supported data type available in ``data``.
+        sample_weight : numpy.ndarray, default=None
+            Sample weights of the whole data set.
+        check_input : bool, default=True
+            Whether to check the input data.
+
+        Returns
+        -------
+        self : Stump
+            The fitted stump.
+
+        Raises
+        ------
+        NoSplitFoundWarning
+            If the instances cannot be split.
+        """
         X, _ = self._resolve_fit_data(data, data_type)
         if idx is None:
             idx = np.arange(len(X))
@@ -81,26 +117,78 @@ class Stump(RuleTreeBaseStump):
         return self
 
     def _transform(self, X):
+        """
+        Feature matrix of X, computed by the fitted transformer.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Data of the stump's data type.
+
+        Returns
+        -------
+        X_transformed : numpy.ndarray of shape (n_samples, n_features)
+        """
         return self.transformer_.transform(X)
 
     def _apply_matrix(self, X):
+        """
+        Split of a feature matrix, computed by the fitted splitter.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix.
+
+        Returns
+        -------
+        labels : numpy.ndarray of int
+            1 for the rows that go to the left child, 2 otherwise.
+        """
         return self.splitter_.apply(X)
 
     def _update_statistics_matrix(self, X, y, sample_weight=None):
+        """
+        Recompute the statistics of the splitter on a feature matrix.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray
+            Target of the instances in the node.
+        sample_weight : numpy.ndarray, default=None
+            Sample weights of the instances in the node.
+        """
         self.splitter_.update_statistics(X, y, sample_weight)
 
     def _is_fitted(self):
+        """
+        Whether the stump is fitted.
+
+        Returns
+        -------
+        is_fitted : bool
+        """
         return hasattr(self, "splitter_")
 
     # attributes of the split, as exposed by the stumps before their composition
     @property
     def feature_original(self):
+        """
+        Identifier of the feature of the split, as given by the transformer (e.g. a column of the data
+        or a pivot), followed by -2, -2 for compatibility with the former stumps. None if not fitted.
+        """
         if not self._is_fitted():
             return None
         return [self.transformer_.feature_id(self.splitter_.feature_), -2, -2]
 
     @property
     def threshold_original(self):
+        """
+        Threshold (numerical split) or value (categorical split), followed by -2, -2 for compatibility
+        with the former stumps. None if not fitted.
+        """
         if not self._is_fitted():
             return None
         threshold = self.splitter_.threshold_
@@ -108,14 +196,17 @@ class Stump(RuleTreeBaseStump):
 
     @property
     def is_categorical(self):
+        """Whether the split is categorical (``x == value``). None if not fitted."""
         return self.splitter_.is_categorical_ if self._is_fitted() else None
 
     @property
     def impurity(self):
+        """Impurity of the node and of the two children, if computed by the splitter. None if not fitted."""
         return self.splitter_.impurity_ if self._is_fitted() else None
 
     @property
     def gain_(self):
+        """Gain of the split, used by the trees with stump_selection='best'."""
         return self.splitter_.gain_
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
@@ -199,15 +290,55 @@ def _params_to_dict(params: dict) -> dict:
 
 
 def _params_from_dict(params: dict) -> dict:
+    """
+    Constructor parameters from a dictionary created by _params_to_dict.
+
+    Parameters
+    ----------
+    params : dict
+        Saved parameters.
+
+    Returns
+    -------
+    params : dict
+        Parameters, with the estimators rebuilt.
+    """
     return {name: _estimator_from_dict(value) if isinstance(value, dict) and "__estimator__" in value else value
             for name, value in params.items()}
 
 
 def _estimator_to_dict(estimator: BaseEstimator) -> dict:
+    """
+    JSON-friendly representation of an estimator: its class and its parameters.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The estimator, e.g. a transformer or a splitter.
+
+    Returns
+    -------
+    dictionary : dict
+        ``{"__estimator__": "module.Class", "params": {...}}``.
+    """
     return {"__estimator__": f"{estimator.__class__.__module__}.{estimator.__class__.__qualname__}",
             "params": _params_to_dict(estimator.get_params(deep=False))}
 
 
 def _estimator_from_dict(dictionary: dict) -> BaseEstimator:
+    """
+    Estimator from a dictionary created by _estimator_to_dict. The class must be importable from its
+    module (e.g. not defined in a notebook or in ``__main__`` of another script).
+
+    Parameters
+    ----------
+    dictionary : dict
+        Representation of the estimator.
+
+    Returns
+    -------
+    estimator : BaseEstimator
+        A new, unfitted estimator.
+    """
     module, class_name = dictionary["__estimator__"].rsplit(".", 1)
     return getattr(importlib.import_module(module), class_name)(**_params_from_dict(dictionary["params"]))

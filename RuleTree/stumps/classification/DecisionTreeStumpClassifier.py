@@ -1,3 +1,5 @@
+"""DecisionTreeStumpClassifier: the split on one feature for classification."""
+
 import numpy as np
 
 from RuleTree.stumps.Stump import Stump
@@ -26,6 +28,7 @@ class DecisionTreeStumpClassifier(Stump):
 
     def __init__(self, criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
                  random_state=None, min_impurity_decrease=0.0, class_weight=None):
+        """Initialize the DecisionTreeStumpClassifier; see the class documentation for the parameters."""
         self.criterion = criterion
         self.min_samples_leaf = min_samples_leaf
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
@@ -35,46 +38,59 @@ class DecisionTreeStumpClassifier(Stump):
         self.class_weight = class_weight
 
     def _splitter_params(self) -> dict:
+        """
+        Parameters of the ClassificationSplitter.
+
+        Returns
+        -------
+        params : dict
+        """
         return dict(criterion=self.criterion, min_samples_leaf=self.min_samples_leaf,
                     min_weight_fraction_leaf=self.min_weight_fraction_leaf, max_features=self.max_features,
                     random_state=self.random_state, min_impurity_decrease=self.min_impurity_decrease,
                     class_weight=self.class_weight)
 
     def _make_transformer(self):
+        """
+        A new MatrixTransformer: the data are used as they are (time series and images flattened).
+
+        Returns
+        -------
+        transformer : MatrixTransformer
+        """
         return MatrixTransformer()
 
     def _make_splitter(self):
+        """
+        A new, unfitted ClassificationSplitter with the parameters of the stump.
+
+        Returns
+        -------
+        splitter : ClassificationSplitter
+        """
         return ClassificationSplitter(**self._splitter_params())
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
-        Extracts the rule represented by the decision tree stump in a human-readable format.
+        Rule of the split, e.g. ``petal length <= 2.45`` or ``color = red``.
 
-        This method generates a dictionary that describes the splitting rule, including feature index,
-        threshold value, textual representation, and graphical representation options.
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the features. If None, ``X_<index>``.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the threshold is also given in the original scale
+            (``threshold_scaled``) and shown in the rule.
+        float_precision : int, default=3
+            Number of decimals of the threshold. If None, it is not rounded.
 
-        Args:
-            columns_names (list, optional): List of column names for feature mapping. If provided,
-                                           feature names will be used instead of indices in the rule text.
-            scaler (object, optional): Scaler object for inverse transformation of thresholds.
-                                      Useful when working with normalized/standardized features.
-            float_precision (int, optional): Number of decimal places to round threshold values to.
-                                            Set to None to avoid rounding.
-
-        Returns:
-            dict: A dictionary containing the rule details with the following keys:
-                - feature_idx: The index of the feature used for the split
-                - threshold: The split threshold value
-                - is_categorical: Whether the split is categorical or numerical
-                - samples: Number of samples at the node
-                - feature_name: Name of the feature (from columns_names if provided)
-                - threshold_scaled: Original scale threshold (if scaler is provided)
-                - textual_rule: Human-readable representation of the rule
-                - blob_rule: Compact representation of the rule
-                - graphviz_rule: Dictionary with graphviz options for visualization
-                - not_textual_rule: Negation of the rule in text form
-                - not_blob_rule: Compact representation of the negated rule
-                - not_graphviz_rule: Dictionary with graphviz options for the negated rule
+        Returns
+        -------
+        rule : dict
+            ``feature_idx``, ``threshold``, ``is_categorical``, ``feature_name``, ``threshold_scaled``
+            (with a scaler), the condition of the left child (``textual_rule``, ``blob_rule``,
+            ``graphviz_rule``) and its negation (``not_textual_rule``, ``not_blob_rule``,
+            ``not_graphviz_rule``).
         """
         rule = {
             "feature_idx": self.feature_original[0],

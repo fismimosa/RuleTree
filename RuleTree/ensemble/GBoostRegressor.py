@@ -1,3 +1,5 @@
+"""GBoostRegressor: gradient boosting of RuleTrees for regression."""
+
 import copy
 
 import numpy as np
@@ -8,9 +10,40 @@ from RuleTree.base.RuleTreeBase import RuleTreeBase
 
 
 class GBoostRegressor(RegressorMixin, RuleTreeBase):
+    """
+    Gradient boosting for regression with RuleTrees as base estimators (squared loss).
+
+    Each estimator is fitted on the residuals of the previous ones; the boosting stops early when
+    the error on a validation set does not improve for ``patience`` iterations.
+
+    Parameters
+    ----------
+    base_estimator : RuleTreeRegressor, default=RuleTreeRegressor(max_depth=3)
+        Estimator fitted at each iteration.
+    n_estimators : int, default=100
+        Maximum number of estimators.
+    learning_rate : float, default=0.1
+        Shrinkage of the contribution of each estimator.
+    loss : 'squared_loss' or callable, default='squared_loss'
+        Checked but not used: the loss is always the squared loss.
+    patience : int, default=5
+        Number of iterations without improvement before stopping.
+    val_size : float, default=0.15
+        Fraction of the training set used for validation.
+    random_state : int, default=42
+        Seed of the split between training and validation.
+
+    Attributes
+    ----------
+    base_prediction_ : float
+        Initial prediction (mean of the target).
+    estimators_ : list of RuleTreeRegressor
+        Fitted estimators.
+    """
     def __init__(self, base_estimator=RuleTreeRegressor(max_depth=3),
                  n_estimators=100, learning_rate=.1, loss='squared_loss', patience=5, val_size=.15,
                  random_state=42):
+        """Initialize the GBoostRegressor; see the class documentation for the parameters."""
         self.base_estimator = base_estimator
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
@@ -22,12 +55,46 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
         self.val_size = val_size
 
     def _get_base_prediction(self, y):
+        """
+        Initial prediction of the boosting.
+
+        Parameters
+        ----------
+        y : numpy.ndarray
+            Target of the training set.
+
+        Returns
+        -------
+        base_prediction : float
+            Mean of the target.
+        """
         return np.mean(y)
 
     def _get_base_estimator(self):
+        """
+        Estimator copied at each iteration.
+
+        Returns
+        -------
+        base_estimator : RuleTreeRegressor
+        """
         return self.base_estimator
 
     def fit(self, X: np.ndarray, y: np.ndarray):
+        """
+        Fit the boosting.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
+        y : numpy.ndarray of shape (n_samples,)
+            Target.
+
+        Returns
+        -------
+        self : GBoostRegressor
+        """
         np.random.seed(self.random_state)
         n_val = int(self.val_size * X.shape[0])
         idx = np.random.permutation(X.shape[0])
@@ -68,6 +135,18 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
 
 
     def predict(self, X: np.ndarray):
+        """
+        Predict the target: the initial prediction plus the contributions of all the estimators.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
+
+        Returns
+        -------
+        y_pred : numpy.ndarray of shape (n_samples,)
+        """
         prediction = np.ones((X.shape[0], ))*self.base_prediction_
 
         for est in self.estimators_:

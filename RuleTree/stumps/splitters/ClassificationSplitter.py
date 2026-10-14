@@ -1,3 +1,5 @@
+"""ClassificationSplitter: the best split for classification."""
+
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 
@@ -25,6 +27,7 @@ class ClassificationSplitter(RuleTreeBaseSplitter):
 
     def __init__(self, criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
                  random_state=None, min_impurity_decrease=0.0, class_weight=None):
+        """Initialize the ClassificationSplitter; see the class documentation for the parameters."""
         self.criterion = criterion
         self.min_samples_leaf = min_samples_leaf
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
@@ -34,6 +37,14 @@ class ClassificationSplitter(RuleTreeBaseSplitter):
         self.class_weight = class_weight
 
     def _impurity_fun(self):
+        """
+        Impurity function of the criterion.
+
+        Returns
+        -------
+        impurity_fun : callable
+            Function (y, sample_weight, class_weight) -> impurity.
+        """
         if self.criterion == "gini":
             return gini
         elif self.criterion == "entropy":
@@ -41,6 +52,19 @@ class ClassificationSplitter(RuleTreeBaseSplitter):
         return self.criterion
 
     def _class_weight(self, y):
+        """
+        Weight of each class for class_weight='balanced'.
+
+        Parameters
+        ----------
+        y : numpy.ndarray
+            Target of the instances in the node.
+
+        Returns
+        -------
+        class_weight : dict or None
+            Class -> weight, or None if class_weight is not 'balanced'.
+        """
         if self.class_weight != "balanced":
             return None
 
@@ -48,6 +72,36 @@ class ClassificationSplitter(RuleTreeBaseSplitter):
         return {class_label: len(y) / (len(classes) * np.sum(y == class_label)) for class_label in classes}
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+        """
+        Find the best split: the threshold of the scikit-learn tree on the numerical features, replaced by a
+        categorical split if one has a higher information gain. On a binary feature, the threshold is halfway
+        between its two values.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Target of the instances in the node.
+        numerical : list of int
+            Indices of the numerical columns of X.
+        categorical : list of int
+            Indices of the categorical columns of X.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights of the instances in the node.
+        check_input : bool, default=True
+            Whether to check the input data.
+
+        Returns
+        -------
+        self : ClassificationSplitter
+            The fitted splitter.
+
+        Raises
+        ------
+        NoSplitFoundWarning
+            If no split is found.
+        """
         impurity_fun = self._impurity_fun()
         class_weight = self._class_weight(y)
         self.feature_, self.threshold_, self.is_categorical_, self.impurity_ = None, None, False, None
@@ -90,7 +144,29 @@ class ClassificationSplitter(RuleTreeBaseSplitter):
         return self
 
     def _fit_categorical(self, X, y, categorical, best_info_gain, impurity_fun, class_weight):
-        """Test each value of each categorical feature; keep the split if better than best_info_gain."""
+        """
+        Test each value of each categorical feature and keep the split if better than best_info_gain.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix.
+        y : numpy.ndarray
+            Target.
+        categorical : list of int
+            Indices of the categorical columns.
+        best_info_gain : float
+            Gain of the best split found so far.
+        impurity_fun : callable
+            Impurity function.
+        class_weight : dict or None
+            Weight of each class.
+
+        Returns
+        -------
+        best_info_gain : float
+            Gain of the best split.
+        """
         len_x = len(X)
         for i in categorical:
             for value in np.unique(X[:, i]):
@@ -118,6 +194,18 @@ class ClassificationSplitter(RuleTreeBaseSplitter):
         return best_info_gain
 
     def update_statistics(self, X, y, sample_weight=None):
+        """
+        Recompute the impurity of the node and of the two children.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Target of the instances in the node.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights of the instances in the node.
+        """
         impurity_fun = self._impurity_fun()
         class_weight = self._class_weight(y)
 

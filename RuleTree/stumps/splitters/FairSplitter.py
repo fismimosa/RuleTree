@@ -1,3 +1,5 @@
+"""FairSplitter: the best regression split under a fairness constraint, and the functions that evaluate it."""
+
 from concurrent.futures.process import ProcessPoolExecutor
 from typing import Union
 
@@ -59,6 +61,7 @@ class FairSplitter(RuleTreeBaseSplitter):
                  use_t: bool = True,
                  n_jobs: int = psutil.cpu_count(logical=False),
                  criterion='squared_error'):
+        """Initialize the FairSplitter; see the class documentation for the parameters."""
         self.penalty = penalty
         self.sensible_attribute = sensible_attribute
         self.penalization_weight = penalization_weight
@@ -72,6 +75,35 @@ class FairSplitter(RuleTreeBaseSplitter):
         self.criterion = criterion
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+        """
+        Find the split with the highest penalized gain among the thresholds of the numerical features (the
+        sensitive attribute excluded) that satisfy the fairness constraint.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Target of the instances in the node.
+        numerical : list of int
+            Indices of the numerical columns of X.
+        categorical : list of int
+            Indices of the categorical columns of X.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights of the instances in the node.
+        check_input : bool, default=True
+            Whether to check the input data.
+
+        Returns
+        -------
+        self : FairSplitter
+            The fitted splitter.
+
+        Raises
+        ------
+        NoSplitFoundWarning
+            If no split is found.
+        """
         best_info_gain = -float('inf')
         self.feature_, self.threshold_, self.is_categorical_, self.impurity_ = None, None, False, None
 
@@ -122,6 +154,18 @@ class FairSplitter(RuleTreeBaseSplitter):
         return self
 
     def update_statistics(self, X, y, sample_weight=None):
+        """
+        Recompute the impurity of the node and of the two children.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Target of the instances in the node.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights of the instances in the node.
+        """
         self.impurity_ = RegressionSplitter._split_impurity(self.criterion, y, self.apply(X) == 1)
 
 
