@@ -1,3 +1,5 @@
+"""RuleTreeNode: a node of a RuleTree."""
+
 import importlib
 from typing import Union, Optional
 
@@ -11,22 +13,39 @@ from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_
 
 class RuleTreeNode:
     """
-    Represents a node in a Rule Tree.
-    
-    A Rule Tree node can be either a decision node with a splitting rule (stump) 
-    or a leaf node with a prediction. Each node contains information about its prediction,
-    its position in the tree hierarchy, and references to its child nodes.
-    
-    Attributes:
-        node_id (str): Unique identifier for the node
-        prediction: The predicted class or value
-        prediction_probability: Probability distribution across classes or confidence score
-        classes: Array of possible class labels
-        parent: Reference to parent node
-        stump: The splitting rule at this node (None for leaf nodes)
-        node_l: Left child node
-        node_r: Right child node
-        medoids_index: Index of medoid samples (optional)
+    A node of a RuleTree: a leaf with a prediction, or an internal node with a stump that splits its
+    instances between its two children.
+
+    The identifier of a node is its path from the root: ``"R"`` is the root, ``"Rl"`` and ``"Rr"``
+    its left and right children, ``"Rlr"`` the right child of ``"Rl"``, and so on.
+
+    Parameters
+    ----------
+    node_id : str
+        Identifier of the node.
+    prediction : int, str or float
+        Predicted class, value or cluster label.
+    prediction_probability : numpy.ndarray or float
+        Class probabilities (classification) or standard deviation of the target (regression).
+    log_odds : numpy.ndarray or float
+        Log-odds of the classes (classification).
+    classes : numpy.ndarray or None
+        Classes of the target (classification), None otherwise.
+    parent : RuleTreeNode or None
+        Parent node (None for the root).
+    stump : RuleTreeBaseStump, default=None
+        Split of the node (None for a leaf).
+    node_l, node_r : RuleTreeNode, default=None
+        Left and right children (None for a leaf).
+    **kwargs : dict
+        Other attributes, e.g. ``samples`` (number of instances).
+
+    Attributes
+    ----------
+    medoids_index : list or None
+        Medoids of the node, if computed.
+    balance_score : float
+        For internal nodes, fraction of the training set in the smaller side of the split.
     """
 
     def __init__(self,
@@ -40,20 +59,7 @@ class RuleTreeNode:
                  node_l: 'RuleTreeNode' = None,
                  node_r: 'RuleTreeNode' = None,
                  **kwargs):
-        """
-        Initialize a RuleTreeNode.
-        
-        Args:
-            node_id: Unique identifier for the node
-            prediction: The predicted class or value
-            prediction_probability: Probability distribution across classes or confidence score
-            classes: Array of possible class labels
-            parent: Reference to parent node (None for root)
-            stump: The splitting rule at this node (None for leaf nodes)
-            node_l: Left child node
-            node_r: Right child node
-            **kwargs: Additional attributes to be set on the node
-        """
+        """Initialize the node; see the class documentation for the parameters."""
         self.node_id = node_id
         self.prediction = prediction
         self.prediction_probability = prediction_probability
@@ -71,43 +77,45 @@ class RuleTreeNode:
         
     def is_leaf(self):
         """
-        Check if this node is a leaf node.
-        
-        Returns:
-            bool: True if this is a leaf node (has no children), False otherwise
+        Whether the node is a leaf (it has no children).
+
+        Returns
+        -------
+        is_leaf : bool
         """
         return self.node_l is None and self.node_r is None
 
     def make_leaf(self):
         """
-        Convert this node into a leaf node by removing its children.
-        
-        Returns:
-            Self: The modified node (now a leaf)
+        Make the node a leaf by removing its children.
+
+        Returns
+        -------
+        self : RuleTreeNode
         """
         self.node_l, self.node_r = None, None
         return self
 
     def simplify(self) -> 'RuleTreeNode':
         """
-        Simplify the tree rooted at this node.
-        
-        Calls the internal _simplify method and returns the root node.
-        
-        Returns:
-            Self: The root of the simplified tree
+        Merge the subtrees whose leaves all have the same prediction (see prune_useless_leaves).
+
+        Returns
+        -------
+        self : RuleTreeNode
+            The root of the simplified subtree.
         """
         self._simplify()
         return self
 
     def _simplify(self):
         """
-        Internal method that simplifies the tree by pruning redundant nodes.
-        
-        Simplifies the tree by removing branches where all leaves have the same prediction.
-        
-        Returns:
-            set: A set of unique prediction values in this subtree
+        Make a leaf of every node whose leaves all have the same prediction.
+
+        Returns
+        -------
+        predictions : set
+            Predictions of the leaves of the subtree.
         """
         if self.is_leaf():
             return {self.prediction}
@@ -123,19 +131,25 @@ class RuleTreeNode:
 
     def set_stump(self, stump:RuleTreeBaseStump):
         """
-        Set the splitting rule (stump) for this node.
-        
-        Args:
-            stump: The RuleTreeBaseStump object representing the splitting rule
+        Set the split of the node.
+
+        Parameters
+        ----------
+        stump : RuleTreeBaseStump
+            The fitted stump.
         """
         self.stump = stump
 
     def get_possible_outputs(self) -> tuple[set, set]:
         """
-        Get all possible prediction values in the subtree.
-        
-        Returns:
-            tuple[set, set]: A tuple containing (leaf_predictions, internal_node_predictions)
+        Predictions of the nodes of the subtree.
+
+        Returns
+        -------
+        leaf_predictions : set
+            Predictions of the leaves.
+        internal_predictions : set
+            Predictions of the internal nodes.
         """
         if self.is_leaf():
             return {self.prediction}, set()
@@ -147,25 +161,31 @@ class RuleTreeNode:
 
     def get_depth(self):
         """
-        Get the depth of this node in the tree.
-        
-        The depth is calculated from the node_id length, which should encode the path.
-        
-        Returns:
-            int: The depth of this node
+        Depth of the node, from its identifier (the root has depth 0).
+
+        Returns
+        -------
+        depth : int
         """
         return len(self.node_id) - 1
 
     def get_rule(self, columns_names:list=None, scaler:TransformerMixin=None):
         """
-        Get a dictionary representation of the rule at this node and its subtree.
-        
-        Args:
-            columns_names: Optional list of feature column names for better rule interpretability
-            scaler: Optional scaler for transforming threshold values
-            
-        Returns:
-            dict: Dictionary containing the node information and its rule
+        Rules of the subtree, as a nested dictionary (see RuleTree.get_rules).
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the tabular features.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the thresholds are shown in the original scale.
+
+        Returns
+        -------
+        rule : dict
+            Statistics of the node (``node_id``, ``is_leaf``, ``prediction``, ``prediction_probability``,
+            ``log_odds``, ``prediction_classes_``), the rules of the children (``left_node``,
+            ``right_node``) and, for an internal node, the rule of its stump.
         """
         rule = {
             "node_id": self.node_id,
@@ -184,6 +204,22 @@ class RuleTreeNode:
         return rule
 
     def update_statistics(self, data, y, idx=None, context=None):
+        """
+        Recompute the statistics of classification of the node (majority class, class probabilities,
+        log-odds, number of instances) on the instances ``idx``, and the statistics of its stump.
+        A node without instances predicts nan.
+
+        Parameters
+        ----------
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray, default=None
+            Indices of the instances reaching the node. If None, all the instances.
+        context : RuleTree, default=None
+            The tree, whose ``classes_`` are used when the node has none.
+        """
         if idx is None:
             idx = slice(None)
 
@@ -219,12 +255,13 @@ class RuleTreeNode:
     
     def node_to_dict(self):
         """
-        Convert this node to a dictionary representation for serialization.
-        
-        The dictionary includes all necessary information to reconstruct the node.
-        
-        Returns:
-            dict: Dictionary representation of the node
+        Dictionary representation of the node (without its children, referenced by id).
+
+        Returns
+        -------
+        node_dict : dict
+            JSON-friendly dictionary with the statistics of the node, the ids of its children and, for
+            an internal node, the dictionary of its stump.
         """
         node_as_dict ={
             "node_id": self.node_id,
@@ -245,17 +282,18 @@ class RuleTreeNode:
     @classmethod
     def dict_to_node(cls, info_dict, X = None):
         """
-        Create a node from its dictionary representation.
-        
-        Args:
-            info_dict: Dictionary containing node information
-            X: Optional feature matrix that might be needed for stump reconstruction
-            
-        Returns:
-            RuleTreeNode: Reconstructed node
-            
-        Raises:
-            AssertionError: If required fields are missing in info_dict
+        Create a node from a dictionary created by :meth:`node_to_dict` (children not linked).
+
+        Parameters
+        ----------
+        info_dict : dict
+            Dictionary representation of the node.
+        X : numpy.ndarray, default=None
+            Passed to the stump's dict_to_node.
+
+        Returns
+        -------
+        node : RuleTreeNode
         """
         assert 'node_id' in info_dict
         assert 'is_leaf' in info_dict
@@ -281,16 +319,21 @@ class RuleTreeNode:
     
     def encode_node(self, index, parent, vector, stump, node_index=0):
         """
-        Encode the tree into a vector representation.
-        
-        Used for model serialization in a compact format.
-        
-        Args:
-            index: Dictionary mapping node_id to array indices
-            parent: Array tracking parent-child relationships
-            vector: 2D array where node information will be stored
-            stump: The stump object reference
-            node_index: Current index in the encoding
+        Encode the subtree in arrays indexed as a complete binary tree (children of i at 2i+1 and 2i+2),
+        for trees of univariate splits.
+
+        Parameters
+        ----------
+        index : dict
+            Node id -> position, filled.
+        parent : numpy.ndarray
+            Position of the parent of each position, filled.
+        vector : numpy.ndarray of shape (2, n_positions)
+            Feature + 1 (-1 for leaves) and threshold (prediction for leaves) of each position, filled.
+        stump : object
+            Not used.
+        node_index : int, default=0
+            Position of this node.
         """
         if self.is_leaf():
             vector[0][node_index] = -1
@@ -316,16 +359,22 @@ class RuleTreeNode:
 
     def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
         """
-        Generate a graphviz visualization of the tree.
-        
-        Args:
-            graph: Existing graphviz.Digraph object or None to create a new one
-            columns_names: Optional list of feature names for better visualization
-            scaler: Optional scaler for transforming threshold values
-            float_precision: Number of decimal places for floating point numbers
-            
-        Returns:
-            graphviz.Digraph: The graph visualization object
+        Graphviz representation of the subtree (requires the graphviz package).
+
+        Parameters
+        ----------
+        graph : graphviz.Digraph, default=None
+            Graph to add the nodes to. If None, a new graph.
+        columns_names : list of str, default=None
+            Names of the tabular features.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the thresholds are shown in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the thresholds.
+
+        Returns
+        -------
+        graph : graphviz.Digraph
         """
         try:
             import graphviz
@@ -354,28 +403,26 @@ class RuleTreeNode:
 
     def predict(self, data, idx:np.ndarray=None, prediction_step=np.inf):
         """
-        Predict labels, leaf indices, and probabilities for the given input data.
-
-        This method traverses the tree recursively to make predictions for each sample
-        in the input data. It stops at leaf nodes or when the specified
-        `prediction_step` depth is reached.
+        Predictions, leaves and probabilities of the instances, traversing the subtree.
 
         Parameters
         ----------
-        data : dict or np.ndarray
+        data : dict or numpy.ndarray
             Data set, as ``{data_type: array}``. A single array is passed as is to the stumps.
-        idx : np.ndarray, optional
-            Indices of the instances to predict. Defaults to all.
-        prediction_step : int, optional
-            Maximum depth to traverse for prediction. Defaults to np.inf.
+        idx : numpy.ndarray, default=None
+            Indices of the instances to predict. If None, all the instances.
+        prediction_step : int, default=numpy.inf
+            Maximum number of splits to traverse: with a finite value, the prediction of the node
+            reached after that many splits.
 
         Returns
         -------
-        tuple
-            A tuple containing:
-            - np.ndarray: Predicted labels for each sample.
-            - np.ndarray: Leaf node IDs corresponding to each sample.
-            - np.ndarray: Predicted probabilities for each sample.
+        labels : numpy.ndarray of shape (n_samples,)
+            Prediction of each instance.
+        leaves : numpy.ndarray of shape (n_samples,)
+            Id of the node reached by each instance.
+        proba : numpy.ndarray of shape (n_samples, n_values)
+            ``prediction_probability`` of the node reached by each instance.
         """
         if idx is None:
             idx = np.arange(len(next(iter(data.values()))) if isinstance(data, dict) else len(data))
@@ -409,10 +456,12 @@ class RuleTreeNode:
 
     def get_predicates(self) -> dict:
         """
-        Get the predicates (conditions) for the stump at this node in depth-first order.
+        Internal nodes of the subtree in depth-first order.
 
-        Returns:
-            dict: dictionary of predicates of the stump and its children in the form node_id: RuleTreeNode
+        Returns
+        -------
+        predicates : dict
+            Node id -> RuleTreeNode.
         """
         if self.is_leaf():
             return {}
@@ -421,13 +470,17 @@ class RuleTreeNode:
 
     def get_node_by_id(self, node_id: str) -> Optional['RuleTreeNode']:
         """
-        Get a node by its ID in the tree.
+        Node of the subtree with the given identifier.
 
-        Args:
-            node_id: The ID of the node to search for.
+        Parameters
+        ----------
+        node_id : str
+            Identifier of the node.
 
-        Returns:
-            RuleTreeNode: The node with the specified ID or None if not found.
+        Returns
+        -------
+        node : RuleTreeNode or None
+            The node, or None if not in the subtree.
         """
         if self.node_id == node_id:
             return self
@@ -442,10 +495,12 @@ class RuleTreeNode:
 
     def get_leaf_nodes(self) -> dict:
         """
-        Get all leaf nodes in the tree.
+        Leaves of the subtree.
 
-        Returns:
-            dict: A dictionary of all leaf nodes in the tree.
+        Returns
+        -------
+        leaves : dict
+            Node id -> RuleTreeNode.
         """
         if self.is_leaf():
             return {self.node_id: self}

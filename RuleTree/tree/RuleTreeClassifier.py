@@ -1,9 +1,4 @@
-"""
-Module containing the RuleTreeClassifier class.
-
-The RuleTreeClassifier class extends the RuleTree to implement classification-specific
-functionality, including methods for handling class probabilities and medoid computation.
-"""
+"""RuleTreeClassifier: the RuleTree for classification."""
 
 import heapq
 from typing import Union, Optional
@@ -25,16 +20,48 @@ from RuleTree.utils.data_utils import calculate_mode, log_odds
 
 class RuleTreeClassifier(ClassifierMixin, RuleTree):
     """
-    RuleTree implementation for classification tasks.
+    RuleTree for classification.
 
-    This class extends the RuleTree to include classification-specific methods
-    and attributes, such as handling class probabilities and computing medoids.
+    The tree grows breadth-first; a node is not split if it is pure. Each node predicts the majority
+    class of its instances and stores the class probabilities and log-odds.
 
-    Attributes:
-        criterion (str): Splitting criterion ('gini' or 'entropy').
-        splitter (str): Split strategy ('best' or 'random').
-        min_samples_leaf (int): Minimum samples required in a leaf node.
-        distance_measure (str): Distance metric for medoid computation.
+    Parameters
+    ----------
+    max_leaf_nodes : int, default=inf
+        Maximum number of leaves.
+    min_samples_split : int, default=2
+        Minimum number of instances to split a node.
+    max_depth : int, default=inf
+        Maximum depth of the tree (the root has depth 0).
+    prune_useless_leaves : bool, default=False
+        Whether to merge, after fit, the sibling leaves with the same prediction.
+    base_stumps : RuleTreeBaseStump or list, default=None
+        Stumps used to split the nodes (see :class:`RuleTree.tree.RuleTree.RuleTree`); they must be
+        classification stumps. If None, DecisionTreeStumpClassifier().
+    stump_selection : {'random', 'best'}, default='random'
+        How the stump of each node is chosen among base_stumps.
+    random_state : int, RandomState instance or None, default=None
+        Seed of the random choice of the stumps, also given to the stumps without a random_state.
+    distance_measure : str or callable, default=None
+        Distance used by compute_medoids.
+
+    Attributes
+    ----------
+    classes_ : numpy.ndarray
+        Classes of the target.
+    n_classes_ : int
+        Number of classes.
+    root : RuleTreeNode
+        Root of the fitted tree.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_iris
+    >>> from RuleTree import RuleTreeClassifier
+    >>> X, y = load_iris(return_X_y=True)
+    >>> model = RuleTreeClassifier(max_depth=2, random_state=0).fit(X, y)
+    >>> model.predict(X[:3])
+    array([0, 0, 0])
     """
     def __init__(self,
                  max_leaf_nodes=float('inf'),
@@ -46,19 +73,7 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
                  random_state=None,
                  distance_measure = None
                  ):
-        """
-        Initialize the RuleTreeClassifier.
-
-        Args:
-            max_leaf_nodes (int): Maximum number of leaf nodes.
-            min_samples_split (int): Minimum samples required to split a node.
-            max_depth (int): Maximum depth of the tree.
-            prune_useless_leaves (bool): Whether to prune useless leaves.
-            base_stumps (list): List of base stumps or their configurations.
-            stump_selection (str): Stump selection strategy ('random' or 'best').
-            random_state (int): Random seed for reproducibility.
-            distance_measure (str): Distance metric for medoid computation.
-        """
+        """Initialize the RuleTreeClassifier; see the class documentation for the parameters."""
         if base_stumps is None:
             base_stumps = DecisionTreeStumpClassifier()
 
@@ -73,38 +88,54 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
 
     def check_additional_halting_condition(self, y, curr_idx: np.ndarray):
         """
-        Check additional halting condition for splitting.
+        Stop splitting a node whose instances all have the same class.
 
-        Args:
-            y (np.ndarray): Target labels.
-            curr_idx (np.ndarray): Indices of the samples to consider.
+        Parameters
+        ----------
+        y : numpy.ndarray
+            Target of the whole data set.
+        curr_idx : numpy.ndarray
+            Indices of the instances in the node.
 
-        Returns:
-            bool: True if halting condition is met, False otherwise.
+        Returns
+        -------
+        halt : bool
+            True if the node is pure.
         """
         return len(np.unique(y[curr_idx])) == 1  # only 1 target
 
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
-        Push a node into the priority queue.
+        Push a node into the queue, with priority to the shallowest nodes (breadth-first growth).
 
-        Args:
-            node (RuleTreeNode): Node to push.
-            idx (np.ndarray): Indices of the samples associated with the node.
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         """
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
-        Prepare a node with predictions and probabilities.
+        Create a node (or update ``node``) with the majority class, the class probabilities, the
+        log-odds and the number of the instances ``idx``.
 
-        Args:
-            y (np.ndarray): Target labels.
-            idx (np.ndarray): Indices of the samples to consider.
-            node_id (str): Identifier for the node.
+        Parameters
+        ----------
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
+        node_id : str
+            Identifier of the node.
+        node : RuleTreeNode, default=None
+            Existing node to update instead of creating a new one.
 
-        Returns:
-            RuleTreeNode: The prepared node.
+        Returns
+        -------
+        node : RuleTreeNode
         """
         prediction = calculate_mode(y[idx])
         class_counts = np.array([np.sum(y[idx] == classe) for classe in self.classes_])
@@ -136,16 +167,23 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
 
     def predict_proba(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
-        Predict class probabilities for the input data.
+        Class probabilities of each instance: the ones of the leaf it reaches.
 
-        Args:
-            X (np.ndarray): Tabular data.
-            X_ts (np.ndarray): Time series.
-            X_img (np.ndarray): Images.
-            X_txt (np.ndarray): Texts.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features), default=None
+            Tabular data.
+        X_ts : numpy.ndarray of shape (n_samples, n_signals, length), default=None
+            Time series.
+        X_img : numpy.ndarray of shape (n_samples, ...), default=None
+            Images.
+        X_txt : array-like of shape (n_samples,), default=None
+            Texts.
 
-        Returns:
-            np.ndarray: Predicted class probabilities.
+        Returns
+        -------
+        proba : numpy.ndarray of shape (n_samples, n_classes)
+            Probabilities of the classes, in the order of ``classes_``.
         """
         _, _, proba = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
 
@@ -154,14 +192,22 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
 
     def get_pivots(self, current_node=None, pivot_dicts=None):
         """
-        Retrieve pivot information from the tree.
+        Instances used by the pivot stumps of the tree: for each node with a PivotTreeStumpClassifier,
+        the discriminative, descriptive and candidate pivots and the one used by the split; for the
+        nodes with a DecisionTreeStumpClassifier, the medoids (if computed).
 
-        Args:
-            current_node (RuleTreeNode): Current node in the tree.
-            pivot_dicts (dict): Dictionary to store pivot information.
+        Parameters
+        ----------
+        current_node : RuleTreeNode, default=None
+            Root of the subtree. If None, the root of the tree.
+        pivot_dicts : dict, default=None
+            Dictionary being filled.
 
-        Returns:
-            dict: Pivot information for the tree.
+        Returns
+        -------
+        pivot_dicts : dict
+            Node id -> dictionary with the keys ``discriminatives``, ``descriptives``, ``candidates`` and
+            ``used`` (indices of the training instances).
         """
         stump_split_map = {
             'PivotTreeStumpClassifier': 'pivot_split',
@@ -236,21 +282,27 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         """
         Task of the stumps of the tree.
 
-        Returns:
-            str: MODEL_TYPE_CLF.
+        Returns
+        -------
+        task : str
+            MODEL_TYPE_CLF.
         """
         return MODEL_TYPE_CLF
 
     def _get_prediction_probas(self, current_node = None, probas=None):
         """
-        Retrieve prediction probabilities from the tree.
+        Class probabilities of the nodes in depth-first order (see RuleTree._get_prediction_probas).
 
-        Args:
-            current_node (RuleTreeNode): Current node in the tree.
-            probas (list): List to store probabilities.
+        Parameters
+        ----------
+        current_node : RuleTreeNode, default=None
+            Root of the subtree. If None, the root of the tree.
+        probas : list, default=None
+            List being filled.
 
-        Returns:
-            list: Prediction probabilities for the tree.
+        Returns
+        -------
+        probas : list of numpy.ndarray
         """
         if probas is None:
             probas = []
@@ -269,14 +321,25 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
 
     def local_interpretation(self, X, joint_contribution = False):
         """
-        Perform local interpretation of the tree.
+        Contribution of each feature to the predicted class probabilities, as in treeinterpreter: the
+        probabilities of an instance are the ones of the root (bias) plus the contributions of the
+        features of the splits along its path.
 
-        Args:
-            X (np.ndarray): Feature matrix.
-            joint_contribution (bool): Whether to consider joint contributions.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
+        joint_contribution : bool, default=False
+            If True, the contributions are given to the sets of features along the path.
 
-        Returns:
-            np.ndarray: Contributions for each feature and class.
+        Returns
+        -------
+        prediction : numpy.ndarray of shape (n_samples, n_classes)
+            Class probabilities of the leaf of each instance.
+        bias : numpy.ndarray of shape (n_samples, n_classes)
+            Class probabilities of the root.
+        contributions : numpy.ndarray of shape (n_samples, n_features, n_classes) or list of dict
+            Contribution of each feature (or set of features, with joint_contribution).
         """
         leaves, paths, leaf_to_path, values = super().local_interpretation(X = X,
                                                                            joint_contribution = joint_contribution)
@@ -301,15 +364,22 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
     
     def get_balanced_stumps(self, current_node=None, stumps=None, p=0.2):
         """
-        Retrieve balanced stumps from the tree.
+        Internal nodes whose split is balanced: the smaller side has a fraction of the training set
+        (``balance_score``) above ``p``. The visit stops at the first unbalanced node of each path.
 
-        Args:
-            current_node (RuleTreeNode): Current node in the tree.
-            stumps (dict): Dictionary to store balanced stumps.
-            p (float): Threshold for balance score.
+        Parameters
+        ----------
+        current_node : RuleTreeNode, default=None
+            Root of the subtree. If None, the root of the tree.
+        stumps : dict, default=None
+            Dictionary being filled.
+        p : float, default=0.2
+            Minimum balance score.
 
-        Returns:
-            dict: Balanced stumps in the tree.
+        Returns
+        -------
+        stumps : dict
+            Node id -> (node, balance score).
         """
         if stumps is None:
             stumps = {}
@@ -325,13 +395,17 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
     
     def stumps_to_trees(self, balanced_nodes):
         """
-        Convert balanced stumps to trees.
+        A tree of depth 1 for each of the given nodes: its split and two leaves.
 
-        Args:
-            balanced_nodes (dict): Balanced stumps.
+        Parameters
+        ----------
+        balanced_nodes : dict
+            Node id -> (node, balance score), as returned by :meth:`get_balanced_stumps`.
 
-        Returns:
-            dict: Trees created from balanced stumps.
+        Returns
+        -------
+        trees : dict
+            (feature, threshold) of the split -> RuleTreeClassifier.
         """
         trees = {}
       
@@ -371,13 +445,19 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
     @classmethod
     def complete_tree(cls, node, X, y, n_classes_):
         """
-        Complete the tree by filling missing attributes.
+        Recompute recursively the predictions, class probabilities and number of instances of the
+        nodes of a tree on new data, with classes 0, ..., n_classes_ - 1.
 
-        Args:
-            node (RuleTreeNode): Current node in the tree.
-            X (np.ndarray): Feature matrix.
-            y (np.ndarray): Target labels.
-            n_classes_ (int): Number of classes.
+        Parameters
+        ----------
+        node : RuleTreeNode
+            Root of the subtree.
+        X : numpy.ndarray
+            Data reaching the node.
+        y : numpy.ndarray
+            Target of the data reaching the node.
+        n_classes_ : int
+            Number of classes.
         """
         classes_ = list(range(n_classes_))
         node.prediction = calculate_mode(y)

@@ -1,8 +1,6 @@
 """
-Module containing the RuleTree class.
-
-The RuleTree class implements a decision tree structure with additional functionality
-for handling custom stumps and local interpretation.
+Base class of the RuleTree models: a decision tree built node by node, where each node is split
+by a stump chosen among the base stumps.
 """
 
 import heapq
@@ -33,20 +31,57 @@ from RuleTree.utils.data_utils import json_numpy_encoder
 
 class RuleTree(RuleTreeBase, ABC):
     """
-    Base class for RuleTree models.
+    Base class of the RuleTree models.
 
-    This class provides the core implementation of a RuleTree, including methods for
-    fitting, predicting, and exporting the tree structure. It supports custom stumps
-    and advanced features like local interpretation.
+    A RuleTree is a binary decision tree built best-first: the nodes are split one at a time, in the
+    order given by ``queue_push``, until a stopping criterion is met. Each split is a *stump* (see
+    :class:`RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump`) chosen among ``base_stumps``, so the
+    same tree can mix different kinds of splits (thresholds on features, distances from pivots,
+    shapelets, ...) and different data types (tabular data, time series, images).
 
-    Attributes:
-        max_leaf_nodes (int): Maximum number of leaf nodes in the tree.
-        min_samples_split (int): Minimum number of samples required to split a node.
-        max_depth (int): Maximum depth of the tree.
-        prune_useless_leaves (bool): Whether to prune leaves that do not contribute.
-        base_stumps (list): List of base stumps used for splitting.
-        stump_selection (str): Method for selecting stumps ('random' or 'best').
-        random_state (int): Random seed for reproducibility.
+    The subclasses define the task: :class:`RuleTreeClassifier`, :class:`RuleTreeRegressor`,
+    :class:`RuleTreeCluster` and its variants.
+
+    Parameters
+    ----------
+    max_leaf_nodes : int, default=None
+        Maximum number of leaves. If None, unlimited.
+    min_samples_split : int
+        Minimum number of instances to split a node.
+    max_depth : int
+        Maximum depth of the tree (the root has depth 0).
+    prune_useless_leaves : bool
+        Whether to merge, after fit, the sibling leaves with the same prediction.
+    base_stumps : RuleTreeBaseStump or list
+        Stumps used to split the nodes. One of:
+
+        - a stump;
+        - a list of stumps, chosen with equal probability;
+        - a list of tuples ``(probability, stump)`` or ``(probability, stump, data_types)``, where the
+          probabilities sum to 1 and ``data_types`` (a data type or a list of data types, see
+          :data:`RuleTree.utils.define.DATA_INPUT_TYPES`) restricts the data the stump is used on.
+          By default, a stump is used on every data type it supports. The probability of a stump is
+          split equally among its data types.
+    stump_selection : {'random', 'best'}
+        How the stump of each node is chosen: at random according to the probabilities, or the one
+        with the highest gain among all the stumps and data types.
+    random_state : int, RandomState instance or None
+        Seed of the random choice of the stumps, also given to the stumps whose random_state is None
+        (so that they do not break ties at random).
+    distance_measure : str or callable, default=None
+        Distance used by compute_medoids.
+    exceptions : {'raise', 'ignore'}, default='raise'
+        What to do when a stump raises an error: raise it, or make the node a leaf and warn.
+
+    Attributes
+    ----------
+    root : RuleTreeNode
+        Root of the fitted tree.
+    candidate_splits_ : list of tuple
+        Pairs (stump, data type) usable on the training data, with their probability:
+        ``(probability, stump, data_type)``.
+    cache_ : dict
+        Values cached by the stumps during fit (see :meth:`get_cache`).
     """
     def __init__(self,
                  max_leaf_nodes,
@@ -59,26 +94,7 @@ class RuleTree(RuleTreeBase, ABC):
                  distance_measure=None,
                  exceptions='raise'
                  ):
-        """
-        Initialize the RuleTree.
-
-        Args:
-            max_leaf_nodes (int): Maximum number of leaf nodes.
-            min_samples_split (int): Minimum samples required to split a node.
-            max_depth (int): Maximum depth of the tree.
-            prune_useless_leaves (bool): Whether to prune useless leaves.
-            base_stumps: Stumps used to split the nodes. One of:
-                - a stump;
-                - a list of stumps, chosen with equal probability;
-                - a list of tuples ``(probability, stump)`` or ``(probability, stump, data_types)``, where
-                  the probabilities sum to 1 and ``data_types`` (a data type or a list of data types, see
-                  :data:`RuleTree.utils.define.DATA_INPUT_TYPES`) restricts the data the stump is used on.
-                  By default, a stump is used on every data type it supports. The probability of a stump
-                  is split equally among its data types.
-            stump_selection (str): Stump selection strategy ('random' or 'best').
-            random_state (int): Random seed for reproducibility: used to choose the stumps (stump_selection=
-                'random') and given to the stumps whose random_state is None.
-        """
+        """Initialize the RuleTree; see the class documentation for the parameters."""
         self.tiebreaker = count()
         self.root:Optional[RuleTreeNode] = None
         self.queue = []
@@ -101,13 +117,19 @@ class RuleTree(RuleTreeBase, ABC):
         """
         Normalize ``base_stumps`` into a list of ``(probability, stump, data_types)``.
 
-        ``data_types`` is a tuple of data types, or None when the stump can be used on every data type
-        it supports.
+        Returns
+        -------
+        base_stumps : list of tuple
+            ``data_types`` is a tuple of data types, or None when the stump can be used on every data
+            type it supports.
 
-        Raises:
-            TypeError: If an entry is not a stump for the task of the tree (see _get_stumps_task).
-            ValueError: If an entry is malformed, a stump does not support the requested data types, or
-                the probabilities do not sum to 1.
+        Raises
+        ------
+        TypeError
+            If an entry is not a stump for the task of the tree (see _get_stumps_task).
+        ValueError
+            If an entry is malformed, a stump does not support the requested data types, or the
+            probabilities do not sum to 1.
         """
         task = self._get_stumps_task()
         entries = self.base_stumps if isinstance(self.base_stumps, list) else [self.base_stumps]
@@ -145,13 +167,22 @@ class RuleTree(RuleTreeBase, ABC):
     def _set_candidate_splits(self, data: dict):
         """
         Compute the pairs (stump, data type) that can split ``data``, with their selection probability,
-        and store them in ``candidate_splits_``.
+        and store them in ``candidate_splits_``. The stumps receive the seed of the tree (see _seeded).
 
-        Raises:
-            ValueError: If no stump supports the provided data.
+        Parameters
+        ----------
+        data : dict
+            Whole data set, as ``{data_type: array}``.
 
-        Warns:
-            UserWarning: For each provided data type that no stump uses.
+        Raises
+        ------
+        ValueError
+            If no stump supports the provided data.
+
+        Warns
+        -----
+        UserWarning
+            For each provided data type that no stump uses.
         """
         candidates = []
         seed = self._seed if hasattr(self, "_seed") else self._stumps_seed()
@@ -171,8 +202,12 @@ class RuleTree(RuleTreeBase, ABC):
 
     def _stumps_seed(self):
         """
-        Seed of the random choices of the tree and of the stumps without a random_state, from the tree's
-        random_state: an int is used as is, from a RandomState an int is drawn.
+        Seed of the random choices of the tree and of the stumps without a random_state.
+
+        Returns
+        -------
+        seed : int or None
+            The tree's random_state if it is None or an int; an int drawn from it if it is a RandomState.
         """
         if self.random_state is None or isinstance(self.random_state, numbers.Integral):
             return self.random_state
@@ -181,8 +216,19 @@ class RuleTree(RuleTreeBase, ABC):
     @staticmethod
     def _seeded(stump: RuleTreeBaseStump, seed) -> RuleTreeBaseStump:
         """
-        The stump, or a copy of it where every random_state left to None (also of its components)
-        is set to seed: with the tree's random_state, the stumps do not break ties at random.
+        The stump, or a copy of it where every random_state left to None (also of its components) is
+        set to ``seed``: with the tree's random_state, the stumps do not break ties at random.
+
+        Parameters
+        ----------
+        stump : RuleTreeBaseStump
+            A base stump.
+        seed : int or None
+            Seed of the tree. If None, the stump is returned as it is.
+
+        Returns
+        -------
+        stump : RuleTreeBaseStump
         """
         if seed is None:
             return stump
@@ -195,8 +241,12 @@ class RuleTree(RuleTreeBase, ABC):
         """
         Draw a pair (stump, data type) from ``candidate_splits_`` according to their probabilities.
 
-        Returns:
-            tuple[RuleTreeBaseStump, str]: An unfitted copy of the stump and the data type to use.
+        Returns
+        -------
+        stump : RuleTreeBaseStump
+            An unfitted copy of the stump.
+        data_type : str
+            The data type to use.
         """
         _, stump, data_type = self._random.choices(self.candidate_splits_,
                                                     weights=[p for p, _, _ in self.candidate_splits_])[0]
@@ -204,16 +254,20 @@ class RuleTree(RuleTreeBase, ABC):
 
     def get_cache(self, namespace: str) -> dict:
         """
-        Dictionary where the stumps can store values shared among the splits, e.g. embeddings of the
-        whole data set. The cache is cleared at every :meth:`fit`, kept by :meth:`partial_fit`, and can
-        be cleared manually with :meth:`clear_cache`.
+        Dictionary where the stumps store values shared among the splits, e.g. embeddings of the whole
+        data set. The cache is cleared at every :meth:`fit`, kept by :meth:`partial_fit`, and can be
+        cleared manually with :meth:`clear_cache`.
 
-        Args:
-            namespace (str): Name of the cache. Stumps use their class name (see
-                ``RuleTreeBaseStump._get_cache``), e.g. ``get_cache("PivotTreeStumpClassifier")``.
+        Parameters
+        ----------
+        namespace : str
+            Name of the cache. Stumps use their class name (see ``RuleTreeBaseStump._get_cache``), e.g.
+            ``get_cache("PivotTreeStumpClassifier")``.
 
-        Returns:
-            dict: The cache of the namespace.
+        Returns
+        -------
+        cache : dict
+            The cache of the namespace (created if missing).
         """
         if not hasattr(self, "cache_"):
             self.cache_ = {}
@@ -225,7 +279,14 @@ class RuleTree(RuleTreeBase, ABC):
         self.cache_ = {}
 
     def _set_classes(self, y):
-        """Set classes_ and n_classes_, the classes of the target: only for classification trees."""
+        """
+        Set ``classes_`` and ``n_classes_``, the classes of the target: only for classification trees.
+
+        Parameters
+        ----------
+        y : numpy.ndarray
+            Target.
+        """
         if isinstance(self, ClassifierMixin):
             self.classes_ = np.unique(y)
             self.n_classes_ = len(self.classes_)
@@ -233,18 +294,37 @@ class RuleTree(RuleTreeBase, ABC):
     def fit(self, X:np.ndarray|None=None, y:np.ndarray|None=None,
             X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None, X_txt:np.ndarray|None=None, sample_weight=None):
         """
-        Fit the RuleTree to the provided data, starting from an empty tree.
+        Fit the tree on the provided data, starting from an empty tree.
 
-        Args:
-            X (np.ndarray): Tabular data.
-            y (np.ndarray): Target.
-            X_ts (np.ndarray): Time series.
-            X_img (np.ndarray): Images.
-            X_txt (np.ndarray): Texts.
-            sample_weight (np.ndarray): Sample weights.
+        At least one of X, X_ts, X_img and X_txt must be given; all the inputs refer to the same
+        instances. Each argument is a data type (see :data:`RuleTree.utils.define.DATA_INPUT_TYPES`):
+        the stumps are used on the data types they support.
 
-        Returns:
-            RuleTree: The fitted RuleTree instance.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features), default=None
+            Tabular data.
+        y : numpy.ndarray of shape (n_samples,), default=None
+            Target (None for clustering).
+        X_ts : numpy.ndarray of shape (n_samples, n_signals, length), default=None
+            Time series.
+        X_img : numpy.ndarray of shape (n_samples, ...), default=None
+            Images.
+        X_txt : array-like of shape (n_samples,), default=None
+            Texts.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights, passed to the stumps.
+
+        Returns
+        -------
+        self : RuleTree
+            The fitted tree.
+
+        Raises
+        ------
+        ValueError
+            If no input is given, the inputs have different numbers of instances, or no stump supports
+            the provided data.
         """
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
@@ -268,23 +348,32 @@ class RuleTree(RuleTreeBase, ABC):
                     X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None, X_txt:np.ndarray|None=None,
                     sample_weight=None):
         """
-        Continue growing the fitted tree: the current leaves are split further using the provided
-        data, within the limits of max_depth and max_leaf_nodes (e.g. after increasing them with
-        set_params). The existing splits are not changed. If the tree is not fitted, this is :meth:`fit`.
+        Continue growing the fitted tree: the current leaves are split further using the provided data,
+        within the limits of max_depth and max_leaf_nodes (e.g. after increasing them with set_params).
+        The existing splits are not changed. If the tree is not fitted, this is :meth:`fit`.
 
         The cache of the stumps (see :meth:`get_cache`) is kept: call :meth:`clear_cache` first if the
         data differ from those used to fill it.
 
-        Args:
-            X (np.ndarray): Tabular data.
-            y (np.ndarray): Target.
-            X_ts (np.ndarray): Time series.
-            X_img (np.ndarray): Images.
-            X_txt (np.ndarray): Texts.
-            sample_weight (np.ndarray): Sample weights.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features), default=None
+            Tabular data.
+        y : numpy.ndarray of shape (n_samples,), default=None
+            Target (None for clustering).
+        X_ts : numpy.ndarray of shape (n_samples, n_signals, length), default=None
+            Time series.
+        X_img : numpy.ndarray of shape (n_samples, ...), default=None
+            Images.
+        X_txt : array-like of shape (n_samples,), default=None
+            Texts.
+        sample_weight : numpy.ndarray of shape (n_samples,), default=None
+            Sample weights, passed to the stumps.
 
-        Returns:
-            RuleTree: The fitted RuleTree instance.
+        Returns
+        -------
+        self : RuleTree
+            The fitted tree.
         """
         if self.root is None:
             return self.fit(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, sample_weight=sample_weight)
@@ -307,7 +396,18 @@ class RuleTree(RuleTreeBase, ABC):
         return self
 
     def _push_leaves(self, node: RuleTreeNode, data: dict, idx: np.ndarray):
-        """Push the leaves of the subtree rooted at node into the queue, with the instances reaching them."""
+        """
+        Push the leaves of the subtree rooted at ``node`` into the queue, with the instances reaching them.
+
+        Parameters
+        ----------
+        node : RuleTreeNode
+            Root of the subtree.
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        idx : numpy.ndarray
+            Indices of the instances reaching ``node``.
+        """
         if node.is_leaf():
             self.queue_push(node, idx)
             return
@@ -318,12 +418,17 @@ class RuleTree(RuleTreeBase, ABC):
 
     def _grow(self, data: dict, y: np.ndarray|None, sample_weight=None):
         """
-        Split the nodes in the queue until a stopping condition is met.
+        Split the nodes in the queue until a stopping criterion is met, then prune the useless leaves
+        (if requested) and call _post_fit_fix.
 
-        Args:
-            data (dict): Whole data set, as ``{data_type: array}``.
-            y (np.ndarray): Target of the whole data set.
-            sample_weight (np.ndarray): Sample weights of the whole data set.
+        Parameters
+        ----------
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray or None
+            Target of the whole data set.
+        sample_weight : numpy.ndarray, default=None
+            Sample weights of the whole data set.
         """
         nbr_curr_nodes = 0
         while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
@@ -380,27 +485,48 @@ class RuleTree(RuleTreeBase, ABC):
 
     @staticmethod
     def _set_balance_score(node: RuleTreeNode, stump: RuleTreeBaseStump, data: dict):
-        """Fraction of the whole data set in the smaller side of the split (see get_balanced_stumps)."""
+        """
+        Set ``balance_score`` of a node: the fraction of the whole data set in the smaller side of its
+        split (see RuleTreeClassifier.get_balanced_stumps).
+
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node being split.
+        stump : RuleTreeBaseStump
+            The stump of the node.
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        """
         _, counts = np.unique(stump.apply(data), return_counts=True)
         node.balance_score_global = counts.min() / counts.sum()
         node.balance_score = node.balance_score_global
 
     def make_split(self, data: dict, y: np.ndarray|None, idx: np.ndarray, sample_weight=None) -> RuleTreeBaseStump:
         """
-        Fit a split on the instances idx, choosing among ``candidate_splits_`` according to
-        ``stump_selection``: a random pair (stump, data type), or the pair with the best information gain.
+        Fit the split of a node, choosing among ``candidate_splits_`` according to ``stump_selection``:
+        a random pair (stump, data type), or the pair with the highest gain (``gain_``).
 
-        Args:
-            data (dict): Whole data set, as ``{data_type: array}``.
-            y (np.ndarray): Target of the whole data set.
-            idx (np.ndarray): Indices of the instances in the node.
-            sample_weight (np.ndarray): Sample weights of the whole data set.
+        Parameters
+        ----------
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray or None
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances in the node.
+        sample_weight : numpy.ndarray, default=None
+            Sample weights of the whole data set.
 
-        Returns:
-            RuleTreeBaseStump: The fitted stump.
+        Returns
+        -------
+        stump : RuleTreeBaseStump
+            The fitted stump.
 
-        Raises:
-            NoSplitFoundWarning: If no stump can split the node.
+        Raises
+        ------
+        NoSplitFoundWarning
+            If no stump can split the node.
         """
         if self.stump_selection == 'random':
             stump, data_type = self._get_random_split()
@@ -436,37 +562,61 @@ class RuleTree(RuleTreeBase, ABC):
 
     def is_split_useless(self, data: dict, idx: np.ndarray, labels: np.ndarray) -> bool:
         """
-        Check if a split is useless, i.e. if all the instances go to the same child.
+        Whether a split is useless, i.e. all the instances go to the same child.
 
-        Args:
-            data (dict): Whole data set, as ``{data_type: array}``.
-            idx (np.ndarray): Indices of the instances in the node.
-            labels (np.ndarray): Result of the split on idx (1 left, 2 right).
+        Parameters
+        ----------
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        idx : numpy.ndarray
+            Indices of the instances in the node.
+        labels : numpy.ndarray
+            Result of the split on idx (1 left, 2 right).
 
-        Returns:
-            bool: Whether the split is useless.
+        Returns
+        -------
+        useless : bool
         """
         return len(np.unique(labels)) == 1
 
     def _update_node_statistics(self, node: RuleTreeNode, data: dict, y: np.ndarray, idx: np.ndarray):
         """
-        Statistics of a node and of its stump on the instances idx. By default the ones of
-        classification (majority class, class probabilities, log-odds): see RuleTreeNode.update_statistics.
+        Statistics of a node and of its stump on the instances ``idx`` (see :meth:`update_statistics`).
+        By default the ones of classification (majority class, class probabilities, log-odds): see
+        RuleTreeNode.update_statistics.
+
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node.
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         """
         node.update_statistics(data, y, idx, self)
 
     def predict(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
-        Predict the output for the input data.
+        Predict the output of each instance: the prediction of the leaf it reaches.
 
-        Args:
-            X (np.ndarray): Tabular data.
-            X_ts (np.ndarray): Time series.
-            X_img (np.ndarray): Images.
-            X_txt (np.ndarray): Texts.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features), default=None
+            Tabular data.
+        X_ts : numpy.ndarray of shape (n_samples, n_signals, length), default=None
+            Time series.
+        X_img : numpy.ndarray of shape (n_samples, ...), default=None
+            Images.
+        X_txt : array-like of shape (n_samples,), default=None
+            Texts.
 
-        Returns:
-            np.ndarray: Predicted outputs.
+        Returns
+        -------
+        y_pred : numpy.ndarray of shape (n_samples,)
+            Predicted classes, values or cluster labels.
         """
         labels, _, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
 
@@ -474,16 +624,23 @@ class RuleTree(RuleTreeBase, ABC):
 
     def apply(self, X: np.ndarray|None = None, X_ts=None, X_img=None, X_txt=None):
         """
-        Apply the RuleTree to the input data.
+        Leaf reached by each instance.
 
-        Args:
-            X (np.ndarray): Tabular data.
-            X_ts (np.ndarray): Time series.
-            X_img (np.ndarray): Images.
-            X_txt (np.ndarray): Texts.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features), default=None
+            Tabular data.
+        X_ts : numpy.ndarray of shape (n_samples, n_signals, length), default=None
+            Time series.
+        X_img : numpy.ndarray of shape (n_samples, ...), default=None
+            Images.
+        X_txt : array-like of shape (n_samples,), default=None
+            Texts.
 
-        Returns:
-            np.ndarray: Leaf ids for each sample.
+        Returns
+        -------
+        leaves : numpy.ndarray of shape (n_samples,)
+            Identifier (node_id) of the leaf reached by each instance.
         """
         _, leaves, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
 
@@ -492,15 +649,21 @@ class RuleTree(RuleTreeBase, ABC):
     def update_statistics(self, X: np.ndarray|None = None, y: np.ndarray|None = None,
                           X_ts=None, X_img=None, X_txt=None):
         """
-        Recompute the statistics of the nodes (predictions, probabilities, number of samples, ...) and
+        Recompute the statistics of the nodes (predictions, probabilities, number of instances, ...) and
         of their stumps on new data, without changing the splits.
 
-        Args:
-            X (np.ndarray): Tabular data.
-            y (np.ndarray): Target.
-            X_ts (np.ndarray): Time series.
-            X_img (np.ndarray): Images.
-            X_txt (np.ndarray): Texts.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features), default=None
+            Tabular data.
+        y : numpy.ndarray of shape (n_samples,), default=None
+            Target (None for clustering).
+        X_ts : numpy.ndarray of shape (n_samples, n_signals, length), default=None
+            Time series.
+        X_img : numpy.ndarray of shape (n_samples, ...), default=None
+            Images.
+        X_txt : array-like of shape (n_samples,), default=None
+            Texts.
         """
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         self._set_classes(y)
@@ -508,6 +671,20 @@ class RuleTree(RuleTreeBase, ABC):
         self._update_statistics(data, y, self.root, np.arange(self._n_samples(data)))
 
     def _update_statistics(self, data: dict, y: np.ndarray, node: RuleTreeNode, idx: np.ndarray):
+        """
+        Recompute the statistics of the subtree rooted at ``node`` (see :meth:`update_statistics`).
+
+        Parameters
+        ----------
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        node : RuleTreeNode
+            Root of the subtree.
+        idx : numpy.ndarray
+            Indices of the instances reaching ``node``.
+        """
         if node is None:
             return
 
@@ -526,16 +703,23 @@ class RuleTree(RuleTreeBase, ABC):
 
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """
-        Compute medoids for the given data.
+        Medoid of each class among the instances ``idx``, with the distance ``distance_measure``.
 
-        Args:
-            X (np.ndarray): Feature matrix.
-            y (np.ndarray): Target labels.
-            idx (np.ndarray): Indices of the samples to consider.
-            **kwargs: Additional arguments for medoid computation.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
+        y : numpy.ndarray
+            Target.
+        idx : numpy.ndarray
+            Indices of the instances to consider.
+        **kwargs : dict
+            Not used.
 
-        Returns:
-            list: Indices of the computed medoids.
+        Returns
+        -------
+        medoids : list of int or None
+            Index of the medoid of each class, or None if distance_measure is None.
         """
         if self.distance_measure is not None:
             medoids = []
@@ -559,100 +743,135 @@ class RuleTree(RuleTreeBase, ABC):
 
     def get_rules(self, columns_names = None):
         """
-        Get the rules of the RuleTree.
+        Rules of the tree, as a nested dictionary.
 
-        Args:
-            columns_names (list): Column names for the features.
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the tabular features, used in the rules instead of ``X_<index>``.
 
-        Returns:
-            dict: Rules of the tree.
+        Returns
+        -------
+        rules : dict
+            Rule of the root: the node statistics (``node_id``, ``is_leaf``, ``prediction``, ...), the
+            rule of the split (``textual_rule``, ``not_textual_rule``, ...) and the rules of the children
+            in ``left_node`` and ``right_node`` (None for a leaf). See :meth:`print_rules`.
         """
         return self.root.get_rule(columns_names = columns_names)
 
     def make_leaf(self, node: RuleTreeNode) -> RuleTreeNode:
         """
-        Convert a node into a leaf.
+        Hook called when a node becomes a leaf. The default implementation does nothing.
 
-        Args:
-            node (RuleTreeNode): Node to be converted.
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The new leaf.
 
-        Returns:
-            RuleTreeNode: Leaf node.
+        Returns
+        -------
+        node : RuleTreeNode
         """
         return node
 
     def queue_pop(self):
         """
-        Pop an element from the queue.
+        Pop the next node to split from the queue.
 
-        Returns:
-            tuple: Index and current node.
+        Returns
+        -------
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
+        node : RuleTreeNode
         """
         el = heapq.heappop(self.queue)
         return el[-2:]
 
     def check_additional_halting_condition(self, y, curr_idx: np.ndarray):
         """
-        Check additional halting conditions for splitting.
+        Additional condition to stop splitting a node, defined by the subclasses (e.g. a pure node for
+        classification). The default implementation never stops.
 
-        Args:
-            y: Target labels.
-            curr_idx (np.ndarray): Current indices.
+        Parameters
+        ----------
+        y : numpy.ndarray or None
+            Target of the whole data set.
+        curr_idx : numpy.ndarray
+            Indices of the instances in the node.
 
-        Returns:
-            bool: Whether to halt splitting.
+        Returns
+        -------
+        halt : bool
         """
         return False
 
     def _post_fit_fix(self):
         """
-        Perform post-fit adjustments to the RuleTree.
+        Hook called at the end of fit and partial_fit, e.g. to relabel the clusters. The default
+        implementation does nothing.
         """
 
     @abstractmethod
     def prepare_node(self, y: np.ndarray|None, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
-        Prepare a node in the RuleTree.
+        Create a node (or update ``node``) with the statistics of the instances ``idx``: prediction,
+        probabilities, number of instances.
 
-        Args:
-            y (np.ndarray): Target labels.
-            idx (np.ndarray): Indices of the samples.
-            node_id (str): Node identifier.
+        Parameters
+        ----------
+        y : numpy.ndarray or None
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
+        node_id : str
+            Identifier of the node: its path from the root, e.g. ``"Rlr"``.
+        node : RuleTreeNode, default=None
+            Existing node to update instead of creating a new one.
 
-        Returns:
-            RuleTreeNode: Prepared node.
+        Returns
+        -------
+        node : RuleTreeNode
         """
         pass
 
     @abstractmethod
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
-        Push a node into the queue.
+        Push a node to split into the queue: the priority defines the order in which the tree grows.
 
-        Args:
-            node (RuleTreeNode): Node to be pushed.
-            idx (np.ndarray): Indices of the samples.
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         """
         pass
 
     @abstractmethod
     def _get_stumps_task(self) -> str:
         """
-        Task of the stumps of the tree (the task of their splitter).
+        Task of the stumps of the tree: the tree accepts only base stumps with this task.
 
-        Returns:
-            str: MODEL_TYPE_CLF or MODEL_TYPE_REG.
+        Returns
+        -------
+        task : str
+            MODEL_TYPE_CLF or MODEL_TYPE_REG.
         """
 
     def _get_tree_paths(self, current_node = None):
         """
-        Get all paths in the RuleTree.
+        Paths from each leaf to the root.
 
-        Args:
-            current_node (RuleTreeNode): Current node in the tree.
+        Parameters
+        ----------
+        current_node : RuleTreeNode
+            Root of the subtree.
 
-        Returns:
-            list: List of paths.
+        Returns
+        -------
+        paths : list of list of str
+            For each leaf, the node ids from the leaf to ``current_node``.
         """
         if current_node.is_leaf():
             return [[current_node.node_id]]
@@ -677,15 +896,23 @@ class RuleTree(RuleTreeBase, ABC):
     
     def _node_dict(self, current_node=None, d=None, i=0):
         """
-        Create a dictionary mapping node IDs to indices.
+        Index of each node in depth-first order ('R': 0, 'Rl': 1, ...).
 
-        Args:
-            current_node (RuleTreeNode): Current node in the tree.
-            d (dict): Dictionary to store mappings.
-            i (int): Current index.
+        Parameters
+        ----------
+        current_node : RuleTreeNode, default=None
+            Root of the subtree. If None, the root of the tree.
+        d : dict, default=None
+            Dictionary being filled.
+        i : int, default=0
+            Next index.
 
-        Returns:
-            tuple: Dictionary and current index.
+        Returns
+        -------
+        d : dict
+            Node id -> index.
+        i : int
+            Next free index.
         """
         if d is None:
             d = {}
@@ -707,23 +934,29 @@ class RuleTree(RuleTreeBase, ABC):
     @abstractmethod
     def _get_prediction_probas(self, current_node, probas=None):
         """
-        Get prediction probabilities for the RuleTree.
+        Values of the nodes in depth-first order, used by local_interpretation: the class probabilities
+        for classification, the prediction for regression.
 
-        Args:
-            current_node (RuleTreeNode): Current node in the tree.
-            probas (list): List to store probabilities.
+        Parameters
+        ----------
+        current_node : RuleTreeNode
+            Root of the subtree.
+        probas : list, default=None
+            List being filled.
 
-        Returns:
-            list: Prediction probabilities.
+        Returns
+        -------
+        probas : list
         """
         pass
 
     def _tree_value(self):
         """
-        Get the values of the RuleTree.
+        Values of the nodes in depth-first order (see _get_prediction_probas), as an array.
 
-        Returns:
-            np.ndarray: Tree values.
+        Returns
+        -------
+        values : numpy.ndarray of shape (n_nodes, 1, n_values)
         """
         probas = self._get_prediction_probas(self.root)
         if isinstance(probas[0], (list, np.ndarray)):
@@ -733,14 +966,18 @@ class RuleTree(RuleTreeBase, ABC):
             
     def _tree_feature(self, current_node = None, feats=None):
         """
-        Get the features used in the RuleTree.
+        Feature of each node in depth-first order (-2 for the leaves), used by local_interpretation.
 
-        Args:
-            current_node (RuleTreeNode): Current node in the tree.
-            feats (list): List to store features.
+        Parameters
+        ----------
+        current_node : RuleTreeNode, default=None
+            Root of the subtree. If None, the root of the tree.
+        feats : list, default=None
+            List being filled.
 
-        Returns:
-            list: Features used in the tree.
+        Returns
+        -------
+        feats : list
         """
         if feats is None:
             feats = []
@@ -760,14 +997,26 @@ class RuleTree(RuleTreeBase, ABC):
         
     def local_interpretation(self, X, joint_contribution = False):
         """
-        Perform local interpretation for the input data.
+        Data needed to compute the contribution of each feature to the predictions (see the
+        implementations of RuleTreeClassifier and RuleTreeRegressor, which return the contributions).
 
-        Args:
-            X (np.ndarray): Feature matrix.
-            joint_contribution (bool): Whether to compute joint contributions.
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
+        joint_contribution : bool, default=False
+            Not used here.
 
-        Returns:
-            tuple: Direct predictions, biases, and contributions.
+        Returns
+        -------
+        leaves : numpy.ndarray
+            Index of the leaf reached by each instance.
+        paths : list of list of int
+            Path from the root to each leaf.
+        leaf_to_path : dict
+            Leaf index -> its path.
+        values : numpy.ndarray
+            Values of the nodes (see _tree_value).
         """
         node_dict = self._node_dict()[0] #-> Turn 'R': 0, 'Rl' : 1, 'Rr' :2 and so on
 
@@ -796,19 +1045,35 @@ class RuleTree(RuleTreeBase, ABC):
                            line_shape,
                            joint_contribution = False):
         """
-        Evaluate contributions for the RuleTree.
+        Contributions of the features to the predictions, as in treeinterpreter: the prediction of an
+        instance is the value of the root (bias) plus the change of value along its path, attributed to
+        the feature of each split.
 
-        Args:
-            leaves (np.ndarray): Leaf indices.
-            paths (list): List of paths.
-            leaf_to_path (dict): Mapping of leaves to paths.
-            values (np.ndarray): Tree values.
-            biases (np.ndarray): Biases.
-            line_shape (int): Shape of the feature matrix.
-            joint_contribution (bool): Whether to compute joint contributions.
+        Parameters
+        ----------
+        leaves : numpy.ndarray
+            Index of the leaf reached by each instance.
+        paths : list of list of int
+            Path from the root to each leaf.
+        leaf_to_path : dict
+            Leaf index -> its path.
+        values : numpy.ndarray
+            Values of the nodes.
+        biases : numpy.ndarray
+            Value of the root, for each instance.
+        line_shape : int or tuple
+            Shape of the contributions of one instance.
+        joint_contribution : bool, default=False
+            If True, the contributions are given to the sets of features along the path.
 
-        Returns:
-            tuple: Direct predictions, biases, and contributions.
+        Returns
+        -------
+        direct_prediction : numpy.ndarray
+            Value of the leaf of each instance.
+        biases : numpy.ndarray
+            Value of the root.
+        contributions : numpy.ndarray or list of dict
+            Contribution of each feature (or set of features, with joint_contribution) to each prediction.
         """
         direct_prediction = values[leaves]
         values_list = list(values)
@@ -860,12 +1125,16 @@ class RuleTree(RuleTreeBase, ABC):
     @classmethod
     def print_rules(cls, rules: dict=None, digits=2, indent: int = 0, ):
         """
-        Print the rules of the RuleTree.
+        Print rules as an indented list of conditions and outputs.
 
-        Args:
-            rules (dict): Rules of the tree.
-            digits (int): Number of digits for rounding.
-            indent (int): Indentation level.
+        Parameters
+        ----------
+        rules : dict
+            Rules returned by :meth:`get_rules`.
+        digits : int, default=2
+            Number of decimals of the numerical outputs.
+        indent : int, default=0
+            Indentation level of the root.
         """
       
         indentation = "".join(["|   " for _ in range(indent)])
@@ -883,13 +1152,18 @@ class RuleTree(RuleTreeBase, ABC):
 
     def to_dict(self, filename=None):
         """
-        Convert the RuleTree to a dictionary representation.
+        Dictionary representation of the fitted tree, from which :meth:`from_dict` rebuilds it.
 
-        Args:
-            filename (str): File to save the dictionary.
+        Parameters
+        ----------
+        filename : str or path-like, default=None
+            If given, the dictionary is also saved to this file as JSON.
 
-        Returns:
-            dict: Dictionary representation of the tree.
+        Returns
+        -------
+        dictionary : dict
+            JSON-friendly dictionary with the class of the tree, its parameters (``args``, base stumps
+            included), the classes for classification trees and the nodes.
         """
         node_list = [self.root]
 
@@ -924,13 +1198,17 @@ class RuleTree(RuleTreeBase, ABC):
     @classmethod
     def from_dict(cls, filename):
         """
-        Create a RuleTree from a dictionary representation.
+        Rebuild a tree from a dictionary created by :meth:`to_dict` (also by previous versions).
 
-        Args:
-            filename (str): File containing the dictionary.
+        Parameters
+        ----------
+        filename : dict, str or path-like
+            The dictionary, or the JSON file where it is saved.
 
-        Returns:
-            RuleTree: RuleTree instance.
+        Returns
+        -------
+        tree : RuleTree
+            The tree, of the class it had when saved.
         """
         if not isinstance(filename, dict):
             with open(filename, 'r') as f:
@@ -972,16 +1250,24 @@ class RuleTree(RuleTreeBase, ABC):
 
     def export_graphviz(self, columns_names=None, scaler=None, float_precision=3, filename:Optional[str]=None):
         """
-        Export the RuleTree to a Graphviz representation.
+        Graphviz representation of the tree (requires the graphviz package).
 
-        Args:
-            columns_names (list): Column names for the features.
-            scaler: Scaler for the features.
-            float_precision (int): Number of digits for rounding.
-            filename (str): File to save the Graphviz representation.
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the tabular features.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the thresholds are shown in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the thresholds.
+        filename : str, default=None
+            If given, the graph is rendered to this file; otherwise it is rendered to a temporary file
+            and opened (both require the Graphviz binaries).
 
-        Returns:
-            graphviz.Digraph: Graphviz representation of the tree.
+        Returns
+        -------
+        graph : graphviz.Digraph or None
+            The graph, if filename is None.
         """
         dot = self.root.export_graphviz(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
         if filename is None:
@@ -992,30 +1278,38 @@ class RuleTree(RuleTreeBase, ABC):
 
     def get_predicates(self):
         """
-        Get the predicates (conditions) for the stump in the tree in depth-first order.
+        Internal nodes (the ones with a split) in depth-first order.
 
-        Returns:
-            dict: dictionary of predicates used in the tree in the form node_id: RuleTreeNode
+        Returns
+        -------
+        predicates : dict
+            Node id -> RuleTreeNode.
         """
         return self.root.get_predicates()
 
     def get_node_by_id(self, node_id):
         """
-        Get a node by its ID.
+        Node with the given identifier.
 
-        Args:
-            node_id (str): Node identifier.
+        Parameters
+        ----------
+        node_id : str
+            Identifier of the node: its path from the root, e.g. ``"Rlr"``.
 
-        Returns:
-            RuleTreeNode: RuleTreeNode instance.
+        Returns
+        -------
+        node : RuleTreeNode or None
+            The node, or None if not in the tree.
         """
         return self.root.get_node_by_id(node_id)
 
     def get_leaf_nodes(self):
         """
-        Get all leaf nodes in the RuleTree.
+        Leaves of the tree.
 
-        Returns:
-            list: List of leaf nodes.
+        Returns
+        -------
+        leaves : dict
+            Node id -> RuleTreeNode.
         """
         return self.root.get_leaf_nodes()

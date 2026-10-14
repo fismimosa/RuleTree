@@ -1,3 +1,8 @@
+"""
+RuleTreeCluster and its variants: RuleTrees for clustering, also used to classify or regress
+with clusters found without looking at the target.
+"""
+
 import heapq
 from typing import Union, Optional
 
@@ -20,51 +25,60 @@ from RuleTree.utils.define import DATA_TYPE_TABULAR
 
 class RuleTreeCluster(ClusterMixin, RuleTree):
     """
-    Rule Tree Clustering algorithm that uses a decision tree structure for data clustering.
-    
-    This class implements a clustering algorithm that partitions data using decision rules organized 
-    in a tree structure. It works by performing dimensionality reduction (PCA, MCA, or FAMD depending
-    on data types) and building a tree where each node represents a rule-based split.
-    
+    RuleTree for clustering: each leaf is a cluster described by the rules of its path.
+
+    To split a node, the instances are projected on their principal components (PCA, MCA or FAMD,
+    for numerical, categorical or mixed data); for each component, a regression stump is fitted to
+    predict it, and the best split is kept according to ``clus_impurity``. A node is split only if
+    the split decreases its BIC (see ``bic_eps``). The tree grows from the largest node. Only
+    tabular data are supported.
+
+    After fit, the nodes predict integer labels assigned in breadth-first order ('R' -> 0,
+    'Rl' -> 1, 'Rr' -> 2, ...); ``predict`` returns the label of the leaf of each instance.
+
     Parameters
     ----------
     n_components : int, default=2
-        Number of principal components to use for dimensionality reduction.
-    
-    clus_impurity : str, default='r2'
-        Criterion to evaluate split quality: 
-        - 'r2': Use R-squared score
-        - 'bic': Use Bayesian Information Criterion
-    
+        Number of principal components predicted by the stumps of each node.
+    clus_impurity : {'r2', 'bic'}, default='r2'
+        Criterion to choose the split among the ones on the different components: the variance of the
+        component explained by the split ('r2') or the Bayesian Information Criterion of the two
+        clusters ('bic').
     bic_eps : float, default=0.0
-        Threshold for determining if a split is useful when using BIC criterion.
-    
+        A split is kept only if it decreases the BIC of the node by more than bic_eps times its value.
     max_leaf_nodes : int, default=inf
-        Maximum number of leaf nodes in the tree.
-        
+        Maximum number of leaves.
     min_samples_split : int, default=2
-        Minimum number of samples required to split an internal node.
-        
+        Minimum number of instances to split a node.
     max_depth : int, default=inf
-        Maximum depth of the tree.
-    
+        Maximum depth of the tree (the root has depth 0).
     prune_useless_leaves : bool, default=False
-        Whether to prune leaves that don't improve performance.
-    
-    base_stumps : RegressorMixin or list, default=None
-        Regressor to use for building the decision stumps. If None, uses DecisionTreeStumpRegressor.
-    
+        Whether to merge, after fit, the sibling leaves with the same prediction.
+    base_stumps : RuleTreeBaseStump or list, default=None
+        Regression stumps used to split the nodes, fitted to predict a principal component. If None,
+        DecisionTreeStumpRegressor().
     random_state : int, RandomState instance or None, default=None
-        Controls the randomness of the estimator.
-    
-    criterion, splitter, min_samples_leaf, min_weight_fraction_leaf, max_features,
-    min_impurity_decrease, ccp_alpha, monotonic_cst : 
-        Parameters passed to the base decision tree stump regressor if base_stumps is None.
-    
+        Seed of the principal component analysis and of the random choice of the stumps, also given
+        to the stumps without a random_state.
+    distance_measure : str or callable, default=None
+        Not used.
+
     Attributes
     ----------
     label_encoder : dict
-        Mapping from original labels to numeric labels.
+        Node id -> integer label.
+    root : RuleTreeNode
+        Root of the fitted tree.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import make_blobs
+    >>> from sklearn.metrics import adjusted_rand_score
+    >>> from RuleTree import RuleTreeCluster
+    >>> X, y = make_blobs(n_samples=300, centers=3, cluster_std=0.5, random_state=0)
+    >>> labels = RuleTreeCluster(max_depth=3, random_state=0).fit_predict(X)
+    >>> round(adjusted_rand_score(y, labels), 2)
+    0.95
     """
     def __init__(self,
                  n_components: int = 2,
@@ -77,6 +91,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
                  base_stumps: Union[RegressorMixin, list] = None,
                  random_state=None,
                  distance_measure=None):
+        """Initialize the RuleTreeCluster; see the class documentation for the parameters."""
         if base_stumps is None:
             base_stumps = DecisionTreeStumpRegressor()
 
@@ -98,21 +113,21 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
 
     def is_split_useless(self, data: dict, idx: np.ndarray, labels: np.ndarray):
         """
-        Determine if a split is useful based on BIC criteria.
-        
+        Whether a split is useless: all the instances go to the same child, or the BIC of the two
+        clusters is not lower than the BIC of the node (by bic_eps times its value).
+
         Parameters
         ----------
         data : dict
             Whole data set, as ``{data_type: array}``.
-        idx : ndarray
-            Indices of samples in the current node.
-        labels : ndarray
+        idx : numpy.ndarray
+            Indices of the instances in the node.
+        labels : numpy.ndarray
             Result of the split on idx (1 left, 2 right).
-            
+
         Returns
         -------
-        bool
-            True if the split is considered useless, False otherwise.
+        useless : bool
         """
         if len(np.unique(labels)) == 1:
             return True
@@ -125,7 +140,19 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         return bic_parent < bic_children - self.bic_eps * np.abs(bic_parent)
 
     def _set_candidate_splits(self, data: dict):
-        """Clustering is based on the principal components of the tabular data, the only type supported."""
+        """
+        Candidate splits, as in RuleTree; clustering supports only tabular data.
+
+        Parameters
+        ----------
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+
+        Raises
+        ------
+        ValueError
+            If data other than tabular are provided.
+        """
         if set(data) != {DATA_TYPE_TABULAR}:
             raise ValueError(f"{self.__class__.__name__} supports only tabular data (X), got {', '.join(data)}.")
 
@@ -133,24 +160,20 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
 
     def fit_predict(self, X, y=None, **kwargs):
         """
-        Perform clustering on `X` and returns cluster labels.
+        Fit the tree and return the cluster label of each instance.
 
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
-            Input data.
-
-        y : Ignored
-            Not used, present for API consistency by convention.
-
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
+        y : None
+            Not used, present for API consistency.
         **kwargs : dict
-            Arguments to be passed to ``fit``.
-
-            .. versionadded:: 1.4
+            Arguments passed to fit.
 
         Returns
         -------
-        labels : ndarray of shape (n_samples,), dtype=np.int64
+        labels : numpy.ndarray of shape (n_samples,)
             Cluster labels.
         """
         # non-optimized default implementation; override when a better
@@ -160,40 +183,43 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
 
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
-        Push a new node into the priority queue for processing.
-        
+        Push a node into the queue, with priority to the nodes with more instances.
+
         Parameters
         ----------
         node : RuleTreeNode
-            Node to be pushed into the queue.
-        idx : ndarray
-            Indices of samples in the node.
+            The node.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         """
         heapq.heappush(self.queue, (-len(idx), next(self.tiebreaker), idx, node))
 
     def make_split(self, data: dict, y, idx: np.ndarray, sample_weight=None) -> RuleTreeBaseStump:
         """
-        Create a split for the current node using dimensionality reduction.
-        
-        This method first performs dimensionality reduction on the data using PCA, MCA, 
-        or FAMD (depending on data types), then finds the best stump (simple decision tree)
-        that splits the data along one of the principal components.
-        
+        Split a node on its principal components: the instances are projected with PCA, MCA or FAMD
+        (numerical, categorical or mixed data), a stump is fitted to predict each component, and the
+        best split according to ``clus_impurity`` is kept.
+
         Parameters
         ----------
         data : dict
             Whole data set, as ``{data_type: array}`` (only tabular data).
-        y : array-like
-            Target values (ignored in clustering, but kept for API consistency).
-        idx : ndarray
-            Indices of samples in the current node.
-        sample_weight : ignored
+        y : numpy.ndarray or None
+            Not used by the split (the stumps predict the components).
+        idx : numpy.ndarray
+            Indices of the instances in the node.
+        sample_weight : None
             Not used, present for API consistency.
-            
+
         Returns
         -------
-        RuleTreeBaseStump
-            The best stump for this split.
+        stump : RuleTreeBaseStump
+            The best stump.
+
+        Raises
+        ------
+        NoSplitFoundWarning
+            If no component can be split.
         """
         X = data[DATA_TYPE_TABULAR]
         n_components_split = min(self.n_components, len(idx))
@@ -246,45 +272,40 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
 
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """
-        Compute the medoids for clusters.
-
-        This is a placeholder method for computing cluster medoids.
+        Not implemented for clustering: does nothing.
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
-            Training data.
-        y : array-like
-            Target values.
-        idx : ndarray
-            Indices of samples in the current node.
+        X : numpy.ndarray
+            Not used.
+        y : numpy.ndarray
+            Not used.
+        idx : numpy.ndarray
+            Not used.
         **kwargs : dict
-            Additional parameters.
+            Not used.
         """
         pass
         
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
-        Prepare a new node in the tree.
-
-        The node id is used as cluster label during fit, and it is replaced by an integer label in
-        :meth:`_post_fit_fix`.
+        Create a node (or update ``node``) whose prediction is its node id, replaced by an integer label
+        in :meth:`_post_fit_fix`.
 
         Parameters
         ----------
-        y : ndarray
-            Target values.
-        idx : ndarray
-            Indices of samples in the node.
+        y : numpy.ndarray or None
+            Not used.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         node_id : str
-            Unique identifier for the node.
+            Identifier of the node.
         node : RuleTreeNode, default=None
             Existing node to update instead of creating a new one.
 
         Returns
         -------
-        RuleTreeNode
-            A new node initialized with the given parameters.
+        node : RuleTreeNode
         """
         if node is not None:
             node.prediction = node.node_id
@@ -306,16 +327,27 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         )
 
     def _update_node_statistics(self, node, data, y, idx):
-        """Only the number of samples: the predictions of the nodes are the cluster labels."""
+        """
+        Only the number of instances: the predictions of the nodes are the cluster labels.
+
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node.
+        data : dict
+            Not used.
+        y : numpy.ndarray or None
+            Not used.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
+        """
         node.samples = len(idx)
 
     def _post_fit_fix(self):
         """
-        Perform post-fitting operations.
-
-        Replaces the node ids used as cluster labels during fit with integer labels, assigned in
-        breadth-first order ('R' -> 0, 'Rl' -> 1, 'Rr' -> 2, ...). Labels are recomputed from the
-        node ids, so calling this method more than once is safe.
+        Replace the node ids used as cluster labels during fit with integer labels, assigned in
+        breadth-first order ('R' -> 0, 'Rl' -> 1, 'Rr' -> 2, ...). Labels are recomputed from the node
+        ids, so calling this method more than once is safe.
         """
         node_ids = list(self.root.get_predicates()) + list(self.root.get_leaf_nodes())
         self.label_encoder = {node_id: i for i, node_id in enumerate(sorted(node_ids, key=lambda x: (len(x), x)))}
@@ -323,12 +355,12 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
 
     def _labels_to_int(self, node: RuleTreeNode):
         """
-        Convert node labels to integers recursively.
+        Replace recursively the prediction of each node with its integer label.
 
         Parameters
         ----------
         node : RuleTreeNode
-            The current node to process.
+            Root of the subtree.
         """
         node.prediction = self.label_encoder[node.node_id]
 
@@ -340,124 +372,195 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
 
     def _get_stumps_task(self):
         """
-        Task of the stumps of the tree.
+        Task of the stumps of the tree: they predict the principal components.
 
-        Returns:
-            str: MODEL_TYPE_REG.
+        Returns
+        -------
+        task : str
+            MODEL_TYPE_REG.
         """
         return MODEL_TYPE_REG
 
     def _get_prediction_probas(self, current_node = None, probas=None):
         """
-        Get prediction probabilities.
-        
-        Not implemented for the base clustering class.
-        
+        Not implemented for clustering.
+
         Raises
         ------
         NotImplementedError
-            Method not implemented in the base class.
         """
         raise NotImplementedError()
 
 
 class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
     """
-    Rule Tree Cluster Classifier that combines clustering with classification.
-    
-    This class extends RuleTreeCluster to perform classification tasks by assigning
-    class labels to the discovered clusters.
-    
-    See RuleTreeCluster for the full list of parameters.
+    RuleTreeCluster whose leaves predict a class: the tree is built as in RuleTreeCluster, without
+    looking at the target, and each node predicts the majority class of its instances, as in
+    RuleTreeClassifier.
+
+    Parameters
+    ----------
+    n_components : int, default=2
+        Number of principal components predicted by the stumps of each node.
+    clus_impurity : {'r2', 'bic'}, default='r2'
+        Criterion to choose the split among the ones on the different components: the variance of the
+        component explained by the split ('r2') or the Bayesian Information Criterion of the two
+        clusters ('bic').
+    bic_eps : float, default=0.0
+        A split is kept only if it decreases the BIC of the node by more than bic_eps times its value.
+    max_leaf_nodes : int, default=inf
+        Maximum number of leaves.
+    min_samples_split : int, default=2
+        Minimum number of instances to split a node.
+    max_depth : int, default=inf
+        Maximum depth of the tree (the root has depth 0).
+    prune_useless_leaves : bool, default=False
+        Whether to merge, after fit, the sibling leaves with the same prediction.
+    base_stumps : RuleTreeBaseStump or list, default=None
+        Regression stumps used to split the nodes, fitted to predict a principal component. If None,
+        DecisionTreeStumpRegressor().
+    random_state : int, RandomState instance or None, default=None
+        Seed of the principal component analysis and of the random choice of the stumps, also given
+        to the stumps without a random_state.
+    distance_measure : str or callable, default=None
+        Not used.
+
+    Attributes
+    ----------
+    classes_ : numpy.ndarray
+        Classes of the target.
+    n_classes_ : int
+        Number of classes.
     """
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
-        Prepare a new classification node in the tree.
+        Create a node (or update ``node``) with the statistics of classification, as in RuleTreeClassifier.
 
         Parameters
         ----------
-        y : ndarray
-            Target values.
-        idx : ndarray
-            Indices of samples in the node.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         node_id : str
-            Unique identifier for the node.
+            Identifier of the node.
         node : RuleTreeNode, default=None
             Existing node to update instead of creating a new one.
 
         Returns
         -------
-        RuleTreeNode
-            A new node initialized with classification parameters.
+        node : RuleTreeNode
         """
         return RuleTreeClassifier.prepare_node(self, y, idx, node_id, node)
 
     def _post_fit_fix(self):
-        """
-        Perform post-fitting operations for classification.
-
-        Nodes already predict class labels, so no post-processing is needed.
-        """
+        """Nothing to do: the nodes already predict class labels."""
 
     def _update_node_statistics(self, node, data, y, idx):
-        """Statistics of classification, as in RuleTreeClassifier."""
+        """
+        Statistics of classification, as in RuleTreeClassifier.
+
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node.
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
+        """
         RuleTree._update_node_statistics(self, node, data, y, idx)
 
     def predict_proba(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
-        Predict class probabilities for the input data.
+        Class probabilities of each instance: the ones of the leaf it reaches.
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features)
-            Input data.
+        X : numpy.ndarray of shape (n_samples, n_features), default=None
+            Tabular data.
+        X_ts, X_img, X_txt : default=None
+            Not supported by clustering, present for API consistency.
 
         Returns
         -------
-        ndarray of shape (n_samples, n_classes)
-            Class probabilities of the leaf reached by each sample.
+        proba : numpy.ndarray of shape (n_samples, n_classes)
         """
         return RuleTreeClassifier.predict_proba(self, X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
 
 class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
     """
-    Rule Tree Cluster Regressor that combines clustering with regression.
-    
-    This class extends RuleTreeCluster to perform regression tasks by assigning
-    continuous values to the discovered clusters.
-    
-    See RuleTreeCluster for the full list of parameters.
+    RuleTreeCluster whose leaves predict a value: the tree is built as in RuleTreeCluster, without
+    looking at the target, and each node predicts the mean of the target of its instances, as in
+    RuleTreeRegressor.
+
+    Parameters
+    ----------
+    n_components : int, default=2
+        Number of principal components predicted by the stumps of each node.
+    clus_impurity : {'r2', 'bic'}, default='r2'
+        Criterion to choose the split among the ones on the different components: the variance of the
+        component explained by the split ('r2') or the Bayesian Information Criterion of the two
+        clusters ('bic').
+    bic_eps : float, default=0.0
+        A split is kept only if it decreases the BIC of the node by more than bic_eps times its value.
+    max_leaf_nodes : int, default=inf
+        Maximum number of leaves.
+    min_samples_split : int, default=2
+        Minimum number of instances to split a node.
+    max_depth : int, default=inf
+        Maximum depth of the tree (the root has depth 0).
+    prune_useless_leaves : bool, default=False
+        Whether to merge, after fit, the sibling leaves with the same prediction.
+    base_stumps : RuleTreeBaseStump or list, default=None
+        Regression stumps used to split the nodes, fitted to predict a principal component. If None,
+        DecisionTreeStumpRegressor().
+    random_state : int, RandomState instance or None, default=None
+        Seed of the principal component analysis and of the random choice of the stumps, also given
+        to the stumps without a random_state.
+    distance_measure : str or callable, default=None
+        Not used.
     """
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
-        Prepare a new regression node in the tree.
-        
+        Create a node (or update ``node``) with the statistics of regression, as in RuleTreeRegressor.
+
         Parameters
         ----------
-        y : ndarray
-            Target values.
-        idx : ndarray
-            Indices of samples in the node.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         node_id : str
-            Unique identifier for the node.
+            Identifier of the node.
         node : RuleTreeNode, default=None
             Existing node to update instead of creating a new one.
 
         Returns
         -------
-        RuleTreeNode
-            A new node initialized with regression parameters.
+        node : RuleTreeNode
         """
         return RuleTreeRegressor.prepare_node(self, y, idx, node_id, node)
 
     def _post_fit_fix(self):
-        """
-        Perform post-fitting operations for regression.
-
-        Nodes already predict the mean target value, so no post-processing is needed.
-        """
+        """Nothing to do: the nodes already predict the mean of the target."""
 
     def _update_node_statistics(self, node, data, y, idx):
-        """Statistics of regression, as in RuleTreeRegressor."""
+        """
+        Statistics of regression, as in RuleTreeRegressor.
+
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node.
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
+        """
         RuleTreeRegressor._update_node_statistics(self, node, data, y, idx)

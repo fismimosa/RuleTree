@@ -1,9 +1,4 @@
-"""
-File: RuleTreeBaseStump.py
-
-This file contains the abstract base class `RuleTreeBaseStump` which defines the structure
-and some basic functionalities for a rule-based tree stump model in machine learning.
-"""
+"""Abstract base class of the stumps: the single splits that make up the nodes of a RuleTree."""
 
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -16,8 +11,10 @@ from RuleTree.utils.define import DATA_TYPE_TABULAR
 
 class RuleTreeBaseStump(BaseEstimator, ABC):
     """
-    Abstract base class for a rule-based tree stump model. This class provides the
-    structure and some basic functionalities that any rule-based tree stump should implement.
+    Abstract base class of the stumps, the splits of the nodes of a RuleTree.
+
+    A stump divides the instances of a node into two children: ``apply`` returns 1 for the
+    instances that go to the left child and 2 for the ones that go to the right child.
 
     Data handling
     -------------
@@ -36,12 +33,16 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     Subclasses that work on a 2D matrix can implement ``_transform`` (data of the stump's data
     type -> matrix) and ``_apply_matrix`` (matrix -> 1/2 labels) and reuse :meth:`apply` and
     :meth:`update_statistics`. The stumps of the library are made of a transformer and a splitter
-    (see RuleTree.stumps.Stump).
+    (see :class:`RuleTree.stumps.Stump.Stump`), which is the simplest way to write a new stump.
 
-    Attributes:
-        supported_data_types (tuple): Data types the stump can be fitted on.
-        task (str): Kind of target, MODEL_TYPE_CLF (classification) or MODEL_TYPE_REG (regression).
-        data_type_ (str): Data type the stump has been fitted on.
+    Attributes
+    ----------
+    supported_data_types : tuple of str
+        Data types the stump can be fitted on.
+    task : str
+        Kind of target, MODEL_TYPE_CLF (classification) or MODEL_TYPE_REG (regression).
+    data_type_ : str
+        Data type the stump has been fitted on.
     """
 
     supported_data_types = (DATA_TYPE_TABULAR,)
@@ -51,42 +52,68 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         Fit the stump on the instances ``idx`` of ``data``.
 
-        Args:
-            data (dict | np.ndarray): Whole data set, as ``{data_type: array}``.
-            y (np.ndarray): Target of the whole data set.
-            idx (np.ndarray, optional): Indices of the instances reaching the node. Defaults to all.
-            context (RuleTree, optional): Tree being built, used to share cached values among splits.
-            data_type (str, optional): Data type to use. Defaults to the first supported type in data.
-            sample_weight (np.ndarray, optional): Sample weights of the whole data set.
-            check_input (bool): Whether to check the input data.
+        Parameters
+        ----------
+        data : dict or numpy.ndarray
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray, default=None
+            Indices of the instances reaching the node. If None, all the instances.
+        context : RuleTree, default=None
+            Tree being built, used to share cached values among the splits.
+        data_type : str, default=None
+            Data type to use. If None, the first supported data type available in ``data``.
+        sample_weight : numpy.ndarray, default=None
+            Sample weights of the whole data set.
+        check_input : bool, default=True
+            Whether to check the input data.
 
-        Returns:
-            RuleTreeBaseStump: The fitted stump.
+        Returns
+        -------
+        self : RuleTreeBaseStump
+            The fitted stump.
+
+        Raises
+        ------
+        NoSplitFoundWarning
+            If the instances cannot be split.
         """
         raise NotImplementedError("The fit method must be implemented in subclasses.")
 
     @abstractmethod
     def get_rule(self, columns_names:list=None, scaler:TransformerMixin=None, float_precision: Optional[int] = 3) -> dict:
         """
-        Abstract method to generate a rule based on the model's learned parameters.
+        Human-readable representation of the split.
 
-        Args:
-            columns_names (list, optional): List of column names for which to generate rules. Defaults to None.
-            scaler (object, optional): Scaler object used for preprocessing data. Defaults to None.
-            float_precision (int|None, optional): Precision for floating-point numbers in the rule output. Defaults to 3.
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the features, used instead of their indices.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the thresholds are shown in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the thresholds. If None, they are not rounded.
 
-        Returns:
-            dict: A dictionary representing the generated rule.
+        Returns
+        -------
+        rule : dict
+            The rule, with at least the keys ``textual_rule`` and ``not_textual_rule`` (the condition
+            of the left child and its negation), ``blob_rule``, ``not_blob_rule``, ``graphviz_rule`` and
+            ``not_graphviz_rule`` (attributes of the Graphviz node).
         """
         pass
 
     @abstractmethod
     def node_to_dict(self) -> dict:
         """
-        Abstract method to convert a tree node into a dictionary representation.
+        Dictionary representation of the stump, used to save the tree (see RuleTree.to_dict).
 
-        Returns:
-            dict: A dictionary representing the node's state.
+        Returns
+        -------
+        node_dict : dict
+            JSON-friendly dictionary with the key ``stump_type`` (module of the stump class) and all
+            that is needed by :meth:`dict_to_node` to rebuild the stump.
         """
         raise NotImplementedError("The node_to_dict method must be implemented in subclasses.")
 
@@ -94,31 +121,43 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     @abstractmethod
     def dict_to_node(cls, node_dict:dict, X:np.ndarray) -> None:
         """
-        Abstract method to create a tree node from its dictionary representation.
+        Create a stump from a dictionary created by :meth:`node_to_dict`.
 
-        Args:
-            node_dict (dict): Dictionary containing the state of the node.
-            X (pd.DataFrame): Input feature matrix used for reconstruction.
+        Parameters
+        ----------
+        node_dict : dict
+            Dictionary representation of the stump.
+        X : numpy.ndarray, default=None
+            Not used, kept for compatibility.
 
-        Returns:
-            RuleTreeBaseStump: An instance of RuleTreeBaseStump or its subclass.
+        Returns
+        -------
+        stump : RuleTreeBaseStump
+            The stump, fitted if it was fitted when saved.
         """
         raise NotImplementedError("The dict_to_node method must be implemented in subclasses.")
 
     @property
     def task(self) -> str:
-        """Kind of target of the stump: MODEL_TYPE_CLF or MODEL_TYPE_REG."""
+        """
+        Kind of target of the stump: MODEL_TYPE_CLF (classification) or MODEL_TYPE_REG (regression).
+        A tree accepts only stumps of its task (see RuleTree._get_stumps_task).
+        """
         raise NotImplementedError(f"{self.__class__.__name__} must define its task.")
 
     def supports(self, data_type:str) -> bool:
         """
-        Checks if the given data type is supported by this model.
+        Whether the stump can be fitted on a data type.
 
-        Args:
-            data_type (str): Type of input data to check support for.
+        Parameters
+        ----------
+        data_type : str
+            A data type, e.g. ``"tabular"`` (see :data:`RuleTree.utils.define.DATA_INPUT_TYPES`).
 
-        Returns:
-            bool: True if supported, False otherwise.
+        Returns
+        -------
+        supported : bool
+            True if ``data_type`` is in ``supported_data_types``.
         """
         return data_type in self.supported_data_types
 
@@ -126,12 +165,17 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         Apply the split to the instances ``idx`` of ``data``.
 
-        Args:
-            data (dict | np.ndarray): Data set, as ``{data_type: array}``.
-            idx (np.ndarray, optional): Indices of the instances to split. Defaults to all.
+        Parameters
+        ----------
+        data : dict or numpy.ndarray
+            Data set, as ``{data_type: array}`` or a single array of the stump's data type.
+        idx : numpy.ndarray, default=None
+            Indices of the instances to split. If None, all the instances.
 
-        Returns:
-            np.ndarray: For each instance in idx, 1 if it goes to the left child, 2 otherwise.
+        Returns
+        -------
+        labels : numpy.ndarray of int
+            For each instance in ``idx``, 1 if it goes to the left child, 2 otherwise.
         """
         X = self._get_data(data)
         if idx is not None:
@@ -143,6 +187,21 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         Recompute the statistics of the split (e.g. impurity) on the instances ``idx`` of ``data``,
         without changing the split.
+
+        Parameters
+        ----------
+        data : dict or numpy.ndarray
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray, default=None
+            Indices of the instances reaching the node. If None, all the instances.
+        context : RuleTree, default=None
+            Not used, kept for symmetry with :meth:`fit`.
+        sample_weight : numpy.ndarray, default=None
+            Sample weights of the whole data set.
+        check_input : bool, default=True
+            Not used, kept for symmetry with :meth:`fit`.
         """
         if idx is None:
             idx = slice(None)
@@ -151,29 +210,73 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         self._update_statistics_matrix(X, y[idx], None if sample_weight is None else sample_weight[idx])
 
     def _transform(self, X: np.ndarray) -> np.ndarray:
-        """Turn data of the stump's data type into the matrix the split is applied on."""
+        """
+        Turn data of the stump's data type into the matrix the split is applied on.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Data of the stump's data type.
+
+        Returns
+        -------
+        X_transformed : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix. The default implementation returns X.
+        """
         return X
 
     def _apply_matrix(self, X: np.ndarray) -> np.ndarray:
-        """Apply the split to the matrix returned by :meth:`_transform`."""
+        """
+        Apply the split to the matrix returned by :meth:`_transform`.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix.
+
+        Returns
+        -------
+        labels : numpy.ndarray of int
+            1 for the rows that go to the left child, 2 otherwise.
+        """
         raise NotImplementedError(f"{self.__class__.__name__} must implement apply or _apply_matrix.")
 
     def _update_statistics_matrix(self, X: np.ndarray, y: np.ndarray, sample_weight=None):
-        """Recompute the split statistics on the matrix returned by :meth:`_transform`."""
+        """
+        Recompute the split statistics on the matrix returned by :meth:`_transform`.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray
+            Target of the instances in the node.
+        sample_weight : numpy.ndarray, default=None
+            Sample weights of the instances in the node.
+        """
 
     def _resolve_fit_data(self, data, data_type=None) -> tuple[np.ndarray, str]:
         """
         Select the data to fit on and store its type in ``data_type_``.
 
-        Args:
-            data (dict | np.ndarray): Data set, as ``{data_type: array}`` or a single array.
-            data_type (str, optional): Data type to use. Defaults to the first supported type in data.
+        Parameters
+        ----------
+        data : dict or numpy.ndarray
+            Data set, as ``{data_type: array}`` or a single array.
+        data_type : str, default=None
+            Data type to use. If None, the first supported data type available in ``data``.
 
-        Returns:
-            tuple[np.ndarray, str]: Data of the selected type (all the instances) and its type.
+        Returns
+        -------
+        X : numpy.ndarray
+            Data of the selected type (all the instances).
+        data_type : str
+            The selected data type.
 
-        Raises:
-            ValueError: If the data type is not supported or not available in data.
+        Raises
+        ------
+        ValueError
+            If the data type is not supported or not available in ``data``.
         """
         if not isinstance(data, dict):
             data = {data_type if data_type is not None else self.supported_data_types[0]: data}
@@ -194,19 +297,59 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         return np.asarray(data[data_type]), data_type
 
     def _get_data(self, data) -> np.ndarray:
-        """Return the data of the type the stump has been fitted on."""
+        """
+        Data of the type the stump has been fitted on.
+
+        Parameters
+        ----------
+        data : dict or numpy.ndarray
+            Data set, as ``{data_type: array}`` or a single array of the stump's data type.
+
+        Returns
+        -------
+        X : numpy.ndarray
+            Data of the type ``data_type_``.
+        """
         return np.asarray(data[self.data_type_]) if isinstance(data, dict) else np.asarray(data)
 
     def _get_cache(self, context) -> dict:
         """
         Cache shared by the stumps of this class in the tree ``context`` (namespace: the class name).
-        Without a context, an empty dictionary that is not kept.
+
+        Parameters
+        ----------
+        context : RuleTree or None
+            The tree being built.
+
+        Returns
+        -------
+        cache : dict
+            The cache of the stump's class; without a context, an empty dictionary that is not kept.
         """
         return context.get_cache(self.__class__.__name__) if context is not None else {}
 
     def _restore_data_type(self, node_dict: dict) -> None:
-        """Set ``data_type_`` from a dictionary created by node_to_dict (older ones have none)."""
+        """
+        Set ``data_type_`` from a dictionary created by node_to_dict (older ones have none).
+
+        Parameters
+        ----------
+        node_dict : dict
+            Dictionary representation of the stump.
+        """
         self.data_type_ = node_dict.get("data_type", self.supported_data_types[0])
 
 def _is_number(value) -> bool:
+    """
+    Whether a value is a number (bool excluded), e.g. a numerical threshold.
+
+    Parameters
+    ----------
+    value : object
+        Any value.
+
+    Returns
+    -------
+    is_number : bool
+    """
     return isinstance(value, (int, float, np.number)) and not isinstance(value, bool)

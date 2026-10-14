@@ -1,3 +1,5 @@
+"""RuleTreeRegressor: the RuleTree for regression."""
+
 import heapq
 from typing import Union, Optional
 
@@ -12,71 +14,44 @@ from RuleTree.tree.RuleTreeNode import RuleTreeNode
 
 class RuleTreeRegressor(RegressorMixin, RuleTree):
     """
-    Implementation of Rule Tree for regression tasks.
-    
-    A Rule Tree is a decision tree variant where each node can contain different 
-    types of decision functions (stumps). This flexibility allows for more 
-    powerful and potentially interpretable models compared to standard 
-    decision trees.
-    
+    RuleTree for regression.
+
+    The tree grows breadth-first. Each node predicts the mean of the target of its instances and
+    stores its standard deviation in ``prediction_probability``.
+
     Parameters
     ----------
     max_leaf_nodes : int, default=inf
-        Maximum number of leaf nodes allowed in the tree.
-    
+        Maximum number of leaves.
     min_samples_split : int, default=2
-        Minimum number of samples required to split a node.
-    
+        Minimum number of instances to split a node.
     max_depth : int, default=inf
-        Maximum depth of the tree.
-    
+        Maximum depth of the tree (the root has depth 0).
     prune_useless_leaves : bool, default=False
-        Whether to prune leaves that don't add information.
-    
-    base_stumps : RegressorMixin or list, default=None
-        Base stumps to use for splitting nodes. If None, DecisionTreeStumpRegressor is used.
-    
-    stump_selection : str, default='random'
-        Method to select stumps. Options: 'random', 'best'.
-    
-    random_state : int, default=None
-        Random seed for reproducibility.
-    
-    criterion : str, default='squared_error'
-        Function to measure the quality of a split.
-    
-    splitter : str, default='best'
-        Strategy used to choose the split at each node.
-    
-    min_samples_leaf : int, default=1
-        Minimum number of samples required to be at a leaf node.
-    
-    min_weight_fraction_leaf : float, default=0.0
-        Minimum weighted fraction of the sum total of weights required to be at a leaf node.
-    
-    max_features : int, float, str, default=None
-        Number of features to consider when looking for the best split.
-    
-    min_impurity_decrease : float, default=0.0
-        A node will be split if this split induces a decrease of the impurity greater than this value.
-    
-    ccp_alpha : non-negative float, default=0.0
-        Complexity parameter used for minimal cost-complexity pruning.
-    
-    monotonic_cst : array-like of int, default=None
-        Monotonicity constraints for features.
-    
-    oblique : bool, default=False
-        Whether to use oblique splits.
-    
-    oblique_params : dict, default={}
-        Parameters for oblique splits.
-    
-    oblique_split_type : str, default='householder'
-        Type of oblique split to use.
-    
-    force_oblique : bool, default=False
-        Whether to force using oblique splits.
+        Whether to merge, after fit, the sibling leaves with the same prediction.
+    base_stumps : RuleTreeBaseStump or list, default=None
+        Stumps used to split the nodes (see :class:`RuleTree.tree.RuleTree.RuleTree`); they must be
+        regression stumps. If None, DecisionTreeStumpRegressor().
+    stump_selection : {'random', 'best'}, default='random'
+        How the stump of each node is chosen among base_stumps.
+    random_state : int, RandomState instance or None, default=None
+        Seed of the random choice of the stumps, also given to the stumps without a random_state.
+    distance_measure : str or callable, default=None
+        Not used.
+
+    Attributes
+    ----------
+    root : RuleTreeNode
+        Root of the fitted tree.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree import RuleTreeRegressor
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> model = RuleTreeRegressor(max_depth=3, random_state=0).fit(X, y)
+    >>> model.predict(X[:2]).round(1)
+    array([208.6,  83.4])
     """
     def __init__(self,
                  max_leaf_nodes=float('inf'),
@@ -89,6 +64,7 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
                  distance_measure=None,
                  ):
 
+        """Initialize the RuleTreeRegressor; see the class documentation for the parameters."""
         if base_stumps is None:
             base_stumps = DecisionTreeStumpRegressor()
 
@@ -103,55 +79,53 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
 
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
-        Push a node to the priority queue for processing.
-        
+        Push a node into the queue, with priority to the shallowest nodes (breadth-first growth).
+
         Parameters
         ----------
         node : RuleTreeNode
-            The node to push to the queue.
-        idx : array-like
-            Indices of the samples that reach this node.
+            The node.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         """
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """
-        Compute the medoids of the data.
+        Not implemented for regression: does nothing.
 
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
-            The input samples.
-        y : array-like of shape (n_samples,)
-            The target values.
-        idx : array-like
-            Indices of the samples to consider.
+        X : numpy.ndarray
+            Not used.
+        y : numpy.ndarray
+            Not used.
+        idx : numpy.ndarray
+            Not used.
         **kwargs : dict
-            Additional parameters.
-
-        Notes
-        -----
-        This method is currently a placeholder.
+            Not used.
         """
         pass
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
-        Prepare a node with prediction information.
-        
+        Create a node (or update ``node``) with the mean (prediction) and the standard deviation of the
+        target and the number of the instances ``idx``.
+
         Parameters
         ----------
-        y : array-like of shape (n_samples,)
-            The target values.
-        idx : array-like
-            Indices of the samples that reach this node.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         node_id : str
-            Identifier for the node.
-            
+            Identifier of the node.
+        node : RuleTreeNode, default=None
+            Existing node to update instead of creating a new one.
+
         Returns
         -------
-        RuleTreeNode
-            The prepared node with prediction and other metadata.
+        node : RuleTreeNode
         """
         prediction = float(np.mean(y[idx]))
         prediction_std = float(np.std(y[idx]))
@@ -179,8 +153,19 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
 
     def _update_node_statistics(self, node, data, y, idx):
         """
-        Mean (prediction) and standard deviation of the target of the instances idx, as in fit, and
+        Mean (prediction) and standard deviation of the target of the instances ``idx``, as in fit, and
         statistics of the stump. A node without instances predicts nan.
+
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node.
+        data : dict
+            Whole data set, as ``{data_type: array}``.
+        y : numpy.ndarray
+            Target of the whole data set.
+        idx : numpy.ndarray
+            Indices of the instances reaching the node.
         """
         if len(idx) == 0:
             node.prediction, node.prediction_probability, node.samples = np.nan, np.nan, 0
@@ -194,26 +179,27 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
         """
         Task of the stumps of the tree.
 
-        Returns:
-            str: MODEL_TYPE_REG.
+        Returns
+        -------
+        task : str
+            MODEL_TYPE_REG.
         """
         return MODEL_TYPE_REG
         
     def _get_prediction_probas(self, current_node = None, probas=None):
         """
-        Get the prediction probabilities for all nodes in the tree.
-        
+        Predictions of the nodes in depth-first order (see RuleTree._get_prediction_probas).
+
         Parameters
         ----------
         current_node : RuleTreeNode, default=None
-            The current node being processed. If None, starts from the root.
+            Root of the subtree. If None, the root of the tree.
         probas : list, default=None
-            List to store the probabilities.
-            
+            List being filled.
+
         Returns
         -------
-        list
-            The prediction probabilities.
+        probas : list of float
         """
         if probas is None:
             probas = []
@@ -234,21 +220,25 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
     
     def local_interpretation(self, X, joint_contribution = False):
         """
-        Compute local interpretations of the model predictions.
-        
-        This method calculates feature contributions to the predictions for each sample.
-        
+        Contribution of each feature to the predictions, as in treeinterpreter: the prediction of an
+        instance is the one of the root (bias) plus the contributions of the features of the splits
+        along its path.
+
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
-            The input samples for which to compute interpretations.
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Tabular data.
         joint_contribution : bool, default=False
-            Whether to compute joint contributions of features.
-            
+            If True, the contributions are given to the sets of features along the path.
+
         Returns
         -------
-        tuple
-            The contributions of features to the predictions.
+        prediction : numpy.ndarray of shape (n_samples,)
+            Prediction of the leaf of each instance.
+        bias : numpy.ndarray of shape (n_samples,)
+            Prediction of the root.
+        contributions : numpy.ndarray of shape (n_samples, n_features) or list of dict
+            Contribution of each feature (or set of features, with joint_contribution).
         """
         leaves, paths, leaf_to_path, values = super().local_interpretation(X = X,
                                                                            joint_contribution = joint_contribution)
