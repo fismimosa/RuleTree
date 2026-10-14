@@ -6,7 +6,8 @@ import pytest
 from sklearn.datasets import load_iris
 
 from RuleTree import RuleTreeClassifier, RuleTreeCluster, RuleTreeRegressor
-from RuleTree.stumps.classification import DecisionTreeStumpClassifier, ShapeletTreeStumpClassifier
+from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, PivotTreeStumpClassifier,
+                                            ShapeletTreeStumpClassifier)
 from RuleTree.stumps.regression import DecisionTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.utils.data_utils import json_numpy_encoder
@@ -160,7 +161,7 @@ def test_cache(iris):
     X, y = iris
     model = RuleTreeClassifier(max_depth=2).fit(X, y)
 
-    assert DATA_TYPE_TABULAR in model.get_cache("feature_types")  # kept after fit
+    assert ("feature_types", DATA_TYPE_TABULAR) in model.get_cache("DecisionTreeStumpClassifier")  # kept after fit
 
     model.get_cache("test")["value"] = 1
     model.fit(X, y)
@@ -226,3 +227,14 @@ def test_no_warnings_on_time_series(multimodal):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         RuleTreeClassifier(max_depth=3).fit(X_ts=X_ts, y=y).predict(X_ts=X_ts)
+
+
+def test_cache_namespace_is_the_stump_class(iris):
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, stump_selection="best",
+                               base_stumps=[DecisionTreeStumpClassifier(), PivotTreeStumpClassifier()]).fit(X, y)
+
+    assert set(model.cache_) == {"DecisionTreeStumpClassifier", "PivotTreeStumpClassifier"}
+    pivot_cache = model.get_cache("PivotTreeStumpClassifier")
+    assert ("feature_types", DATA_TYPE_TABULAR) in pivot_cache
+    assert ("pivot", DATA_TYPE_TABULAR, "euclidean") in pivot_cache

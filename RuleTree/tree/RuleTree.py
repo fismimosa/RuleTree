@@ -181,7 +181,8 @@ class RuleTree(RuleTreeBase, ABC):
         be cleared manually with :meth:`clear_cache`.
 
         Args:
-            namespace (str): Name of the cache, e.g. the kind of stump using it.
+            namespace (str): Name of the cache. Stumps use their class name (see
+                ``RuleTreeBaseStump._get_cache``), e.g. ``get_cache("PivotTreeStumpClassifier")``.
 
         Returns:
             dict: The cache of the namespace.

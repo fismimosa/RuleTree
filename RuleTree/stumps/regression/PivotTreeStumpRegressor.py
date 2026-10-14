@@ -45,7 +45,7 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
         idx : numpy.ndarray, optional
             Indices of the instances to fit on. Default is all.
         context : RuleTree, optional
-            Tree being built, used to cache the scaler and the distance matrix.
+            Tree being built: the scaler and the distance matrix are cached in it.
         data_type : str, optional
             Data type to use. Default is the first supported type in data.
         sample_weight : numpy.ndarray, optional
@@ -68,7 +68,7 @@ class PivotTreeStumpRegressor(DecisionTreeStumpRegressor, RuleTreeBaseStump):
         if len(self.numerical) == 0:
             raise NoSplitFoundWarning(f"{self.__class__.__name__} needs numerical features")
 
-        self.scaler, distance_matrix = _pivot_cache(X, self.numerical, self.distance_measure, self.data_type_, context)
+        self.scaler, distance_matrix = _pivot_cache(X, self.numerical, self.distance_measure, self.data_type_, self._get_cache(context))
 
         y = y[idx]
         sample_weight = None if sample_weight is None else sample_weight[idx]

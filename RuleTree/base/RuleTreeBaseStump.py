@@ -28,10 +28,11 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     among ``supported_data_types`` and stored in ``data_type_``. For convenience, ``data`` can
     also be a single array, interpreted as data of the stump's data type.
 
-    The tree passed as ``context`` exposes ``get_cache(namespace)``: a dictionary that lives
-    until the next ``fit`` (or ``clear_cache()``) where stumps can store anything that can be
-    shared among splits, e.g. embeddings computed on the whole data set. Everything needed by
-    ``apply`` must be stored in the stump itself.
+    The tree passed as ``context`` holds a cache that lives until the next ``fit`` (or
+    ``clear_cache()``), where stumps can store anything that can be shared among splits, e.g.
+    embeddings computed on the whole data set. Each kind of stump has its own cache, named after
+    its class: see :meth:`_get_cache`. Everything needed by ``apply`` must be stored in the stump
+    itself.
 
     Subclasses that work on a 2D matrix can implement ``_transform`` (data of the stump's data
     type -> matrix) and ``_apply_matrix`` (matrix -> 1/2 labels) and reuse :meth:`apply` and
@@ -198,12 +199,20 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Set ``numerical`` and ``categorical`` for X, the data of the stump's data type (all the
         instances). The result is cached in the tree, so it is computed once per data type.
         """
-        cache = context.get_cache("feature_types") if context is not None else {}
-        if self.data_type_ not in cache:
+        cache = self._get_cache(context)
+        key = ("feature_types", self.data_type_)
+        if key not in cache:
             self.feature_analysis(X, None)
-            cache[self.data_type_] = (self.numerical, self.categorical)
+            cache[key] = (self.numerical, self.categorical)
 
-        self.numerical, self.categorical = cache[self.data_type_]
+        self.numerical, self.categorical = cache[key]
+
+    def _get_cache(self, context) -> dict:
+        """
+        Cache shared by the stumps of this class in the tree ``context`` (namespace: the class name).
+        Without a context, an empty dictionary that is not kept.
+        """
+        return context.get_cache(self.__class__.__name__) if context is not None else {}
 
     def _restore_data_type(self, node_dict: dict) -> None:
         """Set ``data_type_`` from a dictionary created by node_to_dict (older ones have none)."""

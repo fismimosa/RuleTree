@@ -68,7 +68,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         idx : numpy.ndarray, optional
             Indices of the instances to fit on. Default is all.
         context : RuleTree, optional
-            Tree being built, used to cache the scaler and the distance matrix.
+            Tree being built: the scaler and the distance matrix are cached in it.
         data_type : str, optional
             Data type to use. Default is the first supported type in data.
         sample_weight : numpy.ndarray, optional
@@ -91,7 +91,7 @@ class PivotTreeStumpClassifier(DecisionTreeStumpClassifier, RuleTreeBaseStump):
         if len(self.numerical) == 0:
             raise NoSplitFoundWarning(f"{self.__class__.__name__} needs numerical features")
 
-        self.scaler, distance_matrix = _pivot_cache(X, self.numerical, self.distance_measure, self.data_type_, context)
+        self.scaler, distance_matrix = _pivot_cache(X, self.numerical, self.distance_measure, self.data_type_, self._get_cache(context))
 
         y = y[idx]
         sample_weight = None if sample_weight is None else sample_weight[idx]
@@ -284,13 +284,12 @@ def _split_pivot_kwargs(kwargs: dict) -> tuple[dict, dict]:
     return pivot_kwargs, tree_kwargs
 
 
-def _pivot_cache(X, numerical, distance_measure, data_type, context):
+def _pivot_cache(X, numerical, distance_measure, data_type, cache):
     """
-    Scaler and distance matrix of the whole data set X, cached in the tree and shared by the
-    pivot stumps (classification and regression) fitted on the same data type and distance.
+    Scaler and distance matrix of the whole data set X, stored in the cache of the stump so that
+    they are computed once per data type and distance.
     """
-    cache = context.get_cache("pivot") if context is not None else {}
-    key = (data_type, distance_measure)
+    key = ("pivot", data_type, distance_measure)
     if key not in cache:
         scaler = StandardScaler().fit(X[:, numerical])
         cache[key] = (scaler, pairwise_distances(X[:, numerical], metric=distance_measure))
