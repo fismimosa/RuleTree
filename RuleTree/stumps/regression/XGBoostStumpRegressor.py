@@ -5,7 +5,6 @@ from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.regression import DecisionTreeStumpRegressor
 from RuleTree.utils.tree_utils import xgboost_similarity_score_regression, xgboost_cover_regression
 
-from line_profiler_pycharm import profile
 
 class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
     def __init__(self, lam, approximation=None, n_quantiles=32, min_cover=1, n_jobs=1):

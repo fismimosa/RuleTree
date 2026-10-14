@@ -3,12 +3,7 @@ scikit-learn>=1.5.0
 scipy
 pandas
 category_encoders
-threadpoolctl
-tqdm
-progress-table
 numba
 psutil
-setuptools
 matplotlib
 tempfile312
-line-profiler-pycharm

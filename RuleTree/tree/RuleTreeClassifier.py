@@ -15,7 +15,6 @@ from sklearn import tree
 from sklearn.base import ClassifierMixin
 import copy
 
-from sklearn.preprocessing import StandardScaler
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning

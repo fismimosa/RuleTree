@@ -7,7 +7,6 @@ from RuleTree.utils import MODEL_TYPE_CLF
 from sklearn.metrics.pairwise import pairwise_distances
 import numpy as np
 import copy
-import warnings
 from types import SimpleNamespace
 
 

@@ -1,16 +1,12 @@
-from abc import abstractmethod, ABC
+from abc import ABC
 
 import numpy as np
-from itertools import chain
 from sklearn.base import TransformerMixin
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from RuleTree.base.RuleTreeBaseSplit import RuleTreeBaseSplit
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG, MODEL_TYPE_CLU
-import itertools
-from RuleTree.utils.data_utils import get_info_gain
 
 
 class PivotSplit(TransformerMixin, RuleTreeBaseSplit, ABC):

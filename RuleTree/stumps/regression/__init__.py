@@ -1,6 +1,11 @@
 from .DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
-#from .ObliqueDecisionTreeStumpRegressor import ObliqueDecisionTreeStumpRegressor
-#from .ProximityTreeStumpRegressor import ProximityTreeStumpRegressor
 from .PivotTreeStumpRegressor import PivotTreeStumpRegressor
 from .ShapeletTreeStumpRegressor import ShapeletTreeStumpRegressor
 from .FairTreeStumpRegressor import FairTreeStumpRegressor
+
+__all__ = [
+    "DecisionTreeStumpRegressor",
+    "PivotTreeStumpRegressor",
+    "ShapeletTreeStumpRegressor",
+    "FairTreeStumpRegressor",
+]

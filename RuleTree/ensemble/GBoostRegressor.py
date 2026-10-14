@@ -1,9 +1,7 @@
 import copy
 
 import numpy as np
-from line_profiler_pycharm import profile
 from sklearn.base import RegressorMixin
-from sklearn.metrics import mean_squared_error
 
 from RuleTree import RuleTreeRegressor
 from RuleTree.base.RuleTreeBase import RuleTreeBase

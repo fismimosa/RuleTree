@@ -12,7 +12,6 @@ from typing import Union
 import numpy as np
 import pandas as pd
 import category_encoders as ce
-from sklearn.base import ClassifierMixin, RegressorMixin
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 

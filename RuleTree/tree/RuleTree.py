@@ -17,10 +17,6 @@ from typing import Optional
 
 import numpy as np
 import sklearn
-try:
-    from line_profiler_pycharm import profile
-except ModuleNotFoundError:
-    profile = None
 from sklearn import tree
 from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory

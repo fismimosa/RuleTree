@@ -5,10 +5,8 @@ from typing import Optional
 
 import numpy as np
 import psutil
-import tempfile312
 from numba import UnsupportedError
 
-from matplotlib import pyplot as plt
 
 from RuleTree.stumps.classification import ShapeletTreeStumpClassifier
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor

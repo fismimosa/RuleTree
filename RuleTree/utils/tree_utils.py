@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.tree import DecisionTreeRegressor
 
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier
 from RuleTree.stumps.regression import DecisionTreeStumpRegressor

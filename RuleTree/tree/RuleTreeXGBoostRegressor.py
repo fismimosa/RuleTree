@@ -1,7 +1,6 @@
 import warnings
 
 import numpy as np
-from line_profiler_pycharm import profile
 
 from RuleTree import RuleTreeRegressor
 #from RuleTree.stumps.classification.XGBoostStumpClassifier import XGBoostStumpClassifier

@@ -5,7 +5,7 @@ import numba
 import numpy as np
 import pandas as pd
 import psutil
-from numba import UnsupportedError, prange, jit
+from numba import UnsupportedError, jit
 from scipy.spatial.distance import cdist
 from sklearn.base import TransformerMixin
 from sklearn.cluster import KMeans
@@ -16,7 +16,6 @@ from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from sklearn.tree import DecisionTreeClassifier
 
 from RuleTree.utils.shapelet_transform.matrix_to_vector_distances import euclidean, sqeuclidean, cosine, cityblock
-from tqdm.auto import tqdm
 
 class TabularShapelets(TransformerMixin):
     __distances = {

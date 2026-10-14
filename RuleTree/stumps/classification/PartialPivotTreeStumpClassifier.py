@@ -1,16 +1,11 @@
 import copy
-import inspect
-import io
 import random
 import warnings
 from typing import Optional
 
 import numpy as np
 import psutil
-import tempfile312
-from numba import UnsupportedError
 
-from matplotlib import pyplot as plt
 
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.utils.define import DATA_TYPE_TABULAR

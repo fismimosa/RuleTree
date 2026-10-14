@@ -3,7 +3,6 @@ from itertools import combinations
 
 import numpy as np
 from sklearn.base import RegressorMixin
-from sklearn.metrics import precision_recall_fscore_support
 
 from RuleTree import RuleTreeRegressor
 from RuleTree.base.RuleTreeBase import RuleTreeBase
