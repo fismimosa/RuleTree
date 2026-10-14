@@ -30,4 +30,11 @@
 
    
    
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RuleTreeBaseStump.supported_data_types
+      ~RuleTreeBaseStump.task
+   
    

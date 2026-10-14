@@ -75,7 +75,6 @@ autodoc_default_options = {
     'show-inheritance': True,  # Show base classes
     'inherited-members': False,  # Don't show inherited members by default
     'member-order': 'bysource',  # Keep original source order
-    'special-members': '__init__',  # Document special methods like __init__
     'private-members': False,  # Don't document _private members
 }
 
@@ -90,7 +89,7 @@ napoleon_include_special_with_doc = False
 napoleon_use_admonition_for_examples = False
 napoleon_use_admonition_for_notes = False
 napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
+napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_use_keyword = True
