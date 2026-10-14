@@ -16,7 +16,7 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
         self.approximation = approximation
         self.n_quantiles = n_quantiles
         self.min_cover = min_cover
-        self.kwargs |= {
+        self.kwargs = {  # get_params: only the parameters of __init__
             'lam': self.lam,
             'approximation': self.approximation,
             'n_quantiles': self.n_quantiles,

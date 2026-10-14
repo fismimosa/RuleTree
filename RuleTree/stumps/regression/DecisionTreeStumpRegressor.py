@@ -128,6 +128,9 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             - criterion: Function to measure the quality of a split ("squared_error", 
               "friedman_mse", "absolute_error", "poisson", default="squared_error")
         """
+        if 'max_depth' not in kwargs:
+            kwargs['max_depth'] = 1
+
         super().__init__(**kwargs)
         self.is_categorical = False
         self.kwargs = kwargs
