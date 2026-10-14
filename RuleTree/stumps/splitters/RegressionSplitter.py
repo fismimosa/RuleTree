@@ -55,12 +55,12 @@ class RegressionSplitter(RuleTreeBaseSplitter):
 
     @classmethod
     def _split_impurity(cls, criterion, y, left):
-        """Impurity of the node and of the two children, each predicted with its mean."""
-        return [
-            cls._impurity_fun(criterion, y_true=y, y_pred=np.ones((len(y),)) * np.mean(y)),
-            cls._impurity_fun(criterion, y_true=y[left], y_pred=np.ones((len(y[left]),)) * np.mean(y[left])),
-            cls._impurity_fun(criterion, y_true=y[~left], y_pred=np.ones((len(y[~left]),)) * np.mean(y[~left])),
-        ]
+        """Impurity of the node and of the two children, each predicted with its mean (0 if empty)."""
+        def impurity(y_true):
+            y_pred = np.ones((len(y_true),)) * np.mean(y_true) if len(y_true) > 0 else np.ones((0,))
+            return cls._impurity_fun(criterion, y_true=y_true, y_pred=y_pred)
+
+        return [impurity(y), impurity(y[left]), impurity(y[~left])]
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
         self.feature_, self.threshold_, self.is_categorical_, self.impurity_ = None, None, False, None

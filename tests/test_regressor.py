@@ -58,3 +58,31 @@ def test_categorical_features(iris_mixed, iris):
 
     assert model.root.stump.is_categorical
     assert r2_score(y, model.predict(X)) > 0.5
+
+
+def test_update_statistics(diabetes):
+    X, y = diabetes
+    model = RuleTreeRegressor(max_depth=2, random_state=0).fit(X, y)
+    subset = np.arange(0, len(y), 3)
+
+    model.update_statistics(X[subset], y[subset])
+
+    leaves = model.apply(X[subset])
+    for leaf_id, leaf in model.get_leaf_nodes().items():
+        assert leaf.prediction == pytest.approx(y[subset][leaves == leaf_id].mean())
+        assert leaf.prediction_probability == pytest.approx(y[subset][leaves == leaf_id].std())
+        assert leaf.samples == np.sum(leaves == leaf_id)
+    assert model.root.prediction == pytest.approx(y[subset].mean())
+
+
+def test_update_statistics_empty_leaf(diabetes):
+    X, y = diabetes
+    model = RuleTreeRegressor(max_depth=1, random_state=0).fit(X, y)
+    left = model.apply(X) == "Rl"
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        model.update_statistics(X[left], y[left])
+
+    assert np.isnan(model.root.node_r.prediction)
+    assert model.root.node_r.samples == 0

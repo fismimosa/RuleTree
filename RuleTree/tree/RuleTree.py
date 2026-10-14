@@ -448,6 +448,13 @@ class RuleTree(RuleTreeBase, ABC):
         """
         return len(np.unique(labels)) == 1
 
+    def _update_node_statistics(self, node: RuleTreeNode, data: dict, y: np.ndarray, idx: np.ndarray):
+        """
+        Statistics of a node and of its stump on the instances idx. By default the ones of
+        classification (majority class, class probabilities, log-odds): see RuleTreeNode.update_statistics.
+        """
+        node.update_statistics(data, y, idx, self)
+
     def predict(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
         Predict the output for the input data.
@@ -484,6 +491,17 @@ class RuleTree(RuleTreeBase, ABC):
 
     def update_statistics(self, X: np.ndarray|None = None, y: np.ndarray|None = None,
                           X_ts=None, X_img=None, X_txt=None):
+        """
+        Recompute the statistics of the nodes (predictions, probabilities, number of samples, ...) and
+        of their stumps on new data, without changing the splits.
+
+        Args:
+            X (np.ndarray): Tabular data.
+            y (np.ndarray): Target.
+            X_ts (np.ndarray): Time series.
+            X_img (np.ndarray): Images.
+            X_txt (np.ndarray): Texts.
+        """
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         self._set_classes(y)
 
@@ -495,7 +513,7 @@ class RuleTree(RuleTreeBase, ABC):
 
         node.classes = getattr(self, "classes_", None)
 
-        node.update_statistics(data, y, idx, self)
+        self._update_node_statistics(node, data, y, idx)
         if node.is_leaf() or node.stump is None:
             return
 

@@ -305,6 +305,10 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
             log_odds=None
         )
 
+    def _update_node_statistics(self, node, data, y, idx):
+        """Only the number of samples: the predictions of the nodes are the cluster labels."""
+        node.samples = len(idx)
+
     def _post_fit_fix(self):
         """
         Perform post-fitting operations.
@@ -395,6 +399,10 @@ class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
         Nodes already predict class labels, so no post-processing is needed.
         """
 
+    def _update_node_statistics(self, node, data, y, idx):
+        """Statistics of classification, as in RuleTreeClassifier."""
+        RuleTree._update_node_statistics(self, node, data, y, idx)
+
     def predict_proba(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
         Predict class probabilities for the input data.
@@ -449,3 +457,7 @@ class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
 
         Nodes already predict the mean target value, so no post-processing is needed.
         """
+
+    def _update_node_statistics(self, node, data, y, idx):
+        """Statistics of regression, as in RuleTreeRegressor."""
+        RuleTreeRegressor._update_node_statistics(self, node, data, y, idx)

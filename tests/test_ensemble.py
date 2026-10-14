@@ -1,5 +1,7 @@
 import warnings
 
+import numpy as np
+
 from sklearn.metrics import r2_score
 
 from RuleTree import RuleTreeRegressor
@@ -50,3 +52,13 @@ def test_xgboost_regressor(diabetes):
     model = XGBoostRegressor(n_estimators=3).fit(X, y)
 
     assert model.predict(X).shape == y.shape
+
+
+def test_xgboost_tree_update_statistics(diabetes):
+    X, y = diabetes
+    model = RuleTreeXGBoostRegressor(max_depth=2, base_stumps=XGBoostStumpRegressor(lam=1)).fit(X, y)
+    predictions = model.predict(X)
+
+    model.update_statistics(X, y)
+
+    assert np.allclose(model.predict(X), predictions)  # XGBoost output values, as in fit

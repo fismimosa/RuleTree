@@ -177,6 +177,19 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
             classes=None,
         )
 
+    def _update_node_statistics(self, node, data, y, idx):
+        """
+        Mean (prediction) and standard deviation of the target of the instances idx, as in fit, and
+        statistics of the stump. A node without instances predicts nan.
+        """
+        if len(idx) == 0:
+            node.prediction, node.prediction_probability, node.samples = np.nan, np.nan, 0
+            return
+
+        self.prepare_node(y, idx, node.node_id, node=node)
+        if node.stump is not None and not node.is_leaf():
+            node.stump.update_statistics(data, y, idx=idx, context=self)
+
     def _get_stumps_task(self):
         """
         Task of the stumps of the tree.

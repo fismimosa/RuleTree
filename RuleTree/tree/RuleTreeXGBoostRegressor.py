@@ -38,6 +38,12 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
 
         return self
 
+    def _update_node_statistics(self, node, data, y, idx):
+        """As in RuleTreeRegressor, but the leaves predict the XGBoost output value, as in fit."""
+        super()._update_node_statistics(node, data, y, idx)
+        if node.is_leaf() and len(idx) > 0:
+            node.prediction = np.sum(y[idx]) / (len(idx) + self.lam)
+
     def _gamma_pruning(self, node:RuleTreeNode):
         if node.is_leaf():
             return node

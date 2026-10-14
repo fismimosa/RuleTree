@@ -72,3 +72,24 @@ def test_cluster_regressor(diabetes):
     assert len(model.get_leaf_nodes()) > 1
     assert np.issubdtype(y_pred.dtype, np.floating)
     assert y.min() <= y_pred.min() and y_pred.max() <= y.max()
+
+
+def test_cluster_update_statistics_keeps_the_labels(blobs):
+    X, _ = blobs
+    model = RuleTreeCluster(max_depth=3, random_state=0).fit(X)
+    labels = model.predict(X)
+
+    model.update_statistics(X[:100])
+
+    assert np.array_equal(model.predict(X), labels)
+    assert model.root.samples == 100
+
+
+def test_cluster_regressor_update_statistics(diabetes):
+    X, y = diabetes
+    model = RuleTreeClusterRegressor(max_depth=3, bic_eps=0.5, random_state=0).fit(X, y)
+    predictions = model.predict(X)
+
+    model.update_statistics(X, y)
+
+    assert np.allclose(model.predict(X), predictions)  # means of the target, as in fit
