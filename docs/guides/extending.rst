@@ -1,0 +1,373 @@
+Extending the library
+=====================
+
+New kinds of splits are added to RuleTree by writing new stumps. This guide shows how a stump is
+made, and how to write its two components, the *transformer* and the *splitter*, with the
+interfaces of :mod:`RuleTree.base`.
+
+
+How a stump is made
+-------------------
+
+A tree is built node by node: at each node, it fits a stump on the instances of the node, and the
+stump sends each instance to the left or to the right child. Most stumps of the library are a
+:class:`~RuleTree.stumps.Stump.Stump`, the composition of two components:
+
+- a **transformer**
+  (:class:`~RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer`) turns the data of one
+  type (tabular data, time series, images, ...) into a feature matrix: the columns of the data, the
+  distances from some pivots, the distances from some shapelets, ...;
+- a **splitter** (:class:`~RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter`) finds the best
+  split of that matrix: a threshold on a numerical feature (``x <= threshold`` goes left) or a
+  value of a categorical feature (``x == value`` goes left).
+
+The two are independent, so any transformer can be combined with any splitter:
+
+.. code-block:: python
+
+   from RuleTree import RuleTreeClassifier, RuleTreeRegressor
+   from RuleTree.stumps.Stump import Stump
+   from RuleTree.stumps.splitters import ClassificationSplitter, RegressionSplitter
+   from RuleTree.stumps.transformers import MatrixTransformer
+
+   decision_tree_stump = Stump(MatrixTransformer(), ClassificationSplitter(criterion="gini"))
+
+The library provides these components:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Transformer
+     - Features
+   * - :class:`~RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer`
+     - the columns of the data (time series and images are flattened)
+   * - :class:`~RuleTree.stumps.transformers.PivotTransformer.PivotTransformer`
+     - the distances from the pivots of the node
+   * - :class:`~RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer`
+     - the distances from partial pivots, restricted to a few features
+   * - :class:`~RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer`
+     - the distances from shapelets
+   * - **Splitter**
+     - **Split**
+   * - :class:`~RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter`,
+       :class:`~RuleTree.stumps.splitters.RegressionSplitter.RegressionSplitter`
+     - the split of a scikit-learn decision tree of depth 1
+   * - :class:`~RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter`
+     - the split with the highest XGBoost gain
+   * - :class:`~RuleTree.stumps.splitters.FairSplitter.FairSplitter`
+     - the best split whose children are fair with respect to some sensitive features
+
+A new stump therefore needs only the component that is new: a transformer, to split on new
+features; a splitter, to choose the splits in a new way.
+
+
+A transformer without fitted state
+----------------------------------
+
+The simplest transformer computes the features from each instance alone: it defines only
+``transform``. This one summarizes each time series with four statistics:
+
+.. code-block:: python
+
+   import numpy as np
+
+   from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer
+   from RuleTree.utils.define import DATA_TYPE_TS
+
+
+   class SummaryTransformer(RuleTreeBaseTransformer):
+       """Summary statistics of each time series."""
+
+       supported_data_types = (DATA_TYPE_TS,)
+       statistics = {"mean": np.mean, "std": np.std, "min": np.min, "max": np.max}
+
+       def transform(self, X):
+           return np.column_stack([f(X[:, 0, :], axis=1) for f in self.statistics.values()])
+
+       def feature_id(self, feature):
+           return list(self.statistics)[feature]
+
+- ``supported_data_types`` lists the data types the transformer accepts (by default, only tabular
+  data); the stump supports the same types. Here ``X`` has shape (n_samples, n_signals, length).
+- ``transform`` returns a 2D feature matrix. The numerical and categorical columns are inferred
+  from it.
+- ``feature_id`` (optional) gives the identifier of a column in the rules: an integer ``i`` is
+  shown as ``X_i``, a string as it is.
+
+Combined with a splitter, the transformer is a stump that any tree can use. The time series of
+the example belong to two classes with different levels:
+
+.. code-block:: python
+
+   rng = np.random.default_rng(0)
+   y_ts = rng.integers(0, 2, size=100)
+   X_ts = rng.normal(scale=0.5, size=(100, 1, 30)) + 2 * y_ts[:, None, None]
+
+   model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=Stump(SummaryTransformer(), ClassificationSplitter()))
+   model.fit(X_ts=X_ts, y=y_ts)
+
+   model.print_rules(model.get_rules())
+
+.. code-block:: text
+   :caption: Output
+
+   |--- max <= 2.099
+   |    output: 0
+   |--- max > 2.099
+   |    output: 1
+
+
+A transformer with fitted state
+-------------------------------
+
+A transformer that learns something from the data (pivots, shapelets, ...) also defines ``fit``.
+This one draws random projections of the tabular data at each node:
+
+.. code-block:: python
+
+   class RandomProjectionTransformer(RuleTreeBaseTransformer):
+       """Random projections of the tabular data, drawn at each node."""
+
+       def __init__(self, n_projections=10, random_state=None):
+           self.n_projections = n_projections
+           self.random_state = random_state
+
+       def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
+           rng = np.random.default_rng(self.random_state)
+           self.directions_ = rng.normal(size=(X.shape[1], self.n_projections))
+           self.numerical_, self.categorical_ = list(range(self.n_projections)), []
+           return self
+
+       def transform(self, X):
+           return X @ self.directions_
+
+       def select(self, feature):
+           self.directions_ = self.directions_[:, [feature]]
+           return 0
+
+       def feature_id(self, feature):
+           return "projection(" + ", ".join(f"{w:.2f}" for w in self.directions_[:, feature]) + ")"
+
+       def get_state(self):
+           return {"directions": self.directions_.tolist()}
+
+       def set_state(self, state):
+           self.directions_ = np.array(state["directions"])
+           return self
+
+- The parameters are the arguments of ``__init__``, stored with the same names, as in any
+  scikit-learn estimator. A ``random_state`` parameter left to None receives the one of the tree.
+- ``fit`` receives the data of all the instances (``X``, ``y``) and the indices of the instances
+  in the node (``idx``, None for all of them); it sets ``numerical_`` and ``categorical_``, the
+  indices of the numerical and categorical columns of the feature matrix. Values that are the
+  same for every node (e.g. the distances between all the instances) can be computed once and
+  stored in ``cache``, a dictionary shared by the stumps of the same kind (see :doc:`lifecycle`).
+- ``select`` (optional) is called after the splitter has chosen a column: the transformer keeps
+  only what that column needs and returns its new index. Here, a single projection is kept.
+  A transformer whose ``select`` changes the feature matrix in other ways sets
+  ``refit_after_select = True``, so that the splitter is fitted again on the new matrix.
+- ``get_state`` and ``set_state`` save and restore the fitted state, as a JSON-friendly
+  dictionary, when the tree is saved (see :doc:`lifecycle`).
+
+.. code-block:: python
+
+   from sklearn.datasets import load_diabetes
+
+   X, y = load_diabetes(return_X_y=True)
+   model = RuleTreeRegressor(max_depth=2, random_state=0,
+                             base_stumps=Stump(RandomProjectionTransformer(n_projections=5), RegressionSplitter()))
+   model.fit(X, y)
+
+   print(model.root.stump.get_rule(float_precision=2)["textual_rule"])
+
+.. code-block:: text
+   :caption: Output
+
+   projection(0.13, 0.36, -0.62, -0.73, -0.13, 0.09, -1.01, 0.36, -1.26, -0.31) <= -0.05
+
+
+A splitter defined by a gain
+----------------------------
+
+The simplest splitter derives from
+:class:`~RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter`: it defines its task
+(classification or regression) and the gain of a split, and the base class tests every candidate
+split (the thresholds between consecutive values of each numerical feature, the values of each
+categorical feature) and keeps the one with the highest gain. This one minimizes the number of
+errors of the majority classes of the two children:
+
+.. code-block:: python
+
+   from RuleTree.base.RuleTreeBaseGainSplitter import RuleTreeBaseGainSplitter
+   from RuleTree.utils.define import MODEL_TYPE_CLF
+
+
+   class MisclassificationSplitter(RuleTreeBaseGainSplitter):
+       """Split minimizing the number of errors of the majority classes of the two sides."""
+
+       task = MODEL_TYPE_CLF
+
+       def __init__(self, min_samples_leaf=1):
+           self.min_samples_leaf = min_samples_leaf
+
+       def gain(self, y, left, sample_weight=None):
+           def errors(labels):
+               return len(labels) - np.unique(labels, return_counts=True)[1].max()
+
+           return errors(y) - errors(y[left]) - errors(y[~left])
+
+``left`` is the boolean mask of the instances that go to the left child. ``min_samples_leaf``,
+the minimum number of instances on each side, is used by the base class. The search is
+exhaustive, so this interface is meant for experiments on small data sets.
+
+.. code-block:: python
+
+   from sklearn.datasets import load_iris
+
+   iris = load_iris()
+   model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=Stump(MatrixTransformer(), MisclassificationSplitter()))
+   model.fit(iris.data, iris.target)
+
+   print(model.get_rules()["textual_rule"])
+   print("accuracy:", round(model.score(iris.data, iris.target), 3))
+
+.. code-block:: text
+   :caption: Output
+
+   X_2 <= 2.45
+   accuracy: 0.96
+
+
+A splitter from scratch
+-----------------------
+
+A splitter can also derive directly from
+:class:`~RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter` and implement ``fit``, which
+sets the attributes of the split: ``feature_`` (the column), ``threshold_`` (the threshold or the
+categorical value), ``is_categorical_``, ``gain_`` (used to compare stumps with
+``stump_selection="best"``) and ``impurity_`` (the impurity of the node and of the two children,
+or None). When no split is possible, ``fit`` raises
+:class:`~RuleTree.exceptions.NoSplitFoundWarning`, and the node becomes a leaf. ``apply`` and the
+saving of the split are inherited. This regression splitter splits each feature at its median and
+keeps the one that reduces the variance most:
+
+.. code-block:: python
+
+   from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
+   from RuleTree.exceptions import NoSplitFoundWarning
+   from RuleTree.utils.define import MODEL_TYPE_REG
+
+
+   class MedianSplitter(RuleTreeBaseSplitter):
+       """Split at the median of the feature that reduces the variance most."""
+
+       task = MODEL_TYPE_REG
+
+       def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+           self.feature_, self.gain_ = None, -np.inf
+           for feature in numerical:
+               threshold = float(np.median(X[:, feature]))
+               left = X[:, feature] <= threshold
+               if left.all() or not left.any():
+                   continue
+               gain = len(y) * y.var() - left.sum() * y[left].var() - (~left).sum() * y[~left].var()
+               if gain > self.gain_:
+                   self.feature_, self.threshold_, self.gain_ = feature, threshold, gain
+
+           if self.feature_ is None:
+               raise NoSplitFoundWarning("No feature has two distinct sides")
+           self.is_categorical_, self.impurity_ = False, None
+           return self
+
+.. code-block:: python
+
+   model = RuleTreeRegressor(max_depth=2, random_state=0, base_stumps=Stump(MatrixTransformer(), MedianSplitter()))
+   model.fit(X, y)
+
+   model.print_rules(model.get_rules())
+
+.. code-block:: text
+   :caption: Output
+
+   |--- X_8 <= -0.002
+   |   |--- X_2 <= -0.026
+   |   |    output: 94.49
+   |   |--- X_2 > -0.026
+   |   |    output: 128.22
+   |--- X_8 > -0.002
+   |   |--- X_2 <= 0.012
+   |   |    output: 161.88
+   |   |--- X_2 > 0.012
+   |   |    output: 224.38
+
+
+A stump with its own name and parameters
+----------------------------------------
+
+``Stump(transformer, splitter)`` is enough to use a new combination. To offer it as a stump of its
+own, with its own parameters (like the stumps of the library), subclass
+:class:`~RuleTree.stumps.Stump.Stump` and build the two components from the parameters:
+
+.. code-block:: python
+
+   class SummaryStumpClassifier(Stump):
+       """Summary statistics of the time series, split as in a decision tree."""
+
+       def __init__(self, criterion="gini", min_samples_leaf=1, random_state=None):
+           self.criterion = criterion
+           self.min_samples_leaf = min_samples_leaf
+           self.random_state = random_state
+
+       def _make_transformer(self):
+           return SummaryTransformer()
+
+       def _make_splitter(self):
+           return ClassificationSplitter(criterion=self.criterion, min_samples_leaf=self.min_samples_leaf,
+                                         random_state=self.random_state)
+
+
+   model = RuleTreeClassifier(max_depth=2, random_state=0, stump_selection="best",
+                              base_stumps=[SummaryStumpClassifier(criterion="entropy"),
+                                           Stump(MatrixTransformer(), ClassificationSplitter())])
+   model.fit(X_ts=X_ts, y=y_ts)
+
+   for node_id, node in model.get_predicates().items():
+       print(node_id, type(node.stump).__name__, node.stump.get_rule()["textual_rule"])
+
+.. code-block:: text
+   :caption: Output
+
+   R SummaryStumpClassifier max <= 2.099
+
+The splitters of the library choose at random among splits with the same gain: a ``random_state``
+parameter, passed to the splitter, makes the stump reproducible, and lets the tree give it its own
+``random_state`` when it is None.
+
+The fitted transformer and splitter of a stump are in ``stump.transformer_`` and
+``stump.splitter_``. The cache of a subclass is shared by the stumps of that class; the cache of a
+generic ``Stump`` by the stumps with the same class of transformer.
+
+A stump that is not a transformer plus a splitter (e.g. a split on two features at once) can
+derive directly from :class:`~RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump` and implement all
+its methods: see the documentation of that class.
+
+
+Saving trees with new stumps
+----------------------------
+
+Trees with new stumps are saved and loaded as any other (see :doc:`lifecycle`): the saved tree
+records the module and the class of each component, and ``RuleTree.from_dict`` imports them. So
+the classes must be defined in an importable module, not in a script run as ``__main__`` or in a
+notebook. The fitted state is saved by ``get_state`` (transformers) or by the attributes of the
+split (splitters).
+
+
+Testing new components
+----------------------
+
+``tests/test_extending.py`` contains the examples of this guide, with tests of their behavior and
+of their saving: a good starting point for the tests of a new component. Once a component is part
+of the library, add a case to ``tests/reference/cases.py``, so that its trees are saved as
+references and any later change of their predictions is detected; the references are
+regenerated with ``python -m tests.reference.generate``.

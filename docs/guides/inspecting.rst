@@ -1,0 +1,168 @@
+Reading the tree
+================
+
+A RuleTree is meant to be read. This guide shows how to get its rules, draw it, walk its nodes
+and explain its predictions. The examples use a classifier on the iris data set:
+
+.. code-block:: python
+
+   from sklearn.datasets import load_iris
+
+   from RuleTree import RuleTreeClassifier
+
+   iris = load_iris()
+   names = ["sepal length", "sepal width", "petal length", "petal width"]
+   model = RuleTreeClassifier(max_depth=3, random_state=0).fit(iris.data, iris.target)
+
+
+Rules
+-----
+
+``get_rules`` returns the rules as a nested dictionary, and ``print_rules`` prints them:
+
+.. code-block:: python
+
+   rules = model.get_rules(columns_names=names)
+   model.print_rules(rules)
+
+.. code-block:: text
+   :caption: Output
+
+   |--- petal width <= 0.8
+   |    output: 0
+   |--- petal width > 0.8
+   |   |--- petal width <= 1.75
+   |   |   |--- petal length <= 4.95
+   |   |   |    output: 1
+   |   |   |--- petal length > 4.95
+   |   |   |    output: 2
+   |   |--- petal width > 1.75
+   |   |   |--- petal length <= 4.85
+   |   |   |    output: 2
+   |   |   |--- petal length > 4.85
+   |   |   |    output: 2
+
+Each node of the dictionary has its statistics and, for an internal node, the condition of the
+left child and its negation; the children are in ``left_node`` and ``right_node``:
+
+.. code-block:: python
+
+   print(rules["textual_rule"], "|", rules["not_textual_rule"])
+   print(rules["prediction"], rules["prediction_probability"].round(2))
+   print(rules["left_node"]["is_leaf"], rules["left_node"]["prediction"])
+
+.. code-block:: text
+   :caption: Output
+
+   petal width <= 0.8 | petal width > 0.8
+   0 [0.33 0.33 0.33]
+   True 0
+
+The thresholds are in the scale of the training data. If the data were standardized, pass the
+scaler to ``get_rule`` of the stumps (or to ``export_graphviz``) to see them in the original scale.
+
+
+Drawing the tree
+----------------
+
+``export_graphviz`` returns the tree as a Graphviz graph (it requires the ``graphviz`` package).
+Its DOT source can be read or saved; rendering it to an image also requires the Graphviz
+programs:
+
+.. code-block:: python
+
+   graph = model.root.export_graphviz(columns_names=names)
+   print(graph.source.splitlines()[1].strip())
+
+.. code-block:: text
+   :caption: Output
+
+   	R [label="petal width <= 0.8" shape=box]
+
+.. code-block:: text
+
+   model.export_graphviz(columns_names=names, filename="iris_tree")   # writes iris_tree.pdf
+
+In the drawing, the left (green) edge of a node is followed when its condition is true.
+
+
+Nodes
+-----
+
+Each node has an id that is its path from the root: ``"R"`` is the root, ``"Rl"`` and ``"Rr"``
+its left and right children, ``"Rrl"`` the left child of ``"Rr"``, and so on.
+
+.. code-block:: python
+
+   print("internal nodes:", list(model.get_predicates()))
+   print("leaves:", list(model.get_leaf_nodes()))
+
+   node = model.get_node_by_id("Rr")
+   print(node.get_depth(), node.samples, node.prediction, node.is_leaf())
+   print(node.stump.get_rule(columns_names=names)["textual_rule"])
+
+.. code-block:: text
+   :caption: Output
+
+   internal nodes: ['R', 'Rr', 'Rrl', 'Rrr']
+   leaves: ['Rl', 'Rrll', 'Rrlr', 'Rrrl', 'Rrrr']
+   1 100 1 False
+   petal width <= 1.75
+
+The stump of an internal node also exposes its split: ``feature_original[0]`` (the feature) and
+``threshold_original[0]`` (the threshold, or the value of a categorical feature).
+
+
+Leaves of the instances
+-----------------------
+
+``apply`` returns the leaf reached by each instance, e.g. to group the instances by rule:
+
+.. code-block:: python
+
+   import numpy as np
+
+   leaves = model.apply(iris.data)
+   for leaf, count in zip(*np.unique(leaves, return_counts=True)):
+       print(leaf, count)
+
+.. code-block:: text
+   :caption: Output
+
+   Rl 50
+   Rrll 48
+   Rrlr 6
+   Rrrl 3
+   Rrrr 43
+
+
+Contributions of the features
+-----------------------------
+
+``local_interpretation`` decomposes each prediction, as in treeinterpreter: the class
+probabilities of an instance are the ones of the root (the bias) plus a contribution of each
+feature, the change of probabilities along the splits on that feature in the path of the
+instance.
+
+.. code-block:: python
+
+   prediction, bias, contributions = model.local_interpretation(iris.data)
+
+   instance = 100
+   print("prediction:", prediction[instance].round(2))
+   print("bias:", bias[instance].round(2))
+   for name, contribution in zip(names, contributions[instance]):
+       print(f"{name}: {contribution.round(2)}")
+
+.. code-block:: text
+   :caption: Output
+
+   prediction: [0. 0. 1.]
+   bias: [0.33 0.33 0.33]
+   sepal length: [0. 0. 0.]
+   sepal width: [0. 0. 0.]
+   petal length: [ 0.   -0.02  0.02]
+   petal width: [-0.33 -0.31  0.64]
+
+The prediction is the bias plus the sum of the contributions. ``local_interpretation`` works for
+the classification and regression trees with the decision tree stumps on tabular data.

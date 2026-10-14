@@ -11,6 +11,7 @@ API reference
    RuleTree.base.RuleTreeBase.RuleTreeBase
    RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit
    RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter
+   RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter
    RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump
    RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer
 
@@ -48,6 +49,15 @@ RuleTree.base.RuleTreeBaseSplitter module
 -----------------------------------------
 
 .. automodule:: RuleTree.base.RuleTreeBaseSplitter
+   :members:
+   :show-inheritance:
+   :undoc-members:
+   :no-index:
+
+RuleTree.base.RuleTreeBaseGainSplitter module
+---------------------------------------------
+
+.. automodule:: RuleTree.base.RuleTreeBaseGainSplitter
    :members:
    :show-inheritance:
    :undoc-members:

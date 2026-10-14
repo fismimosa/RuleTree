@@ -79,15 +79,17 @@ class MisclassificationSplitter(RuleTreeBaseGainSplitter):
 class SummaryStumpClassifier(Stump):
     """A named stump: summary statistics of the time series, split as in a decision tree."""
 
-    def __init__(self, criterion="gini", min_samples_leaf=1):
+    def __init__(self, criterion="gini", min_samples_leaf=1, random_state=None):
         self.criterion = criterion
         self.min_samples_leaf = min_samples_leaf
+        self.random_state = random_state
 
     def _make_transformer(self):
         return SummaryTransformer()
 
     def _make_splitter(self):
-        return ClassificationSplitter(criterion=self.criterion, min_samples_leaf=self.min_samples_leaf)
+        return ClassificationSplitter(criterion=self.criterion, min_samples_leaf=self.min_samples_leaf,
+                                      random_state=self.random_state)
 
 
 @pytest.fixture(scope="module")
@@ -167,7 +169,8 @@ def test_named_stump(time_series):
     model = RuleTreeClassifier(max_depth=2, stump_selection="best",
                                base_stumps=[stump, SummaryStumpClassifier()]).fit(X_ts=X, y=y)
 
-    assert sklearn.clone(stump).get_params() == {"criterion": "entropy", "min_samples_leaf": 1}
+    assert sklearn.clone(stump).get_params() == {"criterion": "entropy", "min_samples_leaf": 1,
+                                                 "random_state": None}
     assert np.array_equal(json_round_trip(model).predict(X_ts=X), model.predict(X_ts=X))
 
 
