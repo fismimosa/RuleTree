@@ -158,8 +158,8 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
 
         if node is not None:
             node.prediction = prediction
-            node.predict_proba = prediction_std
-            node.classes = self.classes_
+            node.prediction_probability = prediction_std
+            node.classes = None
             node.samples = len(y[idx])
 
             return node
@@ -174,7 +174,7 @@ class RuleTreeRegressor(RuleTree, RegressorMixin):
             node_l=None,
             node_r=None,
             samples=len(y[idx]),
-            classes=self.classes_,
+            classes=None,
         )
 
     def _get_stumps_task(self):

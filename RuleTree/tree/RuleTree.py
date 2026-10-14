@@ -18,6 +18,7 @@ from typing import Optional
 
 import numpy as np
 import sklearn
+from sklearn.base import ClassifierMixin
 from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory
 
@@ -196,6 +197,12 @@ class RuleTree(RuleTreeBase, ABC):
         """Remove all the values cached by the stumps (see :meth:`get_cache`)."""
         self.cache_ = {}
 
+    def _set_classes(self, y):
+        """Set classes_ and n_classes_, the classes of the target: only for classification trees."""
+        if isinstance(self, ClassifierMixin):
+            self.classes_ = np.unique(y)
+            self.n_classes_ = len(self.classes_)
+
     def fit(self, X:np.ndarray|None=None, y:np.ndarray|None=None,
             X_ts:np.ndarray|None=None, X_img:np.ndarray|None=None, X_txt:np.ndarray|None=None, sample_weight=None):
         """
@@ -218,8 +225,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.tiebreaker = count()
         self.queue = []
         self._random = random.Random(self.random_state)
-        self.classes_ = np.unique(y)
-        self.n_classes_ = len(self.classes_)
+        self._set_classes(y)
         self._set_candidate_splits(data)
 
         idx = np.arange(self._n_samples(data))
@@ -260,8 +266,7 @@ class RuleTree(RuleTreeBase, ABC):
         if not hasattr(self, "_random"):
             self._random = random.Random(self.random_state)
         if not hasattr(self, "classes_"):
-            self.classes_ = np.unique(y)
-            self.n_classes_ = len(self.classes_)
+            self._set_classes(y)
         self._set_candidate_splits(data)
 
         self.queue = []
@@ -450,8 +455,7 @@ class RuleTree(RuleTreeBase, ABC):
     def update_statistics(self, X: np.ndarray|None = None, y: np.ndarray|None = None,
                           X_ts=None, X_img=None, X_txt=None):
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        self.classes_ = np.unique(y)
-        self.n_classes_ = len(self.classes_)
+        self._set_classes(y)
 
         self._update_statistics(data, y, self.root, np.arange(self._n_samples(data)))
 
@@ -459,9 +463,7 @@ class RuleTree(RuleTreeBase, ABC):
         if node is None:
             return
 
-        node.classes = self.classes_
-        if node.stump is not None and hasattr(node.stump, "classes_"):
-            node.stump.classes_ = self.classes_
+        node.classes = getattr(self, "classes_", None)
 
         node.update_statistics(data, y, idx, self)
         if node.is_leaf() or node.stump is None:
@@ -473,28 +475,6 @@ class RuleTree(RuleTreeBase, ABC):
 
         self._update_statistics(data, y, node.node_l, idx_l)
         self._update_statistics(data, y, node.node_r, idx_r)
-
-    def predict_proba(self, X: np.ndarray|None=None, X_ts: np.ndarray|None=None, X_img: np.ndarray|None=None,
-                      X_txt: np.ndarray|None=None):
-        """
-        Predict class probabilities for the input data.
-
-        Args:
-            X (np.ndarray): Tabular data.
-            X_ts (np.ndarray): Time series.
-            X_img (np.ndarray): Images.
-            X_txt (np.ndarray): Texts.
-
-        Returns:
-            np.ndarray: Predicted class probabilities.
-        """
-        data = self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
-        labels, _, proba = self.root.predict(data)
-        proba_matrix = np.zeros((self._n_samples(data), self.n_classes_))
-        for classe in self.classes_:
-            proba_matrix[labels == classe, self.classes_ == classe] = proba[labels == classe]
-
-        return proba_matrix
 
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
         """
@@ -875,10 +855,11 @@ class RuleTree(RuleTreeBase, ABC):
             "tree_type": self.__class__.__module__,
             "tree_class": self.__class__.__name__,
             "args": args,
-            "classes_": np.array(self.classes_).tolist(),
-            "n_classes_": self.n_classes_,
             "nodes": [],
         }
+        if hasattr(self, "classes_"):
+            dictionary["classes_"] = np.array(self.classes_).tolist()
+            dictionary["n_classes_"] = self.n_classes_
 
         while len(node_list) > 0:
             node = node_list.pop()
@@ -923,8 +904,10 @@ class RuleTree(RuleTreeBase, ABC):
             args['base_stumps'].append((p, stump_class.dict_to_node(stump_dict), *data_types))
 
         tree = class_c(**args)
-        tree.classes_ = dictionary.get('classes_', None)
-        tree.n_classes_ = dictionary.get('n_classes_', None)
+        # older dictionaries have classes_ also for the regression and clustering trees
+        if isinstance(tree, ClassifierMixin) and dictionary.get('classes_') is not None:
+            tree.classes_ = np.array(dictionary['classes_'])
+            tree.n_classes_ = dictionary['n_classes_']
 
         nodes = {node["node_id"]: RuleTreeNode.dict_to_node(node) for node in dictionary['nodes']}
 
