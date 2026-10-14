@@ -506,11 +506,6 @@ class json_numpy_encoder(json.JSONEncoder):
     
     This class extends the standard JSON encoder to properly serialize
     NumPy integers, floats, and arrays to their Python equivalents.
-    
-    Methods
-    -------
-    default(obj)
-        Override method to handle NumPy types
     """
     def default(self, obj):
         """

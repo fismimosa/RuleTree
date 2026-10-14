@@ -127,8 +127,7 @@ class PCA(base.BaseEstimator, base.TransformerMixin):
 
     def invert_transform(self,X):
         '''
-        if whiten: X_raw= X* np.sqrt(explained_variance_) @ components
-        else:  X_raw =X @ components
+        Map X back to the original space: ``X @ components_`` (whitening is not inverted).
         '''
 
         return  np.dot(X,self.components_)		

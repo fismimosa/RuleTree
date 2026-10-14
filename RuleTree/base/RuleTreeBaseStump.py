@@ -16,8 +16,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     A stump divides the instances of a node into two children: ``apply`` returns 1 for the
     instances that go to the left child and 2 for the ones that go to the right child.
 
-    Data handling
-    -------------
+    Notes
+    -----
     Stumps receive the whole data set as a dictionary ``data = {data_type: array}`` (see
     :data:`RuleTree.utils.define.DATA_INPUT_TYPES`) together with ``idx``, the indices of the
     instances reaching the node. A fitted stump works on a single data type, chosen by the tree

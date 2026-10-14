@@ -18,8 +18,9 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
 
     Parameters
     ----------
-    n_shapelets, n_ts_for_selection, n_features_strategy, selection, distance, scaler, use_combination,
-    random_state, n_jobs
+    n_shapelets, n_ts_for_selection, n_features_strategy, selection, distance
+        Parameters of the selection of the partial pivots (see TabularShapelets and PartialPivotTransformer).
+    scaler, use_combination, random_state, n_jobs
         Parameters of the selection of the partial pivots (see TabularShapelets and PartialPivotTransformer).
     criterion, min_samples_leaf, min_weight_fraction_leaf, max_features, min_impurity_decrease, class_weight
         As in DecisionTreeStumpClassifier.

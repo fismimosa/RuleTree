@@ -18,8 +18,9 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
     Parameters
     ----------
-    n_shapelets, n_shapelets_for_selection, n_ts_for_selection_per_class, sliding_window, selection, distance,
-    mi_n_neighbors, random_state, n_jobs
+    n_shapelets, n_shapelets_for_selection, n_ts_for_selection_per_class, sliding_window
+        Parameters of the shapelet selection (see Shapelets).
+    selection, distance, mi_n_neighbors, random_state, n_jobs
         Parameters of the shapelet selection (see Shapelets).
     criterion, min_samples_leaf, min_weight_fraction_leaf, max_features, min_impurity_decrease
         As in DecisionTreeStumpRegressor.

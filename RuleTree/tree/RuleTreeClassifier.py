@@ -446,7 +446,7 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
     def complete_tree(cls, node, X, y, n_classes_):
         """
         Recompute recursively the predictions, class probabilities and number of instances of the
-        nodes of a tree on new data, with classes 0, ..., n_classes_ - 1.
+        nodes of a tree on new data, with classes ``0, ..., n_classes_ - 1``.
 
         Parameters
         ----------

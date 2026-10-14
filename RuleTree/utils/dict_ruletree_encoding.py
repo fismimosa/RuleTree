@@ -84,7 +84,7 @@ def array_to_ruletree(max_depth=2, n_classes_=2):
     max_depth : int, default=2
         Depth of the tree.
     n_classes_ : int, default=2
-        Number of classes (0, ..., n_classes_ - 1).
+        Number of classes (``0, ..., n_classes_ - 1``).
 
     Returns
     -------

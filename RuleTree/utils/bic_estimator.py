@@ -14,6 +14,7 @@ from sklearn.compose import ColumnTransformer, make_column_selector
 
 def estimate_gaussian_covariances(X, nk, means, resp, reg_covar=1e-06):
     """Estimate the full covariance matrices.
+
     Parameters
     ----------
     resp : array-like of shape (n_samples, n_components)
@@ -21,6 +22,7 @@ def estimate_gaussian_covariances(X, nk, means, resp, reg_covar=1e-06):
     nk : array-like of shape (n_components,)
     means : array-like of shape (n_components, n_features)
     reg_covar : float
+
     Returns
     -------
     covariances : array, shape (n_components, n_features, n_features)
@@ -61,11 +63,13 @@ def estimate_parameters(X, resp):
 
 def compute_precision_cholesky(covariances):
     """Compute the Cholesky decomposition of the precisions.
+
     Parameters
     ----------
     covariances : array-like
         The covariance matrix of the current components.
         The shape depends of the covariance_type.
+
     Returns
     -------
     precisions_cholesky : array-like
@@ -87,9 +91,11 @@ def compute_precision_cholesky(covariances):
 
 def estimate_weighted_log_prob(X, means, precisions_chol, weights):
     """Estimate the weighted log-probabilities, log P(X | Z) + log weights.
+
     Parameters
     ----------
     X : array-like of shape (n_samples, n_features)
+
     Returns
     -------
     weighted_log_prob : array, shape (n_samples, n_component)
@@ -99,11 +105,13 @@ def estimate_weighted_log_prob(X, means, precisions_chol, weights):
 
 def estimate_log_prob(X, means, precisions_chol):
     """Estimate the log Gaussian probability.
+
     Parameters
     ----------
     X : array-like of shape (n_samples, n_features)
     means : array-like of shape (n_components, n_features)
     precisions_chol : array-like
+
     Returns
     -------
     log_prob : array, shape (n_samples, n_components)
@@ -128,12 +136,14 @@ def estimate_log_prob(X, means, precisions_chol):
 
 def compute_log_det_cholesky(matrix_chol, n_features):
     """Compute the log-det of the cholesky decomposition of matrices.
+
     Parameters
     ----------
     matrix_chol : array-like
         Cholesky decompositions of the matrices.
     n_features : int
         Number of features.
+
     Returns
     -------
     log_det_precision_chol : array-like of shape (n_components,)
@@ -164,11 +174,13 @@ def estimate_log_weights(weights):
 
 def score_samples(X, means, precisions_chol, weights):
     """Compute the log-likelihood of each sample.
+
     Parameters
     ----------
     X : array-like of shape (n_samples, n_features)
         List of n_features-dimensional data points. Each row
         corresponds to a single data point.
+
     Returns
     -------
     log_prob : array, shape (n_samples,)
@@ -182,11 +194,13 @@ def score_samples(X, means, precisions_chol, weights):
 
 def score(X, n_components, labels):
     """Compute the per-sample average log-likelihood of the given data X.
+
     Parameters
     ----------
     X : array-like of shape (n_samples, n_dimensions)
         List of n_features-dimensional data points. Each row
         corresponds to a single data point.
+
     Returns
     -------
     log_likelihood : float
@@ -219,10 +233,12 @@ def bic(X, labels):
     """Bayesian information criterion for the current model on the input X.
     You can refer to this :ref:`mathematical section <aic_bic>` for more
     details regarding the formulation of the BIC used.
+
     Parameters
     ----------
     X : array of shape (n_samples, n_dimensions)
         The input samples.
+
     Returns
     -------
     bic : float
