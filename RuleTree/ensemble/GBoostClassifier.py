@@ -12,7 +12,7 @@ from RuleTree import RuleTreeRegressor
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 
 
-class GBoostClassifier(RuleTreeBase, ClassifierMixin):
+class GBoostClassifier(ClassifierMixin, RuleTreeBase):
     def __init__(self, base_estimator=RuleTreeRegressor(max_depth=4), n_estimators=100, learning_rate=.1,
                  loss='squared_loss', patience=5, val_size=.15, n_jobs=cpu_count(), random_state=42):
         self.base_estimator = base_estimator

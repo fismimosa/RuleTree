@@ -18,7 +18,7 @@ from RuleTree.utils import bic, light_famd
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 
 
-class RuleTreeCluster(RuleTree, ClusterMixin):
+class RuleTreeCluster(ClusterMixin, RuleTree):
     """
     Rule Tree Clustering algorithm that uses a decision tree structure for data clustering.
     
@@ -357,7 +357,7 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         raise NotImplementedError()
 
 
-class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
+class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
     """
     Rule Tree Cluster Classifier that combines clustering with classification.
     
@@ -412,7 +412,7 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
         return RuleTreeClassifier.predict_proba(self, X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
 
-class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
+class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
     """
     Rule Tree Cluster Regressor that combines clustering with regression.
     

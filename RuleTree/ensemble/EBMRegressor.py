@@ -8,7 +8,7 @@ from RuleTree import RuleTreeRegressor
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 
 
-class EBMRegressor(RuleTreeBase, RegressorMixin):
+class EBMRegressor(RegressorMixin, RuleTreeBase):
     def __init__(self, n_iterations=100, base_estimator=RuleTreeRegressor(max_depth=6, random_state=42),
                  learning_rate=0.04, val_size=.15, patience=5, n_jobs=1, random_state=42):
         self.n_iterations = n_iterations

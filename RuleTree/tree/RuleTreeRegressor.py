@@ -10,7 +10,7 @@ from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 
 
-class RuleTreeRegressor(RuleTree, RegressorMixin):
+class RuleTreeRegressor(RegressorMixin, RuleTree):
     """
     Implementation of Rule Tree for regression tasks.
     

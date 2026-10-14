@@ -23,7 +23,7 @@ from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionT
 from RuleTree.utils.data_utils import calculate_mode, log_odds
 
 
-class RuleTreeClassifier(RuleTree, ClassifierMixin):
+class RuleTreeClassifier(ClassifierMixin, RuleTree):
     """
     RuleTree implementation for classification tasks.
 
