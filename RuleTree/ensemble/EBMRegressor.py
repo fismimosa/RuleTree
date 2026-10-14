@@ -62,6 +62,8 @@ class EBMRegressor(RuleTreeBase, RegressorMixin):
                     break
             prev_residuals_val = np.sum(np.abs(residuals_val))
 
+        return self
+
     def predict(self, X: np.ndarray):
         prediction = np.ones((X.shape[0], ))*self.base_prediction_
 

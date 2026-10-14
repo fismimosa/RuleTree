@@ -24,6 +24,9 @@ class GBoostRegressor(RuleTreeBase, RegressorMixin):
     def _get_base_prediction(self, y):
         return np.mean(y)
 
+    def _get_base_estimator(self):
+        return self.base_estimator
+
     def fit(self, X: np.ndarray, y: np.ndarray):
         np.random.seed(self.random_state)
         n_val = int(self.val_size * X.shape[0])
@@ -40,9 +43,10 @@ class GBoostRegressor(RuleTreeBase, RegressorMixin):
         residuals_val = y_val - self.base_prediction_
         prev_residuals_val = np.inf
 
+        base_estimator = self._get_base_estimator()
         wait = 0
         for _ in range(self.n_estimators):
-            est = copy.deepcopy(self.base_estimator)
+            est = copy.deepcopy(base_estimator)
             est.fit(X_train, residuals)
 
             res_delta = self.learning_rate * est.predict(X_train)
