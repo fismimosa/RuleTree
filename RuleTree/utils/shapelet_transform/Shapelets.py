@@ -1,3 +1,5 @@
+"""Shapelets: the shapelet transform of time series used by the shapelet stumps."""
+
 import random
 
 import numba
@@ -77,6 +79,7 @@ class Shapelets(TransformerMixin):
                  distance='euclidean',
                  mi_n_neighbors = 100,
                  random_state=42, n_jobs=1):
+        """Initialize the shapelet transform; see the class documentation for the parameters."""
         super().__init__()
 
         self.shapelets = None

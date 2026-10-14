@@ -12,8 +12,21 @@ from . import util
 
 class MFA(pca.PCA):
 
+    """
+    Multiple Factor Analysis: a PCA of groups of features, each normalized by its first singular value.
+
+    Parameters
+    ----------
+    groups : dict, default=None
+        Name -> list of columns of each group.
+    normalize : bool, default=True
+        Whether to standardize the numerical groups.
+    n_components, n_iter, copy, check_input, random_state, engine
+        See PCA.
+    """
     def __init__(self, groups=None, normalize=True, n_components=2, n_iter=2,
                  copy=True, check_input=True, random_state=None, engine='auto'):
+        """Initialize the MFA; see the class documentation for the parameters."""
         super().__init__(
             rescale_with_mean=False,
             rescale_with_std=False,
@@ -30,6 +43,19 @@ class MFA(pca.PCA):
     def fit(self, X, y=None):
 
         # Checks groups are provided
+        """
+        Fit the MFA.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+        y : None
+            Not used.
+
+        Returns
+        -------
+        self : MFA
+        """
         if self.groups is None:
             raise ValueError('Groups have to be specified')
 
@@ -77,6 +103,17 @@ class MFA(pca.PCA):
     def _prepare_input(self, X):
 
         # Make sure X is a DataFrame for convenience
+        """
+        Input as a DataFrame, with the numerical groups standardized if normalize is True.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+
+        Returns
+        -------
+        X : pandas.DataFrame
+        """
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
@@ -96,6 +133,17 @@ class MFA(pca.PCA):
         return X
 
     def _build_X_global(self, X):
+        """
+        Concatenation of the groups (one-hot encoded if categorical), each divided by its first singular value.
+
+        Parameters
+        ----------
+        X : pandas.DataFrame
+
+        Returns
+        -------
+        X_global : pandas.DataFrame
+        """
         X_partials = []
 
         for name, cols in self.groups.items():
@@ -131,6 +179,17 @@ class MFA(pca.PCA):
     
     def fit_transform(self,X):
                 # Checks groups are provided
+        """
+        Fit the MFA and return the row principal coordinates.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+
+        Returns
+        -------
+        coordinates : numpy.ndarray of shape (n_samples, n_components)
+        """
         if self.groups is None:
             raise ValueError('Groups have to be specified')
 
@@ -179,6 +238,19 @@ class MFA(pca.PCA):
         
     def column_correlation(self,X,same_input=True):
         
+        """
+        Correlation between the original columns and the principal components.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+        same_input : bool, default=True
+            Whether X is the training data.
+
+        Returns
+        -------
+        correlation : pandas.DataFrame
+        """
         if   same_input: #X is fitted and the the data fitting and the data transforming is the same
             #not need to check_array since deriving from the same data
             X = self._prepare_input(X)

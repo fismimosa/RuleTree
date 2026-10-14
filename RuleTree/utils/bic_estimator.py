@@ -1,3 +1,8 @@
+"""
+Bayesian Information Criterion of a partition of the data into Gaussian clusters, used by
+RuleTreeCluster to decide whether a split improves the clustering.
+"""
+
 import numpy as np
 import pandas as pd
 from category_encoders import OrdinalEncoder
@@ -31,6 +36,23 @@ def estimate_gaussian_covariances(X, nk, means, resp, reg_covar=1e-06):
 
 
 def estimate_parameters(X, resp):
+    """
+    Weights, means and covariances of the Gaussian components from the responsibilities.
+
+    Parameters
+    ----------
+    X : numpy.ndarray of shape (n_samples, n_features)
+        Data.
+    resp : numpy.ndarray of shape (n_samples, n_components)
+        Responsibility of each component for each instance.
+
+    Returns
+    -------
+    nk : numpy.ndarray of shape (n_components,)
+        Weight of each component.
+    means : numpy.ndarray of shape (n_components, n_features)
+    covariances : numpy.ndarray of shape (n_components, n_features, n_features)
+    """
     nk = resp.sum(axis=0) + 10 * np.finfo(resp.dtype).eps
     means = np.dot(resp.T, X) / nk[:, np.newaxis]
     covariances = estimate_gaussian_covariances(X, nk, means, resp)
@@ -126,6 +148,17 @@ def compute_log_det_cholesky(matrix_chol, n_features):
 
 
 def estimate_log_weights(weights):
+    """
+    Logarithm of the weights of the components.
+
+    Parameters
+    ----------
+    weights : numpy.ndarray of shape (n_components,)
+
+    Returns
+    -------
+    log_weights : numpy.ndarray of shape (n_components,)
+    """
     return np.log(weights)
 
 

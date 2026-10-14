@@ -7,8 +7,18 @@ from . import mfa
 
 class FAMD(mfa.MFA):
 
+    """
+    Factor Analysis of Mixed Data: an MFA with a group of numerical features and a group of
+    categorical features. Used by RuleTreeCluster for mixed data.
+
+    Parameters
+    ----------
+    n_components, n_iter, copy, check_input, random_state, engine
+        See PCA.
+    """
     def __init__(self, n_components=2, n_iter=2, copy=False, check_input=True, random_state=None,
                  engine='auto'):
+        """Initialize the FAMD; see the class documentation for the parameters."""
         super().__init__(
             groups=None,
             normalize=True,
@@ -22,6 +32,19 @@ class FAMD(mfa.MFA):
 
     def fit(self, X, y=None):
 
+        """
+        Fit the FAMD, grouping the columns into numerical and categorical.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+        y : None
+            Not used.
+
+        Returns
+        -------
+        self : FAMD
+        """
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X)
 
@@ -45,6 +68,19 @@ class FAMD(mfa.MFA):
         return super().fit(X)
     
     def fit_transform(self,X,y=None):
+        """
+        Fit the FAMD and return the row principal coordinates.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+        y : None
+            Not used.
+
+        Returns
+        -------
+        coordinates : numpy.ndarray of shape (n_samples, n_components)
+        """
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X).infer_objects()
             X.columns = [str(x) for x in X.columns]

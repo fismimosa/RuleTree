@@ -1,3 +1,5 @@
+"""Fairness and privacy metrics of a partition of the data, used by FairSplitter."""
+
 import numpy as np
 
 from RuleTree.utils.privacy_utils import compute_k_anonimity, compute_t_closeness, compute_l_diversity

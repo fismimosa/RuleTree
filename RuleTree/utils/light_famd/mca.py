@@ -9,7 +9,25 @@ from . import one_hot
 
 class MCA(ca.CA):
 
+    """
+    Multiple Correspondence Analysis of categorical data: a CA of their one-hot encoding. Used by
+    RuleTreeCluster for categorical data.
+    """
     def fit(self, X, y=None):
+        """
+        Fit the MCA.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Categorical data.
+        y : None
+            Not used.
+
+        Returns
+        -------
+        self : MCA
+        """
         if self.check_input:
             utils.check_array(X, dtype=[str, np.number])
             
@@ -33,6 +51,17 @@ class MCA(ca.CA):
         return self
 
     def _transform(self, X):
+        """
+        Row principal coordinates of one-hot encoded data.
+
+        Parameters
+        ----------
+        X : array-like
+
+        Returns
+        -------
+        coordinates : numpy.ndarray of shape (n_samples, n_components)
+        """
         return super()._transform(self.one_hot_.transform(X).loc[:,self._usecols])
 
 

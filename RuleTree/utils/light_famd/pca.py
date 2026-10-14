@@ -12,17 +12,31 @@ from . import util
 class PCA(base.BaseEstimator, base.TransformerMixin):
 
     """
-    Args:
-        rescale_with_mean (bool): Whether to substract each column's mean or not.
-        rescale_with_std (bool): Whether to divide each column by it's standard deviation or not.
-        n_components (int): The number of principal components to compute.
-        n_iter (int): The number of iterations used for computing the SVD.
-        copy (bool): Whether to perform the computations inplace or not.
-        check_input (bool): Whether to check the consistency of the inputs or not.
+    Principal Component Analysis. Used by RuleTreeCluster for numerical data.
+
+    Parameters
+    ----------
+    rescale_with_mean : bool, default=True
+        Whether to subtract the mean of each column.
+    rescale_with_std : bool, default=True
+        Whether to divide each column by its standard deviation.
+    n_components : int, default=2
+        Number of principal components.
+    n_iter : int, default=2
+        Number of iterations of the randomized SVD.
+    copy : bool, default=True
+        Whether to copy the data.
+    check_input : bool, default=True
+        Whether to check the input.
+    random_state : int, default=None
+        Seed of the SVD.
+    engine : {'auto', 'sklearn', 'fbpca'}, default='auto'
+        SVD implementation.
     """
 
     def __init__(self, rescale_with_mean=True, rescale_with_std=True, n_components=2, n_iter=2,
                  copy=True, check_input=True, random_state=None, engine='auto'):
+        """Initialize the PCA; see the class documentation for the parameters."""
         self.n_components = n_components
         self.n_iter = n_iter
         self.rescale_with_mean = rescale_with_mean
@@ -34,6 +48,19 @@ class PCA(base.BaseEstimator, base.TransformerMixin):
 
     def fit(self, X, y=None):
         # Check input
+        """
+        Fit the PCA.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+        y : None
+            Not used.
+
+        Returns
+        -------
+        self : PCA
+        """
         if self.check_input:
             utils.check_array(X)
 
@@ -109,6 +136,19 @@ class PCA(base.BaseEstimator, base.TransformerMixin):
 
 
     def fit_transform(self, X,y=None):
+        """
+        Fit the PCA and return the row principal coordinates.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+        y : None
+            Not used.
+
+        Returns
+        -------
+        coordinates : numpy.ndarray of shape (n_samples, n_components)
+        """
         self.fit(X)
         U=self.U_*self.singular_values_
         return U 

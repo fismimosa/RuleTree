@@ -1,3 +1,5 @@
+"""Matrix representations of a fitted RuleTree, and the similarity and cover functions of XGBoost."""
+
 import numpy as np
 
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier
@@ -7,21 +9,38 @@ from RuleTree.tree.RuleTreeNode import RuleTreeNode
 
 def get_nodes_in_path(leaf_node_id: str):
     """
-    Given the id of a leaf node, return the list of all nodes in the path from the root to the leaf node.
+    Ids of the internal nodes on the path from the root to a node.
 
-    :param leaf_node_id: The id of the leaf node.
-    :return: A list of node ids in the path from the root to the leaf node.
+    Parameters
+    ----------
+    leaf_node_id : str
+        Id of the node, e.g. ``"Rlr"``.
+
+    Returns
+    -------
+    path : list of str
+        Ids from the root to the parent of the node, e.g. ``["R", "Rl"]``.
     """
     return [leaf_node_id[:i] for i in range(1, len(leaf_node_id))]
 
 
 def get_feature_node_matrix(rules: dict[str, RuleTreeNode]) -> np.ndarray:
     """
-    Given a list of rules, return a matrix where each row represents a rule and each column represents a feature.
-    The value in the matrix is 1 if the feature is used in the rule, otherwise 0.
+    Matrix of the features used by the splits: entry (feature, rule) is 1 if the rule uses the feature.
 
-    :param rules: A dictionary of rules.
-    :return: A matrix representing the features used in the rules.
+    Parameters
+    ----------
+    rules : dict
+        Node id -> internal RuleTreeNode, e.g. RuleTree.get_predicates().
+
+    Returns
+    -------
+    feature_matrix : numpy.ndarray of shape (n_features, n_rules)
+
+    Notes
+    -----
+    Reads the number of features from the attribute ``n_features`` of the nodes, which the trees do
+    not set: it must be set on the nodes before calling this function.
     """
     num_rules = len(rules)
     num_features = list(rules.values())[0].n_features
@@ -37,11 +56,26 @@ def get_feature_node_matrix(rules: dict[str, RuleTreeNode]) -> np.ndarray:
 
 def get_thresholds_matrix(rules: dict[str, RuleTreeNode]) -> np.ndarray:
     """
-    Given a list of rules, return a matrix where each row represents a rule and each column represents a feature.
-    The value in the matrix is the threshold used in the rule.
+    Threshold of each split, for univariate decision tree stumps.
 
-    :param rules: A dictionary of rules.
-    :return: A matrix representing the thresholds used in the rules.
+    Parameters
+    ----------
+    rules : dict
+        Node id -> internal RuleTreeNode with a DecisionTreeStumpClassifier or
+        DecisionTreeStumpRegressor, e.g. RuleTree.get_predicates().
+
+    Returns
+    -------
+    thresholds : numpy.ndarray of shape (n_rules,)
+
+    Raises
+    ------
+    ValueError
+        If a node has another kind of stump.
+
+    Notes
+    -----
+    As get_feature_node_matrix, requires the attribute ``n_features`` on the nodes.
     """
     num_rules = len(rules)
     num_features = list(rules.values())[0].n_features
@@ -60,25 +94,19 @@ def get_thresholds_matrix(rules: dict[str, RuleTreeNode]) -> np.ndarray:
 
 def get_leaf_internal_node_matrix(leaf_nodes: dict[str, RuleTreeNode]) -> [np.ndarray, list]:
     """
-    Generate a matrix representing the relationship between internal nodes and leaf nodes in a tree.
+    Position of each leaf with respect to each internal node on its path: entry (node, leaf) is 1 if
+    the leaf is in the left subtree of the node, -1 if in the right subtree, 0 otherwise.
 
-    Each row in the matrix corresponds to an internal node, and each column corresponds to a leaf node.
-    The value in the matrix is determined as follows:
-    - `1` if the corresponding leaf node in the column lies in the left subtree of the corresponding internal node in the row.
-    - `-1` if the corresponding leaf node in the column lies in the right subtree of the corresponding internal node in the row.
-    - `0` if the leaf node is not in the subtree of the internal node.
+    Parameters
+    ----------
+    leaf_nodes : dict
+        Leaf id -> RuleTreeNode, e.g. RuleTree.get_leaf_nodes().
 
-    The determination of left or right subtree is based on the last character of the `internal_node_id`:
-    - `'l'` indicates a left child.
-    - `'r'` indicates a right child. In this implementation, any other character is considered `'r'`.
-
-    Args:
-        leaf_nodes (dict[str, RuleTreeNode]): A dictionary where keys are leaf node IDs and values are `RuleTreeNode` objects.
-
-    Returns:
-        tuple: A tuple containing:
-            - np.ndarray: A 2D matrix of shape (number of internal nodes, number of leaf nodes).
-            - list: A list of internal node IDs.
+    Returns
+    -------
+    matrix : numpy.ndarray of shape (n_internal_nodes, n_leaves)
+    internal_nodes : list of str
+        Ids of the internal nodes, in the order of the rows.
     """
     internal_nodes = {}
     for leaf_node_id in leaf_nodes.keys():
@@ -97,6 +125,20 @@ def get_leaf_internal_node_matrix(leaf_nodes: dict[str, RuleTreeNode]) -> [np.nd
     return leaf_node_matrix, internal_nodes
 
 def get_leaf_prediction_matrix(leaf_nodes: dict[str, RuleTreeNode], return_proba=False) -> np.ndarray:
+    """
+    Prediction of each leaf of a classification tree: one-hot encoded class or class probabilities.
+
+    Parameters
+    ----------
+    leaf_nodes : dict
+        Leaf id -> RuleTreeNode, e.g. RuleTree.get_leaf_nodes().
+    return_proba : bool, default=False
+        Whether to return the class probabilities instead of the one-hot encoded class.
+
+    Returns
+    -------
+    predictions : numpy.ndarray of shape (n_leaves, n_classes)
+    """
     n_classes = len(list(leaf_nodes.values())[0].classes)
     leaf_prediction_matrix = np.zeros((len(leaf_nodes), n_classes))
 
@@ -109,19 +151,99 @@ def get_leaf_prediction_matrix(leaf_nodes: dict[str, RuleTreeNode], return_proba
     return leaf_prediction_matrix
 
 def _eval_rule(X: np.ndarray, rule: RuleTreeNode, return_probababilities=False):
+    """
+    Evaluate the split of an internal node.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Data.
+    rule : RuleTreeNode
+        Internal node.
+    return_probababilities : bool, default=False
+        Not used.
+
+    Raises
+    ------
+    ValueError
+        If the node is a leaf.
+
+    Notes
+    -----
+    Calls ``stump.predict``, which the stumps do not implement (they implement ``apply``).
+    """
     if rule.is_leaf():
         raise ValueError("The rule is a leaf node, cannot evaluate.")
 
     rule.stump.predict(X)
 
 def xgboost_similarity_score_regression(residuals:np.ndarray, cover:int, _lambda:int=0) -> float:
+    """
+    XGBoost similarity score of a node, for regression.
+
+    Parameters
+    ----------
+    residuals : numpy.ndarray
+        Residuals of the instances in the node.
+    cover : int
+        Cover of the node (see xgboost_cover_regression).
+    _lambda : float, default=0
+        L2 regularization.
+
+    Returns
+    -------
+    similarity : float
+        ``sum(residuals) ** 2 / (cover + lambda)``.
+    """
     return np.square(np.sum(residuals))/(_lambda+cover)
 
 def xgboost_cover_regression(residuals:np.ndarray) -> float:
+    """
+    XGBoost cover of a node, for regression: the number of instances.
+
+    Parameters
+    ----------
+    residuals : numpy.ndarray
+        Residuals of the instances in the node.
+
+    Returns
+    -------
+    cover : int
+    """
     return len(residuals)
 
 def xgboost_similarity_score_classification(residuals:np.ndarray, cover:float, _lambda:int=0) -> float:
+    """
+    XGBoost similarity score of a node, for classification.
+
+    Parameters
+    ----------
+    residuals : numpy.ndarray
+        Residuals of the instances in the node.
+    cover : float
+        Cover of the node (see xgboost_cover_classification).
+    _lambda : float, default=0
+        L2 regularization.
+
+    Returns
+    -------
+    similarity : float
+        ``sum(residuals) ** 2 / (cover + lambda)``.
+    """
     return np.square(np.sum(residuals))/(cover+_lambda)
 
 def xgboost_cover_classification(prev_probability:np.ndarray) -> float:
+    """
+    XGBoost cover of a node, for classification.
+
+    Parameters
+    ----------
+    prev_probability : numpy.ndarray
+        Probabilities predicted for the instances in the node.
+
+    Returns
+    -------
+    cover : float
+        ``sum(p * (1 - p))``.
+    """
     return np.sum(prev_probability*(1-prev_probability))

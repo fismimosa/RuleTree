@@ -10,8 +10,27 @@ from . import svd
 
 class CA(base.BaseEstimator, base.TransformerMixin):
 
+    """
+    Correspondence Analysis of a contingency table.
+
+    Parameters
+    ----------
+    n_components : int, default=2
+        Number of components.
+    n_iter : int, default=10
+        Number of iterations of the randomized SVD.
+    copy : bool, default=True
+        Whether to copy the data.
+    check_input : bool, default=True
+        Whether to check the input.
+    random_state : int, default=None
+        Seed of the SVD.
+    engine : {'auto', 'sklearn', 'fbpca'}, default='auto'
+        SVD implementation.
+    """
     def __init__(self, n_components=2, n_iter=10, copy=True, check_input=True, random_state=None,
                  engine='auto'):
+        """Initialize the CA; see the class documentation for the parameters."""
         self.n_components = n_components
         self.n_iter = n_iter
         self.copy = copy
@@ -26,6 +45,20 @@ class CA(base.BaseEstimator, base.TransformerMixin):
             #utils.check_array(X)
 
         # Check all values are positive
+        """
+        Fit the CA.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_rows, n_columns)
+            Contingency table.
+        y : None
+            Not used.
+
+        Returns
+        -------
+        self : CA
+        """
         if np.any(X < 0):
             raise ValueError("All values in X should be positive")
 

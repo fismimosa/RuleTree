@@ -1,3 +1,5 @@
+"""k-anonymity, l-diversity and t-closeness of a partition of the data, used by the fairness metrics."""
+
 import numpy as np
 from scipy.stats import wasserstein_distance
 from sklearn.preprocessing import KBinsDiscretizer

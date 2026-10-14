@@ -1,7 +1,30 @@
+"""
+Encoding of a tree as an array of node dictionaries indexed as a complete binary tree.
+
+Notes
+-----
+Not functional: the module uses ``np``, ``RuleTreeNode`` and ``node_array`` without defining them.
+"""
+
 from RuleTree import RuleTreeClassifier
 
 
 def ruletree_to_array(node, max_depth=2):
+    """
+    Array of the dictionaries of the nodes (see RuleTreeNode.node_to_dict), with the root at position
+    0 and the children of position i at 2i+1 and 2i+2.
+
+    Parameters
+    ----------
+    node : RuleTreeNode
+        Root of the tree.
+    max_depth : int, default=2
+        Depth of the complete tree the array represents.
+
+    Returns
+    -------
+    node_array : numpy.ndarray of dict
+    """
     max_nodes = 2 ** (max_depth + 1) - 1
     node_array = np.empty(max_nodes, dtype=object)
     queue = [(node, 1)] 
@@ -21,6 +44,18 @@ def ruletree_to_array(node, max_depth=2):
 
 def build_subtree(index):
     # Base case: if index is out of bounds, return None
+    """
+    Rebuild the subtree rooted at a position of the global ``node_array``.
+
+    Parameters
+    ----------
+    index : int
+        Position of the root of the subtree.
+
+    Returns
+    -------
+    node : RuleTreeNode or None
+    """
     if index >= len(node_array) or node_array[index] is None:
         return None
     
@@ -41,6 +76,20 @@ def build_subtree(index):
     return node
 
 def array_to_ruletree(max_depth=2, n_classes_=2):
+    """
+    Rebuild a RuleTreeClassifier from the global ``node_array``.
+
+    Parameters
+    ----------
+    max_depth : int, default=2
+        Depth of the tree.
+    n_classes_ : int, default=2
+        Number of classes (0, ..., n_classes_ - 1).
+
+    Returns
+    -------
+    ruletree : RuleTreeClassifier
+    """
     ruletree = RuleTreeClassifier(max_depth=max_depth)
     ruletree.classes_ = list(range(n_classes_))
     ruletree.root = build_subtree(0)

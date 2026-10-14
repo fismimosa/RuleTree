@@ -1,8 +1,22 @@
+"""Functions on the dictionaries created by RuleTree.to_dict."""
+
 import copy
 import json
 
 
 def get_tree_depth(d:dict):
+    """
+    Depth of a saved tree.
+
+    Parameters
+    ----------
+    d : dict
+        Dictionary created by RuleTree.to_dict.
+
+    Returns
+    -------
+    depth : int
+    """
     depth = 0
     for dict_node in d['nodes']:
         depth = max(depth, len(dict_node['node_id']))
@@ -10,6 +24,25 @@ def get_tree_depth(d:dict):
     return depth -1
 
 def make_complete_rule_tree(filename, max_depth=None, verbose=False):
+    """
+    Complete a saved tree up to a depth: every leaf shallower than max_depth is replaced by a copy of
+    the split of its parent, with two copies of the leaf as children, so that all the leaves have
+    depth max_depth. The predictions do not change.
+
+    Parameters
+    ----------
+    filename : dict, str or path-like
+        Dictionary created by RuleTree.to_dict, or the JSON file where it is saved (overwritten).
+    max_depth : int, default=None
+        Depth of the complete tree. If None, the largest between the max_depth of the tree and its depth.
+    verbose : bool, default=False
+        Whether to print the number of leaves to complete.
+
+    Returns
+    -------
+    d : dict
+        The completed dictionary.
+    """
     if not isinstance(filename, dict):
         with open(filename, 'r') as f:
             d = json.load(f)

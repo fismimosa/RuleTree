@@ -1,3 +1,8 @@
+"""
+TabularShapelets: the transform of tabular data into distances from partial pivots, used by the
+partial-pivot stumps.
+"""
+
 import random
 from itertools import combinations
 
@@ -18,6 +23,49 @@ from sklearn.tree import DecisionTreeClassifier
 from RuleTree.utils.shapelet_transform.matrix_to_vector_distances import euclidean, sqeuclidean, cosine, cityblock
 
 class TabularShapelets(TransformerMixin):
+    """
+    Transform of tabular data into distances from partial pivots: instances restricted to a subset
+    of their features (the other features are nan). The distance of an instance from a partial pivot
+    is computed only on the features of the pivot.
+
+    The subsets of features (``n_features_strategy``) and then the pivots (``selection``) are chosen
+    on a sample of the training instances.
+
+    Parameters
+    ----------
+    n_shapelets : int or numpy.inf, default=100
+        Number of partial pivots (numpy.inf with selection='all').
+    n_ts_for_selection : int, float or numpy.inf, default=numpy.inf
+        Number (int) or fraction (float) of the training instances used to select the pivots.
+    n_features_strategy : int, float, tuple or str, default=2
+        Number of features of the pivots: an int, a fraction of the features (float), a range
+        ``(min, max)`` (tuple), or chosen from the feature importances of a random forest ('elbow',
+        'drop', 'new') or iteratively with depth-1 trees ('iterative').
+    selection : {'random', 'cluster', 'all'}, default='random'
+        How the pivots are selected among the candidates: at random (stratified by number of
+        features), the instances closest to k-means centroids, or all of them.
+    distance : {'euclidean', 'sqeuclidean', 'cosine', 'cityblock'} or callable, default='euclidean'
+        Distance between an instance and a pivot.
+    use_combination : bool, default=True
+        With the strategies based on feature importances, whether to use all the combinations of the
+        important features or only the set of all of them.
+    random_state : int, default=42
+        Seed of the random choices.
+    n_jobs : int, default=1
+        Number of threads used to compute the distances (-1: all the CPUs).
+
+    Attributes
+    ----------
+    shapelets : numpy.ndarray of shape (n_shapelets, n_features)
+        The partial pivots (nan for the features not used).
+    subsequences_index : dict
+        Number of features -> list of the subsets of features used.
+
+    Raises
+    ------
+    UnsupportedError
+        For an unknown distance or selection, or an n_shapelets inconsistent with the selection.
+    """
     __distances = {
         'euclidean': euclidean,
         'sqeuclidean': sqeuclidean,
@@ -33,6 +81,7 @@ class TabularShapelets(TransformerMixin):
                  distance='euclidean',
                  use_combination=True,
                  random_state=42, n_jobs=1):
+        """Initialize the transform; see the class documentation for the parameters."""
         super().__init__()
 
         self.shapelets = None
@@ -115,6 +164,20 @@ class TabularShapelets(TransformerMixin):
         return self
 
     def _selectable_features_smart(self, X, y):
+        """
+        Subsets of features from the feature importances of a random forest: the most important ones
+        (up to the knee of the sorted importances, or to their largest drop with 'drop').
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+        y : numpy.ndarray of shape (n_samples,)
+
+        Returns
+        -------
+        subsequences_index : dict
+            Number of features -> list of subsets of features.
+        """
         model = RandomForestClassifier(n_estimators=1000, n_jobs=self.n_jobs, random_state=self.random_state)
         if np.unique(y).dtype == float:
             model = RandomForestRegressor(n_estimators=1000, n_jobs=self.n_jobs, random_state=self.random_state)
@@ -139,6 +202,20 @@ class TabularShapelets(TransformerMixin):
         return subsequences_index
 
     def _selectable_features_iterative(self, X, y):
+        """
+        Subsets of features chosen iteratively: for each size, the subset whose partial pivots give the
+        best depth-1 split, among the subsets of features not chosen yet.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+        y : numpy.ndarray of shape (n_samples,)
+
+        Returns
+        -------
+        subsequences_index : dict
+            Number of features -> list with the chosen subset.
+        """
         min_n_features, max_n_features = self._compute_n_features(X)
 
         available_features_idx = np.arange(0, X.shape[1])
@@ -170,6 +247,19 @@ class TabularShapelets(TransformerMixin):
         return filtered_subsequences_index
 
     def _selectable_features(self, X:np.ndarray, y:np.ndarray):
+        """
+        Subsets of features of the pivots, according to n_features_strategy.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+        y : numpy.ndarray of shape (n_samples,)
+
+        Returns
+        -------
+        subsequences_index : dict
+            Number of features -> list of subsets of features.
+        """
         min_n_features, max_n_features = self._compute_n_features(X)
 
 
@@ -185,6 +275,19 @@ class TabularShapelets(TransformerMixin):
 
 
     def _candidate_pivots_all(self, X: np.ndarray, subsequences_index: dict):
+        """
+        All the distinct partial pivots of the instances on the subsets of features.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+        subsequences_index : dict
+            Number of features -> list of subsets of features.
+
+        Returns
+        -------
+        pivots : numpy.ndarray
+        """
         res_data = [
             np.unique(np.where(np.isin(np.arange(X.shape[1]), combination), X, np.nan), axis=0)
             for combinations in subsequences_index.values()
@@ -197,6 +300,19 @@ class TabularShapelets(TransformerMixin):
         return np.vstack(res_data)
 
     def _subsample(self, X: np.ndarray, y: np.ndarray):
+        """
+        At most n_shapelets rows of X, stratified by y when possible.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+        y : array-like or None
+            Strata.
+
+        Returns
+        -------
+        X_sample : numpy.ndarray
+        """
         if y is None:
             subsample_idx = np.random.RandomState(self.random_state).choice(
                 X.shape[0],
@@ -219,6 +335,20 @@ class TabularShapelets(TransformerMixin):
         return X[subsample_idx]
 
     def _candidate_pivots_random(self, X: np.ndarray, subsequences_index: dict):
+        """
+        Partial pivots selected at random for each subset of features, then subsampled stratifying by
+        number of features.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+        subsequences_index : dict
+            Number of features -> list of subsets of features.
+
+        Returns
+        -------
+        pivots : numpy.ndarray
+        """
         res_data = []
         n_shapelet_for_stratification = []
         for n_features, combinations in subsequences_index.items():
@@ -237,6 +367,18 @@ class TabularShapelets(TransformerMixin):
 
 
     def _run_kmeans_and_return_centroids(self, X):
+        """
+        The rows of X closest to the centroids of k-means (nan replaced by 0), with at most n_shapelets
+        clusters.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+
+        Returns
+        -------
+        pivots : numpy.ndarray
+        """
         X_filled = np.nan_to_num(X, nan=0.0)
         km = KMeans(n_clusters=min(len(X_filled), self.n_shapelets), random_state=self.random_state)
         km.fit(X_filled)
@@ -246,6 +388,19 @@ class TabularShapelets(TransformerMixin):
         return X[nearest_indices]
 
     def _candidate_pivots_cluster(self, X: np.ndarray, subsequences_index: dict):
+        """
+        Partial pivots selected with k-means for each subset of features, then again among all of them.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+        subsequences_index : dict
+            Number of features -> list of subsets of features.
+
+        Returns
+        -------
+        pivots : numpy.ndarray
+        """
         res_data = []
         for combinations in subsequences_index.values():
             for combination in combinations:
@@ -260,6 +415,19 @@ class TabularShapelets(TransformerMixin):
         return self._run_kmeans_and_return_centroids(X=X_all)
 
     def _compute_n_features(self, X):
+        """
+        Range of the number of features of the pivots, from n_features_strategy.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+
+        Returns
+        -------
+        min_n_features : int
+        max_n_features : int
+            Excluded.
+        """
         max_n_features = X.shape[1]
         min_n_features = 1
         if type(self.n_features_strategy) is tuple and len(self.n_features_strategy) == 2:
@@ -277,6 +445,17 @@ class TabularShapelets(TransformerMixin):
         return min_n_features, max_n_features
 
     def __utils_auto_get_knee_point_value(self, values):
+        """
+        Index of the knee of a decreasing curve: the point farthest from the segment between its ends.
+
+        Parameters
+        ----------
+        values : numpy.ndarray
+
+        Returns
+        -------
+        index : int
+        """
         y = values
         x = np.arange(0, len(y))
 
@@ -290,6 +469,18 @@ class TabularShapelets(TransformerMixin):
         return index
 
     def __utils_auto_closest_point_on_segment(self, a, b, p):
+        """
+        Point of the line through a and b closest to p.
+
+        Parameters
+        ----------
+        a, b, p : list of float
+            Points (x, y).
+
+        Returns
+        -------
+        point : list of float
+        """
         sx1, sy1 = a[0], a[1]
         sx2, sy2 = b[0], b[1]
         px, py = p[0], p[1]
@@ -306,10 +497,44 @@ class TabularShapelets(TransformerMixin):
         return [cp_x, cp_y]
 
     def transform(self, X, y=None):
+        """
+        Distance of each instance from each partial pivot.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+        y : None
+            Not used.
+
+        Returns
+        -------
+        distances : numpy.ndarray of shape (n_samples, n_shapelets)
+        """
         return TabularShapelets._transform(X, y, self.n_jobs, self.shapelets, self.__get_distance())
 
     @classmethod
     def _transform(cls, X, y=None, n_jobs=1, shapelets=None, distance=euclidean, **transform_params):
+        """
+        Distance of each instance from each partial pivot, computed in parallel with numba.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+        y : None
+            Not used.
+        n_jobs : int, default=1
+            Number of threads.
+        shapelets : numpy.ndarray
+            Partial pivots.
+        distance : callable, default=euclidean
+            Distance function.
+        **transform_params : dict
+            Not used.
+
+        Returns
+        -------
+        distances : numpy.ndarray of shape (n_samples, n_shapelets)
+        """
         old_n_threads = numba.get_num_threads()
         numba.set_num_threads(n_jobs)
         dist_matrix = _compute_distance(X, shapelets, distance)
@@ -318,12 +543,39 @@ class TabularShapelets(TransformerMixin):
         return dist_matrix
 
     def _optimize_memory(self, selected_shapelet_idx:np.ndarray):
+        """
+        Keep only some partial pivots.
+
+        Parameters
+        ----------
+        selected_shapelet_idx : numpy.ndarray
+            Indices of the pivots to keep.
+
+        Returns
+        -------
+        done : bool
+            Always True.
+        """
         self.shapelets = self.shapelets[selected_shapelet_idx]
         return True
 
 
 @jit(parallel=True)
 def _compute_distance(X: np.ndarray, shapelets: np.ndarray, distance):
+    """
+    Distance of each row of X from each partial pivot, on the features of the pivot (numba).
+
+    Parameters
+    ----------
+    X : numpy.ndarray of shape (n_samples, n_features)
+    shapelets : numpy.ndarray of shape (n_shapelets, n_features)
+    distance : callable
+        Distance between a matrix and a vector.
+
+    Returns
+    -------
+    distances : numpy.ndarray of shape (n_samples, n_shapelets)
+    """
     res = np.ones((X.shape[0], shapelets.shape[0]), dtype=np.float32) * np.inf
 
     for idx, shapelet in enumerate(shapelets):
