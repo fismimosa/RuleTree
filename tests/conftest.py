@@ -23,4 +23,6 @@ def iris_mixed(iris):
     """Iris with petal length replaced by a categorical feature strongly related to the class."""
     X, y = iris
     color = np.where(X[:, 2] < 2.5, "red", np.where(X[:, 2] < 4.8, "green", "blue"))
-    return np.column_stack([color, X[:, :2]]).astype(object), y
+    X_mixed = np.empty((len(y), 3), dtype=object)  # column_stack would turn the numbers into strings
+    X_mixed[:, 0], X_mixed[:, 1:] = color, X[:, :2]
+    return X_mixed, y
