@@ -63,12 +63,18 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
             Dictionary representation of the stump including all parameters
             needed to reconstruct it.
         """
+        if self.feature_original is None:
+            return {
+                "stump_type": self.__class__.__module__,
+                "args": self.kwargs,
+            }
+
         rule = self.get_rule(float_precision=None)
 
-        rule["stump_type"] = self.__class__.__name__
+        rule["stump_type"] = self.__class__.__module__
         rule["impurity"] = self.impurity
 
-        rule["args"] |= self.kwargs
+        rule["args"] = self.kwargs
 
         rule["split"] = {
             "args": {}
@@ -95,23 +101,18 @@ class DecisionTreeStumpRegressor(DecisionTreeRegressor, RuleTreeBaseStump):
         -------
         None
         """
-        self = cls()
+        self = cls(**copy.deepcopy(node_dict.get("args", {})))
 
         if 'feature_idx' in node_dict:
             self.feature_original = np.ones(3, dtype=int) * -2
             self.feature_original[0] = node_dict.get('feature_idx', -2)
 
-        self.threshold_original = None
         if 'threshold' in node_dict:
             self.threshold_original = np.ones(3) * -2
             self.threshold_original[0] = node_dict.get('threshold', -2)
 
-        self.is_categorical = node_dict.get('is_categorical', None)
-
-        args = copy.deepcopy(node_dict.get("args", {}))
-        self.kwargs = args
-
-        self.__set_impurity_fun(args["criterion"])
+        self.is_categorical = node_dict.get('is_categorical', False)
+        self.impurity = node_dict.get('impurity', np.nan)
 
         return self
 

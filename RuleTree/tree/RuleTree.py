@@ -783,20 +783,15 @@ class RuleTree(RuleTreeBase, ABC):
         """
         node_list = [self.root]
 
-        args = {
-            "max_leaf_nodes": self.max_leaf_nodes,
-            "min_samples_split": self.min_samples_split,
-            "max_depth": self.max_depth,
-            "prune_useless_leaves": self.prune_useless_leaves,
-            "stump_selection": self.stump_selection,
-            "random_state": self.random_state,
-            "base_stumps": [
-                (p, stump.node_to_dict()) for p, stump in self.base_stumps if isinstance(stump, RuleTreeBaseStump)
-            ]
-        }
+        # constructor parameters of the concrete class, so that from_dict can call its __init__
+        args = {k: v for k, v in self.get_params(deep=False).items() if k != "base_stumps"}
+        args["base_stumps"] = [
+            (p, stump.node_to_dict()) for p, stump in self.base_stumps if isinstance(stump, RuleTreeBaseStump)
+        ]
 
         dictionary = {
             "tree_type": self.__class__.__module__,
+            "tree_class": self.__class__.__name__,
             "args": args,
             "classes_": np.array(self.classes_).tolist(),
             "n_classes_": self.n_classes_,
@@ -834,7 +829,9 @@ class RuleTree(RuleTreeBase, ABC):
 
         assert 'tree_type' in dictionary
 
-        class_c = getattr(importlib.import_module(dictionary['tree_type']), dictionary['tree_type'].split('.')[-1])
+        # older dictionaries have no "tree_class": the class is named as its module
+        class_name = dictionary.get('tree_class', dictionary['tree_type'].split('.')[-1])
+        class_c = getattr(importlib.import_module(dictionary['tree_type']), class_name)
         tree = class_c(**dictionary.get('args', {}))
         tree.classes_ = dictionary.get('classes_', None)
         tree.n_classes_ = dictionary.get('n_classes_', None)

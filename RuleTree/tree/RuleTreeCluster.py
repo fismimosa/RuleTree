@@ -7,12 +7,14 @@ from sklearn import tree
 from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 
-from RuleTree import RuleTreeRegressor, RuleTreeClassifier
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
-from RuleTree.tree.RuleTree import RuleTree
-from RuleTree.tree.RuleTreeNode import RuleTreeNode
-from RuleTree.utils import bic, light_famd
+from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
+from RuleTree.tree.RuleTree import RuleTree
+from RuleTree.tree.RuleTreeClassifier import RuleTreeClassifier
+from RuleTree.tree.RuleTreeNode import RuleTreeNode
+from RuleTree.tree.RuleTreeRegressor import RuleTreeRegressor
+from RuleTree.utils import bic, light_famd
 
 
 class RuleTreeCluster(RuleTree, ClusterMixin):
@@ -198,8 +200,8 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         n_components_split = min(self.n_components, len(idx))
 
         dtypes = pd.DataFrame(X).infer_objects().dtypes
-        numerical = dtypes[dtypes != np.dtype('O')].index
-        categorical = dtypes[dtypes == np.dtype('O')].index
+        numerical = [i for i, dtype in enumerate(dtypes) if pd.api.types.is_numeric_dtype(dtype)]
+        categorical = [i for i, dtype in enumerate(dtypes) if not pd.api.types.is_numeric_dtype(dtype)]
 
         if len(categorical) == 0:  # all continuous
             principal_transform = light_famd.PCA(n_components=n_components_split, random_state=self.random_state)
@@ -217,29 +219,35 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         for i in range(n_components_split):
             clf = self._get_random_stump(y_pca)
 
-            clf.fit(
-                X=X,
-                y=y_pca_all[:, i],
-                idx=idx,
-                context=self
-            )
+            try:
+                clf.fit(
+                    X=X,
+                    y=y_pca_all[:, i],
+                    idx=idx,
+                    context=self
+                )
+            except NoSplitFoundWarning:
+                continue
+
+            labels = clf.apply(X[idx]).astype(int)
             if self.clus_impurity == 'r2':
-                score = -1 * r2_score(clf.apply(X[idx]), y_pca[:, i])
+                # fraction of the variance of the i-th component explained by the split
+                component = y_pca[:, i]
+                component_pred = np.zeros_like(component)
+                for label in np.unique(labels):
+                    component_pred[labels == label] = component[labels == label].mean()
+                score = -1 * r2_score(component, component_pred)
             else:
-                labels_i = clf.apply(X[idx]).astype(int)
-                score = bic(X[idx], (np.array(labels_i) - 1).tolist())
+                score = bic(X[idx], (labels - 1).tolist())
 
             if score < best_score:
                 best_score = score
                 best_clf = clf
 
-        return best_clf
+        if best_clf is None:
+            raise NoSplitFoundWarning(f"No split found on any of the {n_components_split} components")
 
-    def fit(self, X: np.array = None, y: np.array = None,
-            X_ts=None, X_img=None, X_txt=None, **kwargs):
-        super().fit(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, **kwargs)
-        self._post_fit_fix()
-        return self
+        return best_clf
 
 
     def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
@@ -261,10 +269,13 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         """
         pass
         
-    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Prepare a new node in the tree.
-        
+
+        The node id is used as cluster label during fit, and it is replaced by an integer label in
+        :meth:`_post_fit_fix`.
+
         Parameters
         ----------
         y : ndarray
@@ -273,12 +284,19 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
             Indices of samples in the node.
         node_id : str
             Unique identifier for the node.
-            
+        node : RuleTreeNode, default=None
+            Existing node to update instead of creating a new one.
+
         Returns
         -------
         RuleTreeNode
             A new node initialized with the given parameters.
         """
+        if node is not None:
+            node.prediction = node.node_id
+            node.samples = len(idx)
+            return node
+
         return RuleTreeNode(
             node_id=node_id,
             prediction=node_id,
@@ -297,31 +315,30 @@ class RuleTreeCluster(RuleTree, ClusterMixin):
         """
         Perform post-fitting operations.
 
-        Converts string labels to integers for more efficient processing.
+        Replaces the node ids used as cluster labels during fit with integer labels, assigned in
+        breadth-first order ('R' -> 0, 'Rl' -> 1, 'Rr' -> 2, ...). Labels are recomputed from the
+        node ids, so calling this method more than once is safe.
         """
-        possible_labels, inner_nodes = self.root.get_possible_outputs()
-        all_outputs = np.array(list(possible_labels) + list(inner_nodes))
-        if np.issubdtype(all_outputs.dtype, np.object_) and not hasattr(self, 'label_encoder'):
-            all_outputs = sorted(all_outputs, key=lambda x: (len(x), x))
-            self.label_encoder = {k: all_outputs.index(k) for k in set(all_outputs)}
-            self.__labels_obj_to_int(self.root)
+        node_ids = list(self.root.get_predicates()) + list(self.root.get_leaf_nodes())
+        self.label_encoder = {node_id: i for i, node_id in enumerate(sorted(node_ids, key=lambda x: (len(x), x)))}
+        self._labels_to_int(self.root)
 
-    def __labels_obj_to_int(self, node: RuleTreeNode):
+    def _labels_to_int(self, node: RuleTreeNode):
         """
-        Convert node labels from objects to integers recursively.
-        
+        Convert node labels to integers recursively.
+
         Parameters
         ----------
         node : RuleTreeNode
             The current node to process.
         """
-        node.prediction = self.label_encoder[node.prediction]
+        node.prediction = self.label_encoder[node.node_id]
 
         if node.is_leaf():
             return
 
-        self.__labels_obj_to_int(node.node_l)
-        self.__labels_obj_to_int(node.node_r)
+        self._labels_to_int(node.node_l)
+        self._labels_to_int(node.node_r)
 
     def _get_stumps_base_class(self):
         """
@@ -357,10 +374,10 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
     
     See RuleTreeCluster for the full list of parameters.
     """
-    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str) -> RuleTreeNode:
+    def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Prepare a new classification node in the tree.
-        
+
         Parameters
         ----------
         y : ndarray
@@ -369,38 +386,38 @@ class RuleTreeClusterClassifier(RuleTreeCluster, ClassifierMixin):
             Indices of samples in the node.
         node_id : str
             Unique identifier for the node.
-            
+        node : RuleTreeNode, default=None
+            Existing node to update instead of creating a new one.
+
         Returns
         -------
         RuleTreeNode
             A new node initialized with classification parameters.
         """
-        return RuleTreeClassifier.prepare_node(self, y, idx, node_id)
+        return RuleTreeClassifier.prepare_node(self, y, idx, node_id, node)
 
     def _post_fit_fix(self):
         """
         Perform post-fitting operations for classification.
-        
-        For classification, no additional post-processing is needed.
+
+        Nodes already predict class labels, so no post-processing is needed.
         """
 
-    def _predict(self, X: np.ndarray, current_node: RuleTreeNode):
+    def predict_proba(self, X: np.ndarray):
         """
-        Predict class label for X using the trained classification tree.
-        
+        Predict class probabilities for the input data.
+
         Parameters
         ----------
         X : ndarray of shape (n_samples, n_features)
             Input data.
-        current_node : RuleTreeNode
-            Current node in the tree traversal.
-            
+
         Returns
         -------
-        ndarray
-            Predicted class labels.
+        ndarray of shape (n_samples, n_classes)
+            Class probabilities of the leaf reached by each sample.
         """
-        return RuleTreeClassifier._predict(self, X, current_node)
+        return RuleTreeClassifier.predict_proba(self, X)
 
 
 class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
@@ -424,17 +441,19 @@ class RuleTreeClusterRegressor(RuleTreeCluster, RegressorMixin):
             Indices of samples in the node.
         node_id : str
             Unique identifier for the node.
-            
+        node : RuleTreeNode, default=None
+            Existing node to update instead of creating a new one.
+
         Returns
         -------
         RuleTreeNode
             A new node initialized with regression parameters.
         """
-        return RuleTreeRegressor.prepare_node(self, y, idx, node_id)
+        return RuleTreeRegressor.prepare_node(self, y, idx, node_id, node)
 
     def _post_fit_fix(self):
-        possible_labels, inner_nodes = self.root.get_possible_outputs()
-        all_outputs = list(possible_labels) + list(inner_nodes)
-        if type(next(iter(all_outputs))) is str and not hasattr(self, 'label_encoder'):
-            self.label_encoder = {k: all_outputs.index(k) for k in set(all_outputs)}
-            self.__labels_obj_to_int(self.root)
+        """
+        Perform post-fitting operations for regression.
+
+        Nodes already predict the mean target value, so no post-processing is needed.
+        """
