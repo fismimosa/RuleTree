@@ -10,20 +10,51 @@ from RuleTree.utils.tree_utils import xgboost_cover_regression, xgboost_similari
 
 class XGBoostSplitter(RuleTreeBaseSplitter):
     """
-    Best split according to the XGBoost gain (regression): the split maximizing the sum of the
-    similarity scores of the children minus the one of the node.
+    Splitter for regression that maximizes the XGBoost gain: the similarity scores of the two
+    children minus the one of the node, where the target are the residuals of the previous trees.
 
     Parameters
     ----------
     lam : float
-        L2 regularization of the similarity scores.
+        L2 regularization of the leaf values: the similarity score of a node is
+        ``sum(residuals) ** 2 / (n + lam)``.
     approximation : {None, 'quantile'}, default=None
-        With 'quantile', at most n_quantiles thresholds are tested for each numerical feature.
+        With 'quantile', only ``n_quantiles`` thresholds (quantiles) are tested on each numerical
+        feature, instead of all the values.
     n_quantiles : int, default=32
+        Number of thresholds tested with approximation='quantile'.
     min_cover : float, default=1
         Minimum cover (number of instances) of each child.
     n_jobs : int, default=1
         Not used.
+
+    Attributes
+    ----------
+    feature_ : int
+        Column of the feature matrix used by the split.
+    threshold_ : float
+        Threshold of the split.
+    is_categorical_ : bool
+        Whether the split is categorical.
+    gain_ : float
+        XGBoost gain of the split.
+    impurity_ : list of float or None
+        Not computed (None).
+    root_similarity, similarity_l, similarity_r : float
+        Similarity scores of the node and of the two children.
+
+    See Also
+    --------
+    XGBoostStumpRegressor : the stump made of a MatrixTransformer and this splitter.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree.stumps.splitters import XGBoostSplitter
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> splitter = XGBoostSplitter(lam=1).fit(X, y - y.mean(), numerical=list(range(10)), categorical=[])
+    >>> splitter.feature_
+    8
     """
 
     task = MODEL_TYPE_REG

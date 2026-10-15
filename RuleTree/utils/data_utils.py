@@ -503,9 +503,17 @@ def select_stumps(node, p=0.2, selected_stumps=None):
 class json_numpy_encoder(json.JSONEncoder):
     """
     JSON encoder that handles NumPy data types.
-    
+
     This class extends the standard JSON encoder to properly serialize
     NumPy integers, floats, and arrays to their Python equivalents.
+
+    Examples
+    --------
+    >>> import json
+    >>> import numpy as np
+    >>> from RuleTree.utils.data_utils import json_numpy_encoder
+    >>> json.dumps({"a": np.arange(3), "b": np.float32(0.5)}, cls=json_numpy_encoder)
+    '{"a": [0, 1, 2], "b": 0.5}'
     """
     def default(self, obj):
         """

@@ -40,6 +40,26 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
         warning.
     **kwargs : dict
         Other parameters of RuleTreeRegressor.
+
+    Attributes
+    ----------
+    root : RuleTreeNode
+        Root of the fitted tree; the ``prediction`` of each leaf is its XGBoost value.
+
+    See Also
+    --------
+    RuleTree.ensemble.XGBoostRegressor.XGBoostRegressor : the boosting of these trees.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree.stumps.regression import XGBoostStumpRegressor
+    >>> from RuleTree.tree.RuleTreeXGBoostRegressor import RuleTreeXGBoostRegressor
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> tree = RuleTreeXGBoostRegressor(max_depth=2, lam=1, base_stumps=XGBoostStumpRegressor(lam=1))
+    >>> tree = tree.fit(X, y - y.mean())  # residuals of the mean
+    >>> tree.get_rules()["textual_rule"]
+    'X_8 <= -0.004'
     """
     def __init__(self, gamma=0, lam=1, max_depth=6, min_cover=1, n_jobs=1, base_stumps=None, **kwargs):
         """Initialize the RuleTreeXGBoostRegressor; see the class documentation for the parameters."""

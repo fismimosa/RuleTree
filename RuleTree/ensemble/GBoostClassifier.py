@@ -51,10 +51,25 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
     estimators_ : list of list
         For each class, the fitted estimators with the value of each of their leaves.
 
+    See Also
+    --------
+    GBoostRegressor : the same boosting for regression.
+
     Notes
     -----
     predict maps the index of the predicted class with ``classes_.index``: it returns the right
     class only when the classes are 0, ..., n_classes - 1.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_breast_cancer
+    >>> from RuleTree import RuleTreeRegressor
+    >>> from RuleTree.ensemble.GBoostClassifier import GBoostClassifier
+    >>> X, y = load_breast_cancer(return_X_y=True)
+    >>> model = GBoostClassifier(base_estimator=RuleTreeRegressor(max_depth=2, random_state=0),
+    ...                          n_estimators=10, n_jobs=1, random_state=0).fit(X, y)
+    >>> round(model.score(X, y), 3)
+    0.919
     """
     def __init__(self, base_estimator=RuleTreeRegressor(max_depth=4), n_estimators=100, learning_rate=.1,
                  loss='squared_loss', patience=5, val_size=.15, n_jobs=cpu_count(), random_state=42):

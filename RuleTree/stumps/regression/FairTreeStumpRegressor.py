@@ -12,50 +12,76 @@ from RuleTree.utils.define import DATA_TYPE_TABULAR
 
 class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
     """
-    Fair Decision Tree Stump Regressor that enforces fairness constraints during training.
+    Fair stump for regression: the threshold on a numerical feature with the highest gain, penalized
+    by how unfair the split is with respect to a sensitive attribute.
 
-    This class extends DecisionTreeStumpRegressor by introducing fairness constraints during the
-    learning process. It can enforce balancing, maximum fairness cost, or privacy-related
-    constraints (k-anonymity, l-diversity, t-closeness) with respect to a sensitive attribute.
+    The sensitive attribute is a column of the data (``sensible_attribute``), never used by the
+    splits. The fairness criterion (``penalty``) is statistical parity of the children, a maximum
+    fairness cost with respect to an ideal distribution, or privacy constraints (k-anonymity,
+    l-diversity, t-closeness). It is a :class:`~RuleTree.stumps.Stump.Stump` made of a
+    MatrixTransformer and a FairSplitter; it supports only tabular data.
 
     Parameters
     ----------
-    penalty : str, default=None
-        Type of fairness constraint to apply. Options are:
-        - "balance": Enforce statistical parity (equal representation)
-        - "mfc": Maximum Fairness Cost according to ideal distribution
-        - "privacy": Enforce privacy constraints (k-anonymity, l-diversity, t-closeness)
-        - None: No fairness constraints (equivalent to standard DecisionTreeStumpRegressor)
+    penalty : {'balance', 'mfc', 'privacy'}, default=None
+        Fairness criterion, which penalizes the gain of the splits:
 
+        - 'balance': the children should have the same distribution of the sensitive attribute
+          (statistical parity);
+        - 'mfc': maximum fairness cost with respect to ``ideal_distribution``;
+        - 'privacy': the children must satisfy k-anonymity, l-diversity and t-closeness on the
+          sensitive attribute (with ``strict=True``, the splits that violate them are discarded).
     sensible_attribute : int, default=-1
-        The index of the column in X containing the sensitive/protected attribute.
-
+        Column of the data with the sensitive attribute. It is never used by the splits.
     penalization_weight : float, default=0.3
-        Weight of the fairness penalty term. Higher values enforce stronger fairness.
-
+        Weight of the penalty: the gain of a split is ``sigmoid(gain) * (1 - penalty * weight)``.
     ideal_distribution : dict, default=None
-        Required when penalty="mfc". Dictionary specifying the ideal distribution for different groups.
-
+        Value of the sensitive attribute -> ideal fraction, required by penalty='mfc'.
     k_anonymity : int or float, default=2
-        Minimum group size for k-anonymity (used when penalty="privacy").
-
+        Minimum number of instances in each child (penalty='privacy').
     l_diversity : int or float, default=2
-        Minimum distinct values required for l-diversity (used when penalty="privacy").
-
+        Minimum number of distinct values of the sensitive attribute in each child
+        (penalty='privacy').
     t_closeness : float, default=0.2
-        Maximum earth mover's distance allowed for t-closeness (used when penalty="privacy").
-
+        Maximum distance between the distribution of the sensitive attribute in a child and in the
+        node (penalty='privacy').
     strict : bool, default=True
-        If True, strictly enforces privacy constraints; if False, uses penalization instead.
-
+        Whether the privacy constraints discard the splits that violate them, instead of only
+        penalizing them.
     use_t : bool, default=True
-        Whether to use t-closeness in privacy constraint calculations.
-
-    n_jobs : int, default=psutil.cpu_count(logical=False)
-        Number of CPU cores to use for parallel processing.
-
-    criterion : str or callable, default='squared_error'
+        Whether t-closeness is part of the privacy constraints.
+    n_jobs : int, default=number of physical CPUs
+        Number of processes used to evaluate the features.
+    criterion : {'squared_error', 'absolute_error', 'poisson'} or callable, default='squared_error'
         Impurity measure (see RegressionSplitter).
+
+    Attributes
+    ----------
+    transformer_ : MatrixTransformer
+        The fitted transformer.
+    splitter_ : FairSplitter
+        The fitted splitter (feature, threshold, gain and impurity of the split).
+    data_type_ : str
+        Data type the stump was fitted on.
+    feature_original : int
+        Column of the data used by the split.
+    threshold_original : float
+        Threshold of the split.
+
+    See Also
+    --------
+    FairSplitter : the splitter, usable with other transformers (e.g. pivots).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree.stumps.regression import FairTreeStumpRegressor
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> X = np.column_stack([X, X[:, 1] > 0])  # last column: the sensitive attribute
+    >>> stump = FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1, n_jobs=1).fit(X, y)
+    >>> stump.get_rule()["textual_rule"]
+    'X_4 <= -0.03'
     """
 
     # sensible_attribute is a column of the tabular data

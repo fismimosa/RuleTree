@@ -16,35 +16,76 @@ from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, p
 
 class FairSplitter(RuleTreeBaseSplitter):
     """
-    Best regression split under a fairness constraint on a sensitive attribute.
+    Splitter for regression that maximizes the gain penalized by the unfairness of the split with
+    respect to a sensitive attribute.
+
+    Each threshold of each numerical feature (the sensitive attribute excluded) is tested; its gain is
+    ``sigmoid(gain) * (1 - penalty * penalization_weight)``, where the penalty measures how unfair the
+    children are. The features are evaluated in parallel processes (``n_jobs``).
 
     Parameters
     ----------
-    penalty : str, default=None
-        Type of fairness constraint to apply:
-        - "balance": Enforce statistical parity (equal representation)
-        - "mfc": Maximum Fairness Cost according to ideal distribution
-        - "privacy": Enforce privacy constraints (k-anonymity, l-diversity, t-closeness)
+    penalty : {'balance', 'mfc', 'privacy'}, default=None
+        Fairness criterion, which penalizes the gain of the splits:
+
+        - 'balance': the children should have the same distribution of the sensitive attribute
+          (statistical parity);
+        - 'mfc': maximum fairness cost with respect to ``ideal_distribution``;
+        - 'privacy': the children must satisfy k-anonymity, l-diversity and t-closeness on the
+          sensitive attribute (with ``strict=True``, the splits that violate them are discarded).
     sensible_attribute : int, default=-1
-        The index of the column containing the sensitive/protected attribute.
+        Column of the data with the sensitive attribute. It is never used by the splits.
     penalization_weight : float, default=0.3
-        Weight of the fairness penalty term. Higher values enforce stronger fairness.
+        Weight of the penalty: the gain of a split is ``sigmoid(gain) * (1 - penalty * weight)``.
     ideal_distribution : dict, default=None
-        Required when penalty="mfc". Ideal distribution for the different groups.
+        Value of the sensitive attribute -> ideal fraction, required by penalty='mfc'.
     k_anonymity : int or float, default=2
-        Minimum group size for k-anonymity (used when penalty="privacy").
+        Minimum number of instances in each child (penalty='privacy').
     l_diversity : int or float, default=2
-        Minimum distinct values required for l-diversity (used when penalty="privacy").
+        Minimum number of distinct values of the sensitive attribute in each child
+        (penalty='privacy').
     t_closeness : float, default=0.2
-        Maximum earth mover's distance allowed for t-closeness (used when penalty="privacy").
+        Maximum distance between the distribution of the sensitive attribute in a child and in the
+        node (penalty='privacy').
     strict : bool, default=True
-        If True, strictly enforces privacy constraints; if False, uses penalization instead.
+        Whether the privacy constraints discard the splits that violate them, instead of only
+        penalizing them.
     use_t : bool, default=True
-        Whether to use t-closeness in privacy constraint calculations.
-    n_jobs : int, default=psutil.cpu_count(logical=False)
-        Number of processes used to evaluate the thresholds.
-    criterion : str or callable, default='squared_error'
+        Whether t-closeness is part of the privacy constraints.
+    n_jobs : int, default=number of physical CPUs
+        Number of processes used to evaluate the features.
+    criterion : {'squared_error', 'absolute_error', 'poisson'} or callable, default='squared_error'
         Impurity measure (see RegressionSplitter).
+
+    Attributes
+    ----------
+    feature_ : int
+        Column of the feature matrix used by the split.
+    threshold_ : float
+        Threshold of the split.
+    is_categorical_ : bool
+        Whether the split is categorical.
+    gain_ : float
+        Penalized gain of the split.
+    impurity_ : list of float or None
+        Impurity of the node, of the left child and of the right child.
+
+    See Also
+    --------
+    FairTreeStumpRegressor : the stump made of a MatrixTransformer and this splitter.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree import RuleTreeRegressor
+    >>> from RuleTree.stumps.Stump import Stump
+    >>> from RuleTree.stumps.splitters import FairSplitter
+    >>> from RuleTree.stumps.transformers import MatrixTransformer
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> X = np.column_stack([X, X[:, 1] > 0])  # last column: the sensitive attribute
+    >>> splitter = FairSplitter(penalty="balance", sensible_attribute=-1, n_jobs=1)
+    >>> model = RuleTreeRegressor(max_depth=2, base_stumps=Stump(MatrixTransformer(), splitter)).fit(X, y)
     """
 
     task = MODEL_TYPE_REG

@@ -32,6 +32,30 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
         Gain of the split: the stumps with the highest gain are chosen with stump_selection='best'.
     impurity_ : list of float or None
         Impurity of the node and of the two children, if computed.
+
+    See Also
+    --------
+    RuleTreeBaseGainSplitter : a simpler interface, where only the gain of a split is defined.
+    RuleTree.stumps.Stump.Stump : the stump that combines a transformer and a splitter.
+
+    Examples
+    --------
+    A splitter that splits the first numerical feature at its median (see :doc:`/guides/extending`):
+
+    >>> import numpy as np
+    >>> from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
+    >>> from RuleTree.utils.define import MODEL_TYPE_REG
+    >>> class MedianSplitter(RuleTreeBaseSplitter):
+    ...     task = MODEL_TYPE_REG
+    ...
+    ...     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+    ...         self.feature_ = numerical[0]
+    ...         self.threshold_ = float(np.median(X[:, self.feature_]))
+    ...         self.is_categorical_, self.gain_, self.impurity_ = False, 0.0, None
+    ...         return self
+    >>> X = np.array([[1.0], [2.0], [3.0], [4.0]])
+    >>> MedianSplitter().fit(X, None, numerical=[0], categorical=[]).apply(X)
+    array([1, 1, 2, 2])
     """
 
     # MODEL_TYPE_CLF or MODEL_TYPE_REG: the kind of target the splitter works with

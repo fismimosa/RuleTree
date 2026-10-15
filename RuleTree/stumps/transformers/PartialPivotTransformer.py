@@ -13,14 +13,61 @@ from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
 
 class PartialPivotTransformer(RuleTreeBaseTransformer):
     """
-    Distances of the instances from partial pivots: instances of the node restricted to subsets of
-    the features (see TabularShapelets for the parameters). After select, only the chosen partial
-    pivot is kept.
+    Transformer of tabular data into the distances from partial pivots, instances of the node
+    restricted to subsets of the features.
+
+    The distance from a partial pivot is computed only on its features. After the splitter has chosen
+    a column, only the chosen pivot is kept (``select``), and the splitter is fitted again on its
+    distances (``refit_after_select``).
 
     Parameters
     ----------
+    n_shapelets : int or numpy.inf, default=2 * number of physical CPUs
+        Number of partial pivots selected at each node (numpy.inf with selection='all').
+    n_ts_for_selection : int, float or numpy.inf, default=100
+        Number (int) or fraction (float) of the instances of the node used to select the pivots.
+    n_features_strategy : int, float, tuple or str, default=2
+        Number of features of each partial pivot: an int, a fraction of the features (float), a range
+        ``(min, max)``, or chosen from the feature importances of a random forest ('elbow', 'drop',
+        'new') or iteratively with depth-1 trees ('iterative').
+    selection : {'random', 'cluster', 'all'}, default='random'
+        How the pivots are selected among the candidates: at random, the instances closest to the
+        k-means centroids, or all of them.
+    distance : {'euclidean', 'sqeuclidean', 'cosine', 'cityblock'} or callable, default='euclidean'
+        Distance between an instance and a partial pivot, on the features of the pivot.
     scaler : TransformerMixin, default=None
-        Scaler applied to the data before computing the distances, fitted on the whole data set.
+        Scaler applied to the data before computing the distances, fitted on the whole data set. A
+        tree with a fitted scaler cannot be saved with ``to_dict``.
+    use_combination : bool, default=True
+        With the strategies based on feature importances, whether to use all the combinations of the
+        important features or only the set of all of them.
+    random_state : int, default=42
+        Seed of the random choices.
+    n_jobs : int, default=1
+        Number of threads used to compute the distances (-1: all the CPUs).
+
+    Attributes
+    ----------
+    numerical_ : list of int
+        Numerical columns of the feature matrix.
+    categorical_ : list of int
+        Categorical columns of the feature matrix.
+    st_ : TabularShapelets
+        The fitted transform, with the partial pivots.
+    scaler_ : TransformerMixin or None
+        The fitted ``scaler``.
+
+    See Also
+    --------
+    PartialPivotTreeStumpClassifier : the stump that uses it.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_iris
+    >>> from RuleTree.stumps.transformers import PartialPivotTransformer
+    >>> X, y = load_iris(return_X_y=True)
+    >>> PartialPivotTransformer(n_shapelets=4, random_state=0).fit(X, y).transform(X).shape
+    (150, 4)
     """
 
     supported_data_types = (DATA_TYPE_TABULAR,)

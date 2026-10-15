@@ -221,7 +221,21 @@ def score(X, n_components, labels):
 
 
 def get_n_parameters(X, n_components):
-    """Return the number of free parameters in the model."""
+    """
+    Number of free parameters of a Gaussian mixture with full covariance matrices.
+
+    Parameters
+    ----------
+    X : numpy.ndarray of shape (n_samples, n_features)
+        Data.
+    n_components : int
+        Number of components (clusters).
+
+    Returns
+    -------
+    n_parameters : int
+        Parameters of the covariances, of the means and of the weights.
+    """
     n_features = X.shape[1]
     cov_params = n_components * n_features * (n_features + 1) / 2.0
     mean_params = n_features * n_components

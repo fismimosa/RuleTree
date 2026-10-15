@@ -21,6 +21,30 @@ class XGBoostRegressor(GBoostRegressor):
         Shrinkage of the contribution of each tree.
     **kwargs : dict
         Other parameters of GBoostRegressor.
+
+    Attributes
+    ----------
+    base_prediction_ : float
+        Initial prediction (mean of the target).
+    estimators_ : list of RuleTreeXGBoostRegressor
+        Fitted trees.
+
+    See Also
+    --------
+    RuleTree.tree.RuleTreeXGBoostRegressor.RuleTreeXGBoostRegressor : the base tree.
+    GBoostRegressor : the same boosting with any RuleTreeRegressor.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree.ensemble.XGBoostRegressor import XGBoostRegressor
+    >>> from RuleTree.stumps.regression import XGBoostStumpRegressor
+    >>> from RuleTree.tree.RuleTreeXGBoostRegressor import RuleTreeXGBoostRegressor
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> tree = RuleTreeXGBoostRegressor(max_depth=2, lam=1, base_stumps=XGBoostStumpRegressor(lam=1))
+    >>> model = XGBoostRegressor(base_estimator=tree, n_estimators=10).fit(X, y)
+    >>> round(model.score(X, y), 3)
+    0.569
     """
     def __init__(self, base_estimator=None, learning_rate=.3, **kwargs):
         """Initialize the XGBoostRegressor; see the class documentation for the parameters."""

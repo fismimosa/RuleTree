@@ -18,22 +18,44 @@ class Stump(RuleTreeBaseStump):
     Stump made of a transformer and a splitter: the transformer turns the data of one type into a
     feature matrix, the splitter finds the best split of that matrix.
 
-    The stumps of the library (DecisionTreeStumpClassifier, PivotTreeStumpClassifier, ...) are
-    subclasses that build the two components from their own parameters (see _make_transformer and
-    _make_splitter). A Stump can also be built directly, to combine any transformer and splitter, e.g.
-    ``Stump(PivotTransformer(MODEL_TYPE_REG), FairSplitter(penalty="balance"))``.
-
-    The data types supported by the stump are the ones of the transformer, and its task
-    (classification or regression) is the one of the splitter.
+    Any transformer can be combined with any splitter. The data types supported by the stump are the
+    ones of the transformer, and its task (classification or regression) is the one of the splitter.
+    The stumps of the library are subclasses that build the two components from their own parameters
+    (``_make_transformer`` and ``_make_splitter``); see :doc:`/guides/extending` to write new ones.
 
     Parameters
     ----------
-    transformer : RuleTreeBaseTransformer
-    splitter : RuleTreeBaseSplitter
+    transformer : RuleTreeBaseTransformer, default=None
+        Transformer of the data into a feature matrix; it is cloned at each fit.
+    splitter : RuleTreeBaseSplitter, default=None
+        Splitter of the feature matrix; it is cloned at each fit.
 
     Attributes
     ----------
-    transformer_, splitter_ : the fitted copies of the components.
+    transformer_ : RuleTreeBaseTransformer
+        The fitted transformer.
+    splitter_ : RuleTreeBaseSplitter
+        The fitted splitter (feature, threshold, gain and impurity of the split).
+    data_type_ : str
+        Data type the stump was fitted on.
+    feature_original : int or str
+        Feature of the split, as identified by the transformer: a column of the data, a pivot, ...
+    threshold_original : float or object
+        Threshold of a numerical split, or value of a categorical split.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree import RuleTreeRegressor
+    >>> from RuleTree.stumps.Stump import Stump
+    >>> from RuleTree.stumps.splitters import FairSplitter, RegressionSplitter
+    >>> from RuleTree.stumps.transformers import MatrixTransformer, PivotTransformer
+    >>> from RuleTree.utils.define import MODEL_TYPE_REG
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> stump = Stump(PivotTransformer(MODEL_TYPE_REG), RegressionSplitter())
+    >>> stump.task, stump.supported_data_types
+    ('reg', ('tabular',))
+    >>> model = RuleTreeRegressor(max_depth=2, base_stumps=stump).fit(X[:100], y[:100])
     """
 
     def __init__(self, transformer=None, splitter=None):
@@ -223,8 +245,22 @@ class Stump(RuleTreeBaseStump):
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
-        Rule of the split, e.g. ``X_2 <= 4.5``, with the feature named after the transformer's feature id.
-        Subclasses with a specific representation of the rules override it.
+        Rule of the split, e.g. ``X_2 <= 4.5``: the feature is named after the transformer's feature id.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the columns of the tabular data, used for the features that are columns.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the threshold is also given in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the threshold; None for no rounding.
+
+        Returns
+        -------
+        rule : dict
+            The textual, blob and Graphviz forms of the condition of the left child and of its negation
+            (see :meth:`RuleTreeBaseStump.get_rule`).
         """
         from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
@@ -253,7 +289,19 @@ class Stump(RuleTreeBaseStump):
 
     @classmethod
     def dict_to_node(cls, node_dict):
-        """Create a stump from a dictionary created by node_to_dict."""
+        """
+        Create a stump from a dictionary created by :meth:`node_to_dict`.
+
+        Parameters
+        ----------
+        node_dict : dict
+            Dictionary representation of the stump.
+
+        Returns
+        -------
+        stump : Stump
+            The stump, fitted if it was fitted when saved.
+        """
         self = cls(**_params_from_dict(node_dict["args"]))
         if "splitter" in node_dict:
             self.data_type_ = node_dict["data_type"]

@@ -46,6 +46,18 @@ class RuleTreeNode:
         Medoids of the node, if computed.
     balance_score : float
         For internal nodes, fraction of the training set in the smaller side of the split.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_iris
+    >>> from RuleTree import RuleTreeClassifier
+    >>> X, y = load_iris(return_X_y=True)
+    >>> model = RuleTreeClassifier(max_depth=2, random_state=0).fit(X, y)
+    >>> node = model.get_node_by_id("Rr")
+    >>> node.get_depth(), node.samples, node.is_leaf()
+    (1, 100, False)
+    >>> node.stump.get_rule()["textual_rule"], node.node_l.node_id
+    ('X_3 <= 1.75', 'Rrl')
     """
 
     def __init__(self,

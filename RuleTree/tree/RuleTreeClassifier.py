@@ -53,6 +53,16 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         Number of classes.
     root : RuleTreeNode
         Root of the fitted tree.
+    candidate_splits_ : list of tuple
+        ``(probability, stump, data_type)``: the stumps usable on the training data, with the
+        data type they are used on.
+    cache_ : dict
+        Values cached by the stumps during fit (see :meth:`get_cache`).
+
+    See Also
+    --------
+    RuleTreeRegressor : the same tree for regression.
+    RuleTree.stumps.classification : the stumps for classification.
 
     Examples
     --------

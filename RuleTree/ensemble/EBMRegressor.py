@@ -43,6 +43,23 @@ class EBMRegressor(RegressorMixin, RuleTreeBase):
         Initial prediction (0).
     estimators_ : dict
         Feature or pair of features -> list of fitted estimators.
+
+    See Also
+    --------
+    GBoostRegressor : a boosting of trees on all the features.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree import RuleTreeRegressor
+    >>> from RuleTree.ensemble.EBMRegressor import EBMRegressor
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> model = EBMRegressor(base_estimator=RuleTreeRegressor(max_depth=1, random_state=0),
+    ...                      n_iterations=5, learning_rate=0.1, random_state=0).fit(X, y)
+    >>> len(model.estimators_)  # 10 features and 45 pairs of features
+    55
+    >>> len(model.estimators_[(0, 1)])  # trees on the pair of features 0 and 1
+    5
     """
     def __init__(self, n_iterations=100, base_estimator=RuleTreeRegressor(max_depth=6, random_state=42),
                  learning_rate=0.04, val_size=.15, patience=5, n_jobs=1, random_state=42):

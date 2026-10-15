@@ -11,8 +11,59 @@ from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
 
 class ShapeletTransformer(RuleTreeBaseTransformer):
     """
-    Distances of the time series from shapelets selected among the subsequences of the time series
-    in the node (see Shapelets for the parameters).
+    Transformer of time series into their distances from shapelets, subsequences selected among the
+    ones of the time series in the node.
+
+    The distance of a time series from a shapelet is the smallest distance between the shapelet and
+    the subsequences of the series of the same length. After the splitter has chosen a column, only
+    the chosen shapelet is kept (``select``).
+
+    Parameters
+    ----------
+    n_shapelets : int, default=2 * number of physical CPUs
+        Number of shapelets selected at each node.
+    n_shapelets_for_selection : int, numpy.inf or 'stratified', default=500
+        Number of candidate subsequences extracted from the time series, among which the shapelets
+        are selected. 'stratified' draws them according to the class distribution.
+    n_ts_for_selection_per_class : int or numpy.inf, default=100
+        Number of time series of each class from which the candidates are extracted.
+    sliding_window : int, default=50
+        Length of the shapelets.
+    selection : {'random', 'mi_clf', 'mi_reg', 'cluster'}, default='mi_clf'
+        How the shapelets are selected among the candidates: at random, by mutual information with
+        the target, or as the medoids of a k-medoids clustering (requires scikit-learn-extra).
+    distance : {'euclidean', 'sqeuclidean', 'cosine', 'cityblock'} or callable, default='euclidean'
+        Distance between a shapelet and a subsequence; the distance of a time series from a shapelet
+        is the minimum over the positions of the shapelet.
+    mi_n_neighbors : int, default=100
+        Number of neighbors used to estimate the mutual information.
+    random_state : int, default=42
+        Seed of the random choices of the candidates and of the shapelets.
+    n_jobs : int, default=1
+        Number of threads used to compute the distances (-1: all the CPUs).
+
+    Attributes
+    ----------
+    numerical_ : list of int
+        Numerical columns of the feature matrix.
+    categorical_ : list of int
+        Categorical columns of the feature matrix.
+    st_ : Shapelets
+        The fitted shapelet transform, with the selected shapelets.
+
+    See Also
+    --------
+    ShapeletTreeStumpClassifier, ShapeletTreeStumpRegressor : the stumps that use it.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from RuleTree.stumps.transformers import ShapeletTransformer
+    >>> rng = np.random.default_rng(0)
+    >>> X_ts, y = rng.normal(size=(20, 1, 30)), rng.integers(0, 2, size=20)
+    >>> transformer = ShapeletTransformer(n_shapelets=3, sliding_window=5, selection="random").fit(X_ts, y)
+    >>> transformer.transform(X_ts).shape
+    (20, 3)
     """
 
     supported_data_types = (DATA_TYPE_TS,)

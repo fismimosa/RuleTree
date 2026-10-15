@@ -12,20 +12,66 @@ from RuleTree.utils.define import MODEL_TYPE_CLF
 
 class PivotTransformer(RuleTreeBaseTransformer):
     """
-    Distances of the instances from candidate pivots: instances of the node that describe a class
-    (medoids) or discriminate between classes, selected by PivotSplit on the numerical features.
-    After select, only the chosen pivot is kept.
+    Transformer into the distances from candidate pivots, instances of the node that describe a
+    class (medoids) or separate the classes.
+
+    The candidates are selected by :class:`~RuleTree.stumps.splitters.PivotSplit.PivotSplit` on the
+    standardized numerical features; the scaler and the distance matrix of the whole data set are
+    computed once and cached in the tree. After the splitter has chosen a column, only the chosen pivot
+    is kept (``select``).
 
     Parameters
     ----------
-    ml_task : str, default=MODEL_TYPE_CLF
-        Task of the stump (MODEL_TYPE_CLF or MODEL_TYPE_REG), used to select the pivots.
+    ml_task : {MODEL_TYPE_CLF, MODEL_TYPE_REG}, default=MODEL_TYPE_CLF
+        Task of the stump, which determines how the pivots are selected.
     distance_measure : str or callable, default='euclidean'
-        Distance between the (standardized) instances, as in sklearn.metrics.pairwise_distances.
-    k, reg_contrast_lambda, reg_max_thresholds
-        Parameters of the pivot selection for regression (see PivotSplit).
+        Distance between the instances, computed on the standardized numerical features: any metric
+        of ``sklearn.metrics.pairwise_distances``.
+    k : int, default=None
+        Regression only: number of nearest and farthest instances used to measure how well a
+        candidate pivot contrasts close and distant instances. None for the square root of the
+        number of instances of the node (between 5 and n - 1).
+    reg_contrast_lambda : float, default=0.2
+        Regression only: weight of the contrast with respect to the gain of the split when the
+        descriptive pivot is selected.
+    reg_max_thresholds : int, default=None
+        Regression only: maximum number of thresholds tested on the distances from each candidate
+        pivot (quantiles). None for ``max(256, sqrt(n))``.
     tree_params : dict, default=None
-        Parameters of the decision trees used by PivotSplit to find the discriminative pivots.
+        Parameters of the decision trees that select the discriminative pivots.
+
+    Attributes
+    ----------
+    numerical_ : list of int
+        Numerical columns of the feature matrix.
+    categorical_ : list of int
+        Categorical columns of the feature matrix.
+    candidates_ : numpy.ndarray of shape (n_candidates, n_numerical_features)
+        The candidate pivots (only the chosen one after ``select``), standardized.
+    candidate_names_ : numpy.ndarray of shape (n_candidates,)
+        Indices of the candidate pivots in the training set.
+    pivot_split_ : PivotSplit
+        The selection of the candidates.
+    scaler_ : StandardScaler
+        Scaler of the numerical features, fitted on the whole data set.
+
+    See Also
+    --------
+    PivotTreeStumpClassifier, PivotTreeStumpRegressor : the stumps that use it.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_iris
+    >>> from RuleTree import RuleTreeClassifier
+    >>> from RuleTree.stumps.Stump import Stump
+    >>> from RuleTree.stumps.splitters import ClassificationSplitter
+    >>> from RuleTree.stumps.transformers import PivotTransformer
+    >>> X, y = load_iris(return_X_y=True)
+    >>> transformer = PivotTransformer().fit(X, y)
+    >>> transformer.transform(X[:2]).shape  # distances from 6 candidate pivots
+    (2, 6)
+    >>> model = RuleTreeClassifier(max_depth=2, base_stumps=Stump(PivotTransformer(), ClassificationSplitter()))
+    >>> model = model.fit(X, y)
     """
 
     def __init__(self, ml_task=MODEL_TYPE_CLF, distance_measure='euclidean', k=None, reg_contrast_lambda=.2,

@@ -43,6 +43,11 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Kind of target, MODEL_TYPE_CLF (classification) or MODEL_TYPE_REG (regression).
     data_type_ : str
         Data type the stump has been fitted on.
+
+    See Also
+    --------
+    RuleTree.stumps.Stump.Stump : a stump made of a transformer and a splitter, the simplest way to
+        write a new stump (see :doc:`/guides/extending`).
     """
 
     supported_data_types = (DATA_TYPE_TABULAR,)

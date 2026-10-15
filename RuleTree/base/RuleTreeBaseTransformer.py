@@ -40,6 +40,37 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         Indices of the numerical columns of the feature matrix. Set by :meth:`fit`.
     categorical_ : list of int
         Indices of the categorical columns of the feature matrix. Set by :meth:`fit`.
+
+    See Also
+    --------
+    RuleTree.stumps.Stump.Stump : the stump that combines a transformer and a splitter.
+    RuleTreeBaseSplitter : the other component of a stump.
+
+    Examples
+    --------
+    A transformer without fitted state defines only ``transform`` (see :doc:`/guides/extending`):
+
+    >>> import numpy as np
+    >>> from RuleTree import RuleTreeClassifier
+    >>> from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer
+    >>> from RuleTree.stumps.Stump import Stump
+    >>> from RuleTree.stumps.splitters import ClassificationSplitter
+    >>> from RuleTree.utils.define import DATA_TYPE_TS
+    >>> class MeanTransformer(RuleTreeBaseTransformer):
+    ...     supported_data_types = (DATA_TYPE_TS,)
+    ...
+    ...     def transform(self, X):
+    ...         return X.mean(axis=2)  # mean of each signal
+    ...
+    ...     def feature_id(self, feature):
+    ...         return f"mean_{feature}"
+    >>> rng = np.random.default_rng(0)
+    >>> y = rng.integers(0, 2, size=50)
+    >>> X_ts = rng.normal(size=(50, 1, 20)) + 2 * y[:, None, None]
+    >>> stump = Stump(MeanTransformer(), ClassificationSplitter())
+    >>> model = RuleTreeClassifier(max_depth=1, base_stumps=stump).fit(X_ts=X_ts, y=y)
+    >>> model.get_rules()["textual_rule"].split()[0]
+    'mean_0'
     """
 
     supported_data_types = (DATA_TYPE_TABULAR,)

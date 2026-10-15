@@ -39,6 +39,22 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
         Initial prediction (mean of the target).
     estimators_ : list of RuleTreeRegressor
         Fitted estimators.
+
+    See Also
+    --------
+    XGBoostRegressor : the boosting of the XGBoost trees.
+    EBMRegressor : a boosting of trees on single features and pairs of features.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree import RuleTreeRegressor
+    >>> from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> model = GBoostRegressor(base_estimator=RuleTreeRegressor(max_depth=2, random_state=0),
+    ...                         n_estimators=20, random_state=0).fit(X, y)
+    >>> len(model.estimators_), round(model.score(X, y), 3)
+    (20, 0.531)
     """
     def __init__(self, base_estimator=RuleTreeRegressor(max_depth=3),
                  n_estimators=100, learning_rate=.1, loss='squared_loss', patience=5, val_size=.15,

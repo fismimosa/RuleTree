@@ -69,6 +69,16 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         Node id -> integer label.
     root : RuleTreeNode
         Root of the fitted tree.
+    candidate_splits_ : list of tuple
+        ``(probability, stump, data_type)``: the stumps usable on the training data, with the
+        data type they are used on.
+    cache_ : dict
+        Values cached by the stumps during fit (see :meth:`get_cache`).
+
+    See Also
+    --------
+    RuleTreeClusterClassifier, RuleTreeClusterRegressor : the clustering tree with leaves that predict
+        a target.
 
     Examples
     --------
@@ -431,6 +441,20 @@ class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
         Classes of the target.
     n_classes_ : int
         Number of classes.
+
+    See Also
+    --------
+    RuleTreeCluster : the clustering tree.
+    RuleTreeClassifier : a tree whose splits are chosen with the target.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import make_blobs
+    >>> from RuleTree.tree.RuleTreeCluster import RuleTreeClusterClassifier
+    >>> X, y = make_blobs(n_samples=300, centers=3, cluster_std=0.5, random_state=0)
+    >>> model = RuleTreeClusterClassifier(max_depth=2, random_state=0).fit(X, y)
+    >>> round(model.score(X, y), 2)
+    0.99
     """
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
@@ -523,6 +547,25 @@ class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
         to the stumps without a random_state.
     distance_measure : str or callable, default=None
         Not used.
+
+    Attributes
+    ----------
+    root : RuleTreeNode
+        Root of the fitted tree.
+
+    See Also
+    --------
+    RuleTreeCluster : the clustering tree.
+    RuleTreeRegressor : a tree whose splits are chosen with the target.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree.tree.RuleTreeCluster import RuleTreeClusterRegressor
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> model = RuleTreeClusterRegressor(max_depth=2, random_state=0).fit(X, y)
+    >>> model.predict(X[:2]).round(1)
+    array([177.6, 111.8])
     """
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """

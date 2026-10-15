@@ -12,16 +12,62 @@ from RuleTree.utils.define import MODEL_TYPE_REG
 
 class RegressionSplitter(RuleTreeBaseSplitter):
     """
-    Best split for regression. Numerical features are split by a scikit-learn decision tree of
-    depth 1 (same parameters); categorical features are split by testing each of their values.
+    Splitter for regression that maximizes the decrease of impurity.
+
+    The numerical features are split by a scikit-learn ``DecisionTreeRegressor`` of depth 1 with the
+    same parameters (``x <= threshold`` goes left). Then each value of each categorical feature is
+    tested (``x == value`` goes left), and the best categorical split replaces the numerical one if
+    its gain is higher.
 
     Parameters
     ----------
     criterion : {'squared_error', 'absolute_error', 'poisson'} or callable, default='squared_error'
-        Impurity measure. A callable takes (y_true, y_pred) and returns the impurity of the
-        categorical splits; the numerical ones use the scikit-learn criterion.
-    min_samples_leaf, min_weight_fraction_leaf, max_features, random_state, min_impurity_decrease
-        Parameters of the scikit-learn decision tree used for the numerical features.
+        Impurity measure. A callable ``f(y_true, y_pred) -> float`` (e.g. a scikit-learn metric) is
+        supported only for categorical features.
+    min_samples_leaf : int or float, default=1
+        Minimum number of instances in each child (a fraction of the instances of the node if
+        float). Applies to the numerical features.
+    min_weight_fraction_leaf : float, default=0.0
+        Minimum fraction of the sample weights of the node in each child. Applies to the numerical
+        features.
+    max_features : int, float, {'sqrt', 'log2'} or None, default=None
+        Number of numerical features considered for the split, drawn at random; None for all.
+    random_state : int, RandomState instance or None, default=None
+        Seed of the choice of the features (``max_features``) and of the ties between features with
+        the same gain. With None, a tree gives the stump its own ``random_state``.
+    min_impurity_decrease : float, default=0.0
+        A numerical split is kept only if it decreases the weighted impurity by at least this value.
+
+    Attributes
+    ----------
+    feature_ : int
+        Column of the feature matrix used by the split.
+    threshold_ : float or object
+        Threshold of a numerical split, or value of a categorical split.
+    is_categorical_ : bool
+        Whether the split is categorical.
+    gain_ : float
+        Decrease of impurity of the split.
+    impurity_ : list of float
+        Impurity of the node, of the left child and of the right child.
+
+    See Also
+    --------
+    ClassificationSplitter : the same splitter for classification.
+    DecisionTreeStumpRegressor : the stump made of a MatrixTransformer and this splitter.
+
+    Notes
+    -----
+    The categorical splits do not use ``sample_weight`` and ignore ``min_samples_leaf``.
+
+    Examples
+    --------
+    >>> from sklearn.datasets import load_diabetes
+    >>> from RuleTree.stumps.splitters import RegressionSplitter
+    >>> X, y = load_diabetes(return_X_y=True)
+    >>> splitter = RegressionSplitter(random_state=0).fit(X, y, numerical=list(range(10)), categorical=[])
+    >>> splitter.feature_, round(float(splitter.threshold_), 4)
+    (8, -0.0038)
     """
 
     task = MODEL_TYPE_REG

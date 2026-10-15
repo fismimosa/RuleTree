@@ -9,7 +9,8 @@ from RuleTree.utils.define import DATA_INPUT_TYPES
 
 
 class RuleTreeBase(BaseEstimator, ABC):
-    """Base class for RuleTree estimators.
+    """
+    Base class for RuleTree estimators.
 
     RuleTree estimators may receive one input container for each supported data
     type: ``X`` for tabular data, ``X_ts`` for time series, ``X_img`` for images,
@@ -28,6 +29,10 @@ class RuleTreeBase(BaseEstimator, ABC):
     :class:`sklearn.base.BaseEstimator`. The base implementation only validates
     inputs; concrete estimators are expected to implement the actual fitting and
     prediction behavior.
+
+    See Also
+    --------
+    RuleTree.tree.RuleTree.RuleTree : the base class of the trees.
     """
 
     def _validate_inputs(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None) -> dict:

@@ -82,6 +82,11 @@ class RuleTree(RuleTreeBase, ABC):
         ``(probability, stump, data_type)``.
     cache_ : dict
         Values cached by the stumps during fit (see :meth:`get_cache`).
+
+    See Also
+    --------
+    RuleTreeClassifier, RuleTreeRegressor, RuleTreeCluster : the trees for each task.
+    RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump : the interface of the stumps.
     """
     def __init__(self,
                  max_leaf_nodes,
