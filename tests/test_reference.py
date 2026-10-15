@@ -7,6 +7,7 @@ For intended changes of behavior, regenerate the references with
 ``python -m tests.reference.generate``.
 """
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -33,15 +34,48 @@ def assert_same(actual, expected):
         np.testing.assert_array_equal(actual, expected)
 
 
+# a rule on a feature of the tabular data, as written by get_rule (threshold rounded to 3 decimals)
+TABULAR_RULE = re.compile(r"^X_(\d+) <= (\S+)$")
+
+
+def assert_same_rules(model, inputs, actual, expected):
+    """
+    The same rules, or splits on another feature that divides the instances of the node in the same way.
+
+    Features that give the same partition of a node have the same gain (e.g. petal length and petal width
+    both separate setosa in iris): sklearn chooses among them by floating-point rounding, which changes
+    between platforms (macOS ARM, Linux x86) and BLAS libraries. The leaves and the predictions are
+    compared exactly anyway.
+    """
+    assert actual.keys() == expected.keys()
+    leaves = np.asarray(model.apply(**inputs)).astype(str)
+
+    for node_id, rule in expected.items():
+        if actual[node_id] == rule:
+            continue
+        match = TABULAR_RULE.match(rule)
+        assert match, f"node {node_id}: {actual[node_id]!r} != {rule!r}"
+
+        idx = np.flatnonzero(np.char.startswith(leaves, node_id))  # instances reaching the node
+        left = model.get_node_by_id(node_id).stump.apply(model._validate_inputs(**inputs), idx) == 1
+        values = np.asarray(inputs["X"])[idx, int(match[1])].astype(float)
+        threshold, rounding = float(match[2]), 5e-4
+
+        assert values[left].max() < values[~left].min(), f"node {node_id}: {actual[node_id]!r} != {rule!r}"
+        # sklearn puts the threshold halfway between two values: below the first value on the right
+        assert values[left].max() - rounding <= threshold < values[~left].min(), \
+            f"node {node_id}: {actual[node_id]!r} != {rule!r}"
+
+
 @pytest.mark.parametrize("name", CASES)
 def test_same_outputs(name):
-    _, _, outputs = fit_case(name)
+    model, inputs, outputs = fit_case(name)
     expected = REFERENCE[name]
 
     assert outputs.keys() == expected.keys()
     for key in expected:
         if key == "rules":
-            assert outputs[key] == expected[key]
+            assert_same_rules(model, inputs, outputs[key], expected[key])
         else:
             assert_same(outputs[key], expected[key])
 
