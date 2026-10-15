@@ -55,4 +55,5 @@ The trees follow the scikit-learn API and support classification
    RuleTree.stumps
    RuleTree.base
    RuleTree.ensemble
+   RuleTree.evaluation
    RuleTree.utils

@@ -29,7 +29,7 @@ from RuleTree.stumps.classification import DecisionTreeStumpClassifier, Shapelet
 from RuleTree.utils.data_utils import preprocessing
 from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
 from benchmark.GenTSTree.GenTSBenchmark.GenTSBenchmark_Hyper import get_hyperparameters, n_jobs
-from benchmark.evaluation_utils import evaluate_clf
+from RuleTree.evaluation import evaluate_classification
 
 os.environ['OPENBLAS_NUM_THREADS'] = '32'
 os.environ["OMP_NUM_THREADS"] = '32'
@@ -161,7 +161,7 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
 
         y_pred_val = model.predict(X_val)
 
-        dict_res = {f'{k}_val': v for k, v in evaluate_clf(y_val, y_pred_val).items()}
+        dict_res = {f'{k}_val': v for k, v in evaluate_classification(y_val, y_pred_val).items()}
         scores_kv.append(dict_res)
 
     hyper_dict = hyper_dict_original.copy()
@@ -194,7 +194,7 @@ def run(method, hyper_dict, hyper_stump_dict, dataset_name, df: pd.DataFrame):
     scores |= (
             {'train_time': end - start, 'pred_time': end_pred - start_pred}
             | {'train_mem_MB': (after - before) / 1024 ** 2, 'pred_mem_MB': (after_pred - before_pred) / 1024 ** 2}
-            | {f'{k}_test': v for k, v in evaluate_clf(y_test, y_pred, y_pred_proba=None).items()}
+            | {f'{k}_test': v for k, v in evaluate_classification(y_test, y_pred).items()}
     )
 
     df_val = pd.DataFrame(scores_kv).mean().to_frame().T

@@ -32,7 +32,7 @@ from benchmark.Fair.FairReaders import read_titanic, read_bank_marital, read_ban
     read_bank_education, read_bank_age, read_taiwan_credit_marriage, read_taiwan_credit_age, read_taiwan_credit_sex, \
     read_taiwan_credit_education, read_diabetes_race, read_diabetes_age, read_diabetes_gender, read_compass_race, \
     read_compass_sex, read_compass_age
-from benchmark.evaluation_utils import evaluate_clu_sup, evaluate_clu_unsup, evaluate_expl
+from RuleTree.evaluation import evaluate_clustering, evaluate_clustering_internal, evaluate_interpretability
 
 datasets = dict([
     read_titanic(),
@@ -64,9 +64,9 @@ def compute_measures(X, clu_id, target, prot_attr, ideal, model):
         'max_fairness_cost': max_fairness_cost(clu_id, prot_attr, ideal),
     }
 
-    measures |= evaluate_clu_sup(clu_id, target)
-    measures |= evaluate_clu_unsup(clu_id, X, X)
-    measures |= evaluate_expl(model)
+    measures |= evaluate_clustering(target, clu_id)
+    measures |= evaluate_clustering_internal(X, clu_id)
+    measures |= evaluate_interpretability(model)
 
     return measures
 

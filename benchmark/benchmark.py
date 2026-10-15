@@ -20,7 +20,6 @@ import pandas as pd
 import psutil
 from progress_table import ProgressTable
 from sklearn.compose import ColumnTransformer, make_column_selector
-from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import StratifiedKFold, train_test_split, KFold
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from threadpoolctl import threadpool_limits
@@ -29,7 +28,7 @@ from config import dataset_target_clf, task_method, TASK_CLF, DATASET_PATH, data
     RESULTS_PATH, NBR_REPEATED_HOLDOUT, methods_params_clf, preprocessing_params, TASK_REG, dataset_target_reg, \
     dataset_feat_drop_reg, methods_params_reg, N_JOBS, TASK_CLC, TASK_CLR, methods_params_unsup, TASK_CLU, \
     dataset_target_clu, dataset_feat_drop_clu
-from evaluation_utils import evaluate_clf, evaluate_expl, evaluate_reg, evaluate_clu_unsup, evaluate_clu_sup
+from RuleTree.evaluation import evaluate_classification, evaluate_interpretability, evaluate_regression, evaluate_clustering_internal, evaluate_clustering
 from preprocessing_utils import remove_missing_values
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 
@@ -87,13 +86,13 @@ def run_clf(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
             if len(np.unique(y_valid)) != y_pred_proba.shape[1]:
                 y_pred_proba = None
 
-            res += [{f"validation_{k}": v for k, v in evaluate_clf(y_valid, y_pred, y_pred_proba).items()}]
-            res[-1].update({f"validation_{k}": v for k, v in evaluate_expl(model_inst).items()})
+            res += [{f"validation_{k}": v for k, v in evaluate_classification(y_valid, y_pred, y_pred_proba).items()}]
+            res[-1].update({f"validation_{k}": v for k, v in evaluate_interpretability(model_inst).items()})
 
             if eval_clu:
-                res[-1].update({f"validation_{k}": v for k, v in evaluate_clu_sup(y_valid, y_pred).items()})
+                res[-1].update({f"validation_{k}": v for k, v in evaluate_clustering(y_valid, y_pred).items()})
                 res[-1].update({f"validation_{k}": v for k, v in
-                                evaluate_clu_unsup(y_valid, X, pairwise_distances(X, metric="euclidean")).items()})
+                                evaluate_clustering_internal(X, y_valid).items()})
 
         model_inst = model(**hyper)
         start_time = time.time()
@@ -105,16 +104,16 @@ def run_clf(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
 
         res = pd.DataFrame(res).mean().to_frame().T
         res["fit_time"] = stop_time - start_time
-        for k, v in evaluate_clf(y_test, y_pred, y_pred_proba).items():
+        for k, v in evaluate_classification(y_test, y_pred, y_pred_proba).items():
             res[f"test_{k}"] = v
 
-        for k, v in evaluate_expl(model_inst).items():
+        for k, v in evaluate_interpretability(model_inst).items():
             res[f"test_{k}"] = v
 
         if eval_clu:
-            res[-1].update({f"test_{k}": v for k, v in evaluate_clu_sup(y_test, y_pred).items()})
+            res[-1].update({f"test_{k}": v for k, v in evaluate_clustering(y_test, y_pred).items()})
             res[-1].update({f"test_{k}": v for k, v in
-                            evaluate_clu_unsup(y_test, X, pairwise_distances(X, metric="euclidean")).items()})
+                            evaluate_clustering_internal(X, y_test).items()})
 
     except Exception as e:
         traceback.print_exc()
@@ -152,12 +151,12 @@ def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
 
             y_pred = model_inst.predict(X_valid)
 
-            res += [{f"validation_{k}": v for k, v in evaluate_reg(y_valid, y_pred).items()}]
-            res[-1].update({f"validation_{k}": v for k, v in evaluate_expl(model_inst).items()})
+            res += [{f"validation_{k}": v for k, v in evaluate_regression(y_valid, y_pred).items()}]
+            res[-1].update({f"validation_{k}": v for k, v in evaluate_interpretability(model_inst).items()})
             if eval_clu:
-                res[-1].update({f"validation_{k}": v for k, v in evaluate_clu_sup(y_test, y_pred).items()})
+                res[-1].update({f"validation_{k}": v for k, v in evaluate_clustering(y_test, y_pred).items()})
                 res[-1].update({f"validation_{k}": v for k, v in
-                                evaluate_clu_unsup(y_test, X, pairwise_distances(X, metric="euclidean")).items()})
+                                evaluate_clustering_internal(X, y_test).items()})
 
         model_inst = model(**hyper)
         start_time = time.time()
@@ -168,16 +167,16 @@ def run_reg(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict,
 
         res = pd.DataFrame(res).mean().to_frame().T
         res["fit_time"] = stop_time - start_time
-        for k, v in evaluate_reg(y_test, y_pred).items():
+        for k, v in evaluate_regression(y_test, y_pred).items():
             res[f"test_{k}"] = v
 
-        for k, v in evaluate_expl(model_inst).items():
+        for k, v in evaluate_interpretability(model_inst).items():
             res[f"test_{k}"] = v
 
         if eval_clu:
-            res.update({f"test_{k}": v for k, v in evaluate_clu_sup(y_test, y_pred).items()})
+            res.update({f"test_{k}": v for k, v in evaluate_clustering(y_test, y_pred).items()})
             res.update({f"test_{k}": v for k, v in
-                        evaluate_clu_unsup(y_test, X, pairwise_distances(X, metric="euclidean")).items()})
+                        evaluate_clustering_internal(X, y_test).items()})
 
     except KeyboardInterrupt as e:
         raise e
@@ -218,18 +217,18 @@ def run_clu(df_X: pd.DataFrame, y: pd.Series, model, hyper: dict, path, preproce
         y_pred_test = model_inst.predict(X_test)
 
         res["fit_time"] = stop_time - start_time
-        scores_train = evaluate_clu_unsup(y_pred_train, X_train, pairwise_distances(X_train, metric='euclidean'))
-        scores_test = evaluate_clu_unsup(y_pred_test, X_test, pairwise_distances(X_test, metric='euclidean'))
+        scores_train = evaluate_clustering_internal(X_train, y_pred_train)
+        scores_test = evaluate_clustering_internal(X_test, y_pred_test)
         if y is not None:
-            scores_train.update(evaluate_clu_sup(y_train, y_pred_train))
-            scores_test.update(evaluate_clu_sup(y_test, y_pred_test))
+            scores_train.update(evaluate_clustering(y_train, y_pred_train))
+            scores_test.update(evaluate_clustering(y_test, y_pred_test))
 
         for k, v in scores_train.items():
             res[f"train_{k}"] = v
         for k, v in scores_test.items():
             res[f"test_{k}"] = v
 
-        for k, v in evaluate_expl(model_inst).items():
+        for k, v in evaluate_interpretability(model_inst).items():
             res[f"test_{k}"] = v
 
     except Exception as e:

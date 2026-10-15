@@ -46,7 +46,7 @@ import psutil
 from tqdm.auto import tqdm
 
 from RuleTree import RuleTreeClassifier, RuleForestClassifier
-from benchmark.evaluation_utils import evaluate_expl, evaluate_clf
+from RuleTree.evaluation import evaluate_interpretability, evaluate_classification
 
 warnings.filterwarnings("ignore", category=UndefinedMetricWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -64,8 +64,8 @@ scalers = {
 
 
 def compute_measures(y_test, y_pred, model):
-    measures = evaluate_clf(y_test, y_pred, y_pred_proba=None)
-    measures |= evaluate_expl(model)
+    measures = evaluate_classification(y_test, y_pred)
+    measures |= evaluate_interpretability(model)
 
     return measures
 
