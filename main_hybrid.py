@@ -54,8 +54,7 @@ if __name__ == "__main__":
             base_stumps=stump,
             max_depth=max_depth,
             stump_selection='best',
-            random_state=42,
-            distance_measure='euclidean' #added here metric for case-based splits
+            random_state=42
         )
         rt.fit(X_train, y_train)
 
@@ -72,8 +71,7 @@ if __name__ == "__main__":
         base_stumps=stump,
         max_depth=max_depth,
         stump_selection='best',
-        random_state=42,
-        distance_measure='euclidean'  # added here metric for case-based splits
+        random_state=42
     )
     rt.fit(X_train, y_train)
 

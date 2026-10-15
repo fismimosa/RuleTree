@@ -37,14 +37,6 @@ RuleTree.utils.define module
    :show-inheritance:
    :undoc-members:
 
-RuleTree.utils.dict\_ruletree\_encoding module
-----------------------------------------------
-
-.. automodule:: RuleTree.utils.dict_ruletree_encoding
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 RuleTree.utils.fairness\_metrics module
 ---------------------------------------
 
@@ -57,14 +49,6 @@ RuleTree.utils.privacy\_utils module
 ------------------------------------
 
 .. automodule:: RuleTree.utils.privacy_utils
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-RuleTree.utils.utils\_decoding module
--------------------------------------
-
-.. automodule:: RuleTree.utils.utils_decoding
    :members:
    :show-inheritance:
    :undoc-members:

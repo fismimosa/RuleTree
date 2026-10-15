@@ -42,8 +42,6 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         How the stump of each node is chosen among base_stumps.
     random_state : int, RandomState instance or None, default=None
         Seed of the random choice of the stumps, also given to the stumps without a random_state.
-    distance_measure : str or callable, default=None
-        Distance used by compute_medoids.
 
     Attributes
     ----------
@@ -80,8 +78,7 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
                  prune_useless_leaves=False,
                  base_stumps: Union[ClassifierMixin, list] = None,
                  stump_selection: str = 'random',
-                 random_state=None,
-                 distance_measure = None
+                 random_state=None
                  ):
         """Initialize the RuleTreeClassifier; see the class documentation for the parameters."""
         if base_stumps is None:
@@ -93,8 +90,7 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
                          prune_useless_leaves=prune_useless_leaves,
                          base_stumps=base_stumps,
                          stump_selection=stump_selection,
-                         random_state=random_state,
-                         distance_measure=distance_measure)
+                         random_state=random_state)
 
     def check_additional_halting_condition(self, y, curr_idx: np.ndarray):
         """

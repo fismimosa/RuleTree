@@ -42,8 +42,6 @@ class RuleTreeNode:
 
     Attributes
     ----------
-    medoids_index : list or None
-        Medoids of the node, if computed.
     balance_score : float
         For internal nodes, fraction of the training set in the smaller side of the split.
 
@@ -81,7 +79,6 @@ class RuleTreeNode:
         self.stump = stump
         self.node_l = node_l
         self.node_r = node_r
-        self.medoids_index = None
 
         for name, value in kwargs.items():
             setattr(self, name, value)

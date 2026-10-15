@@ -19,7 +19,6 @@ import numpy as np
 import sklearn
 from sklearn.base import ClassifierMixin
 from sklearn.utils import check_random_state
-from sklearn.metrics import pairwise_distances
 from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
@@ -68,8 +67,6 @@ class RuleTree(RuleTreeBase, ABC):
     random_state : int, RandomState instance or None
         Seed of the random choice of the stumps, also given to the stumps whose random_state is None
         (so that they do not break ties at random).
-    distance_measure : str or callable, default=None
-        Distance used by compute_medoids.
     exceptions : {'raise', 'ignore'}, default='raise'
         What to do when a stump raises an error: raise it, or make the node a leaf and warn.
 
@@ -96,7 +93,6 @@ class RuleTree(RuleTreeBase, ABC):
                  base_stumps,
                  stump_selection, # ['random', 'best']
                  random_state,
-                 distance_measure=None,
                  exceptions='raise'
                  ):
         """Initialize the RuleTree; see the class documentation for the parameters."""
@@ -108,7 +104,6 @@ class RuleTree(RuleTreeBase, ABC):
         self.min_samples_split = min_samples_split
         self.max_depth = max_depth
         self.prune_useless_leaves = prune_useless_leaves
-        self.distance_measure = distance_measure
 
         self.base_stumps = base_stumps
         self.stump_selection = stump_selection
@@ -705,46 +700,6 @@ class RuleTree(RuleTreeBase, ABC):
 
         self._update_statistics(data, y, node.node_l, idx_l)
         self._update_statistics(data, y, node.node_r, idx_r)
-
-    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
-        """
-        Medoid of each class among the instances ``idx``, with the distance ``distance_measure``.
-
-        Parameters
-        ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
-            Tabular data.
-        y : numpy.ndarray
-            Target.
-        idx : numpy.ndarray
-            Indices of the instances to consider.
-        **kwargs : dict
-            Not used.
-
-        Returns
-        -------
-        medoids : list of int or None
-            Index of the medoid of each class, or None if distance_measure is None.
-        """
-        if self.distance_measure is not None:
-            medoids = []
-            sub_matrix = None
-            for label in set(y[idx]):
-                idx_local_label = np.where(y[idx] == label)[0]
-                idx_label = idx[idx_local_label]
-                X_class_points = X[idx_label]
-
-                if hasattr(self, 'distance_matrix'):
-                    sub_matrix = self.distance_matrix[idx_label][:, idx_label]
-                else:
-                    sub_matrix = pairwise_distances(X_class_points, metric=self.distance_measure)
-                total_distances = sub_matrix.sum(axis=1)
-                medoid_index = idx_label[total_distances.argmin()]
-                medoids += [medoid_index]
-
-            return medoids
-        else:
-            return None
 
     def get_rules(self, columns_names = None):
         """

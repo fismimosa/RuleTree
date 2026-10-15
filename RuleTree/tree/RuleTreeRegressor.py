@@ -36,8 +36,6 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
         How the stump of each node is chosen among base_stumps.
     random_state : int, RandomState instance or None, default=None
         Seed of the random choice of the stumps, also given to the stumps without a random_state.
-    distance_measure : str or callable, default=None
-        Not used.
 
     Attributes
     ----------
@@ -70,8 +68,7 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
                  prune_useless_leaves=False,
                  base_stumps: Union[RegressorMixin, list] = None,
                  stump_selection:str='random',
-                 random_state=None,
-                 distance_measure=None,
+                 random_state=None
                  ):
 
         """Initialize the RuleTreeRegressor; see the class documentation for the parameters."""
@@ -84,8 +81,7 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
                          prune_useless_leaves=prune_useless_leaves,
                          base_stumps=base_stumps,
                          stump_selection=stump_selection,
-                         random_state=random_state,
-                         distance_measure=distance_measure)
+                         random_state=random_state)
 
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
@@ -99,23 +95,6 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
             Indices of the instances reaching the node.
         """
         heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
-
-    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
-        """
-        Not implemented for regression: does nothing.
-
-        Parameters
-        ----------
-        X : numpy.ndarray
-            Not used.
-        y : numpy.ndarray
-            Not used.
-        idx : numpy.ndarray
-            Not used.
-        **kwargs : dict
-            Not used.
-        """
-        pass
 
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """

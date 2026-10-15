@@ -60,8 +60,6 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
     random_state : int, RandomState instance or None, default=None
         Seed of the principal component analysis and of the random choice of the stumps, also given
         to the stumps without a random_state.
-    distance_measure : str or callable, default=None
-        Not used.
 
     Attributes
     ----------
@@ -99,8 +97,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
                  base_stumps: Union[RegressorMixin, list] = None,
-                 random_state=None,
-                 distance_measure=None):
+                 random_state=None):
         """Initialize the RuleTreeCluster; see the class documentation for the parameters."""
         if base_stumps is None:
             base_stumps = DecisionTreeStumpRegressor()
@@ -111,8 +108,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
                          prune_useless_leaves=prune_useless_leaves,
                          base_stumps=base_stumps,
                          stump_selection='random',
-                         random_state=random_state,
-                         distance_measure=distance_measure)
+                         random_state=random_state)
 
         self.n_components = n_components
         self.clus_impurity = clus_impurity
@@ -280,23 +276,6 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         return best_clf
 
 
-    def compute_medoids(self, X: np.ndarray, y, idx: np.ndarray, **kwargs):
-        """
-        Not implemented for clustering: does nothing.
-
-        Parameters
-        ----------
-        X : numpy.ndarray
-            Not used.
-        y : numpy.ndarray
-            Not used.
-        idx : numpy.ndarray
-            Not used.
-        **kwargs : dict
-            Not used.
-        """
-        pass
-        
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Create a node (or update ``node``) whose prediction is its node id, replaced by an integer label
@@ -432,8 +411,6 @@ class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
     random_state : int, RandomState instance or None, default=None
         Seed of the principal component analysis and of the random choice of the stumps, also given
         to the stumps without a random_state.
-    distance_measure : str or callable, default=None
-        Not used.
 
     Attributes
     ----------
@@ -545,8 +522,6 @@ class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
     random_state : int, RandomState instance or None, default=None
         Seed of the principal component analysis and of the random choice of the stumps, also given
         to the stumps without a random_state.
-    distance_measure : str or callable, default=None
-        Not used.
 
     Attributes
     ----------
