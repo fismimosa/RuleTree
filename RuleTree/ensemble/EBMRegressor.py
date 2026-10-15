@@ -139,7 +139,8 @@ class EBMRegressor(RegressorMixin, RuleTreeBase):
                 if wait >= self.patience:
                     for feature_idx in self.estimators_.keys():
                         estimators = self.estimators_[feature_idx]
-                        self.estimators_[feature_idx] = estimators[:len(estimators) - self.patience + 1]  # [:-0] would be empty
+                        # the last patience estimators did not improve the validation error
+                        self.estimators_[feature_idx] = estimators[:len(estimators) - self.patience]
                     break
             prev_residuals_val = np.sum(np.abs(residuals_val))
 

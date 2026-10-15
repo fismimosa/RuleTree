@@ -66,16 +66,59 @@ def test_xgboost_tree_update_statistics(diabetes):
     assert np.allclose(model.predict(X), predictions)  # XGBoost output values, as in fit
 
 
-def test_early_stopping_with_patience_one(diabetes):
-    """patience=1 removes no estimator (slicing with [:-0] removed all of them)."""
-    X, y = diabetes
-    gboost = GBoostRegressor(base_estimator=RuleTreeRegressor(max_depth=2, random_state=0), n_estimators=200,
-                             patience=1, random_state=0).fit(X, y)
-    ebm = EBMRegressor(base_estimator=RuleTreeRegressor(max_depth=1, random_state=0), n_iterations=200,
-                       learning_rate=.5, patience=1, random_state=0).fit(X, y)
+def validation_split(n_samples, val_size, random_state):
+    """Indices of the training and validation sets of GBoostRegressor and EBMRegressor."""
+    np.random.seed(random_state)
+    idx = np.random.permutation(n_samples)
+    n_val = int(val_size * n_samples)
+    return idx[n_val:], idx[:n_val]
 
+
+@pytest.mark.parametrize("patience", [1, 3])
+def test_early_stopping_keeps_only_the_estimators_that_improve(diabetes, patience):
+    """After early stopping, the last estimator kept decreased the validation error."""
+    X, y = diabetes
+    train_idx, val_idx = validation_split(len(y), val_size=.15, random_state=0)
+
+    gboost = GBoostRegressor(base_estimator=RuleTreeRegressor(max_depth=2, random_state=0), n_estimators=200,
+                             learning_rate=.5, patience=patience, random_state=0).fit(X, y)
+    steps = [gboost.learning_rate * est.predict(X[val_idx]) for est in gboost.estimators_]
+    predictions = gboost.base_prediction_ + np.cumsum([np.zeros(len(val_idx))] + steps, axis=0)
+    errors = np.abs(y[val_idx] - predictions).sum(axis=1)
     assert 0 < len(gboost.estimators_) < 200
-    assert all(0 < len(estimators) < 200 for estimators in ebm.estimators_.values())
+    assert errors[-1] <= errors[-2]
+
+    ebm = EBMRegressor(base_estimator=RuleTreeRegressor(max_depth=1, random_state=0), n_iterations=200,
+                       learning_rate=.5, patience=patience, random_state=0).fit(X, y)
+    n_iterations = len(ebm.estimators_[0])
+    steps = [sum(ebm.learning_rate * estimators[i].predict(X[val_idx][:, feature_idx].reshape(len(val_idx), -1))
+                 for feature_idx, estimators in ebm.estimators_.items())
+             for i in range(n_iterations)]
+    errors = np.abs(y[val_idx] - np.cumsum([np.zeros(len(val_idx))] + steps, axis=0)).sum(axis=1)
+    assert 0 < n_iterations < 200
+    assert errors[-1] <= errors[-2]
+
+
+@pytest.mark.parametrize("patience", [1, 3])
+def test_gboost_classifier_early_stopping_keeps_only_the_estimators_that_improve(iris, patience):
+    """As for the regressors: the last estimator kept for a class decreased its validation error."""
+    from scipy.special import expit
+    from sklearn.model_selection import train_test_split
+
+    from RuleTree.ensemble.GBoostClassifier import _train_one_class
+
+    X, y = iris
+    base_log_odds = np.log((y == 1).sum() / (y != 1).sum())
+    args = (1, 1, X, y, RuleTreeRegressor(max_depth=3, random_state=0), expit(base_log_odds), base_log_odds, 2.,
+            200, .15, patience, 0)
+    _, estimators = _train_one_class(args)
+
+    _, X_val, _, y_val = train_test_split(X, y, test_size=.15, random_state=0, stratify=y)
+    steps = [2. * np.vectorize(gamma_map.get)(est.apply(X_val)) for est, gamma_map in estimators]
+    log_odds = base_log_odds + np.cumsum([np.zeros(len(y_val))] + steps, axis=0)
+    errors = np.abs((y_val == 1) - expit(log_odds)).mean(axis=1)
+    assert 0 < len(estimators) < 200
+    assert errors[-1] < errors[-2]
 
 
 def test_gboost_classifier_any_labels_in_the_current_process(iris, monkeypatch):

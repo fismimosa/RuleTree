@@ -45,8 +45,8 @@ previous ones (squared loss). The base estimator can be any RuleTreeRegressor, w
 .. code-block:: text
    :caption: Output
 
-   trees: 46
-   R2 on the test set: 0.336
+   trees: 45
+   R2 on the test set: 0.339
 
 :class:`~RuleTree.ensemble.GBoostClassifier.GBoostClassifier` fits, for each class, a boosting of
 regression trees on the log-odds of the class (one-vs-rest, logistic loss); the classes are fitted
@@ -126,7 +126,7 @@ one or two features, which can be plotted and inspected.
    :caption: Output
 
    terms: 55 - e.g. [0, 1, 2] (8, 9)
-   R2 on the test set: 0.333
+   R2 on the test set: 0.344
 
 The terms are the features (their index) and the pairs of features; ``estimators_[term]`` is the
 list of trees of the term.
