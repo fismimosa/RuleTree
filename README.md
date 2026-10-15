@@ -71,7 +71,7 @@ The user guide is in [`docs/guides`](docs/guides):
 - [Saving, growing and updating trees](docs/guides/lifecycle.rst).
 - [Saving and loading trees](docs/guides/saving.rst): what `to_dict` saves and how `from_dict` rebuilds a tree.
 - [Ensembles](docs/guides/ensembles.rst): boosting of RuleTrees.
-- [Evaluating the models](docs/guides/evaluating.rst): metrics of predictions, clusters, tree size and fairness.
+- [Evaluating the models](docs/guides/evaluating.rst): metrics of predictions, clusters, tree size and fairness; all but the tree size need only the output of a model, so they evaluate any model.
 - [Extending the library](docs/guides/extending.rst): writing new stumps, transformers and splitters.
 
 The HTML documentation, with the API reference, is built with Sphinx:
