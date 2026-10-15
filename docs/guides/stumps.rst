@@ -33,6 +33,11 @@ Available stumps
      - classification
      - tabular
      - distance from a *partial pivot*, an instance restricted to a few features
+   * - :class:`~RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier.ObliqueDecisionTreeStumpClassifier`,
+       :class:`~RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.ObliqueDecisionTreeStumpRegressor`
+     - classification, regression
+     - tabular
+     - threshold on a linear combination of a few features (``0.8 * X_2 - 0.6 * X_3 <= t``)
    * - :class:`~RuleTree.stumps.classification.ShapeletTreeStumpClassifier.ShapeletTreeStumpClassifier`,
        :class:`~RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor`
      - classification, regression
@@ -191,6 +196,59 @@ candidates and the one used by the split. For the whole tree:
    R {'descriptives': [167, 249], 'discriminatives': [461, 140], 'candidates': [167, 249, 461, 140], 'used': 461}
    Rl {'descriptives': [167, 421], 'discriminatives': [368, 191], 'candidates': [167, 421, 368, 191], 'used': 368}
    Rr {'descriptives': [40, 415], 'discriminatives': [199, 71], 'candidates': [40, 415, 199, 71], 'used': 199}
+
+
+Oblique stumps
+--------------
+
+An oblique stump splits on a linear combination of a few features, e.g.
+``0.95 * worst perimeter + 0.31 * worst smoothness <= 0.13``: a hyperplane that is not parallel to
+the axes, which can separate with one split classes that an axis-parallel tree needs many splits
+for. The directions are chosen at each node in one of two ways (``oblique_split_type``):
+
+- ``"householder"`` (the default): the axes reflected by the Householder reflection that maps the
+  principal component of the node onto an axis; each direction combines at most
+  ``max_oblique_features`` features;
+- ``"bivariate"``: ``n_orientations`` rotations of the pair of features that best splits the node.
+
+The combinations use the features as they are, so the data should be on comparable scales:
+
+.. code-block:: python
+
+   from sklearn.preprocessing import StandardScaler
+
+   from RuleTree.stumps.classification import ObliqueDecisionTreeStumpClassifier
+
+   X_scaled = StandardScaler().fit_transform(X)  # the combinations use the features as they are
+
+   oblique_tree = RuleTreeClassifier(max_depth=2, random_state=0,
+                                     base_stumps=ObliqueDecisionTreeStumpClassifier("bivariate"))
+   oblique_tree.fit(X_scaled, y)
+
+   oblique_tree.print_rules(oblique_tree.get_rules(columns_names=list(data.feature_names)))
+   print("accuracy:", round(oblique_tree.score(X_scaled, y), 3))
+   print("axis-parallel:", round(RuleTreeClassifier(max_depth=2, random_state=0).fit(X_scaled, y).score(X_scaled, y), 3))
+
+.. code-block:: text
+   :caption: Output
+
+   |--- 0.951 * worst perimeter + 0.309 * worst smoothness <= 0.127
+   |   |--- 0.951 * area error + 0.309 * worst concave points <= -0.132
+   |   |    output: 1
+   |   |--- 0.951 * area error + 0.309 * worst concave points > -0.132
+   |   |    output: 1
+   |--- 0.951 * worst perimeter + 0.309 * worst smoothness > 0.127
+   |   |--- 0.809 * worst radius + 0.588 * worst concave points <= 0.129
+   |   |    output: 1
+   |   |--- 0.809 * worst radius + 0.588 * worst concave points > 0.129
+   |   |    output: 0
+   accuracy: 0.968
+   axis-parallel: 0.942
+
+The stump stores the columns and the coefficients of its combination in ``feature_original`` and
+``coefficients``. The regression stump,
+:class:`~RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.ObliqueDecisionTreeStumpRegressor`,
+can also be used by the clustering trees.
 
 
 Fair splits

@@ -8,9 +8,11 @@ import pytest
 import sklearn
 
 from RuleTree import RuleTreeClassifier, RuleTreeRegressor
-from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, PartialPivotTreeStumpClassifier,
-                                            PivotTreeStumpClassifier, ShapeletTreeStumpClassifier)
-from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor, PivotTreeStumpRegressor,
+from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier,
+                                            PartialPivotTreeStumpClassifier, PivotTreeStumpClassifier,
+                                            ShapeletTreeStumpClassifier)
+from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor,
+                                        ObliqueDecisionTreeStumpRegressor, PivotTreeStumpRegressor,
                                         ShapeletTreeStumpRegressor)
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
 from RuleTree.stumps.Stump import Stump
@@ -48,6 +50,10 @@ STUMPS = [
     (lambda: XGBoostStumpRegressor(lam=1), DATA_TYPE_TABULAR, "diabetes", True),
     (lambda: FairTreeStumpRegressor(penalty="balance", sensible_attribute=1, n_jobs=1), DATA_TYPE_TABULAR,
      "diabetes", True),
+    (lambda: ObliqueDecisionTreeStumpClassifier(), DATA_TYPE_TABULAR, "iris", False),
+    (lambda: ObliqueDecisionTreeStumpClassifier("bivariate"), DATA_TYPE_TABULAR, "iris", False),
+    (lambda: ObliqueDecisionTreeStumpRegressor(), DATA_TYPE_TABULAR, "diabetes", True),
+    (lambda: ObliqueDecisionTreeStumpRegressor("bivariate", n_orientations=4), DATA_TYPE_TABULAR, "diabetes", True),
 ]
 
 

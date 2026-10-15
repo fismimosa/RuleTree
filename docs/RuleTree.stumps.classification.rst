@@ -12,6 +12,14 @@ RuleTree.stumps.classification.DecisionTreeStumpClassifier module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier module
+------------------------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.classification.PartialPivotTreeStumpClassifier module
 ---------------------------------------------------------------------
 

@@ -4,10 +4,34 @@ RuleTree.stumps.transformers package
 Submodules
 ----------
 
+RuleTree.stumps.transformers.BivariateTransformer module
+--------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.transformers.BivariateTransformer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+RuleTree.stumps.transformers.HouseholderTransformer module
+----------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.transformers.HouseholderTransformer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.transformers.MatrixTransformer module
 -----------------------------------------------------
 
 .. automodule:: RuleTree.stumps.transformers.MatrixTransformer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+RuleTree.stumps.transformers.ObliqueTransformer module
+------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.transformers.ObliqueTransformer
    :members:
    :show-inheritance:
    :undoc-members:

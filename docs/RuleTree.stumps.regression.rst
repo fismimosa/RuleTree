@@ -20,6 +20,14 @@ RuleTree.stumps.regression.FairTreeStumpRegressor module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor module
+-------------------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.regression.PivotTreeStumpRegressor module
 ---------------------------------------------------------
 

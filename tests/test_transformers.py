@@ -5,10 +5,10 @@ import pytest
 import sklearn
 
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.stumps.transformers import (MatrixTransformer, PartialPivotTransformer, PivotTransformer,
-                                          ShapeletTransformer)
+from RuleTree.stumps.transformers import (BivariateTransformer, HouseholderTransformer, MatrixTransformer,
+                                          PartialPivotTransformer, PivotTransformer, ShapeletTransformer)
 from RuleTree.utils.data_utils import json_numpy_encoder
-from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_CLF
+from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 
 @pytest.fixture(scope="module")
@@ -105,7 +105,57 @@ def test_partial_pivot_transformer(iris):
     (PivotTransformer(), {"tabular"}),
     (PartialPivotTransformer(), {"tabular"}),
     (ShapeletTransformer(), {"ts"}),
-], ids=["Matrix", "Pivot", "PartialPivot", "Shapelet"])
+    (HouseholderTransformer(), {"tabular"}),
+    (BivariateTransformer(), {"tabular"}),
+], ids=["Matrix", "Pivot", "PartialPivot", "Shapelet", "Householder", "Bivariate"])
 def test_supported_data_types(transformer, data_types):
     assert set(transformer.supported_data_types) == data_types
     assert sklearn.clone(transformer).get_params() == transformer.get_params()
+
+
+@pytest.mark.parametrize("transformer", [HouseholderTransformer(), BivariateTransformer(n_orientations=6),
+                                         BivariateTransformer(MODEL_TYPE_REG, n_orientations=6)],
+                         ids=["Householder", "Bivariate-clf", "Bivariate-reg"])
+def test_oblique_transformer(transformer, iris_mixed):
+    """Each column is a linear combination of the numerical features; select keeps one of them."""
+    X, y = iris_mixed  # column 0 is categorical: it is not combined
+    idx = np.arange(0, len(y), 2)
+
+    transformer.fit(X, y.astype(float) if transformer.get_params().get("ml_task") == MODEL_TYPE_REG else y, idx,
+                    data_type=DATA_TYPE_TABULAR)
+
+    X_transformed = transformer.transform(X)
+    assert transformer.num_pre_transformed_ == [1, 2]
+    for column in range(X_transformed.shape[1]):
+        features, coefficients = transformer.combination(column)
+        assert set(features) <= {1, 2}
+        assert np.allclose(X_transformed[:, column], X[:, features].astype(float) @ coefficients)
+
+    column = X_transformed.shape[1] - 1
+    name = transformer.feature_id(column)
+    assert transformer.select(column) == 0
+    assert transformer.feature_id(0) == name
+    assert np.allclose(transformer.transform(X)[:, 0], X_transformed[:, column])
+
+    loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
+    assert np.allclose(loaded.transform(X), transformer.transform(X))
+
+
+def test_householder_transformer_reflects_the_principal_component():
+    """The reflection maps the principal component of the node onto an axis."""
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(200, 1)) @ np.array([[0.6, 0.8]]) + rng.normal(scale=0.01, size=(200, 2))
+
+    transformer = HouseholderTransformer().fit(X, np.zeros(200))
+
+    projected = transformer.transform(X)
+    assert np.isclose(projected.var(axis=0).max(), X.var(axis=0).sum(), rtol=1e-3)  # all the variance on one axis
+
+
+def test_oblique_transformers_need_numerical_features(iris_mixed):
+    X, y = iris_mixed
+
+    with pytest.raises(NoSplitFoundWarning):
+        HouseholderTransformer().fit(X[:, [0]], y)
+    with pytest.raises(NoSplitFoundWarning, match="two numerical"):
+        BivariateTransformer().fit(X[:, [0, 1]], y)

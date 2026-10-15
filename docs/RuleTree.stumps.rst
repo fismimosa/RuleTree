@@ -15,6 +15,14 @@ Subpackages
 Submodules
 ----------
 
+RuleTree.stumps.ObliqueTreeStump module
+---------------------------------------
+
+.. automodule:: RuleTree.stumps.ObliqueTreeStump
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.PivotTreeStump module
 -------------------------------------
 
