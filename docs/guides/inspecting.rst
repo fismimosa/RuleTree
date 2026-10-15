@@ -65,7 +65,7 @@ scaler to ``get_rule`` of the stumps (or to ``export_graphviz``) to see them in 
 Drawing the tree
 ----------------
 
-``export_graphviz`` returns the tree as a Graphviz graph (it requires the ``graphviz`` package).
+``export_graphviz`` returns the tree as a Graphviz graph (it requires the ``graphviz`` extra).
 Its DOT source can be read or saved; rendering it to an image also requires the Graphviz
 programs:
 

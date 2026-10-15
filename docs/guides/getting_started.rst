@@ -13,19 +13,26 @@ The trees follow the scikit-learn API: ``fit``, ``predict``, ``predict_proba``, 
 Installation
 ------------
 
-RuleTree requires Python 3.10 or later. Install it from the root of the repository:
+RuleTree requires Python 3.10 or later. Install it from PyPI, or from the root of the repository
+with ``pip install .``:
 
 .. code-block:: bash
 
-   pip install .
+   pip install RuleTree
 
-Optional features have their own dependencies:
+Some features need packages that are not installed by default. They are installed by the
+*extras* of RuleTree:
 
 .. code-block:: bash
 
-   pip install ".[graphviz]"   # drawing the trees (also requires the Graphviz binaries)
-   pip install ".[kmedoids]"   # shapelets selected with k-medoids
-   pip install ".[test]"       # running the tests
+   pip install "RuleTree[shapelets]"   # shapelet and partial pivot stumps (numba)
+   pip install "RuleTree[graphviz]"    # drawing the trees (also requires the Graphviz binaries)
+   pip install "RuleTree[kmedoids]"    # shapelets selected with k-medoids (scikit-learn-extra)
+   pip install "RuleTree[all]"         # all of the above
+   pip install "RuleTree[test]"        # running the tests
+
+Without them, the rest of the library works, and the features that need them raise a
+:class:`~RuleTree.exceptions.MissingOptionalDependencyError` with the command to run.
 
 
 Classification
@@ -187,4 +194,5 @@ Next steps
 - :doc:`inspecting`: rules, Graphviz drawings, leaves and feature contributions.
 - :doc:`lifecycle`: saving and loading trees, growing them further, updating their statistics.
 - :doc:`ensembles`: gradient boosting and explainable boosting with RuleTrees.
+- :doc:`evaluating`: metrics of the predictions, of the clusters and of the size of the trees.
 - :doc:`extending`: writing new stumps.

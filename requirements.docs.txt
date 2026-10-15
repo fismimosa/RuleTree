@@ -9,3 +9,6 @@ sphinx-favicon>=1.0.1
 sphinx-prompt>=1.5.0
 sphinx-last-updated-by-git>=0.3.5
 sphinx-togglebutton>=0.3.2
+
+# Optional dependencies of RuleTree imported by the API reference (shapelet modules)
+numba

@@ -45,6 +45,7 @@ The trees follow the scikit-learn API and support classification
    guides/inspecting
    guides/lifecycle
    guides/ensembles
+   guides/evaluating
    guides/extending
 
 .. toctree::
@@ -56,4 +57,5 @@ The trees follow the scikit-learn API and support classification
    RuleTree.base
    RuleTree.ensemble
    RuleTree.evaluation
+   RuleTree.exceptions
    RuleTree.utils

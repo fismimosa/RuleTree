@@ -45,6 +45,14 @@ RuleTree.utils.fairness\_metrics module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.utils.optional module
+------------------------------
+
+.. automodule:: RuleTree.utils.optional
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.utils.privacy\_utils module
 ------------------------------------
 

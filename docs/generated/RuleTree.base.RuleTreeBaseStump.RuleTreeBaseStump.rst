@@ -17,6 +17,7 @@
       ~RuleTreeBaseStump.apply
       ~RuleTreeBaseStump.dict_to_node
       ~RuleTreeBaseStump.fit
+      ~RuleTreeBaseStump.get_graphviz_rule
       ~RuleTreeBaseStump.get_metadata_routing
       ~RuleTreeBaseStump.get_params
       ~RuleTreeBaseStump.get_rule

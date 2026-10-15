@@ -348,6 +348,16 @@ The fitted transformer and splitter of a stump are in ``stump.transformer_`` and
 ``stump.splitter_``. The cache of a subclass is shared by the stumps of that class; the cache of a
 generic ``Stump`` by the stumps with the same class of transformer.
 
+The rule of a split is written by ``get_rule``, with the feature named by ``feature_id`` of the
+transformer. A stump with a rule of its own (e.g. ``P_<i> <= t`` for the pivots) overrides
+``get_rule``; a stump that draws something in its Graphviz node, like the plot of the shapelet,
+overrides ``get_graphviz_rule``, which ``export_graphviz`` calls instead of ``get_rule``.
+
+A component that needs a package that is not a dependency of RuleTree should import it with
+:func:`~RuleTree.utils.optional.import_optional` when it is used (e.g. in ``fit``), not at the top
+of its module: the library stays importable without it, and the user gets a
+:class:`~RuleTree.exceptions.MissingOptionalDependencyError` with the command to install it.
+
 A stump that is not a transformer plus a splitter (e.g. a split on two features at once) can
 derive directly from :class:`~RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump` and implement all
 its methods: see the documentation of that class.

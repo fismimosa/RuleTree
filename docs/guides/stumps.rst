@@ -243,6 +243,7 @@ Other stumps
 - :class:`~RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier`
   restricts the pivots to a few features, so that the rules are shorter.
 - The shapelet stumps work on time series: see :doc:`multimodal`.
+- The shapelet and partial pivot stumps need the ``shapelets`` extra (see :doc:`getting_started`).
 - :class:`~RuleTree.stumps.regression.XGBoostStumpRegressor.XGBoostStumpRegressor` is the stump of
   the XGBoost trees: see :doc:`ensembles`.
 - New stumps can be written by combining a *transformer* and a *splitter*: see :doc:`extending`.

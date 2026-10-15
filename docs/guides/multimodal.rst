@@ -67,7 +67,8 @@ a threshold on the value at a given time:
 ``score`` follows the scikit-learn signature ``score(X, y)``, so it works only with tabular
 data: with other data types, the predictions are compared with the target explicitly, as above.
 
-Since the bump moves, no single time step separates the classes well. The shapelet stumps split
+Since the bump moves, no single time step separates the classes well. The shapelet stumps (which
+need the ``shapelets`` extra, see :doc:`getting_started`) split
 on the distance from a *shapelet*, a subsequence of one of the training series: the distance of a
 series from a shapelet is its smallest distance over all the positions, so it does not depend on
 where the bump is:
@@ -88,8 +89,8 @@ where the bump is:
    accuracy: 0.96
    euclidean(TS, shp) <= 1.12
 
-The Graphviz drawing of a shapelet tree shows the plot of the shapelet in each node (see
-:doc:`inspecting`).
+The Graphviz drawing of a shapelet tree shows the plot of the shapelet in each node (it needs the
+``graphviz`` extra, see :doc:`inspecting`).
 
 
 Several data types together

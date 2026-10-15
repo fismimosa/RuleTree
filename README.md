@@ -11,15 +11,18 @@ be read, drawn and saved.
 - Rules as text or Graphviz drawings, feature contributions of each prediction.
 - Trees saved to and loaded from JSON, grown further with `partial_fit`.
 - Gradient boosting, XGBoost and explainable boosting machines of RuleTrees.
+- Metrics to evaluate the models: predictions, clusters, size of the trees and fairness.
 - New stumps written by combining a *transformer* (the features) and a *splitter* (the split).
 
 ## Installation
 
-RuleTree requires Python 3.10 or later. From the root of the repository:
+RuleTree requires Python 3.10 or later:
 
 ```bash
-pip install .
-pip install ".[graphviz]"   # optional: drawing the trees (also requires the Graphviz binaries)
+pip install RuleTree                # or, from the root of the repository: pip install .
+pip install "RuleTree[shapelets]"   # optional: shapelet and partial pivot stumps (numba)
+pip install "RuleTree[graphviz]"    # optional: drawing the trees (also requires the Graphviz binaries)
+pip install "RuleTree[all]"         # all the optional features
 ```
 
 ## Example
@@ -66,12 +69,13 @@ The user guide is in [`docs/guides`](docs/guides):
 - [Reading the tree](docs/guides/inspecting.rst): rules, drawings, nodes, feature contributions.
 - [Saving, growing and updating trees](docs/guides/lifecycle.rst).
 - [Ensembles](docs/guides/ensembles.rst): boosting of RuleTrees.
+- [Evaluating the models](docs/guides/evaluating.rst): metrics of predictions, clusters, tree size and fairness.
 - [Extending the library](docs/guides/extending.rst): writing new stumps, transformers and splitters.
 
 The HTML documentation, with the API reference, is built with Sphinx:
 
 ```bash
-pip install -r requirements.docs.txt
+pip install -r requirements.txt -r requirements.docs.txt
 make -C docs html   # docs/_build/html/index.html
 ```
 
