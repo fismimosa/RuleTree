@@ -38,8 +38,8 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
     base_stumps : XGBoostStumpRegressor, default=None
         If None or not an XGBoostStumpRegressor, XGBoostStumpRegressor(lam, min_cover, n_jobs) with a
         warning.
-    **kwargs : dict
-        Other parameters of RuleTreeRegressor.
+    max_leaf_nodes, min_samples_split, prune_useless_leaves, stump_selection, random_state
+        As in RuleTreeRegressor.
 
     Attributes
     ----------
@@ -61,12 +61,17 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
     >>> tree.get_rules()["textual_rule"]
     'X_8 <= -0.004'
     """
-    def __init__(self, gamma=0, lam=1, max_depth=6, min_cover=1, n_jobs=1, base_stumps=None, **kwargs):
+    def __init__(self, gamma=0, lam=1, max_depth=6, min_cover=1, n_jobs=1, base_stumps=None,
+                 max_leaf_nodes=float('inf'), min_samples_split=2, prune_useless_leaves=False,
+                 stump_selection='random', random_state=None):
         """Initialize the RuleTreeXGBoostRegressor; see the class documentation for the parameters."""
+        # explicit parameters (not **kwargs): get_params, clone and to_dict see only the ones in the signature
         if base_stumps is None or not issubclass(base_stumps.__class__, XGBoostStumpRegressor):
             warnings.warn('base_stumps will be set as XGBoostTreeStumpRegressor.',)
             base_stumps = XGBoostStumpRegressor(lam=lam, n_jobs=n_jobs, min_cover=min_cover)
-        super().__init__(max_depth=max_depth, base_stumps=base_stumps, **kwargs)
+        super().__init__(max_leaf_nodes=max_leaf_nodes, min_samples_split=min_samples_split, max_depth=max_depth,
+                         prune_useless_leaves=prune_useless_leaves, base_stumps=base_stumps,
+                         stump_selection=stump_selection, random_state=random_state)
         self.gamma = gamma
         self.lam = lam
         self.min_cover = min_cover

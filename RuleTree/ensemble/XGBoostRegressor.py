@@ -19,8 +19,8 @@ class XGBoostRegressor(GBoostRegressor):
         as many jobs as CPUs, built at fit time.
     learning_rate : float, default=0.3
         Shrinkage of the contribution of each tree.
-    **kwargs : dict
-        Other parameters of GBoostRegressor.
+    n_estimators, loss, patience, val_size, random_state
+        As in GBoostRegressor.
 
     Attributes
     ----------
@@ -46,10 +46,13 @@ class XGBoostRegressor(GBoostRegressor):
     >>> round(model.score(X, y), 3)
     0.569
     """
-    def __init__(self, base_estimator=None, learning_rate=.3, **kwargs):
+    def __init__(self, base_estimator=None, n_estimators=100, learning_rate=.3, loss='squared_loss', patience=5,
+                 val_size=.15, random_state=42):
         """Initialize the XGBoostRegressor; see the class documentation for the parameters."""
         # base_estimator=None: the default RuleTreeXGBoostRegressor is built in fit, not at import time
-        super().__init__(base_estimator=base_estimator, learning_rate=learning_rate, **kwargs)
+        # explicit parameters (not **kwargs): get_params and clone see only the ones in the signature
+        super().__init__(base_estimator=base_estimator, n_estimators=n_estimators, learning_rate=learning_rate,
+                         loss=loss, patience=patience, val_size=val_size, random_state=random_state)
 
     def _get_base_estimator(self):
         """
