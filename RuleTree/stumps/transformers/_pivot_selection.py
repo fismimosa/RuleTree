@@ -254,7 +254,7 @@ class PivotSelection:
             if disc_id != -2:  # -2: the tree did not split
                 discriminatives = [disc_id]
         else:
-            for label in set(y):
+            for label in np.unique(y):  # sorted: set(y) depends on the hash seed with string labels
                 idx_label = np.where(y == label)[0]
                 sub_matrix_label = distance_matrix[:, idx_label]
                 disc_id = self.compute_discriminative(sub_matrix_label, y, sample_weight=sample_weight,

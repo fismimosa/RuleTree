@@ -1,4 +1,7 @@
 import json
+import os
+import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -78,6 +81,27 @@ def test_pivot_classifier(iris):
     model = RuleTreeClassifier(max_depth=3, base_stumps=PivotTreeStumpClassifier()).fit(X, y)
 
     assert np.mean(model.predict(X) == y) > 0.9
+
+
+@pytest.mark.slow
+def test_pivot_classifier_reproducible_with_string_labels():
+    """The pivots do not depend on the hash seed of the process (set of string labels)."""
+    code = ("import numpy as np\n"
+            "from sklearn.datasets import load_wine\n"
+            "from RuleTree import RuleTreeClassifier\n"
+            "from RuleTree.stumps.classification import PivotTreeStumpClassifier\n"
+            "X, y = load_wine(return_X_y=True)\n"
+            "y = np.array(['alpha', 'beta', 'gamma'])[y]\n"
+            "model = RuleTreeClassifier(max_depth=4, random_state=0, base_stumps=PivotTreeStumpClassifier())\n"
+            "print(model.fit(X, y).get_rules())\n")
+    outputs = set()
+    for seed in ("1", "2", "3"):
+        result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
+                                env=os.environ | {"PYTHONHASHSEED": seed})
+        assert result.returncode == 0, result.stderr
+        outputs.add(result.stdout)
+
+    assert len(outputs) == 1
 
 
 def test_partial_pivot_classifier(iris):
