@@ -3,7 +3,6 @@
 import tempfile
 from typing import Optional
 
-import psutil
 
 
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
@@ -28,7 +27,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
 
     Parameters
     ----------
-    n_shapelets : int, default=2 * number of physical CPUs
+    n_shapelets : int, default=8
         Number of shapelets selected at each node.
     n_shapelets_for_selection : int, numpy.inf or 'stratified', default=500
         Number of candidate subsequences extracted from the time series, among which the shapelets
@@ -96,7 +95,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
     (60,)
     """
 
-    def __init__(self, n_shapelets=psutil.cpu_count(logical=False)*2,
+    def __init__(self, n_shapelets=8,
                  n_shapelets_for_selection=500,  # int, inf, or 'stratified'
                  n_ts_for_selection_per_class=100,  # int, inf
                  sliding_window=50,

@@ -3,7 +3,6 @@
 import warnings
 
 import numpy as np
-import psutil
 
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer
 from RuleTree.utils.define import DATA_TYPE_TABULAR
@@ -21,7 +20,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
 
     Parameters
     ----------
-    n_shapelets : int or numpy.inf, default=2 * number of physical CPUs
+    n_shapelets : int or numpy.inf, default=8
         Number of partial pivots selected at each node (numpy.inf with selection='all').
     n_ts_for_selection : int, float or numpy.inf, default=100
         Number (int) or fraction (float) of the instances of the node used to select the pivots.
@@ -69,7 +68,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
     refit_after_select = True
 
     def __init__(self,
-                 n_shapelets=psutil.cpu_count(logical=False) * 2,
+                 n_shapelets=8,
                  n_ts_for_selection=100,  # int, inf
                  n_features_strategy=2,
                  selection='random',  # random, cluster, all
