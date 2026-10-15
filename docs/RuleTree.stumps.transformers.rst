@@ -28,6 +28,22 @@ RuleTree.stumps.transformers.MatrixTransformer module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.transformers.MultiplePivotTransformer module
+------------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.transformers.MultiplePivotTransformer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+RuleTree.stumps.transformers.ObliquePivotTransformer module
+-----------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.transformers.ObliquePivotTransformer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.transformers.ObliqueTransformer module
 ------------------------------------------------------
 

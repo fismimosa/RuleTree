@@ -3,6 +3,7 @@
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
+from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.utils.define import MODEL_TYPE_REG
 
 
@@ -16,6 +17,10 @@ class PivotSelection:
     distance best splits the target and best contrasts close and distant instances, and the
     discriminative pivot is found by a depth-1 regression tree.
 
+    With an oblique ``discriminative``, the discriminative pivots are instead the instances combined by
+    an oblique direction on the distances (Householder or bivariate, see the oblique transformers):
+    up to ``max_oblique_features`` (Householder) or two (bivariate) pivots for each class.
+
     Parameters
     ----------
     ml_task : {MODEL_TYPE_CLF, MODEL_TYPE_REG}
@@ -28,6 +33,15 @@ class PivotSelection:
     reg_max_thresholds : int, default=None
         Regression only: maximum number of thresholds tested on the distances from each pivot. None
         (or not finite) for ``max(256, sqrt(n))``.
+    discriminative : {'tree', 'householder', 'bivariate'}, default='tree'
+        How the discriminative pivots are found: the root split of a decision tree, or the instances
+        combined by an oblique direction.
+    max_oblique_features : int, default=2
+        Householder only: maximum number of pivots combined by the reflection.
+    tau : float, default=1e-4
+        Householder only: threshold of the reflection (see HouseholderTransformer).
+    n_orientations : int, default=10
+        Bivariate only: number of angles (see BivariateTransformer).
     **tree_params : dict
         Parameters of the decision trees that find the discriminative pivots.
 
@@ -37,11 +51,18 @@ class PivotSelection:
         The candidate pivots: the descriptive ones, then the discriminative ones.
     candidate_names_, descriptive_names_, discriminative_names_ : numpy.ndarray of int
         Indices of the candidate, descriptive and discriminative pivots (as given by ``idx``).
+    candidate_labels_ : numpy.ndarray
+        Target of the candidate pivots.
     """
 
-    def __init__(self, ml_task, k=None, reg_contrast_lambda=.2, reg_max_thresholds=None, **tree_params):
+    def __init__(self, ml_task, k=None, reg_contrast_lambda=.2, reg_max_thresholds=None, discriminative='tree',
+                 max_oblique_features=2, tau=1e-4, n_orientations=10, **tree_params):
         """Initialize the selection; see the class documentation for the parameters."""
         self.ml_task = ml_task
+        self.discriminative = discriminative
+        self.max_oblique_features = max_oblique_features
+        self.tau = tau
+        self.n_orientations = n_orientations
         self.k = k
         self.reg_contrast_lambda = reg_contrast_lambda
         try:
@@ -215,13 +236,35 @@ class PivotSelection:
 
         Returns
         -------
-        int
-            Index of the most discriminative instance.
+        list of int
+            Indices (columns of sub_matrix) of the discriminative instances: the root feature of the
+            tree, or the instances combined by the oblique direction. Empty if there is no split.
         """
-        disc = self._base_model()
-        disc.fit(sub_matrix, y, sample_weight=sample_weight, check_input=check_input)
-        discriminative_id = disc.tree_.feature[0]
-        return discriminative_id
+        if self.discriminative == "tree":
+            disc = self._base_model()
+            disc.fit(sub_matrix, y, sample_weight=sample_weight, check_input=check_input)
+            discriminative_id = disc.tree_.feature[0]
+            return [] if discriminative_id == -2 else [int(discriminative_id)]  # -2: the tree did not split
+
+        oblique = self._oblique_model()
+        try:
+            oblique.fit(sub_matrix, y, sample_weight=sample_weight)
+        except NoSplitFoundWarning:
+            return []
+        return oblique.oblique_features()
+
+    def _oblique_model(self):
+        """Oblique transformer of ``discriminative``, whose directions find the discriminative pivots."""
+        # imported here: the transformers package imports this module
+        from RuleTree.stumps.transformers.BivariateTransformer import BivariateTransformer
+        from RuleTree.stumps.transformers.HouseholderTransformer import HouseholderTransformer
+
+        if self.discriminative == "householder":
+            return HouseholderTransformer(max_oblique_features=self.max_oblique_features, tau=self.tau,
+                                          random_state=self.tree_params.get("random_state"))
+        if self.discriminative == "bivariate":
+            return BivariateTransformer(self.ml_task, n_orientations=self.n_orientations, tree_params=self.tree_params)
+        raise ValueError(f"Unknown discriminative {self.discriminative!r}: 'tree', 'householder' or 'bivariate'")
 
     def fit(self, X, y, distance_matrix, idx, sample_weight=None, check_input=True):
         """
@@ -249,18 +292,15 @@ class PivotSelection:
         descriptives, discriminatives = [], []
         if self.ml_task == MODEL_TYPE_REG:
             descriptives = [self.compute_descriptive_regression(distance_matrix, y, sample_weight=sample_weight)]
-            disc_id = self.compute_discriminative(distance_matrix, y, sample_weight=sample_weight,
-                                                  check_input=check_input)
-            if disc_id != -2:  # -2: the tree did not split
-                discriminatives = [disc_id]
+            discriminatives = self.compute_discriminative(distance_matrix, y, sample_weight=sample_weight,
+                                                          check_input=check_input)
         else:
             for label in np.unique(y):  # sorted: set(y) depends on the hash seed with string labels
                 idx_label = np.where(y == label)[0]
                 sub_matrix_label = distance_matrix[:, idx_label]
-                disc_id = self.compute_discriminative(sub_matrix_label, y, sample_weight=sample_weight,
-                                                      check_input=check_input)
-                if disc_id != -2:
-                    discriminatives.append(idx_label[disc_id])
+                disc_ids = self.compute_discriminative(sub_matrix_label, y, sample_weight=sample_weight,
+                                                       check_input=check_input)
+                discriminatives += idx_label[disc_ids].tolist()
                 descriptives.append(idx_label[self.compute_descriptive(sub_matrix_label[idx_label])])
 
         candidates = descriptives + discriminatives
@@ -268,4 +308,5 @@ class PivotSelection:
         self.descriptive_names_ = idx[descriptives]
         self.discriminative_names_ = idx[discriminatives]
         self.candidate_names_ = idx[candidates]
+        self.candidate_labels_ = np.asarray(y)[candidates]
         return self

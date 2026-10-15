@@ -154,6 +154,21 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
         nonzero = np.flatnonzero(np.abs(column) > 1e-12)
         return [int(self.num_pre_transformed_[i]) for i in nonzero], [float(c) for c in column[nonzero]]
 
+    def oblique_features(self) -> list:
+        """
+        Columns of the data combined by the oblique directions, i.e. the ones with more than one
+        non-zero coefficient (the axis-parallel directions are ignored). Used by the oblique pivot
+        stumps to choose the discriminative pivots.
+
+        Returns
+        -------
+        features : list of int
+            Sorted columns; empty if every direction is parallel to an axis.
+        """
+        nonzero = np.abs(self.coefficients_) > 1e-12
+        oblique = nonzero[:, nonzero.sum(axis=0) > 1].any(axis=1)
+        return [int(self.num_pre_transformed_[i]) for i in np.flatnonzero(oblique)]
+
     def feature_id(self, feature):
         """
         Identifier of a direction: the columns of the data it combines.

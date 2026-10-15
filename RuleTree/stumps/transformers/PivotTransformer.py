@@ -49,6 +49,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
         The candidate pivots (only the chosen one after ``select``), standardized.
     candidate_names_ : numpy.ndarray of shape (n_candidates,)
         Indices of the candidate pivots in the training set.
+    candidate_labels_ : numpy.ndarray of shape (n_candidates,)
+        Target of the candidate pivots (not saved by get_state).
     pivots_ : dict
         Indices in the training set of the ``descriptives``, ``discriminatives`` and ``candidates``
         pivots of the node (all of them, also after ``select``).
@@ -124,13 +126,13 @@ class PivotTransformer(RuleTreeBaseTransformer):
                                                      cache)
         X_scaled = self.scaler_.transform(X[idx][:, self.num_pre_transformed_])
 
-        selection = PivotSelection(self.ml_task, k=self.k, reg_contrast_lambda=self.reg_contrast_lambda,
-                                   reg_max_thresholds=self.reg_max_thresholds, **(self.tree_params or {}))
+        selection = self._selection()
         selection.fit(X_scaled, y[idx], distance_matrix[np.ix_(idx, idx)], idx,
                       sample_weight=None if sample_weight is None else sample_weight[idx])
 
         self.candidates_ = selection.candidates_
         self.candidate_names_ = selection.candidate_names_
+        self.candidate_labels_ = selection.candidate_labels_
         self.pivots_ = {"descriptives": selection.descriptive_names_.tolist(),
                         "discriminatives": selection.discriminative_names_.tolist(),
                         "candidates": selection.candidate_names_.tolist()}
@@ -203,12 +205,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
             'X_split_instance': self.candidates_[0],
             'pivot_name': self.feature_id(0),
             'pivots': self.pivots_,
-            'scaler': {
-                'mean_': self.scaler_.mean_.tolist(),
-                'scale_': self.scaler_.scale_.tolist(),
-                'var_': self.scaler_.var_.tolist(),
-                'n_samples_seen_': self.scaler_.n_samples_seen_
-            },
+            'scaler': scaler_state(self.scaler_),
         }
 
     def set_state(self, state):
@@ -229,14 +226,61 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.candidates_ = np.array([state['X_split_instance']])
         self.candidate_names_ = np.array([int(state['pivot_name'])])
         self.pivots_ = state['pivots']
-
-        self.scaler_ = StandardScaler()
-        self.scaler_.mean_ = np.array(state['scaler']['mean_'])
-        self.scaler_.scale_ = np.array(state['scaler']['scale_'])
-        self.scaler_.var_ = np.array(state['scaler']['var_'])
-        self.scaler_.n_samples_seen_ = state['scaler']['n_samples_seen_']
-
+        self.scaler_ = scaler_from_state(state['scaler'])
         return self
+
+    def _selection(self):
+        """
+        A new PivotSelection with the parameters of the transformer.
+
+        Returns
+        -------
+        selection : PivotSelection
+        """
+        return PivotSelection(self.ml_task, k=self.k, reg_contrast_lambda=self.reg_contrast_lambda,
+                              reg_max_thresholds=self.reg_max_thresholds, **(self.tree_params or {}))
+
+
+def scaler_state(scaler: StandardScaler) -> dict:
+    """
+    JSON-friendly state of a fitted StandardScaler, restored by scaler_from_state.
+
+    Parameters
+    ----------
+    scaler : StandardScaler
+        Fitted scaler.
+
+    Returns
+    -------
+    state : dict
+    """
+    return {
+        'mean_': scaler.mean_.tolist(),
+        'scale_': scaler.scale_.tolist(),
+        'var_': scaler.var_.tolist(),
+        'n_samples_seen_': scaler.n_samples_seen_
+    }
+
+
+def scaler_from_state(state: dict) -> StandardScaler:
+    """
+    Fitted StandardScaler from the state created by scaler_state.
+
+    Parameters
+    ----------
+    state : dict
+        State of the scaler.
+
+    Returns
+    -------
+    scaler : StandardScaler
+    """
+    scaler = StandardScaler()
+    scaler.mean_ = np.array(state['mean_'])
+    scaler.scale_ = np.array(state['scale_'])
+    scaler.var_ = np.array(state['var_'])
+    scaler.n_samples_seen_ = state['n_samples_seen_']
+    return scaler
 
 
 def _pivot_cache(X, numerical, distance_measure, data_type, cache):

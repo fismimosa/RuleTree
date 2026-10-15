@@ -6,8 +6,10 @@ import sklearn
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.transformers import (BivariateTransformer, HouseholderTransformer, MatrixTransformer,
-                                          PartialPivotTransformer, PartialProximityTransformer, PivotTransformer,
-                                          ProximityTransformer, ShapeletTransformer)
+                                          MultiplePivotTransformer, ObliquePivotTransformer, PartialPivotTransformer,
+                                          PartialProximityTransformer, PivotTransformer, ProximityTransformer,
+                                          ShapeletTransformer)
+from RuleTree.stumps.transformers._pivot_selection import PivotSelection
 from RuleTree.utils.data_utils import json_numpy_encoder
 from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_CLF, MODEL_TYPE_REG
 
@@ -110,7 +112,10 @@ def test_partial_pivot_transformer(iris):
     (BivariateTransformer(), {"tabular"}),
     (ProximityTransformer(), {"ts"}),
     (PartialProximityTransformer(), {"tabular"}),
-], ids=["Matrix", "Pivot", "PartialPivot", "Shapelet", "Householder", "Bivariate", "Proximity", "PartialProximity"])
+    (MultiplePivotTransformer(), {"tabular"}),
+    (ObliquePivotTransformer(), {"tabular"}),
+], ids=["Matrix", "Pivot", "PartialPivot", "Shapelet", "Householder", "Bivariate", "Proximity", "PartialProximity",
+        "MultiplePivot", "ObliquePivot"])
 def test_supported_data_types(transformer, data_types):
     assert set(transformer.supported_data_types) == data_types
     assert sklearn.clone(transformer).get_params() == transformer.get_params()
@@ -205,3 +210,76 @@ def test_proximity_transformer_needs_two_shapelets(time_series):
 
     with pytest.raises(NoSplitFoundWarning, match="two shapelets"):
         ProximityTransformer(n_shapelets=1, sliding_window=10, selection="random").fit(X, y)
+
+
+@pytest.mark.parametrize("discriminative, max_per_class", [("tree", 1), ("householder", 2), ("bivariate", 2)])
+def test_pivot_selection_discriminatives(discriminative, max_per_class, iris):
+    """The discriminative pivots of each class are instances of the class: one, or the ones of an oblique split."""
+    X, y = iris
+    distance_matrix = np.linalg.norm(X[:, None] - X[None], axis=2)
+
+    selection = PivotSelection(MODEL_TYPE_CLF, discriminative=discriminative, random_state=0)
+    selection.fit(X, y, distance_matrix, np.arange(len(y)))
+
+    labels = y[selection.discriminative_names_]
+    assert all(0 < np.sum(labels == label) <= max_per_class for label in np.unique(y))
+    assert np.array_equal(selection.candidate_labels_, y[selection.candidate_names_])
+
+
+def test_pivot_selection_unknown_discriminative(iris):
+    X, y = iris
+
+    with pytest.raises(ValueError, match="discriminative"):
+        PivotSelection(MODEL_TYPE_CLF, discriminative="forest").fit(X, y, np.ones((len(y), len(y))), np.arange(len(y)))
+
+
+@pytest.mark.parametrize("ml_task", [MODEL_TYPE_CLF, MODEL_TYPE_REG])
+def test_multiple_pivot_transformer(ml_task, iris):
+    X, y = iris
+    target = y if ml_task == MODEL_TYPE_CLF else X[:, 3]
+
+    transformer = MultiplePivotTransformer(ml_task, tree_params={"random_state": 0}).fit(X, target)
+
+    labels = dict(zip(transformer.candidate_names_, transformer.candidate_labels_))
+    distances = PivotTransformer.transform(transformer, X)
+    comparisons = transformer.transform(X)
+    assert comparisons.shape == (len(y), len(transformer.pairs_))
+    for column, (a, b) in enumerate(transformer.pairs_):
+        assert np.array_equal(comparisons[:, column], distances[:, a] > distances[:, b])
+        if ml_task == MODEL_TYPE_CLF:  # only pivots of different classes
+            assert labels[transformer.candidate_names_[a]] != labels[transformer.candidate_names_[b]]
+
+    column = len(transformer.pairs_) - 1
+    pair = transformer.feature_id(column)
+    assert transformer.select(column) == 0
+    assert transformer.feature_id(0) == pair
+    assert np.array_equal(transformer.transform(X)[:, 0], comparisons[:, column])
+
+    loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
+    assert np.array_equal(loaded.transform(X), transformer.transform(X))
+    assert loaded.feature_id(0) == pair
+
+
+@pytest.mark.parametrize("oblique_split_type", ["householder", "bivariate"])
+def test_oblique_pivot_transformer(oblique_split_type, iris):
+    """Each column is a linear combination of the distances from the candidate pivots."""
+    X, y = iris
+
+    transformer = ObliquePivotTransformer(oblique_split_type=oblique_split_type, n_orientations=4,
+                                          tree_params={"random_state": 0}).fit(X, y)
+
+    distances = PivotTransformer.transform(transformer, X)
+    names = list(transformer.candidate_names_)
+    X_transformed = transformer.transform(X)
+    for column in range(X_transformed.shape[1]):
+        pivots, coefficients = transformer.combination(column)
+        assert np.allclose(X_transformed[:, column], distances[:, [names.index(p) for p in pivots]] @ coefficients)
+
+    column = X_transformed.shape[1] - 1
+    pivots = transformer.feature_id(column)
+    assert transformer.select(column) == 0
+    assert transformer.feature_id(0) == pivots
+    assert np.allclose(transformer.transform(X)[:, 0], X_transformed[:, column])
+
+    loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
+    assert np.allclose(loaded.transform(X), transformer.transform(X))

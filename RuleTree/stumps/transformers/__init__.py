@@ -7,7 +7,10 @@ from .HouseholderTransformer import HouseholderTransformer
 from .BivariateTransformer import BivariateTransformer
 from .ProximityTransformer import ProximityTransformer
 from .PartialProximityTransformer import PartialProximityTransformer
+from .MultiplePivotTransformer import MultiplePivotTransformer
+from .ObliquePivotTransformer import ObliquePivotTransformer
 
 __all__ = ["MatrixTransformer", "PivotTransformer", "ShapeletTransformer", "PartialPivotTransformer",
            "ObliqueTransformer", "HouseholderTransformer", "BivariateTransformer",
-           "ProximityTransformer", "PartialProximityTransformer"]
+           "ProximityTransformer", "PartialProximityTransformer",
+           "MultiplePivotTransformer", "ObliquePivotTransformer"]

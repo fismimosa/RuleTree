@@ -29,6 +29,15 @@ Available stumps
      - tabular
      - distance from a *pivot*, an instance of the node that represents a class or separates the
        classes
+   * - :class:`~RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.MultiplePivotTreeStumpClassifier`,
+       :class:`~RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.MultipleObliquePivotTreeStumpClassifier`
+     - classification
+     - tabular
+     - closer to one pivot than to another one
+   * - :class:`~RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.ObliquePivotTreeStumpClassifier`
+     - classification
+     - tabular
+     - threshold on a linear combination of the distances from a few pivots
    * - :class:`~RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier`
      - classification
      - tabular
@@ -205,6 +214,36 @@ candidates and the one used by the split. For the whole tree:
    R {'descriptives': [167, 249], 'discriminatives': [461, 140], 'candidates': [167, 249, 461, 140], 'used': 461}
    Rl {'descriptives': [167, 421], 'discriminatives': [368, 191], 'candidates': [167, 421, 368, 191], 'used': 368}
    Rr {'descriptives': [40, 415], 'discriminatives': [199, 71], 'candidates': [40, 415, 199, 71], 'used': 199}
+
+Three variants use the same candidate pivots in other ways:
+
+- :class:`~RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.MultiplePivotTreeStumpClassifier`
+  compares two pivots of different classes: ``P_a <= P_b`` sends left the instances closer to the
+  training instance ``a`` than to ``b``, with no threshold;
+- :class:`~RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.ObliquePivotTreeStumpClassifier`
+  splits on a linear combination of the distances from a few pivots (see `Oblique stumps`_), and
+  finds the discriminative pivots of each class with an oblique split on the distances;
+- :class:`~RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.MultipleObliquePivotTreeStumpClassifier`
+  compares two pivots, as the first one, with the discriminative pivots of the second one.
+
+.. code-block:: python
+
+   from RuleTree.stumps.classification import (MultipleObliquePivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier,
+                                               ObliquePivotTreeStumpClassifier)
+
+   for stump in [MultiplePivotTreeStumpClassifier(), ObliquePivotTreeStumpClassifier(),
+                 MultipleObliquePivotTreeStumpClassifier()]:
+       tree = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=stump).fit(X, y)
+       print(f"{type(stump).__name__}: {tree.root.stump.get_rule()['textual_rule']}, accuracy {tree.score(X, y):.3f}")
+
+.. code-block:: text
+   :caption: Output
+
+   MultiplePivotTreeStumpClassifier: P_441 <= P_480, accuracy 0.930
+   ObliquePivotTreeStumpClassifier: 0.633 * P_480 - 0.443 * P_461 <= -5.801, accuracy 0.954
+   MultipleObliquePivotTreeStumpClassifier: P_441 <= P_480, accuracy 0.933
+
+Their ``get_pivots`` returns all the pivots used by the split in ``used``.
 
 
 Oblique stumps

@@ -8,10 +8,11 @@ import pytest
 import sklearn
 
 from RuleTree import RuleTreeClassifier, RuleTreeRegressor
-from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier,
-                                            PartialPivotTreeStumpClassifier, PartialProximityTreeStumpClassifier,
-                                            PivotTreeStumpClassifier, ProximityTreeStumpClassifier,
-                                            ShapeletTreeStumpClassifier)
+from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, MultipleObliquePivotTreeStumpClassifier,
+                                            MultiplePivotTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier,
+                                            ObliquePivotTreeStumpClassifier, PartialPivotTreeStumpClassifier,
+                                            PartialProximityTreeStumpClassifier, PivotTreeStumpClassifier,
+                                            ProximityTreeStumpClassifier, ShapeletTreeStumpClassifier)
 from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor,
                                         ObliqueDecisionTreeStumpRegressor, PivotTreeStumpRegressor,
                                         ProximityTreeStumpRegressor, ShapeletTreeStumpRegressor)
@@ -58,6 +59,13 @@ STUMPS = [
     (lambda: ProximityTreeStumpClassifier(**shapelet_kwargs()), DATA_TYPE_TS, "time_series", False),
     (lambda: ProximityTreeStumpRegressor(**shapelet_kwargs(), mi_n_neighbors=5), DATA_TYPE_TS, "time_series", True),
     (lambda: PartialProximityTreeStumpClassifier(), DATA_TYPE_TABULAR, "iris", False),
+    (lambda: MultiplePivotTreeStumpClassifier(), DATA_TYPE_TABULAR, "iris", False),
+    (lambda: ObliquePivotTreeStumpClassifier(), DATA_TYPE_TABULAR, "iris", False),
+    (lambda: ObliquePivotTreeStumpClassifier(oblique_split_type="bivariate", n_orientations=4), DATA_TYPE_TABULAR,
+     "iris", False),
+    (lambda: MultipleObliquePivotTreeStumpClassifier(), DATA_TYPE_TABULAR, "iris", False),
+    (lambda: MultipleObliquePivotTreeStumpClassifier(oblique_split_type="bivariate", n_orientations=4),
+     DATA_TYPE_TABULAR, "iris", False),
 ]
 
 

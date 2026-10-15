@@ -5,6 +5,9 @@ from .PartialPivotTreeStumpClassifier import PartialPivotTreeStumpClassifier
 from .ObliqueDecisionTreeStumpClassifier import ObliqueDecisionTreeStumpClassifier
 from .ProximityTreeStumpClassifier import ProximityTreeStumpClassifier
 from .PartialProximityTreeStumpClassifier import PartialProximityTreeStumpClassifier
+from .MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
+from .ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
+from .MultipleObliquePivotTreeStumpClassifier import MultipleObliquePivotTreeStumpClassifier
 
 __all__ = [
     "DecisionTreeStumpClassifier",
@@ -14,4 +17,7 @@ __all__ = [
     "ObliqueDecisionTreeStumpClassifier",
     "ProximityTreeStumpClassifier",
     "PartialProximityTreeStumpClassifier",
+    "MultiplePivotTreeStumpClassifier",
+    "ObliquePivotTreeStumpClassifier",
+    "MultipleObliquePivotTreeStumpClassifier",
 ]
