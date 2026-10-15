@@ -20,6 +20,14 @@ RuleTree.utils.shapelet\_transform.matrix\_to\_vector\_distances module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.utils.shapelet_transform.drawing module
+------------------------------------------------
+
+.. automodule:: RuleTree.utils.shapelet_transform.drawing
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 Module contents
 ---------------
 

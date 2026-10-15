@@ -36,6 +36,14 @@ RuleTree.stumps.regression.PivotTreeStumpRegressor module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.regression.ProximityTreeStumpRegressor module
+-------------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.regression.ProximityTreeStumpRegressor
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.regression.ShapeletTreeStumpRegressor module
 ------------------------------------------------------------
 

@@ -9,11 +9,12 @@ import sklearn
 
 from RuleTree import RuleTreeClassifier, RuleTreeRegressor
 from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier,
-                                            PartialPivotTreeStumpClassifier, PivotTreeStumpClassifier,
+                                            PartialPivotTreeStumpClassifier, PartialProximityTreeStumpClassifier,
+                                            PivotTreeStumpClassifier, ProximityTreeStumpClassifier,
                                             ShapeletTreeStumpClassifier)
 from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor,
                                         ObliqueDecisionTreeStumpRegressor, PivotTreeStumpRegressor,
-                                        ShapeletTreeStumpRegressor)
+                                        ProximityTreeStumpRegressor, ShapeletTreeStumpRegressor)
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
 from RuleTree.stumps.Stump import Stump
 from RuleTree.stumps.splitters import FairSplitter, RegressionSplitter
@@ -54,6 +55,9 @@ STUMPS = [
     (lambda: ObliqueDecisionTreeStumpClassifier("bivariate"), DATA_TYPE_TABULAR, "iris", False),
     (lambda: ObliqueDecisionTreeStumpRegressor(), DATA_TYPE_TABULAR, "diabetes", True),
     (lambda: ObliqueDecisionTreeStumpRegressor("bivariate", n_orientations=4), DATA_TYPE_TABULAR, "diabetes", True),
+    (lambda: ProximityTreeStumpClassifier(**shapelet_kwargs()), DATA_TYPE_TS, "time_series", False),
+    (lambda: ProximityTreeStumpRegressor(**shapelet_kwargs(), mi_n_neighbors=5), DATA_TYPE_TS, "time_series", True),
+    (lambda: PartialProximityTreeStumpClassifier(), DATA_TYPE_TABULAR, "iris", False),
 ]
 
 

@@ -6,7 +6,8 @@ import sklearn
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.transformers import (BivariateTransformer, HouseholderTransformer, MatrixTransformer,
-                                          PartialPivotTransformer, PivotTransformer, ShapeletTransformer)
+                                          PartialPivotTransformer, PartialProximityTransformer, PivotTransformer,
+                                          ProximityTransformer, ShapeletTransformer)
 from RuleTree.utils.data_utils import json_numpy_encoder
 from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_CLF, MODEL_TYPE_REG
 
@@ -107,7 +108,9 @@ def test_partial_pivot_transformer(iris):
     (ShapeletTransformer(), {"ts"}),
     (HouseholderTransformer(), {"tabular"}),
     (BivariateTransformer(), {"tabular"}),
-], ids=["Matrix", "Pivot", "PartialPivot", "Shapelet", "Householder", "Bivariate"])
+    (ProximityTransformer(), {"ts"}),
+    (PartialProximityTransformer(), {"tabular"}),
+], ids=["Matrix", "Pivot", "PartialPivot", "Shapelet", "Householder", "Bivariate", "Proximity", "PartialProximity"])
 def test_supported_data_types(transformer, data_types):
     assert set(transformer.supported_data_types) == data_types
     assert sklearn.clone(transformer).get_params() == transformer.get_params()
@@ -159,3 +162,46 @@ def test_oblique_transformers_need_numerical_features(iris_mixed):
         HouseholderTransformer().fit(X[:, [0]], y)
     with pytest.raises(NoSplitFoundWarning, match="two numerical"):
         BivariateTransformer().fit(X[:, [0, 1]], y)
+
+
+@pytest.mark.parametrize("transformer, dataset", [
+    (ProximityTransformer(n_shapelets=4, sliding_window=10, selection="random"), "time_series"),
+    (PartialProximityTransformer(n_shapelets=6, random_state=0), "iris"),
+], ids=["Proximity", "PartialProximity"])
+def test_proximity_transformer(transformer, dataset, request):
+    """One 0/1 column per pair of references: 1 where the instance is closer to the second one."""
+    X, y = request.getfixturevalue(dataset)
+
+    transformer.fit(X, y)
+
+    distances = transformer.st_.transform(X)
+    comparisons = transformer.transform(X)
+    assert comparisons.shape == (len(y), len(transformer.pairs_))
+    for column, (i, j) in enumerate(transformer.pairs_):
+        assert np.array_equal(comparisons[:, column], distances[:, i] > distances[:, j])
+
+    column = len(transformer.pairs_) - 1
+    assert transformer.select(column) == 0
+    assert len(transformer.st_.shapelets) == 2 and transformer.pairs_ == [(0, 1)]
+    assert np.array_equal(transformer.transform(X)[:, 0], comparisons[:, column])
+
+    loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
+    assert np.array_equal(loaded.transform(X), transformer.transform(X))
+
+
+def test_partial_proximity_compares_pivots_on_the_same_features(iris):
+    X, y = iris
+
+    for same_features in (True, False):
+        transformer = PartialProximityTransformer(n_shapelets=6, n_features_strategy=(1, 2), random_state=0,
+                                                  proximity_on_same_features=same_features).fit(X, y)
+        used = ~np.isnan(transformer.st_.shapelets)
+        same = [np.array_equal(used[i], used[j]) for i, j in transformer.pairs_]
+        assert all(same) if same_features else len(transformer.pairs_) == 15
+
+
+def test_proximity_transformer_needs_two_shapelets(time_series):
+    X, y = time_series
+
+    with pytest.raises(NoSplitFoundWarning, match="two shapelets"):
+        ProximityTransformer(n_shapelets=1, sliding_window=10, selection="random").fit(X, y)

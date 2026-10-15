@@ -43,6 +43,15 @@ Available stumps
      - classification, regression
      - time series
      - distance from a *shapelet*, a subsequence of a time series
+   * - :class:`~RuleTree.stumps.classification.ProximityTreeStumpClassifier.ProximityTreeStumpClassifier`,
+       :class:`~RuleTree.stumps.regression.ProximityTreeStumpRegressor.ProximityTreeStumpRegressor`
+     - classification, regression
+     - time series
+     - closer to one shapelet than to another one (see :doc:`multimodal`)
+   * - :class:`~RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.PartialProximityTreeStumpClassifier`
+     - classification
+     - tabular
+     - closer to one partial pivot than to another one
    * - :class:`~RuleTree.stumps.regression.FairTreeStumpRegressor.FairTreeStumpRegressor`
      - regression (and clustering)
      - tabular
@@ -300,8 +309,11 @@ Other stumps
 
 - :class:`~RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier`
   restricts the pivots to a few features, so that the rules are shorter.
-- The shapelet stumps work on time series: see :doc:`multimodal`.
-- The shapelet and partial pivot stumps need the ``shapelets`` extra (see :doc:`getting_started`).
+  :class:`~RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.PartialProximityTreeStumpClassifier`
+  compares two of them: the instances closer to the first one go left.
+- The shapelet and proximity stumps work on time series: see :doc:`multimodal`.
+- The shapelet, proximity and partial pivot stumps need the ``shapelets`` extra (see
+  :doc:`getting_started`).
 - :class:`~RuleTree.stumps.regression.XGBoostStumpRegressor.XGBoostStumpRegressor` is the stump of
   the XGBoost trees: see :doc:`ensembles`.
 - New stumps can be written by combining a *transformer* and a *splitter*: see :doc:`extending`.

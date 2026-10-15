@@ -20,7 +20,7 @@ RuleTree requires Python 3.10 or later:
 
 ```bash
 pip install RuleTree                # or, from the root of the repository: pip install .
-pip install "RuleTree[shapelets]"   # optional: shapelet and partial pivot stumps (numba)
+pip install "RuleTree[shapelets]"   # optional: shapelet, proximity and partial pivot stumps (numba)
 pip install "RuleTree[graphviz]"    # optional: drawing the trees (also requires the Graphviz binaries)
 pip install "RuleTree[all]"         # all the optional features
 ```

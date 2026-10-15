@@ -176,20 +176,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
             "is_categorical": False,
         }
 
-        if columns_names is None:
-            columns_names = [f"Feat. {i}" for i in range(self.st.shapelets.shape[1])]
-
-        pivot = np.copy(self.st.shapelets[self.feature_original])
-        if scaler is not None:
-            pivot = scaler.inverse_transform(pivot.reshape(1, -1)).flatten()
-        frac_not_null = 1- np.isnan(pivot).sum() / pivot.shape[0]
-        if frac_not_null <= .50:
-            feature_list = [f'{name}={val}' for name, val in zip(columns_names, pivot) if not np.isnan(val)]
-            str_feat = 'd: ' + (", ".join(feature_list))
-        else:
-            feature_list = [f'{name}={val}' for name, val in zip(columns_names, pivot) if np.isnan(val)]
-            str_feat = f"d all excpet: {', '.join(feature_list)}"
-
+        str_feat = describe_partial_pivot(self.st.shapelets[self.feature_original], columns_names, scaler)
         rule["feature_name"] = f"SP{rule['feature_idx']}({str_feat})"
 
         comparison = "<="
@@ -209,3 +196,37 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         }
 
         return rule
+
+
+def describe_partial_pivot(pivot, columns_names=None, scaler=None) -> str:
+    """
+    Description of a partial pivot by the values of its features, e.g.
+    ``d: petal length=1.3, petal width=0.2``.
+
+    Parameters
+    ----------
+    pivot : numpy.ndarray of shape (n_features,)
+        The partial pivot: nan for the features it does not use.
+    columns_names : list of str, default=None
+        Names of the features. If None, ``Feat. <index>``.
+    scaler : TransformerMixin, default=None
+        Scaler used to preprocess the data: the values are shown in the original scale.
+
+    Returns
+    -------
+    description : str
+        The features used by the pivot and their values; if it uses more than half of the
+        features, the ones it does not use.
+    """
+    if columns_names is None:
+        columns_names = [f"Feat. {i}" for i in range(pivot.shape[0])]
+
+    pivot = np.copy(pivot)
+    if scaler is not None:
+        pivot = scaler.inverse_transform(pivot.reshape(1, -1)).flatten()
+    frac_not_null = 1 - np.isnan(pivot).sum() / pivot.shape[0]
+    if frac_not_null <= .50:
+        feature_list = [f'{name}={val}' for name, val in zip(columns_names, pivot) if not np.isnan(val)]
+        return 'd: ' + (", ".join(feature_list))
+    feature_list = [f'{name}={val}' for name, val in zip(columns_names, pivot) if np.isnan(val)]
+    return f"d all excpet: {', '.join(feature_list)}"

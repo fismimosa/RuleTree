@@ -25,7 +25,7 @@ Some features need packages that are not installed by default. They are installe
 
 .. code-block:: bash
 
-   pip install "RuleTree[shapelets]"   # shapelet and partial pivot stumps (numba)
+   pip install "RuleTree[shapelets]"   # shapelet, proximity and partial pivot stumps (numba)
    pip install "RuleTree[graphviz]"    # drawing the trees (also requires the Graphviz binaries)
    pip install "RuleTree[kmedoids]"    # shapelets selected with k-medoids (scikit-learn-extra)
    pip install "RuleTree[all]"         # all of the above

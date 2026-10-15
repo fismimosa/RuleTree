@@ -44,10 +44,26 @@ RuleTree.stumps.transformers.PartialPivotTransformer module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.transformers.PartialProximityTransformer module
+---------------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.transformers.PartialProximityTransformer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.transformers.PivotTransformer module
 ----------------------------------------------------
 
 .. automodule:: RuleTree.stumps.transformers.PivotTransformer
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+RuleTree.stumps.transformers.ProximityTransformer module
+--------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.transformers.ProximityTransformer
    :members:
    :show-inheritance:
    :undoc-members:

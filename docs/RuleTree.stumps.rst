@@ -31,6 +31,14 @@ RuleTree.stumps.PivotTreeStump module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.ProximityTreeStump module
+-----------------------------------------
+
+.. automodule:: RuleTree.stumps.ProximityTreeStump
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.Stump module
 ----------------------------
 

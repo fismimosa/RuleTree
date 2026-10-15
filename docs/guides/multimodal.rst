@@ -92,6 +92,35 @@ where the bump is:
 The Graphviz drawing of a shapelet tree shows the plot of the shapelet in each node (it needs the
 ``graphviz`` extra, see :doc:`inspecting`).
 
+The proximity stumps compare two shapelets instead: the series closer to the first one than to the
+second one go left, with no threshold. They fit classes that differ in the kind of pattern rather
+than in how close a series is to one of them, e.g. a bump against a dip:
+
+.. code-block:: python
+
+   from RuleTree.stumps.classification import ProximityTreeStumpClassifier
+
+   rng_shape = np.random.default_rng(1)
+   y_shape = rng_shape.integers(0, 2, size=200)
+   X_shape = rng_shape.normal(scale=0.4, size=(200, 1, 50))
+   for i, start in enumerate(rng_shape.integers(5, 35, size=200)):
+       X_shape[i, 0, start:start + 10] += 1.0 if y_shape[i] == 0 else -1.0  # a bump or a dip
+
+   proximity = ProximityTreeStumpClassifier(n_shapelets=6, sliding_window=10, selection="random")
+   model = RuleTreeClassifier(max_depth=1, base_stumps=proximity, random_state=0).fit(X_ts=X_shape, y=y_shape)
+
+   print("accuracy:", round((model.predict(X_ts=X_shape) == y_shape).mean(), 3))
+   print(model.get_rules()["textual_rule"])
+
+.. code-block:: text
+   :caption: Output
+
+   accuracy: 1.0
+   euclidean(TS, green_shp) <= euclidean(TS, red_shp)
+
+The two shapelets of the split are ``model.root.stump.st.shapelets``, the first one green and the
+second one red in the Graphviz drawing.
+
 
 Several data types together
 ---------------------------

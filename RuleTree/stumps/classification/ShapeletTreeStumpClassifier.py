@@ -1,13 +1,10 @@
 """ShapeletTreeStumpClassifier: the split on the distance from a shapelet, for classification of time series."""
 
-import tempfile
 from typing import Optional
-
-
 
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.transformers.ShapeletTransformer import ShapeletTransformer
-from RuleTree.utils.optional import import_optional
+from RuleTree.utils.shapelet_transform.drawing import graphviz_shapelets
 
 
 class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
@@ -227,21 +224,5 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         MissingOptionalDependencyError
             If matplotlib is not installed.
         """
-        plt = import_optional("matplotlib.pyplot", "The Graphviz drawing of the shapelet stumps")
         label = self.get_rule(columns_names, scaler, float_precision)["graphviz_rule"]["label"]
-
-        shape = self.st.shapelets[self.feature_original, 0]
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
-            image = temp_file.name
-        plt.figure(figsize=(2, 1))
-        plt.plot(list(range(shape.shape[0])), shape)
-        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        plt.xlim(0, shape.shape[0])
-        plt.gca().tick_params(axis='both', which='both', length=2, labelsize=6)
-        plt.gca().spines['right'].set_color('none')
-        plt.gca().spines['top'].set_color('none')
-        plt.savefig(image, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
-        plt.close()
-
-        return {"image": image, "imagescale": "true", "imagepos": "bc", "label": label, "labelloc": "t",
-                "fixedsize": "true", "width": "2", "height": "1.33", "shape": "none", "fontsize": "10"}
+        return graphviz_shapelets(label, [self.st.shapelets[self.feature_original, 0]])

@@ -28,10 +28,26 @@ RuleTree.stumps.classification.PartialPivotTreeStumpClassifier module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.classification.PartialProximityTreeStumpClassifier module
+-------------------------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.classification.PartialProximityTreeStumpClassifier
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.classification.PivotTreeStumpClassifier module
 --------------------------------------------------------------
 
 .. automodule:: RuleTree.stumps.classification.PivotTreeStumpClassifier
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+RuleTree.stumps.classification.ProximityTreeStumpClassifier module
+------------------------------------------------------------------
+
+.. automodule:: RuleTree.stumps.classification.ProximityTreeStumpClassifier
    :members:
    :show-inheritance:
    :undoc-members:
