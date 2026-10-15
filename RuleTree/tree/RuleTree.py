@@ -650,7 +650,9 @@ class RuleTree(RuleTreeBase, ABC):
                           X_ts=None, X_img=None, X_txt=None):
         """
         Recompute the statistics of the nodes (predictions, probabilities, number of instances, ...) and
-        of their stumps on new data, without changing the splits.
+        of their stumps on new data, without changing the splits. For classification, ``classes_`` become
+        the classes of y (e.g. to re-label the tree with a new target). A node reached by no instance
+        predicts nan.
 
         Parameters
         ----------

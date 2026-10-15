@@ -440,11 +440,15 @@ class RuleTreeNode:
 
             labels_clf = self.stump.apply(data, idx)
             if sum(labels_clf == 1) != 0:
-                labels[labels_clf == 1], leaves[labels_clf == 1], proba[labels_clf == 1] = (
+                child_labels, leaves[labels_clf == 1], proba[labels_clf == 1] = (
                     self.node_l.predict(data, idx=idx[labels_clf == 1], prediction_step=prediction_step - 1))
+                labels = _with_dtype_for(labels, child_labels)
+                labels[labels_clf == 1] = child_labels
             if sum(labels_clf == 2) != 0:
-                labels[labels_clf == 2], leaves[labels_clf == 2], proba[labels_clf == 2] = (
+                child_labels, leaves[labels_clf == 2], proba[labels_clf == 2] = (
                     self.node_r.predict(data, idx=idx[labels_clf == 2], prediction_step=prediction_step - 1))
+                labels = _with_dtype_for(labels, child_labels)
+                labels[labels_clf == 2] = child_labels
 
             return labels, leaves, proba
 
@@ -500,6 +504,31 @@ class RuleTreeNode:
             return {self.node_id: self}
         else:
             return self.node_l.get_leaf_nodes() | self.node_r.get_leaf_nodes()
+
+
+def _with_dtype_for(labels: np.ndarray, child_labels: np.ndarray) -> np.ndarray:
+    """
+    ``labels``, converted if needed to a dtype that can hold ``child_labels``: e.g. to float for the nan
+    predicted by a node without instances after update_statistics, which an int array would turn into a
+    number.
+
+    Parameters
+    ----------
+    labels : numpy.ndarray
+        Predictions being filled.
+    child_labels : numpy.ndarray
+        Predictions of a child.
+
+    Returns
+    -------
+    labels : numpy.ndarray
+    """
+    if np.can_cast(child_labels.dtype, labels.dtype, casting="same_kind"):
+        return labels
+    try:
+        return labels.astype(np.result_type(labels, child_labels))
+    except TypeError:  # no common dtype, e.g. strings and nan
+        return labels.astype(object)
 
 
 def stump_class(stump_dict: dict) -> type:

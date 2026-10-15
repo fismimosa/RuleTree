@@ -164,3 +164,16 @@ def test_random_state_makes_trees_reproducible(iris, random_state):
     rules = {str(tree.get_rules()) for tree in trees} if isinstance(random_state, int) else None
     assert rules is None or len(rules) == 1
     assert all(isinstance(tree.root.stump.random_state, int) for tree in trees)  # an int drawn from RandomState
+
+
+def test_update_statistics_empty_leaf_predicts_nan(iris):
+    """The leaves reached by no instance predict nan, not a number from the cast to int."""
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, random_state=0).fit(X, y)
+
+    with np.errstate(invalid="raise"):  # the cast of nan to int
+        model.update_statistics(X[y == 0], y[y == 0])
+        predictions = model.predict(X)
+
+    assert np.all(predictions[y == 0] == 0)
+    assert np.all(np.isnan(predictions[y != 0].astype(float)))
