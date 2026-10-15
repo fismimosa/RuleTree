@@ -38,7 +38,8 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
     val_size : float, default=0.15
         Fraction of the training set used for validation (stratified).
     n_jobs : int, default=os.cpu_count()
-        Number of processes (at most one per class).
+        Number of processes (at most one per class); with 1, the classes are fitted in the current
+        process.
     random_state : int, default=42
         Seed of the split between training and validation.
 
@@ -54,11 +55,6 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
     See Also
     --------
     GBoostRegressor : the same boosting for regression.
-
-    Notes
-    -----
-    predict maps the index of the predicted class with ``classes_.index``: it returns the right
-    class only when the classes are 0, ..., n_classes - 1.
 
     Examples
     --------
@@ -130,9 +126,13 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
             for i, classe in enumerate(self.classes_)
         ]
 
-        with ProcessPoolExecutor(max_workers=min(self.n_jobs, len(self.classes_))) as ex:
-            for i, estimators in ex.map(_train_one_class, args):
-                self.estimators_[i] = estimators
+        if self.n_jobs == 1:  # no new process: works also in scripts without if __name__ == "__main__"
+            results = map(_train_one_class, args)
+        else:
+            with ProcessPoolExecutor(max_workers=min(self.n_jobs, len(self.classes_))) as ex:
+                results = list(ex.map(_train_one_class, args))
+        for i, estimators in results:
+            self.estimators_[i] = estimators
 
         return self
 
@@ -159,7 +159,7 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
                 prediction[:, i] += self.learning_rate * leafs
 
         prediction = np.argmax(expit(prediction), axis=1)
-        prediction = np.vectorize(self.classes_.index)(prediction)
+        prediction = np.asarray(self.classes_)[prediction]
 
         return prediction
 

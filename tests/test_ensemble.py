@@ -76,3 +76,20 @@ def test_early_stopping_with_patience_one(diabetes):
 
     assert 0 < len(gboost.estimators_) < 200
     assert all(0 < len(estimators) < 200 for estimators in ebm.estimators_.values())
+
+
+def test_gboost_classifier_any_labels_in_the_current_process(iris, monkeypatch):
+    """Classes other than 0, ..., n - 1; with n_jobs=1 no process pool is created."""
+    import RuleTree.ensemble.GBoostClassifier as gboost_module
+
+    def no_pool(*args, **kwargs):
+        raise AssertionError("n_jobs=1 must not create a process pool")
+
+    monkeypatch.setattr(gboost_module, "ProcessPoolExecutor", no_pool)
+    X, y = iris
+    labels = np.array(["setosa", "versicolor", "virginica"])[y]
+
+    model = GBoostClassifier(base_estimator=RuleTreeRegressor(max_depth=2, random_state=0), n_estimators=5,
+                             n_jobs=1, random_state=0).fit(X, labels)
+
+    assert np.mean(model.predict(X) == labels) > 0.9
