@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+import pytest
 
 from sklearn.metrics import r2_score
 
@@ -38,6 +39,7 @@ def test_xgboost_regressor_default_base_estimator():
     assert isinstance(base_estimator.base_stumps, XGBoostStumpRegressor)
 
 
+@pytest.mark.slow
 def test_gboost_classifier(iris):
     X, y = iris
     y = (y == 1).astype(int)

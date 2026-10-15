@@ -12,6 +12,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.slow  # runs the code of all the guides
+
 DOCS_DIR = Path(__file__).parent.parent / "docs"
 GUIDES = sorted((DOCS_DIR / "guides").glob("*.rst")) + [DOCS_DIR / "index.rst"]
 

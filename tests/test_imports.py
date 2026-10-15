@@ -5,6 +5,8 @@ import pytest
 
 from RuleTree.utils import profiling
 
+pytestmark = pytest.mark.slow  # each test starts a new Python process
+
 MODULES = [
     "RuleTree",
     "RuleTree.stumps.classification",

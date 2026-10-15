@@ -16,6 +16,10 @@ from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.utils.data_utils import json_numpy_encoder
 from tests.reference.cases import ALL_CASES, fit_case
 
+# the slowest cases, skipped by pytest -m "not slow"
+SLOW_CASES = {"ens_gboost_classifier", "reg_fair"}
+CASES = [pytest.param(name, marks=pytest.mark.slow) if name in SLOW_CASES else name for name in ALL_CASES]
+
 REFERENCE_DIR = Path(__file__).parent / "reference"
 with open(REFERENCE_DIR / "predictions.json") as f:
     REFERENCE = json.load(f)
@@ -29,7 +33,7 @@ def assert_same(actual, expected):
         np.testing.assert_array_equal(actual, expected)
 
 
-@pytest.mark.parametrize("name", ALL_CASES)
+@pytest.mark.parametrize("name", CASES)
 def test_same_outputs(name):
     _, _, outputs = fit_case(name)
     expected = REFERENCE[name]
@@ -42,7 +46,7 @@ def test_same_outputs(name):
             assert_same(outputs[key], expected[key])
 
 
-@pytest.mark.parametrize("name", ALL_CASES)
+@pytest.mark.parametrize("name", CASES)
 def test_same_outputs_after_saving(name):
     model, inputs, _ = fit_case(name)
     if not isinstance(model, RuleTree):

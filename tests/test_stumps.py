@@ -103,6 +103,7 @@ def test_shapelet_classifier(time_series):
     assert np.mean(model.predict(X_ts=X) == y) > 0.9
 
 
+@pytest.mark.slow
 def test_fair_regressor(diabetes):
     X, y = diabetes
     X = np.column_stack([X, X[:, 1] > 0])
@@ -146,6 +147,7 @@ def test_serialization_keeps_parameters(stump):
     assert loaded.get_params() == stump.get_params()
 
 
+@pytest.mark.slow
 def test_composed_stump(diabetes):
     """Any transformer with any splitter: here pivots with a fairness constraint."""
     X, y = diabetes
@@ -181,6 +183,7 @@ def test_stumps_have_explicit_parameters():
         DecisionTreeStumpClassifier(max_depth=1)  # stumps always have depth 1
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("base_stumps, dataset", [
     (DecisionTreeStumpClassifier(), "categorical"),
     ([DecisionTreeStumpRegressor(random_state=0),
