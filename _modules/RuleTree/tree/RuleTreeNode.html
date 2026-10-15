@@ -1,0 +1,1096 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleTree.tree.RuleTreeNode &#8212; RuleTree Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/RuleTree/tree/RuleTreeNode';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.png" class="logo__image only-light" alt="RuleTree Documentation - Home"/>
+    <img src="../../../_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree Documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/stumps.html">Choosing the splits: stumps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/multimodal.html">Tabular data, time series and images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/inspecting.html">Reading the tree</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/lifecycle.html">Saving, growing and updating trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/saving.html">Saving and loading trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/ensembles.html">Ensembles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/evaluating.html">Evaluating the models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/extending.html">Extending the library</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../RuleTree.tree.html">RuleTree.tree package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../RuleTree.stumps.html">RuleTree.stumps package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.stumps.transformers.html">RuleTree.stumps.transformers package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../RuleTree.base.html">RuleTree.base package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html">RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.html">RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html">RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../RuleTree.ensemble.html">RuleTree.ensemble package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../RuleTree.evaluation.html">RuleTree.evaluation package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.evaluation.evaluate_classification.html">RuleTree.evaluation.evaluate_classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.evaluation.evaluate_regression.html">RuleTree.evaluation.evaluate_regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.evaluation.evaluate_clustering.html">RuleTree.evaluation.evaluate_clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.evaluation.evaluate_clustering_internal.html">RuleTree.evaluation.evaluate_clustering_internal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.evaluation.evaluate_interpretability.html">RuleTree.evaluation.evaluate_interpretability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../generated/RuleTree.evaluation.evaluate_fairness.html">RuleTree.evaluation.evaluate_fairness</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../RuleTree.exceptions.html">RuleTree.exceptions module</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../RuleTree.utils.html">RuleTree.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree/issues/new?title=Issue%20on%20page%20%2F_modules/RuleTree/tree/RuleTreeNode.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for RuleTree.tree.RuleTreeNode</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""RuleTreeNode: a node of a RuleTree."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">TransformerMixin</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.base.RuleTreeBaseStump</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeBaseStump</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.data_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_odds</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.define</span><span class="w"> </span><span class="kn">import</span> <span class="n">GRAPHVIZ_DEFAULT_NODE_SPLIT</span><span class="p">,</span> <span class="n">GRAPHVIZ_DEFAULT_NODE_LEAF</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional</span>
+
+<span class="c1"># statistics set during fit (see RuleTree._grow), saved by node_to_dict when present</span>
+<span class="n">SAVED_STATISTICS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"samples"</span><span class="p">,</span> <span class="s2">"balance_score"</span><span class="p">,</span> <span class="s2">"balance_score_global"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RuleTreeNode">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RuleTreeNode</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A node of a RuleTree: a leaf with a prediction, or an internal node with a stump that splits its</span>
+<span class="sd">    instances between its two children.</span>
+
+<span class="sd">    The identifier of a node is its path from the root: ``"R"`` is the root, ``"Rl"`` and ``"Rr"``</span>
+<span class="sd">    its left and right children, ``"Rlr"`` the right child of ``"Rl"``, and so on.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    node_id : str</span>
+<span class="sd">        Identifier of the node.</span>
+<span class="sd">    prediction : int, str or float</span>
+<span class="sd">        Predicted class, value or cluster label.</span>
+<span class="sd">    prediction_probability : numpy.ndarray or float</span>
+<span class="sd">        Class probabilities (classification) or standard deviation of the target (regression).</span>
+<span class="sd">    log_odds : numpy.ndarray or float</span>
+<span class="sd">        Log-odds of the classes (classification).</span>
+<span class="sd">    classes : numpy.ndarray or None</span>
+<span class="sd">        Classes of the target (classification), None otherwise.</span>
+<span class="sd">    parent : RuleTreeNode or None</span>
+<span class="sd">        Parent node (None for the root).</span>
+<span class="sd">    stump : RuleTreeBaseStump, default=None</span>
+<span class="sd">        Split of the node (None for a leaf).</span>
+<span class="sd">    node_l, node_r : RuleTreeNode, default=None</span>
+<span class="sd">        Left and right children (None for a leaf).</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Other attributes, e.g. ``samples`` (number of instances).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    balance_score : float</span>
+<span class="sd">        For internal nodes, fraction of the training set in the smaller side of the split.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.datasets import load_iris</span>
+<span class="sd">    &gt;&gt;&gt; from RuleTree import RuleTreeClassifier</span>
+<span class="sd">    &gt;&gt;&gt; X, y = load_iris(return_X_y=True)</span>
+<span class="sd">    &gt;&gt;&gt; model = RuleTreeClassifier(max_depth=2, random_state=0).fit(X, y)</span>
+<span class="sd">    &gt;&gt;&gt; node = model.get_node_by_id("Rr")</span>
+<span class="sd">    &gt;&gt;&gt; node.get_depth(), node.samples, node.is_leaf()</span>
+<span class="sd">    (1, 100, False)</span>
+<span class="sd">    &gt;&gt;&gt; node.stump.get_rule()["textual_rule"], node.node_l.node_id</span>
+<span class="sd">    ('X_3 &lt;= 1.75', 'Rrl')</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">prediction</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                 <span class="n">prediction_probability</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                 <span class="n">log_odds</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                 <span class="n">classes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                 <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">'RuleTreeNode'</span><span class="p">],</span>
+                 <span class="n">stump</span><span class="p">:</span> <span class="n">RuleTreeBaseStump</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">node_l</span><span class="p">:</span> <span class="s1">'RuleTreeNode'</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">node_r</span><span class="p">:</span> <span class="s1">'RuleTreeNode'</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Initialize the node; see the class documentation for the parameters."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span> <span class="o">=</span> <span class="n">node_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prediction</span> <span class="o">=</span> <span class="n">prediction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span> <span class="o">=</span> <span class="n">prediction_probability</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_odds</span> <span class="o">=</span> <span class="n">log_odds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="n">classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stump</span> <span class="o">=</span> <span class="n">stump</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span> <span class="o">=</span> <span class="n">node_l</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span> <span class="o">=</span> <span class="n">node_r</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            
+        
+<div class="viewcode-block" id="RuleTreeNode.is_leaf">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.is_leaf">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_leaf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Whether the node is a leaf (it has no children).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        is_leaf : bool</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span> <span class="ow">is</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.make_leaf">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.make_leaf">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_leaf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Make the node a leaf by removing its children.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : RuleTreeNode</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.simplify">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.simplify">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simplify</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'RuleTreeNode'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Merge the subtrees whose leaves all have the same prediction (see prune_useless_leaves).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : RuleTreeNode</span>
+<span class="sd">            The root of the simplified subtree.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_simplify</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_simplify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Make a leaf of every node whose leaves all have the same prediction.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        predictions : set</span>
+<span class="sd">            Predictions of the leaves of the subtree.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">all_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">_simplify</span><span class="p">()</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">_simplify</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_pred</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">make_leaf</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prediction</span> <span class="o">=</span> <span class="n">all_pred</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">all_pred</span>
+
+<div class="viewcode-block" id="RuleTreeNode.set_stump">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.set_stump">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_stump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stump</span><span class="p">:</span><span class="n">RuleTreeBaseStump</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Set the split of the node.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        stump : RuleTreeBaseStump</span>
+<span class="sd">            The fitted stump.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stump</span> <span class="o">=</span> <span class="n">stump</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.get_possible_outputs">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_possible_outputs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_possible_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">set</span><span class="p">,</span> <span class="nb">set</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Predictions of the nodes of the subtree.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        leaf_predictions : set</span>
+<span class="sd">            Predictions of the leaves.</span>
+<span class="sd">        internal_predictions : set</span>
+<span class="sd">            Predictions of the internal nodes.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">},</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">leaf_l</span><span class="p">,</span> <span class="n">node_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">get_possible_outputs</span><span class="p">()</span>
+            <span class="n">leaf_r</span><span class="p">,</span> <span class="n">node_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">get_possible_outputs</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">leaf_l</span> <span class="o">|</span> <span class="n">leaf_r</span><span class="p">,</span> <span class="n">node_l</span> <span class="o">|</span> <span class="n">node_r</span> <span class="o">|</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.get_depth">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_depth">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_depth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Depth of the node, from its identifier (the root has depth 0).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        depth : int</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.get_rule">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_rule">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span><span class="p">:</span><span class="n">TransformerMixin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Rules of the subtree, as a nested dictionary (see RuleTree.get_rules).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        columns_names : list of str, default=None</span>
+<span class="sd">            Names of the tabular features.</span>
+<span class="sd">        scaler : TransformerMixin, default=None</span>
+<span class="sd">            Scaler used to preprocess the data: the thresholds are shown in the original scale.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rule : dict</span>
+<span class="sd">            Statistics of the node (``node_id``, ``is_leaf``, ``prediction``, ``prediction_probability``,</span>
+<span class="sd">            ``log_odds``, ``prediction_classes_``), the rules of the children (``left_node``,</span>
+<span class="sd">            ``right_node``) and, for an internal node, the rule of its stump.</span>
+<span class="sd">        """</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"node_id"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
+            <span class="s2">"is_leaf"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">(),</span>
+            <span class="s2">"prediction"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">,</span>
+            <span class="s2">"prediction_probability"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span><span class="p">,</span>
+            <span class="s2">"log_odds"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_odds</span><span class="p">,</span>
+            <span class="s2">"prediction_classes_"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">,</span>
+            <span class="s2">"left_node"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">get_rule</span><span class="p">(</span><span class="n">columns_names</span> <span class="o">=</span> <span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span> <span class="o">=</span> <span class="n">scaler</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"right_node"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">get_rule</span><span class="p">(</span><span class="n">columns_names</span> <span class="o">=</span> <span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span> <span class="o">=</span> <span class="n">scaler</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+    
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="n">rule</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">get_rule</span><span class="p">(</span><span class="n">columns_names</span><span class="o">=</span><span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="n">scaler</span><span class="p">)</span>
+    
+        <span class="k">return</span> <span class="n">rule</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.update_statistics">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.update_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Recompute the statistics of classification of the node (majority class, class probabilities,</span>
+<span class="sd">        log-odds, number of instances) on the instances ``idx``, and the statistics of its stump.</span>
+<span class="sd">        A node without instances predicts nan.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict</span>
+<span class="sd">            Whole data set, as ``{data_type: array}``.</span>
+<span class="sd">        y : numpy.ndarray</span>
+<span class="sd">            Target of the whole data set.</span>
+<span class="sd">        idx : numpy.ndarray, default=None</span>
+<span class="sd">            Indices of the instances reaching the node. If None, all the instances.</span>
+<span class="sd">        context : RuleTree, default=None</span>
+<span class="sd">            The tree, whose ``classes_`` are used when the node has none.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">y_local</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">classes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">"classes_"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">context</span><span class="o">.</span><span class="n">classes_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">context</span><span class="o">.</span><span class="n">classes_</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">classes</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">classes</span> <span class="o">=</span> <span class="n">classes</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">class_counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y_local</span> <span class="o">==</span> <span class="n">class_label</span><span class="p">)</span> <span class="k">for</span> <span class="n">class_label</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">y_local</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">class_counts</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prediction</span> <span class="o">=</span> <span class="n">classes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">class_counts</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span> <span class="o">=</span> <span class="n">class_counts</span> <span class="o">/</span> <span class="n">y_local</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_odds</span> <span class="o">=</span> <span class="n">log_odds</span><span class="p">(</span><span class="n">class_counts</span><span class="p">,</span> <span class="n">y_local</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_odds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="n">classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_local</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stump</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">update_statistics</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="RuleTreeNode.node_to_dict">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.node_to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">node_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Dictionary representation of the node (without its children, referenced by id).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        node_dict : dict</span>
+<span class="sd">            JSON-friendly dictionary with the statistics of the node (also ``samples`` and, for an</span>
+<span class="sd">            internal node, ``balance_score``), the ids of its children and, for an internal node, the</span>
+<span class="sd">            dictionary of its stump.</span>
+<span class="sd">        """</span>
+        <span class="n">node_as_dict</span> <span class="o">=</span><span class="p">{</span>
+            <span class="s2">"node_id"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span>
+            <span class="s2">"is_leaf"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">(),</span>
+            <span class="s2">"prediction"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">,</span>
+            <span class="s2">"prediction_probability"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">"log_odds"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_odds</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_odds</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_odds</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">"prediction_classes_"</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="s2">"left_node"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">node_id</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"right_node"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">node_id</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">node_as_dict</span> <span class="o">|=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">SAVED_STATISTICS</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="n">node_as_dict</span> <span class="o">|=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">node_to_dict</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">node_as_dict</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.dict_to_node">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.dict_to_node">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dict_to_node</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">info_dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create a node from a dictionary created by :meth:`node_to_dict` (children not linked).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        info_dict : dict</span>
+<span class="sd">            Dictionary representation of the node.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">        """</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">RuleTreeNode</span><span class="p">(</span><span class="n">node_id</span><span class="o">=</span><span class="n">info_dict</span><span class="p">[</span><span class="s1">'node_id'</span><span class="p">],</span>
+                            <span class="n">prediction</span><span class="o">=</span><span class="n">info_dict</span><span class="p">[</span><span class="s1">'prediction'</span><span class="p">],</span>
+                            <span class="n">prediction_probability</span><span class="o">=</span><span class="n">info_dict</span><span class="p">[</span><span class="s1">'prediction_probability'</span><span class="p">],</span>
+                            <span class="n">log_odds</span><span class="o">=</span><span class="n">info_dict</span><span class="p">[</span><span class="s1">'log_odds'</span><span class="p">],</span>
+                            <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">classes</span><span class="o">=</span><span class="n">info_dict</span><span class="p">[</span><span class="s1">'prediction_classes_'</span><span class="p">],</span>
+                            <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">info_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">SAVED_STATISTICS</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">info_dict</span><span class="p">})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">info_dict</span><span class="p">[</span><span class="s1">'is_leaf'</span><span class="p">]:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">stump</span> <span class="o">=</span> <span class="n">stump_class</span><span class="p">(</span><span class="n">info_dict</span><span class="p">)</span><span class="o">.</span><span class="n">dict_to_node</span><span class="p">(</span><span class="n">info_dict</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">node</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.encode_node">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.encode_node">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">encode_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">vector</span><span class="p">,</span> <span class="n">stump</span><span class="p">,</span> <span class="n">node_index</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Encode the subtree in arrays indexed as a complete binary tree (children of i at 2i+1 and 2i+2),</span>
+<span class="sd">        for trees of univariate splits.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        index : dict</span>
+<span class="sd">            Node id -&gt; position, filled.</span>
+<span class="sd">        parent : numpy.ndarray</span>
+<span class="sd">            Position of the parent of each position, filled.</span>
+<span class="sd">        vector : numpy.ndarray of shape (2, n_positions)</span>
+<span class="sd">            Feature + 1 (-1 for leaves) and threshold (prediction for leaves) of each position, filled.</span>
+<span class="sd">        stump : object</span>
+<span class="sd">            Not used.</span>
+<span class="sd">        node_index : int, default=0</span>
+<span class="sd">            Position of this node.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="n">vector</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">node_index</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">vector</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">node_index</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">feature_original</span>
+            <span class="n">thr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">threshold_original</span>
+         
+            <span class="n">vector</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">node_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">feat</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">vector</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">node_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">thr</span>
+
+            <span class="n">node_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span>
+            <span class="n">node_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span>
+
+            <span class="n">index</span><span class="p">[</span><span class="n">node_l</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">index</span><span class="p">[</span><span class="n">node_r</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">node_index</span> <span class="o">+</span> <span class="mi">2</span>
+            
+            <span class="n">parent</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span>
+            <span class="n">parent</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span>
+
+            <span class="n">node_l</span><span class="o">.</span><span class="n">encode_node</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">vector</span><span class="p">,</span> <span class="n">stump</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">node_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">node_r</span><span class="o">.</span><span class="n">encode_node</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">vector</span><span class="p">,</span> <span class="n">stump</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">node_index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.export_graphviz">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.export_graphviz">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">export_graphviz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">float_precision</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Graphviz representation of the subtree (requires the graphviz package).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        graph : graphviz.Digraph, default=None</span>
+<span class="sd">            Graph to add the nodes to. If None, a new graph.</span>
+<span class="sd">        columns_names : list of str, default=None</span>
+<span class="sd">            Names of the tabular features.</span>
+<span class="sd">        scaler : TransformerMixin, default=None</span>
+<span class="sd">            Scaler used to preprocess the data: the thresholds are shown in the original scale.</span>
+<span class="sd">        float_precision : int, default=3</span>
+<span class="sd">            Number of decimals of the thresholds.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        graph : graphviz.Digraph</span>
+<span class="sd">        """</span>
+        <span class="n">graphviz</span> <span class="o">=</span> <span class="n">import_optional</span><span class="p">(</span><span class="s2">"graphviz"</span><span class="p">,</span> <span class="s2">"export_graphviz"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="n">graphviz</span><span class="o">.</span><span class="n">Digraph</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"RuleTree"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="o">**</span><span class="n">GRAPHVIZ_DEFAULT_NODE_LEAF</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">graph</span>
+
+        <span class="n">attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">get_graphviz_rule</span><span class="p">(</span><span class="n">columns_names</span><span class="o">=</span><span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="n">scaler</span><span class="p">,</span>
+                                                  <span class="n">float_precision</span><span class="o">=</span><span class="n">float_precision</span><span class="p">)</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">GRAPHVIZ_DEFAULT_NODE_SPLIT</span> <span class="o">|</span> <span class="n">attributes</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">export_graphviz</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">)</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#2ca02c"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">export_graphviz</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">)</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">node_id</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">"#d62728"</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">graph</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.predict">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prediction_step</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Predictions, leaves and probabilities of the instances, traversing the subtree.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict or numpy.ndarray</span>
+<span class="sd">            Data set, as ``{data_type: array}``. A single array is passed as is to the stumps.</span>
+<span class="sd">        idx : numpy.ndarray, default=None</span>
+<span class="sd">            Indices of the instances to predict. If None, all the instances.</span>
+<span class="sd">        prediction_step : int, default=numpy.inf</span>
+<span class="sd">            Maximum number of splits to traverse: with a finite value, the prediction of the node</span>
+<span class="sd">            reached after that many splits.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        labels : numpy.ndarray of shape (n_samples,)</span>
+<span class="sd">            Prediction of each instance.</span>
+<span class="sd">        leaves : numpy.ndarray of shape (n_samples,)</span>
+<span class="sd">            Id of the node reached by each instance.</span>
+<span class="sd">        proba : numpy.ndarray of shape (n_samples, n_values)</span>
+<span class="sd">            ``prediction_probability`` of the node reached by each instance.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">()</span> <span class="ow">or</span> <span class="n">prediction_step</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span><span class="p">),</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span><span class="p">),</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span><span class="p">]</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labels</span><span class="p">,</span> <span class="n">leaves</span><span class="p">,</span> <span class="n">proba</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="c1"># isinstance also matches np.str_: a fixed-size string dtype would truncate longer labels</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction</span><span class="p">)),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span>
+                    <span class="n">n</span><span class="p">,</span>
+                    <span class="mi">1</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction_probability</span><span class="p">)</span>
+                <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="p">)</span>
+
+            <span class="n">labels_clf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">child_labels</span><span class="p">,</span> <span class="n">leaves</span><span class="p">[</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span> <span class="n">proba</span><span class="p">[</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">[</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span> <span class="n">prediction_step</span><span class="o">=</span><span class="n">prediction_step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">labels</span> <span class="o">=</span> <span class="n">_with_dtype_for</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">child_labels</span><span class="p">)</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">child_labels</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">child_labels</span><span class="p">,</span> <span class="n">leaves</span><span class="p">[</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">2</span><span class="p">],</span> <span class="n">proba</span><span class="p">[</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">[</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">2</span><span class="p">],</span> <span class="n">prediction_step</span><span class="o">=</span><span class="n">prediction_step</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">labels</span> <span class="o">=</span> <span class="n">_with_dtype_for</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">child_labels</span><span class="p">)</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">labels_clf</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">child_labels</span>
+
+            <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">leaves</span><span class="p">,</span> <span class="n">proba</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.get_predicates">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_predicates">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_predicates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Internal nodes of the subtree in depth-first order.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        predicates : dict</span>
+<span class="sd">            Node id -&gt; RuleTreeNode.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">:</span> <span class="bp">self</span><span class="p">}</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">get_predicates</span><span class="p">()</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">get_predicates</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.get_node_by_id">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_node_by_id">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_node_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">'RuleTreeNode'</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Node of the subtree with the given identifier.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node_id : str</span>
+<span class="sd">            Identifier of the node.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        node : RuleTreeNode or None</span>
+<span class="sd">            The node, or None if not in the subtree.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_id</span> <span class="o">==</span> <span class="n">node_id</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">child</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">get_node_by_id</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">node</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeNode.get_leaf_nodes">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_leaf_nodes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_leaf_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Leaves of the subtree.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        leaves : dict</span>
+<span class="sd">            Node id -&gt; RuleTreeNode.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">node_id</span><span class="p">:</span> <span class="bp">self</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_l</span><span class="o">.</span><span class="n">get_leaf_nodes</span><span class="p">()</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_r</span><span class="o">.</span><span class="n">get_leaf_nodes</span><span class="p">()</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_with_dtype_for</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">child_labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    ``labels``, converted if needed to a dtype that can hold ``child_labels``: e.g. to float for the nan</span>
+<span class="sd">    predicted by a node without instances after update_statistics, which an int array would turn into a</span>
+<span class="sd">    number.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    labels : numpy.ndarray</span>
+<span class="sd">        Predictions being filled.</span>
+<span class="sd">    child_labels : numpy.ndarray</span>
+<span class="sd">        Predictions of a child.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    labels : numpy.ndarray</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">can_cast</span><span class="p">(</span><span class="n">child_labels</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">labels</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">casting</span><span class="o">=</span><span class="s2">"same_kind"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">labels</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">labels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">result_type</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">child_labels</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># no common dtype, e.g. strings and nan</span>
+        <span class="k">return</span> <span class="n">labels</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="stump_class">
+<a class="viewcode-back" href="../../../RuleTree.tree.html#RuleTree.tree.RuleTreeNode.stump_class">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">stump_class</span><span class="p">(</span><span class="n">stump_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Class of a stump saved by node_to_dict: ``stump_class`` in module ``stump_type``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stump_dict : dict</span>
+<span class="sd">        Dictionary representation of the stump.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    stump_class : type</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">stump_dict</span><span class="p">[</span><span class="s1">'stump_type'</span><span class="p">]),</span> <span class="n">stump_dict</span><span class="p">[</span><span class="s1">'stump_class'</span><span class="p">])</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cristiano Landi, Alessio Cascione, Riccardo Guidotti
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

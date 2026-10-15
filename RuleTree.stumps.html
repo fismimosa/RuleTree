@@ -1,0 +1,1686 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="_static/icon.png" sizes="572x577" rel="icon" type="image/png">
+    <title>RuleTree.stumps package &#8212; RuleTree Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'RuleTree.stumps';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="RuleTree.stumps.classification package" href="RuleTree.stumps.classification.html" />
+    <link rel="prev" title="RuleTree.tree package" href="RuleTree.tree.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="RuleTree Documentation - Home"/>
+    <img src="_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree Documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="guides/getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/stumps.html">Choosing the splits: stumps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/multimodal.html">Tabular data, time series and images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/inspecting.html">Reading the tree</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/lifecycle.html">Saving, growing and updating trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/saving.html">Saving and loading trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/ensembles.html">Ensembles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/evaluating.html">Evaluating the models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/extending.html">Extending the library</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.tree.html">RuleTree.tree package</a></li>
+<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">RuleTree.stumps package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html">RuleTree.stumps.transformers package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="RuleTree.base.html">RuleTree.base package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html">RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.html">RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html">RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.ensemble.html">RuleTree.ensemble package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="RuleTree.evaluation.html">RuleTree.evaluation package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.evaluation.evaluate_classification.html">RuleTree.evaluation.evaluate_classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.evaluation.evaluate_regression.html">RuleTree.evaluation.evaluate_regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.evaluation.evaluate_clustering.html">RuleTree.evaluation.evaluate_clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.evaluation.evaluate_clustering_internal.html">RuleTree.evaluation.evaluate_clustering_internal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.evaluation.evaluate_interpretability.html">RuleTree.evaluation.evaluate_interpretability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/RuleTree.evaluation.evaluate_fairness.html">RuleTree.evaluation.evaluate_fairness</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.exceptions.html">RuleTree.exceptions module</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="RuleTree.utils.html">RuleTree.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree/issues/new?title=Issue%20on%20page%20%2FRuleTree.stumps.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/RuleTree.stumps.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>RuleTree.stumps package</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.stumps.ObliqueTreeStump">RuleTree.stumps.ObliqueTreeStump module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.check_oblique_split_type"><code class="docutils literal notranslate"><span class="pre">check_oblique_split_type()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.format_combination"><code class="docutils literal notranslate"><span class="pre">format_combination()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.combination_rule"><code class="docutils literal notranslate"><span class="pre">combination_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump"><code class="docutils literal notranslate"><span class="pre">ObliqueTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.coefficients"><code class="docutils literal notranslate"><span class="pre">coefficients</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.stumps.PivotTreeStump">RuleTree.stumps.PivotTreeStump module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump"><code class="docutils literal notranslate"><span class="pre">PivotTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.X_split_instance"><code class="docutils literal notranslate"><span class="pre">X_split_instance</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_pivots"><code class="docutils literal notranslate"><span class="pre">get_pivots()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump"><code class="docutils literal notranslate"><span class="pre">MultiplePivotTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_pivots"><code class="docutils literal notranslate"><span class="pre">get_pivots()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump"><code class="docutils literal notranslate"><span class="pre">ObliquePivotTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.coefficients"><code class="docutils literal notranslate"><span class="pre">coefficients</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_pivots"><code class="docutils literal notranslate"><span class="pre">get_pivots()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.stumps.ProximityTreeStump">RuleTree.stumps.ProximityTreeStump module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.proximity_rule"><code class="docutils literal notranslate"><span class="pre">proximity_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump"><code class="docutils literal notranslate"><span class="pre">ProximityTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_graphviz_rule"><code class="docutils literal notranslate"><span class="pre">get_graphviz_rule()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump"><code class="docutils literal notranslate"><span class="pre">PartialProximityTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.stumps.Stump">RuleTree.stumps.Stump module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump"><code class="docutils literal notranslate"><span class="pre">Stump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.supported_data_types"><code class="docutils literal notranslate"><span class="pre">supported_data_types</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.task"><code class="docutils literal notranslate"><span class="pre">task</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.feature_original"><code class="docutils literal notranslate"><span class="pre">feature_original</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.threshold_original"><code class="docutils literal notranslate"><span class="pre">threshold_original</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.is_categorical"><code class="docutils literal notranslate"><span class="pre">is_categorical</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.impurity"><code class="docutils literal notranslate"><span class="pre">impurity</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.gain_"><code class="docutils literal notranslate"><span class="pre">gain_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.node_to_dict"><code class="docutils literal notranslate"><span class="pre">node_to_dict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.dict_to_node"><code class="docutils literal notranslate"><span class="pre">dict_to_node()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module contents</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="ruletree-stumps-package">
+<h1>RuleTree.stumps package<a class="headerlink" href="#ruletree-stumps-package" title="Link to this heading">#</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">#</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.DecisionTreeStumpClassifier">RuleTree.stumps.classification.DecisionTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.DecisionTreeStumpClassifier.DecisionTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">DecisionTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.DecisionTreeStumpClassifier.DecisionTreeStumpClassifier.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.DecisionTreeStumpClassifier.DecisionTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier">RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.MultipleObliquePivotTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">MultipleObliquePivotTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.MultipleObliquePivotTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier">RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.MultiplePivotTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">MultiplePivotTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.MultiplePivotTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier">RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier.ObliqueDecisionTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">ObliqueDecisionTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier.ObliqueDecisionTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier">RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.ObliquePivotTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">ObliquePivotTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.ObliquePivotTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.PartialPivotTreeStumpClassifier">RuleTree.stumps.classification.PartialPivotTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">PartialPivotTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier.st"><code class="docutils literal notranslate"><span class="pre">st</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.describe_partial_pivot"><code class="docutils literal notranslate"><span class="pre">describe_partial_pivot()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.PartialProximityTreeStumpClassifier">RuleTree.stumps.classification.PartialProximityTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.PartialProximityTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">PartialProximityTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.PartialProximityTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.PivotTreeStumpClassifier">RuleTree.stumps.classification.PivotTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PivotTreeStumpClassifier.PivotTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">PivotTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.PivotTreeStumpClassifier.PivotTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.ProximityTreeStumpClassifier">RuleTree.stumps.classification.ProximityTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ProximityTreeStumpClassifier.ProximityTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">ProximityTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ProximityTreeStumpClassifier.ProximityTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-RuleTree.stumps.classification.ShapeletTreeStumpClassifier">RuleTree.stumps.classification.ShapeletTreeStumpClassifier module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ShapeletTreeStumpClassifier.ShapeletTreeStumpClassifier"><code class="docutils literal notranslate"><span class="pre">ShapeletTreeStumpClassifier</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ShapeletTreeStumpClassifier.ShapeletTreeStumpClassifier.st"><code class="docutils literal notranslate"><span class="pre">st</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ShapeletTreeStumpClassifier.ShapeletTreeStumpClassifier.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ShapeletTreeStumpClassifier.ShapeletTreeStumpClassifier.get_graphviz_rule"><code class="docutils literal notranslate"><span class="pre">get_graphviz_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.classification.html#RuleTree.stumps.classification.ShapeletTreeStumpClassifier.ShapeletTreeStumpClassifier.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.classification.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#module-RuleTree.stumps.regression.DecisionTreeStumpRegressor">RuleTree.stumps.regression.DecisionTreeStumpRegressor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.DecisionTreeStumpRegressor.DecisionTreeStumpRegressor"><code class="docutils literal notranslate"><span class="pre">DecisionTreeStumpRegressor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.DecisionTreeStumpRegressor.DecisionTreeStumpRegressor.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.DecisionTreeStumpRegressor.DecisionTreeStumpRegressor.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#module-RuleTree.stumps.regression.FairTreeStumpRegressor">RuleTree.stumps.regression.FairTreeStumpRegressor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.FairTreeStumpRegressor.FairTreeStumpRegressor"><code class="docutils literal notranslate"><span class="pre">FairTreeStumpRegressor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.FairTreeStumpRegressor.FairTreeStumpRegressor.supported_data_types"><code class="docutils literal notranslate"><span class="pre">supported_data_types</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.FairTreeStumpRegressor.FairTreeStumpRegressor.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.FairTreeStumpRegressor.FairTreeStumpRegressor.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#module-RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor">RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.ObliqueDecisionTreeStumpRegressor"><code class="docutils literal notranslate"><span class="pre">ObliqueDecisionTreeStumpRegressor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.ObliqueDecisionTreeStumpRegressor.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#module-RuleTree.stumps.regression.PivotTreeStumpRegressor">RuleTree.stumps.regression.PivotTreeStumpRegressor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.PivotTreeStumpRegressor.PivotTreeStumpRegressor"><code class="docutils literal notranslate"><span class="pre">PivotTreeStumpRegressor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.PivotTreeStumpRegressor.PivotTreeStumpRegressor.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#module-RuleTree.stumps.regression.ProximityTreeStumpRegressor">RuleTree.stumps.regression.ProximityTreeStumpRegressor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ProximityTreeStumpRegressor.ProximityTreeStumpRegressor"><code class="docutils literal notranslate"><span class="pre">ProximityTreeStumpRegressor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ProximityTreeStumpRegressor.ProximityTreeStumpRegressor.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#module-RuleTree.stumps.regression.ShapeletTreeStumpRegressor">RuleTree.stumps.regression.ShapeletTreeStumpRegressor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor"><code class="docutils literal notranslate"><span class="pre">ShapeletTreeStumpRegressor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.st"><code class="docutils literal notranslate"><span class="pre">st</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.get_graphviz_rule"><code class="docutils literal notranslate"><span class="pre">get_graphviz_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#module-RuleTree.stumps.regression.XGBoostStumpRegressor">RuleTree.stumps.regression.XGBoostStumpRegressor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.XGBoostStumpRegressor.XGBoostStumpRegressor"><code class="docutils literal notranslate"><span class="pre">XGBoostStumpRegressor</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.XGBoostStumpRegressor.XGBoostStumpRegressor.gain"><code class="docutils literal notranslate"><span class="pre">gain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.regression.html#RuleTree.stumps.regression.XGBoostStumpRegressor.XGBoostStumpRegressor.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.regression.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html#module-RuleTree.stumps.splitters.ClassificationSplitter">RuleTree.stumps.splitters.ClassificationSplitter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter"><code class="docutils literal notranslate"><span class="pre">ClassificationSplitter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter.task"><code class="docutils literal notranslate"><span class="pre">task</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter.update_statistics"><code class="docutils literal notranslate"><span class="pre">update_statistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html#module-RuleTree.stumps.splitters.FairSplitter">RuleTree.stumps.splitters.FairSplitter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.FairSplitter.FairSplitter"><code class="docutils literal notranslate"><span class="pre">FairSplitter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.FairSplitter.FairSplitter.task"><code class="docutils literal notranslate"><span class="pre">task</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.FairSplitter.FairSplitter.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.FairSplitter.FairSplitter.update_statistics"><code class="docutils literal notranslate"><span class="pre">update_statistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.FairSplitter.FairSplitter.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html#module-RuleTree.stumps.splitters.RegressionSplitter">RuleTree.stumps.splitters.RegressionSplitter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.RegressionSplitter.RegressionSplitter"><code class="docutils literal notranslate"><span class="pre">RegressionSplitter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.RegressionSplitter.RegressionSplitter.task"><code class="docutils literal notranslate"><span class="pre">task</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.RegressionSplitter.RegressionSplitter.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.RegressionSplitter.RegressionSplitter.update_statistics"><code class="docutils literal notranslate"><span class="pre">update_statistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.RegressionSplitter.RegressionSplitter.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html#module-RuleTree.stumps.splitters.XGBoostSplitter">RuleTree.stumps.splitters.XGBoostSplitter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter"><code class="docutils literal notranslate"><span class="pre">XGBoostSplitter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter.task"><code class="docutils literal notranslate"><span class="pre">task</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter.get_threshold_values"><code class="docutils literal notranslate"><span class="pre">get_threshold_values()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter.update_statistics"><code class="docutils literal notranslate"><span class="pre">update_statistics()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.splitters.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RuleTree.stumps.transformers.html">RuleTree.stumps.transformers package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.BivariateTransformer">RuleTree.stumps.transformers.BivariateTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.BivariateTransformer.BivariateTransformer"><code class="docutils literal notranslate"><span class="pre">BivariateTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.BivariateTransformer.BivariateTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.HouseholderTransformer">RuleTree.stumps.transformers.HouseholderTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.HouseholderTransformer.HouseholderTransformer"><code class="docutils literal notranslate"><span class="pre">HouseholderTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.HouseholderTransformer.HouseholderTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.MatrixTransformer">RuleTree.stumps.transformers.MatrixTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer"><code class="docutils literal notranslate"><span class="pre">MatrixTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer.supported_data_types"><code class="docutils literal notranslate"><span class="pre">supported_data_types</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.MultiplePivotTransformer">RuleTree.stumps.transformers.MultiplePivotTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer"><code class="docutils literal notranslate"><span class="pre">MultiplePivotTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer.select"><code class="docutils literal notranslate"><span class="pre">select()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer.feature_id"><code class="docutils literal notranslate"><span class="pre">feature_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer.get_state"><code class="docutils literal notranslate"><span class="pre">get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer.set_state"><code class="docutils literal notranslate"><span class="pre">set_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.ObliquePivotTransformer">RuleTree.stumps.transformers.ObliquePivotTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer"><code class="docutils literal notranslate"><span class="pre">ObliquePivotTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer.select"><code class="docutils literal notranslate"><span class="pre">select()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer.combination"><code class="docutils literal notranslate"><span class="pre">combination()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer.feature_id"><code class="docutils literal notranslate"><span class="pre">feature_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer.get_state"><code class="docutils literal notranslate"><span class="pre">get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer.set_state"><code class="docutils literal notranslate"><span class="pre">set_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.ObliqueTransformer">RuleTree.stumps.transformers.ObliqueTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer"><code class="docutils literal notranslate"><span class="pre">ObliqueTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.supported_data_types"><code class="docutils literal notranslate"><span class="pre">supported_data_types</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.select"><code class="docutils literal notranslate"><span class="pre">select()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.combination"><code class="docutils literal notranslate"><span class="pre">combination()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.oblique_features"><code class="docutils literal notranslate"><span class="pre">oblique_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.feature_id"><code class="docutils literal notranslate"><span class="pre">feature_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.get_state"><code class="docutils literal notranslate"><span class="pre">get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.set_state"><code class="docutils literal notranslate"><span class="pre">set_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.PartialPivotTransformer">RuleTree.stumps.transformers.PartialPivotTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer"><code class="docutils literal notranslate"><span class="pre">PartialPivotTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer.supported_data_types"><code class="docutils literal notranslate"><span class="pre">supported_data_types</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer.refit_after_select"><code class="docutils literal notranslate"><span class="pre">refit_after_select</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer.select"><code class="docutils literal notranslate"><span class="pre">select()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer.get_state"><code class="docutils literal notranslate"><span class="pre">get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer.set_state"><code class="docutils literal notranslate"><span class="pre">set_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.PartialProximityTransformer">RuleTree.stumps.transformers.PartialProximityTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer"><code class="docutils literal notranslate"><span class="pre">PartialProximityTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer.select"><code class="docutils literal notranslate"><span class="pre">select()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer.get_state"><code class="docutils literal notranslate"><span class="pre">get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer.set_state"><code class="docutils literal notranslate"><span class="pre">set_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.PivotTransformer">RuleTree.stumps.transformers.PivotTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.PivotTransformer"><code class="docutils literal notranslate"><span class="pre">PivotTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.PivotTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.PivotTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.PivotTransformer.select"><code class="docutils literal notranslate"><span class="pre">select()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.PivotTransformer.feature_id"><code class="docutils literal notranslate"><span class="pre">feature_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.PivotTransformer.get_state"><code class="docutils literal notranslate"><span class="pre">get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.PivotTransformer.set_state"><code class="docutils literal notranslate"><span class="pre">set_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.PivotTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.scaler_state"><code class="docutils literal notranslate"><span class="pre">scaler_state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.PivotTransformer.scaler_from_state"><code class="docutils literal notranslate"><span class="pre">scaler_from_state()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.ProximityTransformer">RuleTree.stumps.transformers.ProximityTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ProximityTransformer.closer_to_second"><code class="docutils literal notranslate"><span class="pre">closer_to_second()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer"><code class="docutils literal notranslate"><span class="pre">ProximityTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer.select"><code class="docutils literal notranslate"><span class="pre">select()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer.get_state"><code class="docutils literal notranslate"><span class="pre">get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer.set_state"><code class="docutils literal notranslate"><span class="pre">set_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-RuleTree.stumps.transformers.ShapeletTransformer">RuleTree.stumps.transformers.ShapeletTransformer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer"><code class="docutils literal notranslate"><span class="pre">ShapeletTransformer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer.supported_data_types"><code class="docutils literal notranslate"><span class="pre">supported_data_types</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer.transform"><code class="docutils literal notranslate"><span class="pre">transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer.get_state"><code class="docutils literal notranslate"><span class="pre">get_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer.set_state"><code class="docutils literal notranslate"><span class="pre">set_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="RuleTree.stumps.transformers.html#RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RuleTree.stumps.transformers.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
+</section>
+<section id="module-RuleTree.stumps.ObliqueTreeStump">
+<span id="ruletree-stumps-obliquetreestump-module"></span><h2>RuleTree.stumps.ObliqueTreeStump module<a class="headerlink" href="#module-RuleTree.stumps.ObliqueTreeStump" title="Link to this heading">#</a></h2>
+<p>ObliqueTreeStump: what the oblique stumps for classification and regression have in common.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.stumps.ObliqueTreeStump.check_oblique_split_type">
+<span class="sig-name descname"><span class="pre">check_oblique_split_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">oblique_split_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/ObliqueTreeStump.html#check_oblique_split_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ObliqueTreeStump.check_oblique_split_type" title="Link to this definition">#</a></dt>
+<dd><p>Check the type of oblique split of a stump.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>oblique_split_type</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – ‘householder’ or ‘bivariate’.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – For any other value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.stumps.ObliqueTreeStump.format_combination">
+<span class="sig-name descname"><span class="pre">format_combination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficients</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/RuleTree/stumps/ObliqueTreeStump.html#format_combination"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ObliqueTreeStump.format_combination" title="Link to this definition">#</a></dt>
+<dd><p>Text of a linear combination, e.g. <code class="docutils literal notranslate"><span class="pre">0.8</span> <span class="pre">*</span> <span class="pre">X_2</span> <span class="pre">-</span> <span class="pre">0.6</span> <span class="pre">*</span> <span class="pre">X_3</span></code>; a single term with coefficient 1
+(an axis-parallel direction) is just its name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Names of the terms.</p></li>
+<li><p><strong>coefficients</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Their coefficients.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Number of decimals of the coefficients. If None, they are not rounded.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>text</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)">str</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.ObliqueTreeStump</span><span class="w"> </span><span class="kn">import</span> <span class="n">format_combination</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">format_combination</span><span class="p">([</span><span class="s2">"X_0"</span><span class="p">,</span> <span class="s2">"X_3"</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.25</span><span class="p">])</span>
+<span class="go">'0.5 * X_0 - 0.25 * X_3'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">format_combination</span><span class="p">([</span><span class="s2">"X_3"</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">])</span>
+<span class="go">'X_3'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.stumps.ObliqueTreeStump.combination_rule">
+<span class="sig-name descname"><span class="pre">combination_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="_modules/RuleTree/stumps/ObliqueTreeStump.html#combination_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ObliqueTreeStump.combination_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of a threshold on a linear combination: <code class="docutils literal notranslate"><span class="pre">combination</span> <span class="pre">&lt;=</span> <span class="pre">threshold</span></code> goes left.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_idx</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a>) – Identifier of the combination, stored in <code class="docutils literal notranslate"><span class="pre">feature_idx</span></code>.</p></li>
+<li><p><strong>names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Names of the terms.</p></li>
+<li><p><strong>coefficients</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Their coefficients.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Threshold of the split.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Number of decimals of the coefficients and of the threshold. If None, they are not rounded.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – See RuleTreeBaseStump.get_rule; also <code class="docutils literal notranslate"><span class="pre">coefficients</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ObliqueTreeStump</span></span><a class="reference internal" href="_modules/RuleTree/stumps/ObliqueTreeStump.html#ObliqueTreeStump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Mixin of the oblique stumps (ObliqueDecisionTreeStumpClassifier and
+ObliqueDecisionTreeStumpRegressor): the oblique transformer built from the parameters of the
+stump, and the rule of the split.</p>
+<p>The subclass defines the parameters and the splitter, by deriving also from the decision tree
+stump of its task (<code class="docutils literal notranslate"><span class="pre">class</span> <span class="pre">ObliqueDecisionTreeStumpClassifier(ObliqueTreeStump,</span> <span class="pre">DecisionTreeStumpClassifier)</span></code>).</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.coefficients">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">coefficients</span></span><a class="headerlink" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.coefficients" title="Link to this definition">#</a></dt>
+<dd><p>Coefficients of the combination of the split, None if not fitted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.get_rule">
+<span class="sig-name descname"><span class="pre">get_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/ObliqueTreeStump.html#ObliqueTreeStump.get_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.get_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of the split, e.g. <code class="docutils literal notranslate"><span class="pre">0.8</span> <span class="pre">*</span> <span class="pre">X_2</span> <span class="pre">-</span> <span class="pre">0.6</span> <span class="pre">*</span> <span class="pre">X_3</span> <span class="pre">&lt;=</span> <span class="pre">1.5</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Names of the columns of the data, used instead of <code class="docutils literal notranslate"><span class="pre">X_&lt;index&gt;</span></code>.</p></li>
+<li><p><strong>scaler</strong> (<em>TransformerMixin</em><em>, </em><em>default=None</em>) – Not supported: must be None.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Number of decimals of the coefficients and of the threshold; None for no rounding.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – <code class="docutils literal notranslate"><span class="pre">feature_idx</span></code> (the columns of the combination), <code class="docutils literal notranslate"><span class="pre">coefficients</span></code>, <code class="docutils literal notranslate"><span class="pre">threshold</span></code>,
+<code class="docutils literal notranslate"><span class="pre">is_categorical</span></code>, <code class="docutils literal notranslate"><span class="pre">feature_name</span></code> (the combination), the condition of the left child
+(<code class="docutils literal notranslate"><span class="pre">textual_rule</span></code>, <code class="docutils literal notranslate"><span class="pre">blob_rule</span></code>, <code class="docutils literal notranslate"><span class="pre">graphviz_rule</span></code>) and its negation. Empty if the
+stump is not fitted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If a scaler is given.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-RuleTree.stumps.PivotTreeStump">
+<span id="ruletree-stumps-pivottreestump-module"></span><h2>RuleTree.stumps.PivotTreeStump module<a class="headerlink" href="#module-RuleTree.stumps.PivotTreeStump" title="Link to this heading">#</a></h2>
+<p>PivotTreeStump, MultiplePivotTreeStump and ObliquePivotTreeStump: what the pivot stumps have in
+common.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.PivotTreeStump">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">PivotTreeStump</span></span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#PivotTreeStump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Mixin of the pivot stumps (PivotTreeStumpClassifier and PivotTreeStumpRegressor): the
+PivotTransformer built from the parameters of the stump, the pivots of the split and its rule.</p>
+<p>The subclass defines the parameters and the splitter, by deriving also from the decision tree
+stump of its task (<code class="docutils literal notranslate"><span class="pre">class</span> <span class="pre">PivotTreeStumpClassifier(PivotTreeStump,</span> <span class="pre">DecisionTreeStumpClassifier)</span></code>).</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.PivotTreeStump.X_split_instance">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">X_split_instance</span></span><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.X_split_instance" title="Link to this definition">#</a></dt>
+<dd><p>The pivot of the split (standardized numerical features), None if not fitted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_pivots">
+<span class="sig-name descname"><span class="pre">get_pivots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#PivotTreeStump.get_pivots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_pivots" title="Link to this definition">#</a></dt>
+<dd><p>Pivots of the node, as indices of instances of the training set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pivots</strong> – <code class="docutils literal notranslate"><span class="pre">descriptives</span></code> (medoids), <code class="docutils literal notranslate"><span class="pre">discriminatives</span></code> and <code class="docutils literal notranslate"><span class="pre">candidates</span></code> (both) pivots of the
+node, and the pivot <code class="docutils literal notranslate"><span class="pre">used</span></code> by the split.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_iris</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">PivotTreeStumpClassifier</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pivots</span> <span class="o">=</span> <span class="n">PivotTreeStumpClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">get_pivots</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pivots</span><span class="p">[</span><span class="s2">"descriptives"</span><span class="p">],</span> <span class="n">pivots</span><span class="p">[</span><span class="s2">"discriminatives"</span><span class="p">],</span> <span class="n">pivots</span><span class="p">[</span><span class="s2">"used"</span><span class="p">]</span>
+<span class="go">([7, 96, 112], [27, 77, 127], 112)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_rule">
+<span class="sig-name descname"><span class="pre">get_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#PivotTreeStump.get_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of the split, <code class="docutils literal notranslate"><span class="pre">P_&lt;i&gt;</span> <span class="pre">&lt;=</span> <span class="pre">threshold</span></code>, where <code class="docutils literal notranslate"><span class="pre">P_&lt;i&gt;</span></code> is the distance from the training
+instance <code class="docutils literal notranslate"><span class="pre">i</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Not used: the rule does not name the features.</p></li>
+<li><p><strong>scaler</strong> (<em>TransformerMixin</em><em>, </em><em>default=None</em>) – Not used: the distances are computed on the data standardized by the stump.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Number of decimals of the threshold; None for no rounding.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – <code class="docutils literal notranslate"><span class="pre">feature_idx</span></code> (the pivot), <code class="docutils literal notranslate"><span class="pre">threshold</span></code>, <code class="docutils literal notranslate"><span class="pre">is_categorical</span></code>, <code class="docutils literal notranslate"><span class="pre">feature_name</span></code>, the
+condition of the left child (<code class="docutils literal notranslate"><span class="pre">textual_rule</span></code>, <code class="docutils literal notranslate"><span class="pre">blob_rule</span></code>, <code class="docutils literal notranslate"><span class="pre">graphviz_rule</span></code>) and its
+negation (<code class="docutils literal notranslate"><span class="pre">not_textual_rule</span></code>, <code class="docutils literal notranslate"><span class="pre">not_blob_rule</span></code>, <code class="docutils literal notranslate"><span class="pre">not_graphviz_rule</span></code>). Empty if the
+stump is not fitted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">MultiplePivotTreeStump</span></span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#MultiplePivotTreeStump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Mixin of the multiple pivot stumps (MultiplePivotTreeStumpClassifier and
+MultipleObliquePivotTreeStumpClassifier): the MultiplePivotTransformer built from the parameters
+of the stump, the pivots of the split and its rule, <code class="docutils literal notranslate"><span class="pre">P_&lt;a&gt;</span> <span class="pre">&lt;=</span> <span class="pre">P_&lt;b&gt;</span></code> (closer to the training
+instance <code class="docutils literal notranslate"><span class="pre">a</span></code> than to <code class="docutils literal notranslate"><span class="pre">b</span></code>).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_pivots">
+<span class="sig-name descname"><span class="pre">get_pivots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#MultiplePivotTreeStump.get_pivots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_pivots" title="Link to this definition">#</a></dt>
+<dd><p>Pivots of the node, as indices of instances of the training set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pivots</strong> – <code class="docutils literal notranslate"><span class="pre">descriptives</span></code>, <code class="docutils literal notranslate"><span class="pre">discriminatives</span></code> and <code class="docutils literal notranslate"><span class="pre">candidates</span></code> pivots of the node, and the two
+pivots <code class="docutils literal notranslate"><span class="pre">used</span></code> by the split.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_rule">
+<span class="sig-name descname"><span class="pre">get_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#MultiplePivotTreeStump.get_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of the split, <code class="docutils literal notranslate"><span class="pre">P_&lt;a&gt;</span> <span class="pre">&lt;=</span> <span class="pre">P_&lt;b&gt;</span></code>: the instances closer to the training instance <code class="docutils literal notranslate"><span class="pre">a</span></code> than to
+<code class="docutils literal notranslate"><span class="pre">b</span></code> go left.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Not used: the rule does not name the features.</p></li>
+<li><p><strong>scaler</strong> (<em>TransformerMixin</em><em>, </em><em>default=None</em>) – Not used: the distances are computed on the data standardized by the stump.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Not used: the rule has no number.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – See RuleTreeBaseStump.get_rule. Empty if the stump is not fitted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ObliquePivotTreeStump</span></span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#ObliquePivotTreeStump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Mixin of the oblique pivot stumps (ObliquePivotTreeStumpClassifier): the ObliquePivotTransformer
+built from the parameters of the stump, the pivots of the split and its rule, e.g.
+<code class="docutils literal notranslate"><span class="pre">0.7</span> <span class="pre">*</span> <span class="pre">P_12</span> <span class="pre">-</span> <span class="pre">0.3</span> <span class="pre">*</span> <span class="pre">P_57</span> <span class="pre">&lt;=</span> <span class="pre">1.2</span></code>.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.coefficients">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">coefficients</span></span><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.coefficients" title="Link to this definition">#</a></dt>
+<dd><p>Coefficients of the combination of the split, None if not fitted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_pivots">
+<span class="sig-name descname"><span class="pre">get_pivots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#ObliquePivotTreeStump.get_pivots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_pivots" title="Link to this definition">#</a></dt>
+<dd><p>Pivots of the node, as indices of instances of the training set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pivots</strong> – <code class="docutils literal notranslate"><span class="pre">descriptives</span></code>, <code class="docutils literal notranslate"><span class="pre">discriminatives</span></code> and <code class="docutils literal notranslate"><span class="pre">candidates</span></code> pivots of the node, and the pivots
+<code class="docutils literal notranslate"><span class="pre">used</span></code> by the combination of the split.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_rule">
+<span class="sig-name descname"><span class="pre">get_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/PivotTreeStump.html#ObliquePivotTreeStump.get_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of the split, e.g. <code class="docutils literal notranslate"><span class="pre">0.7</span> <span class="pre">*</span> <span class="pre">P_12</span> <span class="pre">-</span> <span class="pre">0.3</span> <span class="pre">*</span> <span class="pre">P_57</span> <span class="pre">&lt;=</span> <span class="pre">1.2</span></code>, where <code class="docutils literal notranslate"><span class="pre">P_&lt;i&gt;</span></code> is the distance from
+the training instance <code class="docutils literal notranslate"><span class="pre">i</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Not used: the rule does not name the features.</p></li>
+<li><p><strong>scaler</strong> (<em>TransformerMixin</em><em>, </em><em>default=None</em>) – Not used: the distances are computed on the data standardized by the stump.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Number of decimals of the coefficients and of the threshold; None for no rounding.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – See RuleTreeBaseStump.get_rule; also <code class="docutils literal notranslate"><span class="pre">coefficients</span></code>. Empty if the stump is not fitted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-RuleTree.stumps.ProximityTreeStump">
+<span id="ruletree-stumps-proximitytreestump-module"></span><h2>RuleTree.stumps.ProximityTreeStump module<a class="headerlink" href="#module-RuleTree.stumps.ProximityTreeStump" title="Link to this heading">#</a></h2>
+<p>ProximityTreeStump and PartialProximityTreeStump: what the proximity stumps have in common.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="RuleTree.stumps.ProximityTreeStump.proximity_rule">
+<span class="sig-name descname"><span class="pre">proximity_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">second</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="_modules/RuleTree/stumps/ProximityTreeStump.html#proximity_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ProximityTreeStump.proximity_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of a proximity split: <code class="docutils literal notranslate"><span class="pre">first</span> <span class="pre">&lt;=</span> <span class="pre">second</span></code> goes left, where first and second are the
+distances from the two references of the split.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature_idx</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a>) – Identifier of the pair, stored in <code class="docutils literal notranslate"><span class="pre">feature_idx</span></code>.</p></li>
+<li><p><strong>first</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Text of the distances from the first and from the second reference.</p></li>
+<li><p><strong>second</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Text of the distances from the first and from the second reference.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a>) – Threshold of the split on the 0/1 comparison (between 0 and 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – See RuleTreeBaseStump.get_rule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RuleTree.stumps.ProximityTreeStump.ProximityTreeStump">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ProximityTreeStump</span></span><a class="reference internal" href="_modules/RuleTree/stumps/ProximityTreeStump.html#ProximityTreeStump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Mixin of the proximity stumps for time series (ProximityTreeStumpClassifier and
+ProximityTreeStumpRegressor): the ProximityTransformer built from the parameters of the stump, the
+rule and its drawing.</p>
+<p>The subclass defines the parameters and the splitter, by deriving also from the shapelet stump of
+its task (<code class="docutils literal notranslate"><span class="pre">class</span> <span class="pre">ProximityTreeStumpClassifier(ProximityTreeStump,</span> <span class="pre">ShapeletTreeStumpClassifier)</span></code>).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_rule">
+<span class="sig-name descname"><span class="pre">get_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/ProximityTreeStump.html#ProximityTreeStump.get_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of the split, <code class="docutils literal notranslate"><span class="pre">euclidean(TS,</span> <span class="pre">green_shp)</span> <span class="pre">&lt;=</span> <span class="pre">euclidean(TS,</span> <span class="pre">red_shp)</span></code>: the time series closer
+to the first shapelet (green in the drawing, <code class="docutils literal notranslate"><span class="pre">st.shapelets[0]</span></code>) than to the second one (red,
+<code class="docutils literal notranslate"><span class="pre">st.shapelets[1]</span></code>) go left.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Not used.</p></li>
+<li><p><strong>scaler</strong> (<em>TransformerMixin</em><em>, </em><em>default=None</em>) – Not supported: must be None.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Not used: the rule has no number.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – See RuleTreeBaseStump.get_rule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – If a scaler is given.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_graphviz_rule">
+<span class="sig-name descname"><span class="pre">get_graphviz_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/ProximityTreeStump.html#ProximityTreeStump.get_graphviz_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_graphviz_rule" title="Link to this definition">#</a></dt>
+<dd><p>Attributes of the Graphviz node of the split: the rule above a plot of the two shapelets, green
+and red, drawn into a temporary PNG file (requires matplotlib).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Not used.</p></li>
+<li><p><strong>scaler</strong> (<em>TransformerMixin</em><em>, </em><em>default=None</em>) – Not supported: must be None.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Not used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>attributes</strong> – Attributes of the Graphviz node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="RuleTree.exceptions.html#RuleTree.exceptions.MissingOptionalDependencyError" title="RuleTree.exceptions.MissingOptionalDependencyError"><strong>MissingOptionalDependencyError</strong></a> – If matplotlib is not installed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">PartialProximityTreeStump</span></span><a class="reference internal" href="_modules/RuleTree/stumps/ProximityTreeStump.html#PartialProximityTreeStump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Mixin of the proximity stumps for tabular data (PartialProximityTreeStumpClassifier): the
+PartialProximityTransformer built from the parameters of the stump and the rule.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump.get_rule">
+<span class="sig-name descname"><span class="pre">get_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/ProximityTreeStump.html#PartialProximityTreeStump.get_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump.get_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of the split, e.g. <code class="docutils literal notranslate"><span class="pre">euclidean(x,</span> <span class="pre">SP0(d:</span> <span class="pre">petal</span> <span class="pre">length=1.3))</span> <span class="pre">&lt;=</span> <span class="pre">euclidean(x,</span> <span class="pre">SP1(d:</span> <span class="pre">petal</span>
+<span class="pre">length=5.1))</span></code>: the instances closer to the first partial pivot than to the second one go left.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Names of the features. If None, <code class="docutils literal notranslate"><span class="pre">Feat.</span> <span class="pre">&lt;index&gt;</span></code>.</p></li>
+<li><p><strong>scaler</strong> (<em>TransformerMixin</em><em>, </em><em>default=None</em>) – Scaler used to preprocess the data: the values of the pivots are shown in the original scale.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Not used: the values of the pivots are not rounded.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – See RuleTreeBaseStump.get_rule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-RuleTree.stumps.Stump">
+<span id="ruletree-stumps-stump-module"></span><h2>RuleTree.stumps.Stump module<a class="headerlink" href="#module-RuleTree.stumps.Stump" title="Link to this heading">#</a></h2>
+<p>File: Stump.py</p>
+<p>The stump made of a transformer (how the data are represented, see RuleTreeBaseTransformer) and
+a splitter (how the split is chosen, see RuleTreeBaseSplitter).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Stump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transformer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splitter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/Stump.html#Stump"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.Stump.Stump" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump" title="RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeBaseStump</span></code></a></p>
+<p>Stump made of a transformer and a splitter: the transformer turns the data of one type into a
+feature matrix, the splitter finds the best split of that matrix.</p>
+<p>Any transformer can be combined with any splitter. The data types supported by the stump are the
+ones of the transformer, and its task (classification or regression) is the one of the splitter.
+The stumps of the library are subclasses that build the two components from their own parameters
+(<code class="docutils literal notranslate"><span class="pre">_make_transformer</span></code> and <code class="docutils literal notranslate"><span class="pre">_make_splitter</span></code>); see <a class="reference internal" href="guides/extending.html"><span class="doc">Extending the library</span></a> to write new ones.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transformer</strong> (<a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer" title="RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer"><em>RuleTreeBaseTransformer</em></a><em>, </em><em>default=None</em>) – Transformer of the data into a feature matrix; it is cloned at each fit.</p></li>
+<li><p><strong>splitter</strong> (<a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter" title="RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter"><em>RuleTreeBaseSplitter</em></a><em>, </em><em>default=None</em>) – Splitter of the feature matrix; it is cloned at each fit.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>transformer</strong> (<a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer" title="RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer"><em>RuleTreeBaseTransformer</em></a>) – The fitted transformer.</p></li>
+<li><p><strong>splitter</strong> (<a class="reference internal" href="generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter" title="RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter"><em>RuleTreeBaseSplitter</em></a>) – The fitted splitter (feature, threshold, gain and impurity of the split).</p></li>
+<li><p><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Data type the stump was fitted on.</p></li>
+<li><p><strong>feature_original</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a>) – Feature of the split, as identified by the transformer: a column of the data, a pivot, …</p></li>
+<li><p><strong>threshold_original</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><em>object</em></a>) – Threshold of a numerical split, or value of a categorical split.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_diabetes</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeRegressor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.Stump</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stump</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.splitters</span><span class="w"> </span><span class="kn">import</span> <span class="n">FairSplitter</span><span class="p">,</span> <span class="n">RegressionSplitter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">MatrixTransformer</span><span class="p">,</span> <span class="n">PivotTransformer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.define</span><span class="w"> </span><span class="kn">import</span> <span class="n">MODEL_TYPE_REG</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_diabetes</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stump</span> <span class="o">=</span> <span class="n">Stump</span><span class="p">(</span><span class="n">PivotTransformer</span><span class="p">(</span><span class="n">MODEL_TYPE_REG</span><span class="p">),</span> <span class="n">RegressionSplitter</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stump</span><span class="o">.</span><span class="n">task</span><span class="p">,</span> <span class="n">stump</span><span class="o">.</span><span class="n">supported_data_types</span>
+<span class="go">('reg', ('tabular',))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">RuleTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">base_stumps</span><span class="o">=</span><span class="n">stump</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[:</span><span class="mi">100</span><span class="p">],</span> <span class="n">y</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.supported_data_types">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">supported_data_types</span></span><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.supported_data_types" title="Link to this definition">#</a></dt>
+<dd><p>the ones of its transformer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Data types supported by the stump</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.task">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">task</span></span><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.task" title="Link to this definition">#</a></dt>
+<dd><p>the one of its splitter (MODEL_TYPE_CLF or MODEL_TYPE_REG).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Task of the stump</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/Stump.html#Stump.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.fit" title="Link to this definition">#</a></dt>
+<dd><p>Fit the stump on the instances <code class="docutils literal notranslate"><span class="pre">idx</span></code> of <code class="docutils literal notranslate"><span class="pre">data</span></code>: the transformer on the whole data set of the
+selected type (with the indices of the node and the cache of the tree), the splitter on the
+feature matrix of the node; then the transformer keeps only what is needed by the chosen feature
+(and the splitter is fitted again if the feature matrix changes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a><em> or </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Whole data set, as <code class="docutils literal notranslate"><span class="pre">{data_type:</span> <span class="pre">array}</span></code>.</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a>) – Target of the whole data set.</p></li>
+<li><p><strong>idx</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a><em>, </em><em>default=None</em>) – Indices of the instances reaching the node. If None, all the instances.</p></li>
+<li><p><strong>context</strong> (<a class="reference internal" href="RuleTree.tree.html#RuleTree.tree.RuleTree.RuleTree" title="RuleTree.tree.RuleTree.RuleTree"><em>RuleTree</em></a><em>, </em><em>default=None</em>) – Tree being built, whose cache is shared by the stumps of the same class.</p></li>
+<li><p><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Data type to use. If None, the first supported data type available in <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><strong>sample_weight</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><em>numpy.ndarray</em></a><em>, </em><em>default=None</em>) – Sample weights of the whole data set.</p></li>
+<li><p><strong>check_input</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><em>bool</em></a><em>, </em><em>default=True</em>) – Whether to check the input data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>self</strong> – The fitted stump.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#RuleTree.stumps.Stump.Stump" title="RuleTree.stumps.Stump.Stump">Stump</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="RuleTree.exceptions.html#RuleTree.exceptions.NoSplitFoundWarning" title="RuleTree.exceptions.NoSplitFoundWarning"><strong>NoSplitFoundWarning</strong></a> – If the instances cannot be split.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.feature_original">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">feature_original</span></span><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.feature_original" title="Link to this definition">#</a></dt>
+<dd><p>a column of the data (int), or a name
+such as a pivot. None if not fitted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Feature of the split, as identified by the transformer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.threshold_original">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">threshold_original</span></span><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.threshold_original" title="Link to this definition">#</a></dt>
+<dd><p>Threshold (numerical split) or value (categorical split). None if not fitted.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.is_categorical">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_categorical</span></span><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.is_categorical" title="Link to this definition">#</a></dt>
+<dd><p>Whether the split is categorical (<code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">==</span> <span class="pre">value</span></code>). None if not fitted.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.impurity">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">impurity</span></span><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.impurity" title="Link to this definition">#</a></dt>
+<dd><p>Impurity of the node and of the two children, if computed by the splitter. None if not fitted.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.gain_">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">gain_</span></span><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.gain_" title="Link to this definition">#</a></dt>
+<dd><p>Gain of the split, used by the trees with stump_selection=’best’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.get_rule">
+<span class="sig-name descname"><span class="pre">get_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/Stump.html#Stump.get_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.get_rule" title="Link to this definition">#</a></dt>
+<dd><p>Rule of the split, e.g. <code class="docutils literal notranslate"><span class="pre">X_2</span> <span class="pre">&lt;=</span> <span class="pre">4.5</span></code>: the feature is named after the transformer’s feature id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns_names</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>default=None</em>) – Names of the columns of the tabular data, used for the features that are columns.</p></li>
+<li><p><strong>scaler</strong> (<em>TransformerMixin</em><em>, </em><em>default=None</em>) – Scaler used to preprocess the data: the threshold is also given in the original scale.</p></li>
+<li><p><strong>float_precision</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>default=3</em>) – Number of decimals of the threshold; None for no rounding.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rule</strong> – The textual, blob and Graphviz forms of the condition of the left child and of its negation
+(see <code class="xref py py-meth docutils literal notranslate"><span class="pre">RuleTreeBaseStump.get_rule()</span></code>).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.node_to_dict">
+<span class="sig-name descname"><span class="pre">node_to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/Stump.html#Stump.node_to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.node_to_dict" title="Link to this definition">#</a></dt>
+<dd><p>Dictionary representation of the stump: constructor arguments and, if fitted, the rule, the
+data type and the state of the transformer and of the splitter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.dict_to_node">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dict_to_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RuleTree/stumps/Stump.html#Stump.dict_to_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.dict_to_node" title="Link to this definition">#</a></dt>
+<dd><p>Create a stump from a dictionary created by <a class="reference internal" href="#RuleTree.stumps.Stump.Stump.node_to_dict" title="RuleTree.stumps.Stump.Stump.node_to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">node_to_dict()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>node_dict</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><em>dict</em></a>) – Dictionary representation of the stump.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>stump</strong> – The stump, fitted if it was fitted when saved.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#RuleTree.stumps.Stump.Stump" title="RuleTree.stumps.Stump.Stump">Stump</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="RuleTree.stumps.Stump.Stump.set_fit_request">
+<span class="sig-name descname"><span class="pre">set_fit_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'$UNCHANGED$'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'$UNCHANGED$'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'$UNCHANGED$'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'$UNCHANGED$'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'$UNCHANGED$'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'$UNCHANGED$'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#RuleTree.stumps.Stump.Stump" title="RuleTree.stumps.Stump.Stump"><span class="pre">Stump</span></a></span></span><a class="headerlink" href="#RuleTree.stumps.Stump.Stump.set_fit_request" title="Link to this definition">#</a></dt>
+<dd><p>Configure whether metadata should be requested to be passed to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method.</p>
+<p>Note that this method is only relevant when this estimator is used as a
+sub-estimator within a <a class="reference external" href="https://scikit-learn.org/stable/glossary.html#term-meta-estimator" title="(in scikit-learn v1.9)"><span class="xref std std-term">meta-estimator</span></a> and metadata routing is enabled
+with <code class="docutils literal notranslate"><span class="pre">enable_metadata_routing=True</span></code> (see <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.set_config.html#sklearn.set_config" title="(in scikit-learn v1.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sklearn.set_config()</span></code></a>).
+Please check the <a class="reference external" href="https://scikit-learn.org/stable/metadata_routing.html#metadata-routing" title="(in scikit-learn v1.9)"><span class="xref std std-ref">User Guide</span></a> on how the routing
+mechanism works.</p>
+<p>The options for each parameter are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">True</span></code>: metadata is requested, and passed to <code class="docutils literal notranslate"><span class="pre">fit</span></code> if provided. The request is ignored if metadata is not provided.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">False</span></code>: metadata is not requested and the meta-estimator will not pass it to <code class="docutils literal notranslate"><span class="pre">fit</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code>: metadata is not requested, and the meta-estimator will raise an error if the user provides it.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">str</span></code>: metadata should be passed to the meta-estimator with this given alias instead of the original name.</p></li>
+</ul>
+<p>The default (<code class="docutils literal notranslate"><span class="pre">sklearn.utils.metadata_routing.UNCHANGED</span></code>) retains the
+existing request. This allows you to change the request for some
+parameters and not others.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">Added in version 1.3.</span></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>check_input</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>True</em><em>, </em><em>False</em><em>, or </em><em>None</em><em>,                     </em><em>default=sklearn.utils.metadata_routing.UNCHANGED</em>) – Metadata routing for <code class="docutils literal notranslate"><span class="pre">check_input</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">fit</span></code>.</p></li>
+<li><p><strong>context</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>True</em><em>, </em><em>False</em><em>, or </em><em>None</em><em>,                     </em><em>default=sklearn.utils.metadata_routing.UNCHANGED</em>) – Metadata routing for <code class="docutils literal notranslate"><span class="pre">context</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">fit</span></code>.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>True</em><em>, </em><em>False</em><em>, or </em><em>None</em><em>,                     </em><em>default=sklearn.utils.metadata_routing.UNCHANGED</em>) – Metadata routing for <code class="docutils literal notranslate"><span class="pre">data</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">fit</span></code>.</p></li>
+<li><p><strong>data_type</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>True</em><em>, </em><em>False</em><em>, or </em><em>None</em><em>,                     </em><em>default=sklearn.utils.metadata_routing.UNCHANGED</em>) – Metadata routing for <code class="docutils literal notranslate"><span class="pre">data_type</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">fit</span></code>.</p></li>
+<li><p><strong>idx</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>True</em><em>, </em><em>False</em><em>, or </em><em>None</em><em>,                     </em><em>default=sklearn.utils.metadata_routing.UNCHANGED</em>) – Metadata routing for <code class="docutils literal notranslate"><span class="pre">idx</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">fit</span></code>.</p></li>
+<li><p><strong>sample_weight</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><em>str</em></a><em>, </em><em>True</em><em>, </em><em>False</em><em>, or </em><em>None</em><em>,                     </em><em>default=sklearn.utils.metadata_routing.UNCHANGED</em>) – Metadata routing for <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> parameter in <code class="docutils literal notranslate"><span class="pre">fit</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>self</strong> – The updated object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)">object</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="RuleTree.tree.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">RuleTree.tree package</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="RuleTree.stumps.classification.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">RuleTree.stumps.classification package</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.stumps.ObliqueTreeStump">RuleTree.stumps.ObliqueTreeStump module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.check_oblique_split_type"><code class="docutils literal notranslate"><span class="pre">check_oblique_split_type()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.format_combination"><code class="docutils literal notranslate"><span class="pre">format_combination()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.combination_rule"><code class="docutils literal notranslate"><span class="pre">combination_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump"><code class="docutils literal notranslate"><span class="pre">ObliqueTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.coefficients"><code class="docutils literal notranslate"><span class="pre">coefficients</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.stumps.PivotTreeStump">RuleTree.stumps.PivotTreeStump module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump"><code class="docutils literal notranslate"><span class="pre">PivotTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.X_split_instance"><code class="docutils literal notranslate"><span class="pre">X_split_instance</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_pivots"><code class="docutils literal notranslate"><span class="pre">get_pivots()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump"><code class="docutils literal notranslate"><span class="pre">MultiplePivotTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_pivots"><code class="docutils literal notranslate"><span class="pre">get_pivots()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump"><code class="docutils literal notranslate"><span class="pre">ObliquePivotTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.coefficients"><code class="docutils literal notranslate"><span class="pre">coefficients</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_pivots"><code class="docutils literal notranslate"><span class="pre">get_pivots()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.stumps.ProximityTreeStump">RuleTree.stumps.ProximityTreeStump module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.proximity_rule"><code class="docutils literal notranslate"><span class="pre">proximity_rule()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump"><code class="docutils literal notranslate"><span class="pre">ProximityTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_graphviz_rule"><code class="docutils literal notranslate"><span class="pre">get_graphviz_rule()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump"><code class="docutils literal notranslate"><span class="pre">PartialProximityTreeStump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-RuleTree.stumps.Stump">RuleTree.stumps.Stump module</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump"><code class="docutils literal notranslate"><span class="pre">Stump</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.supported_data_types"><code class="docutils literal notranslate"><span class="pre">supported_data_types</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.task"><code class="docutils literal notranslate"><span class="pre">task</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.fit"><code class="docutils literal notranslate"><span class="pre">fit()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.feature_original"><code class="docutils literal notranslate"><span class="pre">feature_original</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.threshold_original"><code class="docutils literal notranslate"><span class="pre">threshold_original</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.is_categorical"><code class="docutils literal notranslate"><span class="pre">is_categorical</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.impurity"><code class="docutils literal notranslate"><span class="pre">impurity</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.gain_"><code class="docutils literal notranslate"><span class="pre">gain_</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.get_rule"><code class="docutils literal notranslate"><span class="pre">get_rule()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.node_to_dict"><code class="docutils literal notranslate"><span class="pre">node_to_dict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.dict_to_node"><code class="docutils literal notranslate"><span class="pre">dict_to_node()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#RuleTree.stumps.Stump.Stump.set_fit_request"><code class="docutils literal notranslate"><span class="pre">set_fit_request()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module contents</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cristiano Landi, Alessio Cascione, Riccardo Guidotti
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

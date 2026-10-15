@@ -1,0 +1,712 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleTree.stumps.splitters.XGBoostSplitter &#8212; RuleTree Documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/sphinx-book-theme.css?v=4418a689" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../../_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
+
+    <script src="../../../../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/RuleTree/stumps/splitters/XGBoostSplitter';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  
+    
+    <script src="../../../../_static/searchtools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script src="../../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo.png" class="logo__image only-light" alt="RuleTree Documentation - Home"/>
+    <img src="../../../../_static/logo_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree Documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User guide</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/getting_started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/stumps.html">Choosing the splits: stumps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/multimodal.html">Tabular data, time series and images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/inspecting.html">Reading the tree</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/lifecycle.html">Saving, growing and updating trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/saving.html">Saving and loading trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/ensembles.html">Ensembles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/evaluating.html">Evaluating the models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guides/extending.html">Extending the library</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../../RuleTree.tree.html">RuleTree.tree package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.stumps.html">RuleTree.stumps package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.classification.html">RuleTree.stumps.classification package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.regression.html">RuleTree.stumps.regression package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.splitters.html">RuleTree.stumps.splitters package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.stumps.transformers.html">RuleTree.stumps.transformers package</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.base.html">RuleTree.base package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html">RuleTree.base.RuleTreeBase.RuleTreeBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html">RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.html">RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html">RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html">RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../RuleTree.ensemble.html">RuleTree.ensemble package</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.evaluation.html">RuleTree.evaluation package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.evaluation.evaluate_classification.html">RuleTree.evaluation.evaluate_classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.evaluation.evaluate_regression.html">RuleTree.evaluation.evaluate_regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.evaluation.evaluate_clustering.html">RuleTree.evaluation.evaluate_clustering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.evaluation.evaluate_clustering_internal.html">RuleTree.evaluation.evaluate_clustering_internal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.evaluation.evaluate_interpretability.html">RuleTree.evaluation.evaluate_interpretability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../generated/RuleTree.evaluation.evaluate_fairness.html">RuleTree.evaluation.evaluate_fairness</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../RuleTree.exceptions.html">RuleTree.exceptions module</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../../RuleTree.utils.html">RuleTree.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.utils.light_famd.html">RuleTree.utils.light_famd package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../RuleTree.utils.shapelet_transform.html">RuleTree.utils.shapelet_transform package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/fismimosa/RuleTree/issues/new?title=Issue%20on%20page%20%2F_modules/RuleTree/stumps/splitters/XGBoostSplitter.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for RuleTree.stumps.splitters.XGBoostSplitter</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""XGBoostSplitter: the best split according to the XGBoost gain."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.base.RuleTreeBaseSplitter</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeBaseSplitter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoSplitFoundWarning</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.define</span><span class="w"> </span><span class="kn">import</span> <span class="n">MODEL_TYPE_REG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.tree_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">xgboost_cover_regression</span><span class="p">,</span> <span class="n">xgboost_similarity_score_regression</span>
+
+
+<div class="viewcode-block" id="XGBoostSplitter">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">XGBoostSplitter</span><span class="p">(</span><span class="n">RuleTreeBaseSplitter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Splitter for regression that maximizes the XGBoost gain: the similarity scores of the two</span>
+<span class="sd">    children minus the one of the node, where the target are the residuals of the previous trees.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lam : float</span>
+<span class="sd">        L2 regularization of the leaf values: the similarity score of a node is</span>
+<span class="sd">        ``sum(residuals) ** 2 / (n + lam)``.</span>
+<span class="sd">    approximation : {None, 'quantile'}, default=None</span>
+<span class="sd">        With 'quantile', only ``n_quantiles`` thresholds (quantiles) are tested on each numerical</span>
+<span class="sd">        feature, instead of all the values.</span>
+<span class="sd">    n_quantiles : int, default=32</span>
+<span class="sd">        Number of thresholds tested with approximation='quantile'.</span>
+<span class="sd">    min_cover : float, default=1</span>
+<span class="sd">        Minimum cover (number of instances) of each child.</span>
+<span class="sd">    n_jobs : int, default=1</span>
+<span class="sd">        Not used.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    feature_ : int</span>
+<span class="sd">        Column of the feature matrix used by the split.</span>
+<span class="sd">    threshold_ : float</span>
+<span class="sd">        Threshold of the split.</span>
+<span class="sd">    is_categorical_ : bool</span>
+<span class="sd">        Whether the split is categorical.</span>
+<span class="sd">    gain_ : float</span>
+<span class="sd">        XGBoost gain of the split.</span>
+<span class="sd">    impurity_ : list of float or None</span>
+<span class="sd">        Not computed (None).</span>
+<span class="sd">    root_similarity, similarity_l, similarity_r : float</span>
+<span class="sd">        Similarity scores of the node and of the two children.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    XGBoostStumpRegressor : the stump made of a MatrixTransformer and this splitter.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.datasets import load_diabetes</span>
+<span class="sd">    &gt;&gt;&gt; from RuleTree.stumps.splitters import XGBoostSplitter</span>
+<span class="sd">    &gt;&gt;&gt; X, y = load_diabetes(return_X_y=True)</span>
+<span class="sd">    &gt;&gt;&gt; splitter = XGBoostSplitter(lam=1).fit(X, y - y.mean(), numerical=list(range(10)), categorical=[])</span>
+<span class="sd">    &gt;&gt;&gt; splitter.feature_</span>
+<span class="sd">    8</span>
+<span class="sd">    """</span>
+
+    <span class="n">task</span> <span class="o">=</span> <span class="n">MODEL_TYPE_REG</span>
+
+    <span class="c1"># also the similarity scores and the gain: gain is used by the gamma pruning of RuleTreeXGBoostRegressor</span>
+    <span class="n">_state</span> <span class="o">=</span> <span class="n">RuleTreeBaseSplitter</span><span class="o">.</span><span class="n">_state</span> <span class="o">+</span> <span class="p">(</span><span class="s1">'gain'</span><span class="p">,</span> <span class="s1">'root_similarity'</span><span class="p">,</span> <span class="s1">'similarity_l'</span><span class="p">,</span> <span class="s1">'similarity_r'</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lam</span><span class="p">,</span> <span class="n">approximation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_quantiles</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">min_cover</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Initialize the XGBoostSplitter; see the class documentation for the parameters."""</span>
+        <span class="k">if</span> <span class="n">approximation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">approximation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'quantile'</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'approximation must be None or quantile'</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lam</span> <span class="o">=</span> <span class="n">lam</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">approximation</span> <span class="o">=</span> <span class="n">approximation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_quantiles</span> <span class="o">=</span> <span class="n">n_quantiles</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_cover</span> <span class="o">=</span> <span class="n">min_cover</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_cover_similarity_fun</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Cover and similarity functions of regression.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        cover_fn : callable</span>
+<span class="sd">            Residuals -&gt; cover (number of instances).</span>
+<span class="sd">        similarity_fn : callable</span>
+<span class="sd">            (residuals, cover, lambda) -&gt; similarity score.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">xgboost_cover_regression</span><span class="p">,</span> <span class="n">xgboost_similarity_score_regression</span>
+
+<div class="viewcode-block" id="XGBoostSplitter.get_threshold_values">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter.get_threshold_values">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_threshold_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">feature_idx</span><span class="p">,</span> <span class="n">categorical</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Values tested for a feature: its values (categorical), the midpoints between its consecutive values</span>
+<span class="sd">        (numerical) or, with approximation='quantile', n_quantiles quantiles.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy.ndarray of shape (n_samples, n_features)</span>
+<span class="sd">            Feature matrix.</span>
+<span class="sd">        feature_idx : int</span>
+<span class="sd">            Column of the feature.</span>
+<span class="sd">        categorical : list of int</span>
+<span class="sd">            Indices of the categorical columns.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        thresholds : numpy.ndarray</span>
+<span class="sd">        """</span>
+        <span class="n">unique_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">feature_idx</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">feature_idx</span> <span class="ow">in</span> <span class="n">categorical</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">unique_val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">approximation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_val</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_quantiles</span><span class="p">:</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">unique_val</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">values</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="n">feature_idx</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_quantiles</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="XGBoostSplitter.fit">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">numerical</span><span class="p">,</span> <span class="n">categorical</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Find the split with the highest XGBoost gain among all the features and thresholds.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy.ndarray of shape (n_samples, n_features)</span>
+<span class="sd">            Feature matrix of the instances in the node.</span>
+<span class="sd">        y : numpy.ndarray of shape (n_samples,)</span>
+<span class="sd">            Target of the instances in the node.</span>
+<span class="sd">        numerical : list of int</span>
+<span class="sd">            Indices of the numerical columns of X.</span>
+<span class="sd">        categorical : list of int</span>
+<span class="sd">            Indices of the categorical columns of X.</span>
+<span class="sd">        sample_weight : numpy.ndarray of shape (n_samples,), default=None</span>
+<span class="sd">            Sample weights of the instances in the node.</span>
+<span class="sd">        check_input : bool, default=True</span>
+<span class="sd">            Whether to check the input data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : XGBoostSplitter</span>
+<span class="sd">            The fitted splitter.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NoSplitFoundWarning</span>
+<span class="sd">            If no split is found.</span>
+<span class="sd">        """</span>
+        <span class="n">cover_fn</span><span class="p">,</span> <span class="n">sim_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cover_similarity_fun</span><span class="p">()</span>
+
+        <span class="n">root_cover</span> <span class="o">=</span> <span class="n">cover_fn</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">root_similarity</span> <span class="o">=</span> <span class="n">sim_fn</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">root_cover</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">)</span>
+        <span class="n">best_gain</span><span class="p">,</span> <span class="n">best_feature_idx</span><span class="p">,</span> <span class="n">best_threshold</span><span class="p">,</span> <span class="n">best_categorical</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">feature_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">threshold</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_threshold_values</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">feature_idx</span><span class="p">,</span> <span class="n">categorical</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">feature_idx</span> <span class="ow">in</span> <span class="n">numerical</span><span class="p">:</span>
+                    <span class="n">cond_l</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">feature_idx</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">threshold</span>
+                    <span class="n">cond_r</span> <span class="o">=</span> <span class="o">~</span><span class="n">cond_l</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">cond_l</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">feature_idx</span><span class="p">]</span> <span class="o">==</span> <span class="n">threshold</span>
+                    <span class="n">cond_r</span> <span class="o">=</span> <span class="o">~</span><span class="n">cond_l</span>
+
+                <span class="n">cover_l</span> <span class="o">=</span> <span class="n">cover_fn</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">cond_l</span><span class="p">])</span>
+                <span class="n">cover_r</span> <span class="o">=</span> <span class="n">cover_fn</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">cond_r</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">cover_l</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_cover</span> <span class="ow">or</span> <span class="n">cover_r</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_cover</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">similarity_l</span> <span class="o">=</span> <span class="n">xgboost_similarity_score_regression</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">cond_l</span><span class="p">],</span> <span class="n">cover_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">)</span>
+                <span class="n">similarity_r</span> <span class="o">=</span> <span class="n">xgboost_similarity_score_regression</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">cond_r</span><span class="p">],</span> <span class="n">cover_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">)</span>
+
+                <span class="n">gain</span> <span class="o">=</span> <span class="n">similarity_l</span> <span class="o">+</span> <span class="n">similarity_r</span> <span class="o">-</span> <span class="n">root_similarity</span>
+
+                <span class="k">if</span> <span class="n">gain</span> <span class="o">&gt;</span> <span class="n">best_gain</span><span class="p">:</span>
+                    <span class="n">best_gain</span> <span class="o">=</span> <span class="n">gain</span>
+                    <span class="n">best_feature_idx</span> <span class="o">=</span> <span class="n">feature_idx</span>
+                    <span class="n">best_threshold</span> <span class="o">=</span> <span class="n">threshold</span>
+                    <span class="n">best_categorical</span> <span class="o">=</span> <span class="n">feature_idx</span> <span class="ow">in</span> <span class="n">categorical</span>
+
+        <span class="k">if</span> <span class="n">best_feature_idx</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoSplitFoundWarning</span><span class="p">(</span><span class="s1">'No split found'</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_</span> <span class="o">=</span> <span class="n">best_feature_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_</span> <span class="o">=</span> <span class="n">best_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_categorical_</span> <span class="o">=</span> <span class="n">best_categorical</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">impurity_</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_statistics</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="XGBoostSplitter.update_statistics">
+<a class="viewcode-back" href="../../../../RuleTree.stumps.splitters.html#RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter.update_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Recompute the similarity scores and the gain of the split (``gain`` and ``gain_``).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy.ndarray of shape (n_samples, n_features)</span>
+<span class="sd">            Feature matrix of the instances in the node.</span>
+<span class="sd">        y : numpy.ndarray of shape (n_samples,)</span>
+<span class="sd">            Target of the instances in the node.</span>
+<span class="sd">        sample_weight : numpy.ndarray of shape (n_samples,), default=None</span>
+<span class="sd">            Sample weights of the instances in the node.</span>
+<span class="sd">        """</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+
+        <span class="n">cover_fn</span><span class="p">,</span> <span class="n">sim_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_cover_similarity_fun</span><span class="p">()</span>
+
+        <span class="n">root_cover</span> <span class="o">=</span> <span class="n">cover_fn</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_similarity</span> <span class="o">=</span> <span class="n">sim_fn</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">root_cover</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">)</span>
+        <span class="n">cover_l</span> <span class="o">=</span> <span class="n">cover_fn</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">left</span><span class="p">])</span>
+        <span class="n">cover_r</span> <span class="o">=</span> <span class="n">cover_fn</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">left</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">similarity_l</span> <span class="o">=</span> <span class="n">xgboost_similarity_score_regression</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">left</span><span class="p">],</span> <span class="n">cover_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">similarity_r</span> <span class="o">=</span> <span class="n">xgboost_similarity_score_regression</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">left</span><span class="p">],</span> <span class="n">cover_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lam</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_l</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">similarity_r</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_similarity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gain_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gain</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Cristiano Landi, Alessio Cascione, Riccardo Guidotti
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
