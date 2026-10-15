@@ -199,3 +199,29 @@ def test_best_selection_uses_the_gain_of_any_stump(base_stumps, dataset, iris, d
     model.fit(X, y)
 
     assert len(model.get_leaf_nodes()) > 1
+
+
+@pytest.mark.parametrize("stump_class, dataset", [(PivotTreeStumpClassifier, "iris"),
+                                                   (PivotTreeStumpRegressor, "diabetes")])
+def test_pivots_of_the_stump(stump_class, dataset, request):
+    X, y = request.getfixturevalue(dataset)
+    model = (RuleTreeClassifier if stump_class is PivotTreeStumpClassifier else RuleTreeRegressor)(
+        max_depth=2, base_stumps=stump_class(), random_state=0).fit(X, y)
+
+    pivots = {node_id: node.stump.get_pivots() for node_id, node in model.get_predicates().items()}
+    loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))
+
+    for node_id, node_pivots in pivots.items():
+        assert node_pivots["used"] in node_pivots["candidates"]
+        assert node_pivots["candidates"] == node_pivots["descriptives"] + node_pivots["discriminatives"]
+        assert loaded.get_node_by_id(node_id).stump.get_pivots() == node_pivots
+
+
+def test_pivot_rule_ignores_columns_names(iris):
+    X, y = iris
+    stump = PivotTreeStumpClassifier(random_state=0).fit(X, y)
+
+    rule = stump.get_rule(columns_names=["a", "b", "c", "d"])
+
+    assert rule["textual_rule"] == stump.get_rule()["textual_rule"]
+    assert rule["textual_rule"].startswith(f"P_{stump.feature_original} <= ")

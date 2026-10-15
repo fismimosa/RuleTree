@@ -177,6 +177,21 @@ metric of ``sklearn.metrics.pairwise_distances``:
 In the rules, ``P_<i>`` is the distance from the training instance ``i``. The distance matrix of
 the training set is computed once and cached in the tree (see :doc:`lifecycle`).
 
+``get_pivots`` returns the pivots of a node: the descriptive and discriminative ones, all the
+candidates and the one used by the split. For the whole tree:
+
+.. code-block:: python
+
+   for node_id, node in pivot_tree.get_predicates().items():
+       print(node_id, node.stump.get_pivots())
+
+.. code-block:: text
+   :caption: Output
+
+   R {'descriptives': [167, 249], 'discriminatives': [461, 140], 'candidates': [167, 249, 461, 140], 'used': 461}
+   Rl {'descriptives': [167, 421], 'discriminatives': [368, 191], 'candidates': [167, 421, 368, 191], 'used': 368}
+   Rr {'descriptives': [40, 415], 'discriminatives': [199, 71], 'candidates': [40, 415, 199, 71], 'used': 199}
+
 
 Fair splits
 -----------

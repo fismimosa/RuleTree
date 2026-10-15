@@ -7,10 +7,6 @@ import numpy as np
 from sklearn.base import ClassifierMixin
 import copy
 
-
-#from RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
-#from RuleTree.stumps.classification.PivotTreeStumpClassifier import PivotTreeStumpClassifier
-#from RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
 from RuleTree.utils.define import MODEL_TYPE_CLF
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
@@ -196,94 +192,6 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         return proba
 
 
-    def get_pivots(self, current_node=None, pivot_dicts=None):
-        """
-        Instances used by the pivot stumps of the tree: for each node with a PivotTreeStumpClassifier,
-        the discriminative, descriptive and candidate pivots and the one used by the split; for the
-        nodes with a DecisionTreeStumpClassifier, the medoids (if computed).
-
-        Parameters
-        ----------
-        current_node : RuleTreeNode, default=None
-            Root of the subtree. If None, the root of the tree.
-        pivot_dicts : dict, default=None
-            Dictionary being filled.
-
-        Returns
-        -------
-        pivot_dicts : dict
-            Node id -> dictionary with the keys ``discriminatives``, ``descriptives``, ``candidates`` and
-            ``used`` (indices of the training instances).
-        """
-        stump_split_map = {
-            'PivotTreeStumpClassifier': 'pivot_split',
-            'MultiplePivotTreeStumpClassifier': 'multi_pivot_split',
-            'ObliquePivotTreeStumpClassifier': 'obl_pivot_split',
-            'MultipleObliquePivotTreeStumpClassifier' : 'multi_oblique_pivot_split',
-        
-            'ObliqueDecisionTreeStumpClassifier' : 'oblique_split',
-            'DecisionTreeStumpClassifier' : 'univariate_split'
-        }
-        
-        
-        # Initialize pivot_dicts if not provided
-        if pivot_dicts is None:
-            pivot_dicts = {}
-        
-        # Start from root if current_node is not provided
-        if current_node is None:
-            current_node = self.root
-            
-        
-        # Process current node
-        if current_node.stump is not None:
-            
-            stump_name = current_node.stump.__class__.__module__.split('.')[-1]
-            used = current_node.stump.feature_original
-            if stump_split_map[stump_name] == 'pivot_split':
-                used = [int(used)]
-            if stump_split_map[stump_name] == 'multi_pivot_split':
-                used = list(used)
-            if stump_split_map[stump_name] == 'multi_oblique_pivot_split':
-                used = list(used)
-            if stump_split_map[stump_name] == 'obl_pivot_split':
-                used = [int(x) for x in used]
-            
-            
-            if stump_name in stump_split_map:
-                if stump_split_map[stump_name] in ['oblique_split', 'univariate_split']:
-                    pivot_dicts[current_node.node_id]  = {'descriptives' : current_node.medoids_index}
-                    
-                    
-                if stump_split_map[stump_name] in ['pivot_split','multi_pivot_split','multi_oblique_pivot_split','obl_pivot_split']:
-                    split_obj = getattr(current_node.stump, stump_split_map[stump_name])
-                    if not current_node.is_leaf():
-                        pivot_dicts[current_node.node_id] = {
-                                'discriminatives': split_obj.get_discriminative_names(),
-                                'descriptives': split_obj.get_descriptive_names(),
-                                'candidates': split_obj.get_candidates_names(),
-                                'used' : used
-                            }
-                    else:
-                        pivot_dicts[current_node.node_id]  = {'descriptives' : split_obj.get_descriptive_names()}
-                        
-
-        
-        else:
-            if current_node.is_leaf():
-                pivot_dicts[current_node.node_id]  = {'descriptives' : current_node.medoids_index}
-                
-        
-        # Recurse into child nodes if they exist
-        if current_node.node_l:
-            self.get_pivots(current_node.node_l, pivot_dicts)
-            self.get_pivots(current_node.node_r, pivot_dicts)
-        
-        return pivot_dicts
-
-        
-        
-        
     def _get_stumps_task(self):
         """
         Task of the stumps of the tree.

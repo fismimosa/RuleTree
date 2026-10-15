@@ -9,7 +9,6 @@ API reference
    :recursive:
 
    RuleTree.base.RuleTreeBase.RuleTreeBase
-   RuleTree.base.RuleTreeBaseSplit.RuleTreeBaseSplit
    RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter
    RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter
    RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump
@@ -22,15 +21,6 @@ RuleTree.base.RuleTreeBase module
 ---------------------------------
 
 .. automodule:: RuleTree.base.RuleTreeBase
-   :members:
-   :show-inheritance:
-   :undoc-members:
-   :no-index:
-
-RuleTree.base.RuleTreeBaseSplit module
---------------------------------------
-
-.. automodule:: RuleTree.base.RuleTreeBaseSplit
    :members:
    :show-inheritance:
    :undoc-members:

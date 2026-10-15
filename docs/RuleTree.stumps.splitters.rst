@@ -20,14 +20,6 @@ RuleTree.stumps.splitters.FairSplitter module
    :show-inheritance:
    :undoc-members:
 
-RuleTree.stumps.splitters.PivotSplit module
--------------------------------------------
-
-.. automodule:: RuleTree.stumps.splitters.PivotSplit
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 RuleTree.stumps.splitters.RegressionSplitter module
 ---------------------------------------------------
 

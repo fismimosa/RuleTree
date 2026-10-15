@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer, get_feature_types
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.stumps.splitters.PivotSplit import PivotSplit
+from RuleTree.stumps.transformers._pivot_selection import PivotSelection
 from RuleTree.utils.define import MODEL_TYPE_CLF
 
 
@@ -15,10 +15,9 @@ class PivotTransformer(RuleTreeBaseTransformer):
     Transformer into the distances from candidate pivots, instances of the node that describe a
     class (medoids) or separate the classes.
 
-    The candidates are selected by :class:`~RuleTree.stumps.splitters.PivotSplit.PivotSplit` on the
-    standardized numerical features; the scaler and the distance matrix of the whole data set are
-    computed once and cached in the tree. After the splitter has chosen a column, only the chosen pivot
-    is kept (``select``).
+    The candidates are selected among the instances of the node, on the standardized numerical
+    features; the scaler and the distance matrix of the whole data set are computed once and cached
+    in the tree. After the splitter has chosen a column, only the chosen pivot is kept (``select``).
 
     Parameters
     ----------
@@ -50,8 +49,9 @@ class PivotTransformer(RuleTreeBaseTransformer):
         The candidate pivots (only the chosen one after ``select``), standardized.
     candidate_names_ : numpy.ndarray of shape (n_candidates,)
         Indices of the candidate pivots in the training set.
-    pivot_split_ : PivotSplit
-        The selection of the candidates.
+    pivots_ : dict
+        Indices in the training set of the ``descriptives``, ``discriminatives`` and ``candidates``
+        pivots of the node (all of them, also after ``select``).
     scaler_ : StandardScaler
         Scaler of the numerical features, fitted on the whole data set.
 
@@ -86,7 +86,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
 
     def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
         """
-        Select the candidate pivots of the node with PivotSplit, on the standardized numerical features. The
+        Select the candidate pivots of the node (see PivotSelection), on the standardized numerical features. The
         scaler and the distance matrix of the whole data set are taken from the cache.
 
         Parameters
@@ -124,13 +124,16 @@ class PivotTransformer(RuleTreeBaseTransformer):
                                                      cache)
         X_scaled = self.scaler_.transform(X[idx][:, self.num_pre_transformed_])
 
-        self.pivot_split_ = PivotSplit(ml_task=self.ml_task, k=self.k, reg_contrast_lambda=self.reg_contrast_lambda,
-                                       reg_max_thresholds=self.reg_max_thresholds, **(self.tree_params or {}))
-        self.pivot_split_.fit(X_scaled, y[idx], distance_matrix[np.ix_(idx, idx)], self.distance_measure, idx,
-                              sample_weight=None if sample_weight is None else sample_weight[idx])
+        selection = PivotSelection(self.ml_task, k=self.k, reg_contrast_lambda=self.reg_contrast_lambda,
+                                   reg_max_thresholds=self.reg_max_thresholds, **(self.tree_params or {}))
+        selection.fit(X_scaled, y[idx], distance_matrix[np.ix_(idx, idx)], idx,
+                      sample_weight=None if sample_weight is None else sample_weight[idx])
 
-        self.candidates_ = self.pivot_split_.X_candidates
-        self.candidate_names_ = self.pivot_split_.get_candidates_names()
+        self.candidates_ = selection.candidates_
+        self.candidate_names_ = selection.candidate_names_
+        self.pivots_ = {"descriptives": selection.descriptive_names_.tolist(),
+                        "discriminatives": selection.discriminative_names_.tolist(),
+                        "candidates": selection.candidate_names_.tolist()}
         self.numerical_, self.categorical_ = list(range(len(self.candidates_))), []
 
         return self
@@ -187,7 +190,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
 
     def get_state(self):
         """
-        Fitted state: the pivot, its index, the numerical features and the scaler.
+        Fitted state: the pivot, its index, the candidate pivots, the numerical features and the scaler.
 
         Returns
         -------
@@ -199,6 +202,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
             'cat_pre_transformed': list(self.cat_pre_transformed_),
             'X_split_instance': self.candidates_[0],
             'pivot_name': self.feature_id(0),
+            'pivots': self.pivots_,
             'scaler': {
                 'mean_': self.scaler_.mean_.tolist(),
                 'scale_': self.scaler_.scale_.tolist(),
@@ -224,6 +228,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.cat_pre_transformed_ = state['cat_pre_transformed']
         self.candidates_ = np.array([state['X_split_instance']])
         self.candidate_names_ = np.array([int(state['pivot_name'])])
+        self.pivots_ = state['pivots']
 
         self.scaler_ = StandardScaler()
         self.scaler_.mean_ = np.array(state['scaler']['mean_'])
