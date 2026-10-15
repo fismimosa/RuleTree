@@ -2,10 +2,11 @@ RuleTree
 ========
 
 RuleTree builds interpretable decision trees one node at a time. Each node is split by a *stump*:
-a threshold on a feature, the distance from an instance of the training set (a *pivot*), the
-distance of a time series from a *shapelet*, a fair split, ... The same tree can mix different
-kinds of stumps and different types of data (tabular data, time series, images), and its rules
-can be read, drawn and saved.
+a threshold on a feature or on a combination of a few features (oblique split), the distance from
+an instance of the training set (a *pivot*), the distance of a time series from a *shapelet*, which
+of two pivots or shapelets is closer, a fair split, ... The same tree can mix different kinds of
+stumps and different types of data (tabular data, time series, images), and its rules can be read,
+drawn and saved.
 
 The trees follow the scikit-learn API and support classification
 (:class:`~RuleTree.tree.RuleTreeClassifier.RuleTreeClassifier`), regression
@@ -44,6 +45,7 @@ The trees follow the scikit-learn API and support classification
    guides/multimodal
    guides/inspecting
    guides/lifecycle
+   guides/saving
    guides/ensembles
    guides/evaluating
    guides/extending

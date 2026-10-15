@@ -51,9 +51,9 @@ the nodes, each with its statistics and the state of its stump:
    X_3 <= 0.800000011920929 - DecisionTreeStumpClassifier
 
 The thresholds are saved without rounding (scikit-learn computes them in single precision).
-To load a tree with stumps written
-outside the library (see :doc:`extending`), their classes must be importable from the module they
-were defined in. Trees saved by a different version of RuleTree may not load.
+:doc:`saving` describes the dictionary in detail: what is saved for the tree, the nodes and each
+stump, how ``from_dict`` rebuilds the tree, what is not saved, and what a new stump needs to be
+saved.
 
 
 Refitting and growing a tree

@@ -69,6 +69,7 @@ The user guide is in [`docs/guides`](docs/guides):
 - [Tabular data, time series and images](docs/guides/multimodal.rst).
 - [Reading the tree](docs/guides/inspecting.rst): rules, drawings, nodes, feature contributions.
 - [Saving, growing and updating trees](docs/guides/lifecycle.rst).
+- [Saving and loading trees](docs/guides/saving.rst): what `to_dict` saves and how `from_dict` rebuilds a tree.
 - [Ensembles](docs/guides/ensembles.rst): boosting of RuleTrees.
 - [Evaluating the models](docs/guides/evaluating.rst): metrics of predictions, clusters, tree size and fairness.
 - [Extending the library](docs/guides/extending.rst): writing new stumps, transformers and splitters.

@@ -378,11 +378,11 @@ its methods: see the documentation of that class.
 Saving trees with new stumps
 ----------------------------
 
-Trees with new stumps are saved and loaded as any other (see :doc:`lifecycle`): the saved tree
-records the module and the class of each component, and ``RuleTree.from_dict`` imports them. So
-the classes must be defined in an importable module, not in a script run as ``__main__`` or in a
-notebook. The fitted state is saved by ``get_state`` (transformers) or by the attributes of the
-split (splitters).
+Trees with new stumps are saved and loaded as any other: the saved tree records the module and
+the class of each component, and ``RuleTree.from_dict`` imports them. So the classes must be
+defined in an importable module, not in a script run as ``__main__`` or in a notebook. The fitted
+state is saved by ``get_state`` (transformers) or by the attributes listed in ``_state``
+(splitters). See :doc:`saving` for the details and for a quick check of a new stump.
 
 
 Testing new components
