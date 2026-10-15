@@ -161,7 +161,8 @@ def test_cache(iris):
     X, y = iris
     model = RuleTreeClassifier(max_depth=2).fit(X, y)
 
-    assert ("feature_types", DATA_TYPE_TABULAR) in model.get_cache("DecisionTreeStumpClassifier")  # kept after fit
+    stump = model.candidate_splits_[0][1]
+    assert ("feature_types", DATA_TYPE_TABULAR) in model.get_cache(stump.cache_namespace())  # kept after fit
 
     model.get_cache("test")["value"] = 1
     model.fit(X, y)
@@ -229,12 +230,14 @@ def test_no_warnings_on_time_series(multimodal):
         RuleTreeClassifier(max_depth=3).fit(X_ts=X_ts, y=y).predict(X_ts=X_ts)
 
 
-def test_cache_namespace_is_the_stump_class(iris):
+def test_cache_namespace_is_the_stump_class_and_its_hyperparameters(iris):
     X, y = iris
-    model = RuleTreeClassifier(max_depth=2, stump_selection="best",
-                               base_stumps=[DecisionTreeStumpClassifier(), PivotTreeStumpClassifier()]).fit(X, y)
+    model = RuleTreeClassifier(max_depth=2, stump_selection="best", random_state=0, base_stumps=[
+        DecisionTreeStumpClassifier(), PivotTreeStumpClassifier(), PivotTreeStumpClassifier(distance_measure="cosine")
+    ]).fit(X, y)
+    namespaces = [stump.cache_namespace() for _, stump, _ in model.candidate_splits_]
 
-    assert set(model.cache_) == {"DecisionTreeStumpClassifier", "PivotTreeStumpClassifier"}
-    pivot_cache = model.get_cache("PivotTreeStumpClassifier")
-    assert ("feature_types", DATA_TYPE_TABULAR) in pivot_cache
-    assert ("pivot", DATA_TYPE_TABULAR, "euclidean") in pivot_cache
+    assert len(set(namespaces)) == 3 and set(model.cache_) == set(namespaces)
+    assert [n.split("-")[0] for n in namespaces] == ["DecisionTreeStumpClassifier"] + ["PivotTreeStumpClassifier"] * 2
+    assert ("pivot", DATA_TYPE_TABULAR, "euclidean") in model.get_cache(namespaces[1])
+    assert ("pivot", DATA_TYPE_TABULAR, "cosine") in model.get_cache(namespaces[2])

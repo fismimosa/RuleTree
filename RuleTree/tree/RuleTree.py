@@ -261,8 +261,8 @@ class RuleTree(RuleTreeBase, ABC):
         Parameters
         ----------
         namespace : str
-            Name of the cache. Stumps use their class name (see ``RuleTreeBaseStump._get_cache``), e.g.
-            ``get_cache("PivotTreeStumpClassifier")``.
+            Name of the cache. Each stump uses its ``cache_namespace()``: its class name and a hash of
+            its hyperparameters, e.g. ``get_cache(stump.cache_namespace())``.
 
         Returns
         -------

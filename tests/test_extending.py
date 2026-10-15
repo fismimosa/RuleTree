@@ -181,5 +181,7 @@ def test_cache_namespace_of_composed_stumps(iris):
         Stump(RandomProjectionTransformer(), ClassificationSplitter()),
     ]).fit(X, y)
 
-    assert "Stump(MatrixTransformer)" in model.cache_
-    assert ("feature_types", DATA_TYPE_TABULAR) in model.get_cache("Stump(MatrixTransformer)")
+    matrix_stump, projection_stump = (stump for _, stump, _ in model.candidate_splits_)
+    assert matrix_stump.cache_namespace() != projection_stump.cache_namespace()
+    assert set(model.cache_) == {matrix_stump.cache_namespace(), projection_stump.cache_namespace()}
+    assert ("feature_types", DATA_TYPE_TABULAR) in model.get_cache(matrix_stump.cache_namespace())

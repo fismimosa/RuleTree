@@ -1,5 +1,7 @@
 """Abstract base class of the stumps: the single splits that make up the nodes of a RuleTree."""
 
+import hashlib
+import json
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -26,9 +28,9 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
     The tree passed as ``context`` holds a cache that lives until the next ``fit`` (or
     ``clear_cache()``), where stumps can store anything that can be shared among splits, e.g.
-    embeddings computed on the whole data set. Each kind of stump has its own cache, named after
-    its class: see :meth:`_get_cache`. Everything needed by ``apply`` must be stored in the stump
-    itself.
+    embeddings computed on the whole data set. The stumps of the same class with the same
+    hyperparameters share a cache, named by :meth:`cache_namespace`. Everything needed by ``apply``
+    must be stored in the stump itself.
 
     Subclasses that work on a 2D matrix can implement ``_transform`` (data of the stump's data
     type -> matrix) and ``_apply_matrix`` (matrix -> 1/2 labels) and reuse :meth:`apply` and
@@ -339,9 +341,38 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         return np.asarray(data[self.data_type_]) if isinstance(data, dict) else np.asarray(data)
 
+    def cache_namespace(self) -> str:
+        """
+        Name of the cache of the stump in the tree (see RuleTree.get_cache): the class name and a hash
+        of the hyperparameters, also of the components (e.g. the transformer of a Stump). Stumps of
+        the same class with different hyperparameters do not share cached values.
+
+        The tree gives its ``random_state`` to the stumps without one, so the namespace of a stump
+        used by a tree is the one of its copy in ``candidate_splits_``.
+
+        Returns
+        -------
+        namespace : str
+            E.g. ``"PivotTreeStumpClassifier-1a2b3c4d"``.
+
+        Examples
+        --------
+        >>> from RuleTree.stumps.classification import DecisionTreeStumpClassifier
+        >>> a, b = DecisionTreeStumpClassifier(), DecisionTreeStumpClassifier(criterion="entropy")
+        >>> a.cache_namespace().startswith("DecisionTreeStumpClassifier-")
+        True
+        >>> a.cache_namespace() == DecisionTreeStumpClassifier().cache_namespace() != b.cache_namespace()
+        True
+        """
+        params = {name: f"<{type(value).__module__}.{type(value).__qualname__}>"
+                  if isinstance(value, BaseEstimator) else value
+                  for name, value in self.get_params(deep=True).items()}
+        digest = hashlib.md5(json.dumps(params, sort_keys=True, default=repr).encode()).hexdigest()
+        return f"{self.__class__.__name__}-{digest[:8]}"
+
     def _get_cache(self, context) -> dict:
         """
-        Cache shared by the stumps of this class in the tree ``context`` (namespace: the class name).
+        Cache of the stump in the tree ``context``, named by :meth:`cache_namespace`.
 
         Parameters
         ----------
@@ -351,9 +382,9 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Returns
         -------
         cache : dict
-            The cache of the stump's class; without a context, an empty dictionary that is not kept.
+            The cache of the stump; without a context, an empty dictionary that is not kept.
         """
-        return context.get_cache(self.__class__.__name__) if context is not None else {}
+        return context.get_cache(self.cache_namespace()) if context is not None else {}
 
 
 def _is_number(value) -> bool:

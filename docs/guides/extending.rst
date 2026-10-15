@@ -162,7 +162,8 @@ This one draws random projections of the tabular data at each node:
   in the node (``idx``, None for all of them); it sets ``numerical_`` and ``categorical_``, the
   indices of the numerical and categorical columns of the feature matrix. Values that are the
   same for every node (e.g. the distances between all the instances) can be computed once and
-  stored in ``cache``, a dictionary shared by the stumps of the same kind (see :doc:`lifecycle`).
+  stored in ``cache``, a dictionary shared by the stumps of the same class with the same
+  hyperparameters (see :doc:`lifecycle`).
 - ``select`` (optional) is called after the splitter has chosen a column: the transformer keeps
   only what that column needs and returns its new index. Here, a single projection is kept.
   A transformer whose ``select`` changes the feature matrix in other ways sets
@@ -345,8 +346,8 @@ parameter, passed to the splitter, makes the stump reproducible, and lets the tr
 ``random_state`` when it is None.
 
 The fitted transformer and splitter of a stump are in ``stump.transformer_`` and
-``stump.splitter_``. The cache of a subclass is shared by the stumps of that class; the cache of a
-generic ``Stump`` by the stumps with the same class of transformer.
+``stump.splitter_``. The cache is shared by the stumps of the same class with the same
+hyperparameters, including the ones of their components (see ``cache_namespace``).
 
 The rule of a split is written by ``get_rule``, with the feature named by ``feature_id`` of the
 transformer. A stump with a rule of its own (e.g. ``P_<i> <= t`` for the pivots) overrides

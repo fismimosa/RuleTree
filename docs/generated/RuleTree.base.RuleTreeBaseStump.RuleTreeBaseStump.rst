@@ -15,6 +15,7 @@
    
       ~RuleTreeBaseStump.__init__
       ~RuleTreeBaseStump.apply
+      ~RuleTreeBaseStump.cache_namespace
       ~RuleTreeBaseStump.dict_to_node
       ~RuleTreeBaseStump.fit
       ~RuleTreeBaseStump.get_graphviz_rule
