@@ -48,6 +48,17 @@ The library provides these components:
      - the distances from partial pivots, restricted to a few features
    * - :class:`~RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer`
      - the distances from shapelets
+   * - :class:`~RuleTree.stumps.transformers.HouseholderTransformer.HouseholderTransformer`,
+       :class:`~RuleTree.stumps.transformers.BivariateTransformer.BivariateTransformer`
+     - linear combinations of a few features (oblique directions); both derive from
+       :class:`~RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer`
+   * - :class:`~RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer`,
+       :class:`~RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer`
+     - for each pair of shapelets (partial pivots), whether the instance is closer to the second one
+   * - :class:`~RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer`
+     - for each pair of pivots, whether the instance is closer to the second one
+   * - :class:`~RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer`
+     - linear combinations of the distances from the pivots of the node
    * - **Splitter**
      - **Split**
    * - :class:`~RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter`,

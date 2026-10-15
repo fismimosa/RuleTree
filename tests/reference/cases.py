@@ -15,10 +15,14 @@ from RuleTree.ensemble.EBMRegressor import EBMRegressor
 from RuleTree.ensemble.GBoostClassifier import GBoostClassifier
 from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
 from RuleTree.ensemble.XGBoostRegressor import XGBoostRegressor
-from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, PartialPivotTreeStumpClassifier,
-                                            PivotTreeStumpClassifier, ShapeletTreeStumpClassifier)
-from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor, PivotTreeStumpRegressor,
-                                        ShapeletTreeStumpRegressor)
+from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, MultipleObliquePivotTreeStumpClassifier,
+                                            MultiplePivotTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier,
+                                            ObliquePivotTreeStumpClassifier, PartialPivotTreeStumpClassifier,
+                                            PartialProximityTreeStumpClassifier, PivotTreeStumpClassifier,
+                                            ProximityTreeStumpClassifier, ShapeletTreeStumpClassifier)
+from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor,
+                                        ObliqueDecisionTreeStumpRegressor, PivotTreeStumpRegressor,
+                                        ProximityTreeStumpRegressor, ShapeletTreeStumpRegressor)
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeXGBoostRegressor import RuleTreeXGBoostRegressor
@@ -112,6 +116,23 @@ CASES = {
                                                          base_stumps=[dt_clf(),
                                                                       pivot_clf()]),
                               "iris", "iris_y", True),
+    "clf_oblique_householder": (lambda: RuleTreeClassifier(
+        max_depth=3, base_stumps=ObliqueDecisionTreeStumpClassifier(random_state=0)), "iris", "iris_y", True),
+    "clf_oblique_bivariate": (lambda: RuleTreeClassifier(
+        max_depth=3, base_stumps=ObliqueDecisionTreeStumpClassifier("bivariate", random_state=0)),
+                              "iris", "iris_y", True),
+    "clf_multiple_pivot": (lambda: RuleTreeClassifier(
+        max_depth=3, base_stumps=MultiplePivotTreeStumpClassifier(random_state=0)), "iris", "iris_y", True),
+    "clf_oblique_pivot": (lambda: RuleTreeClassifier(
+        max_depth=3, base_stumps=ObliquePivotTreeStumpClassifier(random_state=0)), "iris", "iris_y", True),
+    "clf_multiple_oblique_pivot": (lambda: RuleTreeClassifier(
+        max_depth=3, base_stumps=MultipleObliquePivotTreeStumpClassifier(oblique_split_type="bivariate",
+                                                                         random_state=0)), "iris", "iris_y", True),
+    "clf_partial_proximity": (lambda: RuleTreeClassifier(
+        max_depth=2, base_stumps=PartialProximityTreeStumpClassifier(random_state=0)), "iris", "iris_y", True),
+    "clf_proximity": (lambda: RuleTreeClassifier(
+        max_depth=2, base_stumps=ProximityTreeStumpClassifier(n_shapelets=4, sliding_window=10, selection="random")),
+                      "ts", "ts_y", True),
     "clf_decision_tree_ts": (lambda: RuleTreeClassifier(max_depth=3, base_stumps=dt_clf()), "ts", "ts_y", True),
     "clf_shapelet": (lambda: RuleTreeClassifier(max_depth=2, base_stumps=shapelet_clf()), "ts", "ts_y", False),
     "clf_multimodal_best": (lambda: RuleTreeClassifier(max_depth=3, stump_selection="best",
@@ -134,6 +155,11 @@ CASES = {
                                                                      pivot_reg()]),
                               "diabetes", "diabetes_y", True),
     "reg_shapelet": (lambda: RuleTreeRegressor(max_depth=2, base_stumps=shapelet_reg()), "ts", "ts_y", False),
+    "reg_oblique": (lambda: RuleTreeRegressor(max_depth=2,
+                                              base_stumps=ObliqueDecisionTreeStumpRegressor(random_state=0)),
+                    "diabetes", "diabetes_y", True),
+    "reg_proximity": (lambda: RuleTreeRegressor(max_depth=2, base_stumps=ProximityTreeStumpRegressor(
+        n_shapelets=4, sliding_window=10, selection="random", mi_n_neighbors=5)), "ts", "ts_y", True),
     "reg_xgboost_stump": (lambda: RuleTreeRegressor(max_depth=3, base_stumps=XGBoostStumpRegressor(lam=1)),
                           "diabetes", "diabetes_y", True),
     "reg_fair": (lambda: RuleTreeRegressor(max_depth=2, base_stumps=FairTreeStumpRegressor(
@@ -143,6 +169,8 @@ CASES = {
     # clustering
     "clu_r2": (lambda: RuleTreeCluster(max_depth=3, random_state=0, base_stumps=dt_reg()), "blobs", None, True),
     "clu_bic": (lambda: RuleTreeCluster(max_depth=3, clus_impurity="bic", random_state=0, base_stumps=dt_reg()), "blobs", None, True),
+    "clu_oblique": (lambda: RuleTreeCluster(max_depth=3, random_state=0,
+                                            base_stumps=ObliqueDecisionTreeStumpRegressor("bivariate")), "blobs", None, True),
     "clu_mixed": (lambda: RuleTreeCluster(max_depth=2, random_state=0, base_stumps=dt_reg()), "mixed", None, True),
     "clu_classifier": (lambda: RuleTreeClusterClassifier(max_depth=3, random_state=0, base_stumps=dt_reg()), "iris", "iris_y", True),
     "clu_regressor": (lambda: RuleTreeClusterRegressor(max_depth=3, bic_eps=0.5, random_state=0, base_stumps=dt_reg()),
