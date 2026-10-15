@@ -143,7 +143,7 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
             else:
                 wait += 1
                 if wait >= self.patience:
-                    self.estimators_ = self.estimators_[:-self.patience+1]
+                    self.estimators_ = self.estimators_[:len(self.estimators_) - self.patience + 1]  # [:-0] would be empty
                     break
             prev_residuals_val = np.sum(np.abs(residuals_val))
 

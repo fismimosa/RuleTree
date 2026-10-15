@@ -222,7 +222,7 @@ def _train_one_class(args):
         else:
             wait += 1
             if wait >= patience:
-                estimators = estimators[:-patience+1]
+                estimators = estimators[:len(estimators) - patience + 1]  # [:-0] would be empty
                 break
         prediction = new_prediction
         prediction_val = new_prediction_val

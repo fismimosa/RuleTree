@@ -64,3 +64,15 @@ def test_xgboost_tree_update_statistics(diabetes):
     model.update_statistics(X, y)
 
     assert np.allclose(model.predict(X), predictions)  # XGBoost output values, as in fit
+
+
+def test_early_stopping_with_patience_one(diabetes):
+    """patience=1 removes no estimator (slicing with [:-0] removed all of them)."""
+    X, y = diabetes
+    gboost = GBoostRegressor(base_estimator=RuleTreeRegressor(max_depth=2, random_state=0), n_estimators=200,
+                             patience=1, random_state=0).fit(X, y)
+    ebm = EBMRegressor(base_estimator=RuleTreeRegressor(max_depth=1, random_state=0), n_iterations=200,
+                       learning_rate=.5, patience=1, random_state=0).fit(X, y)
+
+    assert 0 < len(gboost.estimators_) < 200
+    assert all(0 < len(estimators) < 200 for estimators in ebm.estimators_.values())
