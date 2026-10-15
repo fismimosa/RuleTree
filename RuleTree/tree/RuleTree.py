@@ -8,6 +8,7 @@ import importlib
 import json
 import numbers
 import random
+import tempfile
 import traceback
 import warnings
 from abc import ABC, abstractmethod
@@ -19,7 +20,6 @@ import numpy as np
 import sklearn
 from sklearn.base import ClassifierMixin
 from sklearn.utils import check_random_state
-from tempfile312 import TemporaryDirectory
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.exceptions import NoSplitFoundWarning
@@ -1223,7 +1223,7 @@ class RuleTree(RuleTreeBase, ABC):
         """
         dot = self.root.export_graphviz(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
         if filename is None:
-            dot.render(directory=TemporaryDirectory(delete=False).name, view=True)
+            dot.render(directory=tempfile.mkdtemp(), view=True)
             return dot
         else:
             dot.render(filename=filename)

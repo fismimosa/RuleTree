@@ -3,7 +3,6 @@ import json
 import numpy as np
 import pytest
 import sklearn
-from numba import UnsupportedError
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.transformers import (MatrixTransformer, PartialPivotTransformer, PivotTransformer,
@@ -82,7 +81,7 @@ def test_shapelet_transformer(time_series):
     loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
     assert np.allclose(loaded.transform(X), transformer.transform(X))
 
-    with pytest.raises(UnsupportedError):
+    with pytest.raises(ValueError, match="sample_weight"):
         ShapeletTransformer().fit(X, y, sample_weight=np.ones(len(y)))
 
 

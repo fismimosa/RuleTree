@@ -56,6 +56,28 @@ def test_import_without_line_profiler():
     )
 
 
+def test_optional_dependencies_are_needed_only_by_their_features():
+    run_python(
+        "import sys\n"
+        "for name in ['numba', 'matplotlib', 'graphviz', 'sklearn_extra']: sys.modules[name] = None\n"
+        f"for module in {MODULES!r}: __import__(module)\n"
+        "import numpy as np\n"
+        "from RuleTree import RuleTreeClassifier\n"
+        "from RuleTree.exceptions import MissingOptionalDependencyError\n"
+        "from RuleTree.stumps.classification import PartialPivotTreeStumpClassifier, ShapeletTreeStumpClassifier\n"
+        "X, y = np.random.default_rng(0).normal(size=(40, 1, 20)), np.arange(40) % 2\n"
+        "model = RuleTreeClassifier(max_depth=2).fit(X[:, 0], y)\n"
+        "for fit in [lambda: ShapeletTreeStumpClassifier().fit(X, y, data_type='ts'),\n"
+        "            lambda: PartialPivotTreeStumpClassifier().fit(X[:, 0], y),\n"
+        "            lambda: model.root.export_graphviz()]:\n"
+        "    try:\n"
+        "        fit()\n"
+        "        raise AssertionError('no error')\n"
+        "    except MissingOptionalDependencyError as error:\n"
+        "        assert 'pip install \"RuleTree[' in str(error), error\n"
+    )
+
+
 def test_profile_uses_line_profiler_when_installed():
     line_profiler_pycharm = pytest.importorskip("line_profiler_pycharm")
 

@@ -157,8 +157,7 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """
-        Rule of the split, e.g. ``euclidean(TS, shp) <= 1.2``; the Graphviz node shows a plot of the
-        shapelet, drawn into a temporary PNG file.
+        Rule of the split, e.g. ``euclidean(TS, shp) <= 1.2``.
 
         Parameters
         ----------
@@ -176,7 +175,28 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
 
         Raises
         ------
-        UnsupportedError
+        ValueError
             If a scaler is given.
         """
         return ShapeletTreeStumpClassifier.get_rule(self, columns_names, scaler, float_precision)
+
+    def get_graphviz_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
+        """
+        Attributes of the Graphviz node of the split, with a plot of the shapelet (see
+        ShapeletTreeStumpClassifier.get_graphviz_rule).
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Not used.
+        scaler : TransformerMixin, default=None
+            Not supported: must be None.
+        float_precision : int, default=3
+            Number of decimals of the threshold. If None, it is not rounded.
+
+        Returns
+        -------
+        attributes : dict
+            Attributes of the Graphviz node.
+        """
+        return ShapeletTreeStumpClassifier.get_graphviz_rule(self, columns_names, scaler, float_precision)

@@ -22,8 +22,13 @@ setup(
     python_requires='>=3.10.0',
     version="0.0.4-2",
     license="BSD-Clause-2",
-    description="Package description",
-    url="https://github.com/riccotti/RuleTree",
+    description="Interpretable decision trees built node by node with stumps of different kinds, for tabular data, time series and images",
+    url="https://github.com/fismimosa/RuleTree",
+    project_urls={
+        "Documentation": "https://fismimosa.github.io/RuleTree/",
+        "Source": "https://github.com/fismimosa/RuleTree",
+        "Issues": "https://github.com/fismimosa/RuleTree/issues",
+    },
     author="Cristiano Landi",
     author_email="cristiano.landi@phd.unipi.it",
     classifiers=[
@@ -33,35 +38,32 @@ setup(
         #   5 - Production/Stable
         "Development Status :: 3 - Alpha",
         # Indicate who your project is intended for
+        "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
-        "Topic :: Software Development :: Build Tools",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
         # Pick your license as you wish (should match "license" above)
         "License :: OSI Approved :: BSD License",
-        "Operating System :: POSIX :: Other",
-        "Operating System :: MacOS",
+        "Operating System :: OS Independent",
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ],
-    keywords="keyword1 keyword2 keyword3",
+    keywords="decision trees, interpretable machine learning, explainable AI, rules, time series, clustering, scikit-learn",
     install_requires=requirements,
     long_description=long_description,
     long_description_content_type="text/markdown",
     extras_require={
-        "graphviz": ["graphviz"],  # RuleTree.export_graphviz
+        "shapelets": ["numba"],  # shapelet and partial pivot stumps
+        "graphviz": ["graphviz", "matplotlib"],  # export_graphviz (matplotlib: images of the shapelets)
         "kmedoids": ["scikit-learn-extra"],  # Shapelets(selection='cluster')
         "profiling": ["line-profiler-pycharm"],  # RuleTree.utils.profiling
-        "test": ["pytest"],
+        "test": ["pytest", "numba", "graphviz", "matplotlib"],
+        "all": ["numba", "graphviz", "matplotlib", "scikit-learn-extra"],
     },
-    packages=find_packages(
-        exclude=[
-            "*.test",
-            "*.test.*",
-            "test.*",
-            "test",
-            "package_name.test",
-            "package_name.test.*",
-        ]
-    ),
+    packages=find_packages(include=["RuleTree", "RuleTree.*"]),  # not benchmark and tests
 )

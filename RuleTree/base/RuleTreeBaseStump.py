@@ -109,6 +109,30 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         pass
 
+    def get_graphviz_rule(self, columns_names: list = None, scaler: TransformerMixin = None,
+                          float_precision: Optional[int] = 3) -> dict:
+        """
+        Attributes of the Graphviz node of the split (see RuleTree.export_graphviz). The default
+        implementation is ``get_rule(...)["graphviz_rule"]``; stumps that draw something in the node,
+        such as the shapelet stumps, override it.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the tabular features.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the thresholds are shown in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the threshold.
+
+        Returns
+        -------
+        attributes : dict
+            Attributes of the Graphviz node, e.g. ``label``.
+        """
+        return self.get_rule(columns_names=columns_names, scaler=scaler,
+                             float_precision=float_precision)["graphviz_rule"]
+
     @abstractmethod
     def node_to_dict(self) -> dict:
         """

@@ -8,7 +8,7 @@ from sklearn.base import clone
 
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer
 from RuleTree.utils.define import DATA_TYPE_TABULAR
-from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
+from RuleTree.utils.optional import import_optional
 
 
 class PartialPivotTransformer(RuleTreeBaseTransformer):
@@ -100,7 +100,15 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         Returns
         -------
         st : TabularShapelets
+
+        Raises
+        ------
+        MissingOptionalDependencyError
+            If numba is not installed.
         """
+        import_optional("numba", self.__class__.__name__)
+        from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
+
         return TabularShapelets(n_shapelets=self.n_shapelets,
                                 n_ts_for_selection=self.n_ts_for_selection,
                                 n_features_strategy=self.n_features_strategy,

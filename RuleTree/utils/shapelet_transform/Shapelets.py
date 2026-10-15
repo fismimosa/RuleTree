@@ -15,6 +15,7 @@ from sklearn.feature_selection import mutual_info_classif, mutual_info_regressio
 from sklearn.metrics import classification_report
 from sklearn.utils import resample
 
+from RuleTree.utils.optional import import_optional
 from RuleTree.utils.shapelet_transform.matrix_to_vector_distances import euclidean, sqeuclidean, cosine, cityblock
 
 
@@ -313,11 +314,8 @@ class Shapelets(TransformerMixin):
         dist_matrix = _best_fit(candidate_shapelets, candidate_shapelets, self.__get_distance())
         numba.set_num_threads(old_n_threads)
 
-        try:
-            from sklearn_extra.cluster import KMedoids
-            clu = KMedoids(n_clusters=self.n_shapelets, random_state=self.random_state, metric='precomputed')
-        except ImportError as e:
-            raise ImportError("Please install scikit-learn-extra")
+        KMedoids = import_optional("sklearn_extra.cluster", "Shapelets(selection='cluster')").KMedoids
+        clu = KMedoids(n_clusters=self.n_shapelets, random_state=self.random_state, metric='precomputed')
         clu.fit(dist_matrix)
 
         return candidate_shapelets[clu.medoid_indices_]

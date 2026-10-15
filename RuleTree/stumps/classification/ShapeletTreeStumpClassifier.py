@@ -1,15 +1,14 @@
 """ShapeletTreeStumpClassifier: the split on the distance from a shapelet, for classification of time series."""
 
+import tempfile
 from typing import Optional
 
 import psutil
-import tempfile312
-from numba import UnsupportedError
 
-from matplotlib import pyplot as plt
 
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.transformers.ShapeletTransformer import ShapeletTransformer
+from RuleTree.utils.optional import import_optional
 
 
 class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
@@ -163,8 +162,7 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """
-        Rule of the split, e.g. ``euclidean(TS, shp) <= 1.2``; the Graphviz node shows a plot of the
-        shapelet, drawn into a temporary PNG file.
+        Rule of the split, e.g. ``euclidean(TS, shp) <= 1.2``.
 
         Parameters
         ----------
@@ -182,68 +180,69 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
 
         Raises
         ------
-        UnsupportedError
+        ValueError
             If a scaler is given.
         """
-        rule = {
+        if scaler is not None:
+            raise ValueError(f"Scaler not supported for {self.__class__.__name__}")
+
+        threshold = self.threshold_original
+        rounded_value = str(threshold) if float_precision is None else round(threshold, float_precision)
+        condition = f"{self.distance}(TS, shp) <= {rounded_value}"
+        negation = f"{self.distance}(TS, shp) > {rounded_value}"
+
+        return {
             "feature_idx": self.feature_original,
-            "threshold": self.threshold_original,
+            "threshold": threshold,
             "is_categorical": False,
+            "feature_name": f"Shapelet_{self.feature_original}",
+            "textual_rule": condition,
+            "blob_rule": condition,
+            "graphviz_rule": {"label": condition},
+            "not_textual_rule": negation,
+            "not_blob_rule": negation,
+            "not_graphviz_rule": {"label": negation},
         }
 
-        rule["feature_name"] = f"Shapelet_{rule['feature_idx']}"
+    def get_graphviz_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
+        """
+        Attributes of the Graphviz node of the split: the rule above a plot of the shapelet, drawn
+        into a temporary PNG file (requires matplotlib).
 
-        if scaler is not None:
-            raise UnsupportedError(f"Scaler not supported for {self.__class__.__name__}")
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Not used.
+        scaler : TransformerMixin, default=None
+            Not supported: must be None.
+        float_precision : int, default=3
+            Number of decimals of the threshold. If None, it is not rounded.
 
-        comparison = "<="
-        not_comparison = ">"
-        rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
+        Returns
+        -------
+        attributes : dict
+            Attributes of the Graphviz node.
+
+        Raises
+        ------
+        MissingOptionalDependencyError
+            If matplotlib is not installed.
+        """
+        plt = import_optional("matplotlib.pyplot", "The Graphviz drawing of the shapelet stumps")
+        label = self.get_rule(columns_names, scaler, float_precision)["graphviz_rule"]["label"]
 
         shape = self.st.shapelets[self.feature_original, 0]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
+            image = temp_file.name
+        plt.figure(figsize=(2, 1))
+        plt.plot(list(range(shape.shape[0])), shape)
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+        plt.xlim(0, shape.shape[0])
+        plt.gca().tick_params(axis='both', which='both', length=2, labelsize=6)
+        plt.gca().spines['right'].set_color('none')
+        plt.gca().spines['top'].set_color('none')
+        plt.savefig(image, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
+        plt.close()
 
-        with tempfile312.NamedTemporaryFile(delete_on_close=False,
-                                            delete=False,
-                                            suffix=".png",
-                                            mode="wb") as temp_file:
-            plt.figure(figsize=(2, 1))
-            plt.plot(list(range(shape.shape[0])), shape)
-            plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-            plt.xlim(0, shape.shape[0])
-            plt.gca().tick_params(axis='both', which='both', length=2, labelsize=6)
-            plt.gca().spines['right'].set_color('none')
-            plt.gca().spines['top'].set_color('none')
-            plt.savefig(temp_file, format="png", dpi=300, bbox_inches='tight', pad_inches=0)
-            plt.close()
-
-        rule["textual_rule"] = f"{self.distance}(TS, shp) {comparison} {rounded_value}"
-        rule["blob_rule"] = f"{self.distance}(TS, shp) {comparison} {rounded_value}"
-        rule["graphviz_rule"] = {
-            "image": f'{temp_file.name}',
-            "imagescale": "true",
-            "imagepos": "bc",
-            "label": f"{self.distance}(TS, shp) <= {rounded_value}",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
-        }
-
-        rule["not_textual_rule"] = f"{self.distance}(TS, shp) {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{self.distance}(TS, shp) {not_comparison} {rounded_value}"
-        rule["not_graphviz_rule"] = {
-            "image": f'{temp_file.name}',
-            "imagescale": "true",
-            "label": f"{self.distance}(TS, shp) {not_comparison} {rounded_value}",
-            "imagepos": "bc",
-            "labelloc": "t",
-            "fixedsize": "true",
-            "width": "2",
-            "height": "1.33",
-            "shape": "none",
-            "fontsize": "10",
-        }
-
-        return rule
+        return {"image": image, "imagescale": "true", "imagepos": "bc", "label": label, "labelloc": "t",
+                "fixedsize": "true", "width": "2", "height": "1.33", "shape": "none", "fontsize": "10"}

@@ -2,11 +2,10 @@
 
 import psutil
 import numpy as np
-from numba import UnsupportedError
 
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer
 from RuleTree.utils.define import DATA_TYPE_TS
-from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
+from RuleTree.utils.optional import import_optional
 
 
 class ShapeletTransformer(RuleTreeBaseTransformer):
@@ -94,7 +93,15 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
         Returns
         -------
         st : Shapelets
+
+        Raises
+        ------
+        MissingOptionalDependencyError
+            If numba is not installed.
         """
+        import_optional("numba", self.__class__.__name__)
+        from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
+
         return Shapelets(n_shapelets=self.n_shapelets,
                          n_shapelets_for_selection=self.n_shapelets_for_selection,
                          n_ts_for_selection_per_class=self.n_ts_for_selection_per_class,
@@ -130,11 +137,11 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
 
         Raises
         ------
-        UnsupportedError
+        ValueError
             If sample_weight is given.
         """
         if sample_weight is not None:
-            raise UnsupportedError(f"sample_weight is not supported for {self.__class__.__name__}")
+            raise ValueError(f"sample_weight is not supported for {self.__class__.__name__}")
         if idx is None:
             idx = slice(None)
 

@@ -225,3 +225,17 @@ def test_pivot_rule_ignores_columns_names(iris):
 
     assert rule["textual_rule"] == stump.get_rule()["textual_rule"]
     assert rule["textual_rule"].startswith(f"P_{stump.feature_original} <= ")
+
+
+def test_shapelet_image_only_in_the_graphviz_drawing(tmp_path, monkeypatch):
+    import os
+    import tempfile
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    rng = np.random.default_rng(0)
+    X, y = rng.normal(size=(30, 1, 20)), np.arange(30) % 2
+    stump = ShapeletTreeStumpClassifier(n_shapelets=3, sliding_window=5, selection="random").fit(X, y, data_type="ts")
+
+    assert "image" not in stump.get_rule()["graphviz_rule"] and os.listdir(tmp_path) == []
+    attributes = stump.get_graphviz_rule()
+    assert attributes["label"] == stump.get_rule()["textual_rule"]
+    assert os.path.dirname(attributes["image"]) == str(tmp_path) and os.path.getsize(attributes["image"]) > 0

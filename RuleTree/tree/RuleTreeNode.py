@@ -9,6 +9,7 @@ from sklearn.base import TransformerMixin
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.data_utils import log_odds
 from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
+from RuleTree.utils.optional import import_optional
 
 
 class RuleTreeNode:
@@ -372,10 +373,7 @@ class RuleTreeNode:
         -------
         graph : graphviz.Digraph
         """
-        try:
-            import graphviz
-        except ImportError:
-            raise ImportError('Please install graphviz to visualize tree.')
+        graphviz = import_optional("graphviz", "export_graphviz")
 
         if graph is None:
             graph = graphviz.Digraph(name="RuleTree")
@@ -384,9 +382,9 @@ class RuleTreeNode:
             graph.node(self.node_id, label=f"{self.prediction}", **GRAPHVIZ_DEFAULT_NODE_LEAF)
             return graph
 
-        rule = self.stump.get_rule(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
-
-        graph.node(self.node_id, **(GRAPHVIZ_DEFAULT_NODE_SPLIT | rule["graphviz_rule"]))
+        attributes = self.stump.get_graphviz_rule(columns_names=columns_names, scaler=scaler,
+                                                  float_precision=float_precision)
+        graph.node(self.node_id, **(GRAPHVIZ_DEFAULT_NODE_SPLIT | attributes))
 
         if self.node_l is not None:
             graph = self.node_l.export_graphviz(graph, columns_names, scaler, float_precision)
