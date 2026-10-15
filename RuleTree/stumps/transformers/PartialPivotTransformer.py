@@ -4,7 +4,6 @@ import warnings
 
 import numpy as np
 import psutil
-from sklearn.base import clone
 
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer
 from RuleTree.utils.define import DATA_TYPE_TABULAR
@@ -34,10 +33,8 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         How the pivots are selected among the candidates: at random, the instances closest to the
         k-means centroids, or all of them.
     distance : {'euclidean', 'sqeuclidean', 'cosine', 'cityblock'} or callable, default='euclidean'
-        Distance between an instance and a partial pivot, on the features of the pivot.
-    scaler : TransformerMixin, default=None
-        Scaler applied to the data before computing the distances, fitted on the whole data set. A
-        tree with a fitted scaler cannot be saved with ``to_dict``.
+        Distance between an instance and a partial pivot, on the features of the pivot. The data are
+        used as they are: scale them beforehand if the features have different scales.
     use_combination : bool, default=True
         With the strategies based on feature importances, whether to use all the combinations of the
         important features or only the set of all of them.
@@ -54,8 +51,6 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         Categorical columns of the feature matrix.
     st_ : TabularShapelets
         The fitted transform, with the partial pivots.
-    scaler_ : TransformerMixin or None
-        The fitted ``scaler``.
 
     See Also
     --------
@@ -79,7 +74,6 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
                  n_features_strategy=2,
                  selection='random',  # random, cluster, all
                  distance='euclidean',
-                 scaler=None,
                  use_combination=True,
                  random_state=42, n_jobs=1):
         """Initialize the PartialPivotTransformer; see the class documentation for the parameters."""
@@ -88,7 +82,6 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         self.n_features_strategy = n_features_strategy
         self.selection = selection
         self.distance = distance
-        self.scaler = scaler
         self.use_combination = use_combination
         self.random_state = random_state
         self.n_jobs = n_jobs
@@ -120,8 +113,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
 
     def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
         """
-        Fit the scaler (if any) on the whole data set and select the partial pivots among the instances in
-        the node.
+        Select the partial pivots among the instances in the node.
 
         Parameters
         ----------
@@ -147,32 +139,16 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         Warning
             If sample_weight is given: it is not supported and ignored.
         """
-        self.scaler_ = clone(self.scaler).fit(X) if self.scaler is not None else None
         if idx is None:
             idx = slice(None)
 
         if sample_weight is not None:
             warnings.warn(f"sample_weight is not supported for {self.__class__.__name__}", Warning)
 
-        self.st_ = self._shapelets().fit(self._scale(X[idx]), y[idx])
+        self.st_ = self._shapelets().fit(X[idx], y[idx])
         self.numerical_, self.categorical_ = list(range(len(self.st_.shapelets))), []
 
         return self
-
-    def _scale(self, X):
-        """
-        Apply the fitted scaler, if any.
-
-        Parameters
-        ----------
-        X : numpy.ndarray
-            Tabular data.
-
-        Returns
-        -------
-        X_scaled : numpy.ndarray
-        """
-        return self.scaler_.transform(X) if self.scaler_ is not None else X
 
     def transform(self, X):
         """
@@ -187,7 +163,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         -------
         X_transformed : numpy.ndarray of shape (n_samples, n_pivots)
         """
-        return self.st_.transform(self._scale(X))
+        return self.st_.transform(X)
 
     def select(self, feature):
         """
@@ -209,7 +185,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
 
     def get_state(self):
         """
-        Fitted state: the partial pivots. A fitted scaler cannot be saved.
+        Fitted state: the partial pivots.
 
         Returns
         -------
@@ -220,7 +196,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
 
     def set_state(self, state):
         """
-        Restore the fitted state saved by get_state (without scaler).
+        Restore the fitted state saved by get_state.
 
         Parameters
         ----------
@@ -231,7 +207,6 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         -------
         self : PartialPivotTransformer
         """
-        self.scaler_ = None  # not saved: a fitted scaler is not serializable
         self.st_ = self._shapelets()
         self.st_.shapelets = np.array(state["shapelets"])
         return self

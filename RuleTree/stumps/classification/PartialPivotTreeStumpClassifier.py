@@ -38,10 +38,8 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         How the pivots are selected among the candidates: at random, the instances closest to the
         k-means centroids, or all of them.
     distance : {'euclidean', 'sqeuclidean', 'cosine', 'cityblock'} or callable, default='euclidean'
-        Distance between an instance and a partial pivot, on the features of the pivot.
-    scaler : TransformerMixin, default=None
-        Scaler applied to the data before computing the distances, fitted on the whole data set. A
-        tree with a fitted scaler cannot be saved with ``to_dict``.
+        Distance between an instance and a partial pivot, on the features of the pivot. The data are
+        used as they are: scale them beforehand if the features have different scales.
     use_combination : bool, default=True
         With the strategies based on feature importances, whether to use all the combinations of the
         important features or only the set of all of them.
@@ -98,7 +96,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
                  n_features_strategy=2,
                  selection='random',  # random, cluster, all
                  distance='euclidean',
-                 scaler=None,
                  use_combination=True,
                  random_state=42, n_jobs=1,
                  criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
@@ -112,7 +109,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         self.n_features_strategy = n_features_strategy
         self.selection = selection
         self.distance = distance
-        self.scaler = scaler
         self.use_combination = use_combination
         self.random_state = random_state
         self.n_jobs = n_jobs
@@ -147,7 +143,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
                                        n_features_strategy=self.n_features_strategy,
                                        selection=self.selection,
                                        distance=self.distance,
-                                       scaler=self.scaler,
                                        use_combination=self.use_combination,
                                        random_state=self.random_state,
                                        n_jobs=self.n_jobs)
