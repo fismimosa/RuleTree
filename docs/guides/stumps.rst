@@ -5,6 +5,18 @@ A *stump* is the split of a node: it sends each instance of the node to the left
 child. The ``base_stumps`` parameter of a tree lists the stumps it can use; at each node, the tree
 fits one of them (or all of them, and keeps the best) on the instances of the node.
 
+Different stumps split the same instances in different ways. Here, the root split of four of them
+on two classes separated by a diagonal; the shaded regions are the two children:
+
+.. figure:: /_static/figures/splits.svg
+   :alt: The root split of four stumps on the same two-dimensional data: a vertical line, a
+         diagonal line, a circle around a pivot and the line equidistant from two pivots.
+   :width: 100%
+
+   A threshold on one feature, on a combination of features (oblique), on the distance from a pivot
+   (an instance of the training set, marked by a star), and the comparison of the distances from two
+   pivots. The rule of each split is in the bottom left corner.
+
 
 Available stumps
 ----------------

@@ -81,6 +81,9 @@ pip install -r requirements.txt -r requirements.docs.txt
 make -C docs html   # docs/_build/html/index.html
 ```
 
+The figures of the guides (`docs/_static/figures`) are drawn from fitted models by
+`python docs/make_figures.py` (it needs matplotlib): run it again when a change affects them.
+
 More examples are in the notebooks of [`Examples`](Examples).
 
 ## Tests

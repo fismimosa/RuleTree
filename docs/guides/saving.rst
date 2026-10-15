@@ -219,6 +219,14 @@ How a tree is rebuilt
    ``set_state``;
 5. links the nodes through ``left_node`` and ``right_node``, and takes ``"R"`` as the root.
 
+.. figure:: /_static/figures/saved_tree.svg
+   :alt: The flat list of the saved nodes, each with its id and the ids of its children, and the tree
+         rebuilt from it.
+   :width: 100%
+
+   The nodes are saved as a flat list, in any order; the tree is rebuilt from the ids of the
+   children.
+
 What is not saved
 ~~~~~~~~~~~~~~~~~
 
