@@ -197,13 +197,11 @@ class RegressionSplitter(RuleTreeBaseSplitter):
                                          min_impurity_decrease=self.min_impurity_decrease)
             tree.fit(X[:, numerical], y, sample_weight=sample_weight, check_input=check_input)
 
-            if tree.tree_.node_count == 1:
-                raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
-
-            self.feature_ = numerical[tree.tree_.feature[0]]
-            self.threshold_ = tree.tree_.threshold[0]
-            best_info_gain = get_info_gain(tree)
-            self.impurity_ = self._split_impurity(self.criterion, y, X[:, self.feature_] <= self.threshold_)
+            if tree.tree_.node_count > 1:  # otherwise only the categorical features can split
+                self.feature_ = numerical[tree.tree_.feature[0]]
+                self.threshold_ = tree.tree_.threshold[0]
+                best_info_gain = get_info_gain(tree)
+                self.impurity_ = self._split_impurity(self.criterion, y, X[:, self.feature_] <= self.threshold_)
 
         best_info_gain = self._fit_categorical(X, y, categorical, best_info_gain)
 

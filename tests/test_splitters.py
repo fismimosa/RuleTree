@@ -42,6 +42,18 @@ def test_categorical_split(splitter, y):
     assert set(splitter.apply(X)) == {1, 2}
 
 
+@pytest.mark.parametrize("splitter, y", [(ClassificationSplitter(), y_clf), (RegressionSplitter(), y_reg)],
+                         ids=["clf", "reg"])
+def test_categorical_split_when_no_numerical_split(splitter, y):
+    """A numerical feature that cannot split (constant) does not prevent the categorical splits."""
+    X_constant = X.copy()
+    X_constant[:, 0] = 1.0
+
+    splitter.fit(X_constant, y, [0], CATEGORICAL)
+
+    assert splitter.feature_ == 2
+    assert splitter.is_categorical_
+
 @pytest.mark.parametrize("splitter", [ClassificationSplitter(), RegressionSplitter(),
                                       XGBoostSplitter(lam=1, min_cover=len(X))], ids=["clf", "reg", "xgboost"])
 def test_no_split(splitter):

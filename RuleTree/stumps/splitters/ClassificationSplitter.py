@@ -165,19 +165,17 @@ class ClassificationSplitter(RuleTreeBaseSplitter):
                                           class_weight=self.class_weight)
             tree.fit(X[:, numerical], y, sample_weight=sample_weight, check_input=check_input)
 
-            if tree.tree_.node_count == 1:
-                raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
+            if tree.tree_.node_count > 1:  # otherwise only the categorical features can split
+                self.feature_ = numerical[tree.tree_.feature[0]]
+                self.threshold_ = tree.tree_.threshold[0]
+                best_info_gain = get_info_gain(tree)
 
-            self.feature_ = numerical[tree.tree_.feature[0]]
-            self.threshold_ = tree.tree_.threshold[0]
-            best_info_gain = get_info_gain(tree)
-
-            X_feature = X[:, self.feature_]
-            self.impurity_ = [
-                impurity_fun(y, sample_weight, class_weight),
-                impurity_fun(y[X_feature <= self.threshold_], None, class_weight),
-                impurity_fun(y[X_feature > self.threshold_], None, class_weight)
-            ]
+                X_feature = X[:, self.feature_]
+                self.impurity_ = [
+                    impurity_fun(y, sample_weight, class_weight),
+                    impurity_fun(y[X_feature <= self.threshold_], None, class_weight),
+                    impurity_fun(y[X_feature > self.threshold_], None, class_weight)
+                ]
 
         best_info_gain = self._fit_categorical(X, y, categorical, best_info_gain, impurity_fun, class_weight)
 
