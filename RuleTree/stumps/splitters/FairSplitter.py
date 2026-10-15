@@ -149,10 +149,11 @@ class FairSplitter(RuleTreeBaseSplitter):
         self.feature_, self.threshold_, self.is_categorical_, self.impurity_ = None, None, False, None
 
         processes = []
+        sensible_attribute = self.sensible_attribute % X.shape[1]  # also a negative index, e.g. -1
 
         with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
             for i in range(X.shape[1]):
-                if i == self.sensible_attribute:
+                if i == sensible_attribute:
                     continue
                 sorted_arr = np.hstack([X, y.reshape(-1, 1)])
                 sorted_arr = sorted_arr[:, [i, -1]][np.lexsort((X[:, -1], X[:, i]))]

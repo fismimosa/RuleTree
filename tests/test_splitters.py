@@ -68,6 +68,19 @@ def test_fair_split():
     assert set(splitter.apply(X_fair)) == {1, 2}
 
 
+@pytest.mark.parametrize("sensible_attribute", [2, -1])
+def test_fair_split_never_uses_the_sensitive_attribute(sensible_attribute):
+    """Also with a negative index: the sensitive attribute is excluded even if it predicts the target."""
+    rng = np.random.default_rng(0)
+    X_fair = np.column_stack([rng.normal(size=60), rng.normal(size=60), rng.integers(0, 2, size=60)])
+    y = X_fair[:, 2] * 10 + rng.normal(scale=0.1, size=60)
+
+    splitter = FairSplitter(penalty="balance", sensible_attribute=sensible_attribute, penalization_weight=0, n_jobs=1)
+    splitter.fit(X_fair, y, [0, 1, 2], [])
+
+    assert splitter.feature_ != 2
+
+
 def test_update_statistics():
     splitter = ClassificationSplitter().fit(X, y_clf, NUMERICAL, CATEGORICAL)
     assert splitter.impurity_[1:] == [0, 0]  # pure children
