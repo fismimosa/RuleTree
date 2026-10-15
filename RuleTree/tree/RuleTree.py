@@ -19,6 +19,7 @@ from typing import Optional
 import numpy as np
 import sklearn
 from sklearn.base import ClassifierMixin
+from sklearn.exceptions import NotFittedError
 from sklearn.utils import check_random_state
 
 from RuleTree.base.RuleTreeBase import RuleTreeBase
@@ -1125,8 +1126,18 @@ class RuleTree(RuleTreeBase, ABC):
         -------
         dictionary : dict
             JSON-friendly dictionary with the class of the tree, its parameters (``args``, base stumps
-            included), the classes for classification trees and the nodes.
+            included), the classes for classification trees and the nodes. The values may be NumPy
+            scalars: to write it with ``json``, use ``cls=RuleTree.utils.data_utils.json_numpy_encoder``
+            (as done with ``filename``). See :doc:`/guides/saving`.
+
+        Raises
+        ------
+        sklearn.exceptions.NotFittedError
+            If the tree is not fitted.
         """
+        if self.root is None:
+            raise NotFittedError(f"This {self.__class__.__name__} is not fitted: call fit before to_dict.")
+
         node_list = [self.root]
 
         # constructor parameters of the concrete class, so that from_dict can call its __init__

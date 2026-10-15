@@ -30,6 +30,29 @@ def test_dict_round_trip(model_class, kwargs, dataset, supervised, request):
     assert np.array_equal(loaded.predict(X), model.predict(X))
 
 
+@pytest.mark.parametrize("model_class, kwargs, dataset, supervised", MODELS, ids=[m[0].__name__ for m in MODELS])
+def test_round_trip_keeps_the_statistics_of_the_nodes(model_class, kwargs, dataset, supervised, request):
+    """Number of instances and balance of the splits, also used by get_balanced_stumps."""
+    X, y = request.getfixturevalue(dataset)
+    model = model_class(**kwargs).fit(X, y if supervised else None)
+
+    loaded = RuleTree.from_dict(json.loads(json.dumps(model.to_dict(), cls=json_numpy_encoder)))
+
+    for node_id, node in model.get_leaf_nodes().items() | model.get_predicates().items():
+        assert loaded.get_node_by_id(node_id).samples == node.samples
+    for node_id, node in model.get_predicates().items():
+        assert loaded.get_node_by_id(node_id).balance_score == pytest.approx(node.balance_score)
+    if isinstance(model, RuleTreeClassifier):
+        assert loaded.get_balanced_stumps().keys() == model.get_balanced_stumps().keys()
+
+
+def test_unfitted_tree_cannot_be_saved():
+    from sklearn.exceptions import NotFittedError
+
+    with pytest.raises(NotFittedError, match="call fit before to_dict"):
+        RuleTreeClassifier().to_dict()
+
+
 def test_file_round_trip(iris, tmp_path):
     X, y = iris
     model = RuleTreeClassifier(max_depth=3).fit(X, y)

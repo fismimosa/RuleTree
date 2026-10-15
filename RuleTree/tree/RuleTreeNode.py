@@ -11,6 +11,9 @@ from RuleTree.utils.data_utils import log_odds
 from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
 from RuleTree.utils.optional import import_optional
 
+# statistics set during fit (see RuleTree._grow), saved by node_to_dict when present
+SAVED_STATISTICS = ("samples", "balance_score", "balance_score_global")
+
 
 class RuleTreeNode:
     """
@@ -270,8 +273,9 @@ class RuleTreeNode:
         Returns
         -------
         node_dict : dict
-            JSON-friendly dictionary with the statistics of the node, the ids of its children and, for
-            an internal node, the dictionary of its stump.
+            JSON-friendly dictionary with the statistics of the node (also ``samples`` and, for an
+            internal node, ``balance_score``), the ids of its children and, for an internal node, the
+            dictionary of its stump.
         """
         node_as_dict ={
             "node_id": self.node_id,
@@ -283,6 +287,7 @@ class RuleTreeNode:
             "left_node": self.node_l.node_id if self.node_l is not None else None,
             "right_node": self.node_r.node_id if self.node_r is not None else None,
         }
+        node_as_dict |= {name: getattr(self, name) for name in SAVED_STATISTICS if hasattr(self, name)}
 
         if not self.is_leaf():
             node_as_dict |= self.stump.node_to_dict()
@@ -308,7 +313,8 @@ class RuleTreeNode:
                             prediction_probability=info_dict['prediction_probability'],
                             log_odds=info_dict['log_odds'],
                             parent=None,
-                            classes=info_dict['prediction_classes_'])
+                            classes=info_dict['prediction_classes_'],
+                            **{name: info_dict[name] for name in SAVED_STATISTICS if name in info_dict})
         if not info_dict['is_leaf']:
             node.stump = stump_class(info_dict).dict_to_node(info_dict)
 
