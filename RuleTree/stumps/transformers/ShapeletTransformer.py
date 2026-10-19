@@ -3,6 +3,7 @@
 import numpy as np
 
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer
+from RuleTree.utils.data_utils import check_one_target
 from RuleTree.utils.define import DATA_TYPE_TS
 from RuleTree.utils.optional import import_optional
 
@@ -137,8 +138,10 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
         Raises
         ------
         ValueError
-            If sample_weight is given.
+            If sample_weight is given, or y has several targets.
         """
+        # the candidate shapelets are drawn for each value of the target (see Shapelets.fit)
+        check_one_target(y, self.__class__.__name__)
         if sample_weight is not None:
             raise ValueError(f"sample_weight is not supported for {self.__class__.__name__}")
         if idx is None:

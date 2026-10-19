@@ -52,6 +52,7 @@ def _datasets():
         "mixed_y_reg": X_iris[:, 2],
         "diabetes": {"X": X_diabetes},
         "diabetes_y": y_diabetes,
+        "diabetes_Y": np.column_stack([y_diabetes, X_diabetes[:, 2]]),  # two targets on different scales
         "fair": {"X": np.column_stack([X_diabetes, X_diabetes[:, 1] > 0])},
         "blobs": {"X": X_blobs},
         "ts": {"X_ts": X_ts},
@@ -160,6 +161,10 @@ CASES = {
                     "diabetes", "diabetes_y", True),
     "reg_proximity": (lambda: RuleTreeRegressor(max_depth=2, base_stumps=ProximityTreeStumpRegressor(
         n_shapelets=4, sliding_window=10, selection="random", mi_n_neighbors=5)), "ts", "ts_y", True),
+    "reg_multi_target": (lambda: RuleTreeRegressor(max_depth=3, base_stumps=dt_reg()), "diabetes", "diabetes_Y", True),
+    "reg_multi_target_balanced": (lambda: RuleTreeRegressor(max_depth=3, base_stumps=dt_reg(),
+                                                            target_weights="balanced", leaf_prediction="median"),
+                                  "diabetes", "diabetes_Y", True),
     "reg_xgboost_stump": (lambda: RuleTreeRegressor(max_depth=3, base_stumps=XGBoostStumpRegressor(lam=1)),
                           "diabetes", "diabetes_y", True),
     "reg_fair": (lambda: RuleTreeRegressor(max_depth=2, base_stumps=FairTreeStumpRegressor(

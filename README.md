@@ -7,7 +7,7 @@ of two pivots or shapelets is closer, a fair split, ... The same tree can mix di
 stumps and different types of data (tabular data, time series, images), and its rules can be read,
 drawn and saved.
 
-- Classification, regression and clustering trees with the scikit-learn API.
+- Classification, regression (also with several targets) and clustering trees with the scikit-learn API.
 - Stumps for tabular data, time series and images, usable together in the same tree.
 - Rules as text or Graphviz drawings, feature contributions of each prediction.
 - Trees saved to and loaded from JSON, grown further with `partial_fit`.

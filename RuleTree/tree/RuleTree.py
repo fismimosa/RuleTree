@@ -432,6 +432,7 @@ class RuleTree(RuleTreeBase, ABC):
             Sample weights of the whole data set.
         """
         nbr_curr_nodes = 0
+        y_split = self._split_target(y)  # the target seen by the stumps; the nodes use y
         while len(self.queue) > 0 and nbr_curr_nodes + len(self.queue) < self.max_leaf_nodes:
             idx, current_node = self.queue_pop()
 
@@ -444,7 +445,7 @@ class RuleTree(RuleTreeBase, ABC):
                 continue
 
             try:
-                clf = self.make_split(data, y, idx, sample_weight=sample_weight)
+                clf = self.make_split(data, y_split, idx, sample_weight=sample_weight)
                 labels = clf.apply(data, idx)
             except NoSplitFoundWarning:
                 self.make_leaf(node=current_node)
@@ -483,6 +484,22 @@ class RuleTree(RuleTreeBase, ABC):
             self.root = self.root.simplify()
 
         self._post_fit_fix()
+
+    def _split_target(self, y):
+        """
+        Target given to the stumps to fit the splits. The default implementation is y itself; the
+        regression tree weighs its targets (see RuleTreeRegressor's target_weights).
+
+        Parameters
+        ----------
+        y : numpy.ndarray or None
+            Target of the whole data set.
+
+        Returns
+        -------
+        y_split : numpy.ndarray or None
+        """
+        return y
 
     @staticmethod
     def _set_balance_score(node: RuleTreeNode, stump: RuleTreeBaseStump, data: dict):
@@ -1105,7 +1122,7 @@ class RuleTree(RuleTreeBase, ABC):
         if rules["is_leaf"]:
             pred = rules['prediction']
             print(f"{indentation} output: "
-                  f"{pred if type(pred) in [np.str_, np.bytes_, str] else round(pred, ndigits=digits)}")
+                  f"{pred if type(pred) in [np.str_, np.bytes_, str] else np.round(pred, digits)}")
             
         else:
             print(f"{indentation}|--- {rules['textual_rule']}")

@@ -541,3 +541,32 @@ class json_numpy_encoder(json.JSONEncoder):
         if isinstance(obj, np.ndarray):
             return obj.tolist()
         return super(json_numpy_encoder, self).default(obj)
+
+
+def check_one_target(y, owner: str):
+    """
+    Check that a target has a single column, for the components that do not support several targets.
+
+    Parameters
+    ----------
+    y : numpy.ndarray or None
+        Target.
+    owner : str
+        What needs a single target, used in the error message.
+
+    Raises
+    ------
+    ValueError
+        If y has shape (n_samples, n_targets) with more than one target.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from RuleTree.utils.data_utils import check_one_target
+    >>> check_one_target(np.zeros((3, 2)), "XGBoostSplitter")
+    Traceback (most recent call last):
+    ...
+    ValueError: XGBoostSplitter supports a single target, got y of shape (3, 2).
+    """
+    if y is not None and np.ndim(y) > 1 and np.shape(y)[1] > 1:
+        raise ValueError(f"{owner} supports a single target, got y of shape {np.shape(y)}.")

@@ -123,6 +123,59 @@ predicts the mean of the target of its training instances.
    R2 on the training set: 0.501
    leaves: 8
 
+The prediction of the leaves is set by ``leaf_prediction``: ``"mean"`` (the default),
+``"median"``, or a function of the target of the instances of the leaf.
+
+Several targets
+~~~~~~~~~~~~~~~
+
+With a target of shape (n_samples, n_targets), the regressor builds one tree for all the targets:
+the splits are shared, and each node predicts one value per target. This is how the multi-output
+trees of scikit-learn and the predictive clustering trees work: one set of rules instead of one
+tree per target, and splits that use what the targets have in common.
+
+A split is chosen by the average of the squared errors of the targets, so a target with large
+values counts more than one with small values. ``target_weights`` changes the weight of each
+target: ``"balanced"`` divides each target by its standard deviation on the training set, so that
+all the targets count the same (as the predictive clustering trees do); an array gives one weight
+to each target. Here the targets are the disease progression of the diabetes data and the body
+mass index of the patients (removed from the features), whose values are a thousand times
+smaller:
+
+.. code-block:: python
+
+   import numpy as np
+
+   from RuleTree.evaluation import evaluate_regression
+
+   data = load_diabetes()
+   X_two = np.delete(data.data, 2, axis=1)
+   Y = np.column_stack([data.target, data.data[:, 2]])  # disease progression, body mass index
+   print("standard deviations:", [round(float(std), 3) for std in Y.std(axis=0)])
+
+   for target_weights in [None, "balanced"]:
+       two_targets = RuleTreeRegressor(max_depth=3, random_state=42, target_weights=target_weights).fit(X_two, Y)
+       r2 = evaluate_regression(Y, two_targets.predict(X_two), multioutput="raw_values")["r2"]
+       print(f"target_weights={target_weights}: R2 of the two targets {r2.round(3)}")
+
+   print("predictions of two patients:", two_targets.predict(X_two[:2]).round(3).tolist())
+
+.. code-block:: text
+   :caption: Output
+
+   standard deviations: [77.006, 0.048]
+   target_weights=None: R2 of the two targets [0.435 0.277]
+   target_weights=balanced: R2 of the two targets [0.418 0.326]
+   predictions of two patients: [[159.871, -0.003], [87.018, -0.044]]
+
+With ``"balanced"``, the splits give up a little on the disease progression to predict the body
+mass index better. The predictions are always in the original scale of the targets.
+
+Some components work with a single target, and raise an error with several: the XGBoost and fair
+stumps, the shapelet and proximity stumps, and ``local_interpretation``. The XGBoost boosting
+uses the XGBoost stumps; the other boostings (:doc:`ensembles`) and
+:class:`~RuleTree.tree.RuleTreeCluster.RuleTreeClusterRegressor` support several targets.
+
 
 Clustering
 ----------
@@ -184,7 +237,6 @@ hyper-parameter searches:
 
    cross-validated accuracy: 0.973
    best max_depth: 3
-
 
 Next steps
 ----------

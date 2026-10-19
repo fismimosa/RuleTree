@@ -4,6 +4,7 @@ import numpy as np
 
 from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
 from RuleTree.exceptions import NoSplitFoundWarning
+from RuleTree.utils.data_utils import check_one_target
 from RuleTree.utils.define import MODEL_TYPE_REG
 from RuleTree.utils.tree_utils import xgboost_cover_regression, xgboost_similarity_score_regression
 
@@ -142,7 +143,10 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         ------
         NoSplitFoundWarning
             If no split is found.
+        ValueError
+            If y has several targets.
         """
+        check_one_target(y, self.__class__.__name__)
         cover_fn, sim_fn = self._get_cover_similarity_fun()
 
         root_cover = cover_fn(y)

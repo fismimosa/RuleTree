@@ -140,6 +140,11 @@ Regression
   true values are close to 0;
 - ``mean_squared_log_error``: defined only for non-negative values, nan otherwise.
 
+With several targets, ``multioutput`` sets how the metric of each target is combined, as in
+:mod:`sklearn.metrics`: ``"uniform_average"`` (the default, the mean), ``"raw_values"`` (an array
+with the value of each target) or an array of weights. ``max_error``, which scikit-learn computes
+only for one target, is the largest error of each target, combined in the same way.
+
 
 Clustering
 ----------

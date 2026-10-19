@@ -9,7 +9,7 @@ import psutil
 from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.splitters.RegressionSplitter import RegressionSplitter
-from RuleTree.utils.data_utils import _get_info_gain
+from RuleTree.utils.data_utils import _get_info_gain, check_one_target
 from RuleTree.utils.define import MODEL_TYPE_REG
 from RuleTree.utils.fairness_metrics import balance_metric, max_fairness_cost, privacy_metric, privacy_metric_all
 
@@ -144,7 +144,10 @@ class FairSplitter(RuleTreeBaseSplitter):
         ------
         NoSplitFoundWarning
             If no split is found.
+        ValueError
+            If y has several targets.
         """
+        check_one_target(y, self.__class__.__name__)
         best_info_gain = -float('inf')
         self.feature_, self.threshold_, self.is_categorical_, self.impurity_ = None, None, False, None
 

@@ -128,17 +128,18 @@ class RuleTreeNode:
         Returns
         -------
         predictions : set
-            Predictions of the leaves of the subtree.
+            Predictions of the leaves of the subtree (as tuples for the multi-target predictions).
         """
         if self.is_leaf():
-            return {self.prediction}
+            return {_hashable(self.prediction)}
         else:
             all_pred = self.node_l._simplify() | self.node_r._simplify()
 
             if len(all_pred) == 1:
+                prediction = self.node_l.prediction  # the same of all the leaves of the subtree
                 self.make_leaf()
-                self.prediction = all_pred.pop()
-                return {self.prediction}
+                self.prediction = prediction
+                return all_pred
             else:
                 return all_pred
 
@@ -165,12 +166,12 @@ class RuleTreeNode:
             Predictions of the internal nodes.
         """
         if self.is_leaf():
-            return {self.prediction}, set()
+            return {_hashable(self.prediction)}, set()
         else:
             leaf_l, node_l = self.node_l.get_possible_outputs()
             leaf_r, node_r = self.node_r.get_possible_outputs()
 
-            return leaf_l | leaf_r, node_l | node_r | {self.prediction}
+            return leaf_l | leaf_r, node_l | node_r | {_hashable(self.prediction)}
 
     def get_depth(self):
         """
@@ -308,8 +309,10 @@ class RuleTreeNode:
         -------
         node : RuleTreeNode
         """
+        prediction = info_dict['prediction']
         node = RuleTreeNode(node_id=info_dict['node_id'],
-                            prediction=info_dict['prediction'],
+                            # a multi-target prediction is saved as a list
+                            prediction=np.array(prediction) if isinstance(prediction, list) else prediction,
                             prediction_probability=info_dict['prediction_probability'],
                             log_odds=info_dict['log_odds'],
                             parent=None,
@@ -435,8 +438,10 @@ class RuleTreeNode:
 
         else:
             labels, leaves, proba = (
-                # isinstance also matches np.str_: a fixed-size string dtype would truncate longer labels
-                np.full(n, fill_value=-1, dtype=object if isinstance(self.prediction, str) else type(self.prediction)),
+                # isinstance also matches np.str_: a fixed-size string dtype would truncate longer labels;
+                # a multi-target prediction gives one row of values per instance
+                np.full((n,) + np.shape(self.prediction), fill_value=-1,
+                        dtype=object if isinstance(self.prediction, str) else np.asarray(self.prediction).dtype),
                 np.zeros(n, dtype=object),
                 np.ones((
                     n,
@@ -510,6 +515,11 @@ class RuleTreeNode:
             return {self.node_id: self}
         else:
             return self.node_l.get_leaf_nodes() | self.node_r.get_leaf_nodes()
+
+
+def _hashable(prediction):
+    """A prediction that can be put in a set: a tuple for a multi-target prediction."""
+    return tuple(np.ravel(prediction).tolist()) if np.ndim(prediction) > 0 else prediction
 
 
 def _with_dtype_for(labels: np.ndarray, child_labels: np.ndarray) -> np.ndarray:

@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.base import RegressorMixin
 
 from RuleTree import RuleTreeRegressor
+from RuleTree.tree.RuleTreeRegressor import check_target
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 
 
@@ -81,10 +82,10 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
 
         Returns
         -------
-        base_prediction : float
-            Mean of the target.
+        base_prediction : float or numpy.ndarray of shape (n_targets,)
+            Mean of the target (of each target).
         """
-        return np.mean(y)
+        return np.mean(y, axis=0)
 
     def _get_base_estimator(self):
         """
@@ -104,13 +105,14 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
         ----------
         X : numpy.ndarray of shape (n_samples, n_features)
             Tabular data.
-        y : numpy.ndarray of shape (n_samples,)
+        y : numpy.ndarray of shape (n_samples,) or (n_samples, n_targets)
             Target.
 
         Returns
         -------
         self : GBoostRegressor
         """
+        y = check_target(y)
         np.random.seed(self.random_state)
         n_val = int(self.val_size * X.shape[0])
         idx = np.random.permutation(X.shape[0])
@@ -162,9 +164,9 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
 
         Returns
         -------
-        y_pred : numpy.ndarray of shape (n_samples,)
+        y_pred : numpy.ndarray of shape (n_samples,) or (n_samples, n_targets)
         """
-        prediction = np.ones((X.shape[0], ))*self.base_prediction_
+        prediction = np.zeros((X.shape[0],) + np.shape(self.base_prediction_)) + self.base_prediction_
 
         for est in self.estimators_:
             prediction += self.learning_rate * est.predict(X)

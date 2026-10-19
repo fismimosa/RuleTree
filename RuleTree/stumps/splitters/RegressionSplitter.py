@@ -135,13 +135,14 @@ class RegressionSplitter(RuleTreeBaseSplitter):
     @classmethod
     def _split_impurity(cls, criterion, y, left):
         """
-        Impurity of the node and of the two children, each predicted with its mean.
+        Impurity of the node and of the two children, each predicted with its mean. With several targets,
+        each target is predicted with its mean and the impurity is the average over the targets.
 
         Parameters
         ----------
         criterion : str or callable
             Criterion.
-        y : numpy.ndarray
+        y : numpy.ndarray of shape (n_samples,) or (n_samples, n_targets)
             Target of the instances in the node.
         left : numpy.ndarray of bool
             Instances that go to the left child.
@@ -152,7 +153,7 @@ class RegressionSplitter(RuleTreeBaseSplitter):
             Impurity of the node, of the left child and of the right child (0 for an empty child).
         """
         def impurity(y_true):
-            y_pred = np.ones((len(y_true),)) * np.mean(y_true) if len(y_true) > 0 else np.ones((0,))
+            y_pred = np.broadcast_to(np.mean(y_true, axis=0), y_true.shape) if len(y_true) > 0 else y_true
             return cls._impurity_fun(criterion, y_true=y_true, y_pred=y_pred)
 
         return [impurity(y), impurity(y[left]), impurity(y[~left])]
