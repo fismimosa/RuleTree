@@ -163,17 +163,27 @@ def test_stumps_with_several_targets(stump, targets):
     (lambda: RuleTreeRegressor(base_stumps=XGBoostStumpRegressor(lam=1)), "tabular"),
     (lambda: RuleTreeRegressor(base_stumps=FairTreeStumpRegressor(penalty="balance", sensible_attribute=1,
                                                                   n_jobs=1)), "tabular"),
-    (lambda: RuleTreeRegressor(base_stumps=ShapeletTreeStumpRegressor(n_shapelets=3, sliding_window=5,
-                                                                      selection="random")), "ts"),
-    (lambda: RuleTreeRegressor(base_stumps=ProximityTreeStumpRegressor(n_shapelets=3, sliding_window=5,
-                                                                       selection="random")), "ts"),
-], ids=["XGBoost", "Fair", "Shapelet", "Proximity"])
+    (lambda: RuleTreeRegressor(base_stumps=ShapeletTreeStumpRegressor(n_shapelets=3, sliding_window=5)), "ts"),
+    (lambda: RuleTreeRegressor(base_stumps=ProximityTreeStumpRegressor(n_shapelets=3, sliding_window=5)), "ts"),
+], ids=["XGBoost", "Fair", "Shapelet-mi_reg", "Proximity-mi_reg"])
 def test_components_with_a_single_target(make_model, data, targets):
     X, Y = targets
     inputs = {"X": X} if data == "tabular" else {"X_ts": np.random.default_rng(0).normal(size=(len(Y), 1, 20))}
 
     with pytest.raises(ValueError, match="supports a single target"):
         make_model().fit(y=Y, **inputs)
+
+
+@pytest.mark.parametrize("stump_class", [ShapeletTreeStumpRegressor, ProximityTreeStumpRegressor])
+def test_shapelet_stumps_with_several_targets(stump_class, targets):
+    """Without the mutual information, the shapelets are drawn from all the time series: any target works."""
+    _, Y = targets
+    X_ts = np.random.default_rng(0).normal(size=(len(Y), 1, 20))
+
+    model = RuleTreeRegressor(max_depth=2, base_stumps=stump_class(n_shapelets=3, sliding_window=5,
+                                                                   selection="random")).fit(X_ts=X_ts, y=Y)
+
+    assert model.predict(X_ts=X_ts).shape == Y.shape
 
 
 def test_local_interpretation_needs_one_target(targets):

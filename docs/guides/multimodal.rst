@@ -86,8 +86,8 @@ where the bump is:
 .. code-block:: text
    :caption: Output
 
-   accuracy: 0.96
-   euclidean(TS, shp) <= 1.12
+   accuracy: 1.0
+   euclidean(TS, shp) <= 2.21
 
 The Graphviz drawing of a shapelet tree shows the plot of the shapelet in each node (it needs the
 ``graphviz`` extra, see :doc:`inspecting`).
@@ -115,7 +115,7 @@ than in how close a series is to one of them, e.g. a bump against a dip:
 .. code-block:: text
    :caption: Output
 
-   accuracy: 1.0
+   accuracy: 0.985
    euclidean(TS, green_shp) <= euclidean(TS, red_shp)
 
 The two shapelets of the split are ``model.root.stump.st.shapelets``, the first one green and the
@@ -156,7 +156,7 @@ time series are needed to separate the classes:
    DecisionTreeStumpClassifier on tabular data, probability 0.25
    DecisionTreeStumpClassifier on ts data, probability 0.25
    ShapeletTreeStumpClassifier on ts data, probability 0.50
-   accuracy: 0.915
+   accuracy: 1.0
 
 The decision tree stump supports both types, so it is a candidate on both; the probabilities are
 used with ``stump_selection="random"``: the probability of each stump is split equally among its
@@ -164,7 +164,7 @@ data types. To use a stump only on some types, give them as third element of the
 
 .. code-block:: python
 
-   model = RuleTreeClassifier(max_depth=3, random_state=0,
+   model = RuleTreeClassifier(max_depth=3, random_state=1,
                               base_stumps=[(0.5, DecisionTreeStumpClassifier(), "tabular"),
                                            (0.5, shapelets)])
    model.fit(X=X, X_ts=X_ts, y=y)
@@ -175,11 +175,9 @@ data types. To use a stump only on some types, give them as third element of the
 .. code-block:: text
    :caption: Output
 
-   R ShapeletTreeStumpClassifier ts
+   R DecisionTreeStumpClassifier tabular
    Rl ShapeletTreeStumpClassifier ts
-   Rr DecisionTreeStumpClassifier tabular
-   Rrl DecisionTreeStumpClassifier tabular
-   Rrr ShapeletTreeStumpClassifier ts
+   Rr ShapeletTreeStumpClassifier ts
 
 The data type used by a fitted stump is stored in ``data_type_``. ``predict`` must receive the same
 types given to ``fit``.

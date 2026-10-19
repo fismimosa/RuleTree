@@ -13,8 +13,8 @@ from sklearn.base import TransformerMixin
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import mutual_info_classif, mutual_info_regression
 from sklearn.metrics import classification_report
-from sklearn.utils import resample
 
+from RuleTree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 from RuleTree.utils.optional import import_optional
 from RuleTree.utils.shapelet_transform.matrix_to_vector_distances import euclidean, sqeuclidean, cosine, cityblock
 
@@ -35,12 +35,14 @@ class Shapelets(TransformerMixin):
         Number of shapelets to be used in the transformation.
     
     n_shapelets_for_selection : int or str, default=np.inf
-        Number of candidate shapelets to generate before selection.
-        If 'stratified', generates candidates based on class distribution.
-        If np.inf, generates all possible candidates.
+        Number of candidate shapelets to generate before selection, drawn at random: for
+        classification, the same number from the time series of each class. If 'stratified', the
+        square root of the number of time series, from each class in proportion to its size. If
+        np.inf, all the subsequences of the time series.
     
     n_ts_for_selection_per_class : int, default=np.inf
-        Number of time series to use per class for shapelet candidates.
+        Number of time series of each class (of all the time series, for regression) from which the
+        candidates are drawn, chosen at random.
     
     sliding_window : int, default=50
         Length of the shapelets to extract.
@@ -64,6 +66,9 @@ class Shapelets(TransformerMixin):
     
     n_jobs : int, default=1
         Number of parallel jobs. If -1, uses all available processors.
+    ml_task : {MODEL_TYPE_CLF, MODEL_TYPE_REG}, default=MODEL_TYPE_CLF
+        Task of the target: for classification, the candidates are drawn from each class; for
+        regression (also with several targets), from all the time series.
     """
     __distances = {
         'euclidean': euclidean,
@@ -79,7 +84,7 @@ class Shapelets(TransformerMixin):
                  selection='random', #random, mi_clf, mi_reg, cluster
                  distance='euclidean',
                  mi_n_neighbors = 100,
-                 random_state=42, n_jobs=1):
+                 random_state=42, n_jobs=1, ml_task=MODEL_TYPE_CLF):
         """Initialize the shapelet transform; see the class documentation for the parameters."""
         super().__init__()
 
@@ -102,6 +107,7 @@ class Shapelets(TransformerMixin):
         self.mi_n_neighbors = mi_n_neighbors
         self.random_state = random_state
         self.n_jobs = n_jobs
+        self.ml_task = ml_task
 
         random.seed(random_state)
 
@@ -165,50 +171,56 @@ class Shapelets(TransformerMixin):
     def __fit_partition(self, X, y):
         """
         Generate candidate shapelets from the time series data.
-        
+
+        The candidates are subsequences of length ``sliding_window`` of time series drawn at random:
+        for classification, from each class (at most ``n_ts_for_selection_per_class`` time series of
+        each class); for regression, or without a target, from all the time series.
+
         Parameters
         ----------
         X : array-like of shape (n_samples, n_signals, n_timepoints)
             Time series data.
-            
-        y : array-like of shape (n_samples,), default=None
+        y : array-like of shape (n_samples,) or (n_samples, n_targets), default=None
             Target values.
-            
+
         Returns
         -------
         array-like of shape (n_candidates, n_signals, shapelet_length)
             Candidate shapelets extracted from the time series data.
         """
-        if y is None:
-            y = np.zeros(X.shape[0])
-
-        classes = np.unique(y)
-        n_classes = len(classes)
-
-        candidate_shapelets = []
+        if y is None or self.ml_task == MODEL_TYPE_REG:
+            groups = [np.arange(X.shape[0])]  # all the time series together
+        else:
+            groups = [np.flatnonzero(y == label) for label in np.unique(y)]
+        groups = [self.__subsample(group) for group in groups]
+        n_positions = X.shape[-1] - self.sliding_window + 1
 
         if not isinstance(self.n_shapelets_for_selection, str) and np.isinf(self.n_shapelets_for_selection):
-            for ts_idx in range(X.shape[0]):
-                for position_idx in range(X.shape[-1] - self.sliding_window):
-                    candidate_shapelets.append(X[ts_idx, :, position_idx: position_idx + self.sliding_window])
-
-            return np.array(candidate_shapelets)
+            return np.array([X[ts_idx, :, start:start + self.sliding_window]
+                             for group in groups for ts_idx in group for start in range(n_positions)])
 
         if self.n_shapelets_for_selection == 'stratified':
-            classes, n_candidate_per_class = np.unique(
-                resample(y, stratify=y, random_state=self.random_state, n_samples=int(len(y)**.5)), return_counts=True)
-        n_candidate_per_class = [max(1, round(self.n_shapelets_for_selection/n_classes)) for _ in classes]
+            # the square root of the number of time series, from each group in proportion to its size
+            n_candidates = max(1, int(X.shape[0] ** .5))
+            sizes = np.array([len(group) for group in groups])
+            counts = np.maximum(1, np.round(n_candidates * sizes / sizes.sum()).astype(int))
+        else:
+            counts = [max(1, round(self.n_shapelets_for_selection / len(groups)))] * len(groups)
 
-
-        for classe in classes:
-            X_class = X[y == classe]
-            for _ in n_candidate_per_class:
-                ts_idx = random.randint(0, len(X_class) - 1)
-                start = random.randint(0, X_class.shape[-1] - self.sliding_window)
-                stop = start + self.sliding_window
-                candidate_shapelets.append(np.copy(X_class[ts_idx, :, start:stop]))
+        candidate_shapelets = []
+        for group, count in zip(groups, counts):
+            for _ in range(count):
+                ts_idx = group[random.randint(0, len(group) - 1)]
+                start = random.randint(0, n_positions - 1)
+                candidate_shapelets.append(np.copy(X[ts_idx, :, start:start + self.sliding_window]))
 
         return np.array(candidate_shapelets)
+
+    def __subsample(self, group: np.ndarray) -> np.ndarray:
+        """At most n_ts_for_selection_per_class time series of a group, drawn at random."""
+        if np.isinf(self.n_ts_for_selection_per_class) or len(group) <= self.n_ts_for_selection_per_class:
+            return group
+        return np.array(sorted(random.sample(list(group), int(self.n_ts_for_selection_per_class))))
 
     def __fit_selection_random(self, candidate_shapelets: np.ndarray, X, y):
         """
@@ -264,16 +276,14 @@ class Shapelets(TransformerMixin):
         if y is None:
             raise UnsupportedError("Mutual information is not suitable for unsupervised tasks.")
 
-        idx_to_test = resample(range(X.shape[0]), stratify=y, random_state=self.random_state)
-
+        # the distances of the time series in the order of y: each distance is paired with its target
         old_n_threads = numba.get_num_threads()
         numba.set_num_threads(self.n_jobs)
-        dist = _best_fit(X[idx_to_test], candidate_shapelets, self.__get_distance())
+        dist = _best_fit(X, candidate_shapelets, self.__get_distance())
         numba.set_num_threads(old_n_threads)
 
-        labels, labels_count = np.unique(y, return_counts=True)
-        if np.sum(labels_count) == len(labels):
-            scores = np.zeros((len(labels), ))
+        if len(np.unique(y)) < 2:  # a constant target: no candidate is better than another
+            scores = np.zeros(len(candidate_shapelets))
         else:
             scores = mutual_info_fun(dist, y,
                                      n_jobs=self.n_jobs,

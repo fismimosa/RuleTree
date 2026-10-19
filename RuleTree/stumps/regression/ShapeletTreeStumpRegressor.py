@@ -147,7 +147,8 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
                                    distance=self.distance,
                                    mi_n_neighbors=self.mi_n_neighbors,
                                    random_state=self.random_state,
-                                   n_jobs=self.n_jobs)
+                                   n_jobs=self.n_jobs,
+                                   ml_task=self.task)
 
     @property
     def st(self):

@@ -70,7 +70,8 @@ class ProximityTreeStump:
                                     distance=self.distance,
                                     mi_n_neighbors=self.mi_n_neighbors,
                                     random_state=self.random_state,
-                                    n_jobs=self.n_jobs)
+                                    n_jobs=self.n_jobs,
+                                    ml_task=self.task)
 
     def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """

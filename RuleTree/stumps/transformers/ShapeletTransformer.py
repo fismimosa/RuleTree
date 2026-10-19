@@ -4,7 +4,7 @@ import numpy as np
 
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer
 from RuleTree.utils.data_utils import check_one_target
-from RuleTree.utils.define import DATA_TYPE_TS
+from RuleTree.utils.define import DATA_TYPE_TS, MODEL_TYPE_CLF
 from RuleTree.utils.optional import import_optional
 
 
@@ -40,6 +40,9 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
         Seed of the random choices of the candidates and of the shapelets.
     n_jobs : int, default=1
         Number of threads used to compute the distances (-1: all the CPUs).
+    ml_task : {MODEL_TYPE_CLF, MODEL_TYPE_REG}, default=MODEL_TYPE_CLF
+        Task of the stump: for classification, the candidates are drawn from the time series of each
+        class; for regression (also with several targets), from all the time series.
 
     Attributes
     ----------
@@ -74,7 +77,7 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
                  selection='mi_clf',  # random, mi_clf, mi_reg, cluster
                  distance='euclidean',
                  mi_n_neighbors=100,
-                 random_state=42, n_jobs=1):
+                 random_state=42, n_jobs=1, ml_task=MODEL_TYPE_CLF):
         """Initialize the ShapeletTransformer; see Shapelets for the parameters."""
         self.n_shapelets = n_shapelets
         self.n_shapelets_for_selection = n_shapelets_for_selection
@@ -85,6 +88,7 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
         self.mi_n_neighbors = mi_n_neighbors
         self.random_state = random_state
         self.n_jobs = n_jobs
+        self.ml_task = ml_task
 
     def _shapelets(self):
         """
@@ -110,7 +114,8 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
                          distance=self.distance,
                          mi_n_neighbors=self.mi_n_neighbors,
                          random_state=self.random_state,
-                         n_jobs=self.n_jobs)
+                         n_jobs=self.n_jobs,
+                         ml_task=self.ml_task)
 
     def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
         """
@@ -138,10 +143,10 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
         Raises
         ------
         ValueError
-            If sample_weight is given, or y has several targets.
+            If sample_weight is given, or y has several targets with a mutual information selection.
         """
-        # the candidate shapelets are drawn for each value of the target (see Shapelets.fit)
-        check_one_target(y, self.__class__.__name__)
+        if self.selection.startswith("mi_"):  # the mutual information is computed with a single target
+            check_one_target(y, f"{self.__class__.__name__}(selection={self.selection!r})")
         if sample_weight is not None:
             raise ValueError(f"sample_weight is not supported for {self.__class__.__name__}")
         if idx is None:

@@ -70,6 +70,9 @@ class ProximityTransformer(ShapeletTransformer):
         Seed of the random choices of the candidates and of the shapelets.
     n_jobs : int, default=1
         Number of threads used to compute the distances (-1: all the CPUs).
+    ml_task : {MODEL_TYPE_CLF, MODEL_TYPE_REG}, default=MODEL_TYPE_CLF
+        Task of the stump: for classification, the candidates are drawn from the time series of each
+        class; for regression (also with several targets), from all the time series.
 
     Attributes
     ----------
