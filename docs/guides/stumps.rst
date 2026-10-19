@@ -353,6 +353,8 @@ sensitive attribute (column 2) is strongly related to the clusters:
    fair: 4 clusters, balance 0.44
 
 The balance is 1 when every cluster has the same proportion of each group as the whole data set.
+The fair stump supports a single target, so it splits one principal component at a time: it is
+used with ``component_split="best"`` (the default), not with ``"joint"``.
 
 
 Other stumps

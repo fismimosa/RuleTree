@@ -60,6 +60,14 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
     random_state : int, RandomState instance or None, default=None
         Seed of the principal component analysis and of the random choice of the stumps, also given
         to the stumps without a random_state.
+    component_split : {'best', 'joint'}, default='best'
+        How a node is split on its principal components. 'best' fits a stump on each component and
+        keeps the best split according to ``clus_impurity``. 'joint' fits one stump on all the
+        components together (a regression with several targets): the split is the one that most
+        decreases the sum of squared distances of the instances from the centers of the two
+        children, in the space of the components, as a k-means with two clusters whose border is a
+        rule; ``clus_impurity`` is not used. With 'joint', the base stumps must support several
+        targets (e.g. the decision tree, pivot and oblique stumps, not the fair stump).
 
     Attributes
     ----------
@@ -97,7 +105,8 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
                  max_depth=float('inf'),
                  prune_useless_leaves=False,
                  base_stumps: Union[RegressorMixin, list] = None,
-                 random_state=None):
+                 random_state=None,
+                 component_split: str = 'best'):
         """Initialize the RuleTreeCluster; see the class documentation for the parameters."""
         if base_stumps is None:
             base_stumps = DecisionTreeStumpRegressor()
@@ -113,9 +122,12 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         self.n_components = n_components
         self.clus_impurity = clus_impurity
         self.bic_eps = bic_eps
+        self.component_split = component_split
 
         if self.clus_impurity not in ['bic', 'r2']:
             raise ValueError('Unknown clustering impurity measure %s' % self.clus_impurity)
+        if self.component_split not in ['best', 'joint']:
+            raise ValueError(f"component_split must be 'best' or 'joint', got {self.component_split!r}")
 
     def is_split_useless(self, data: dict, idx: np.ndarray, labels: np.ndarray):
         """
@@ -203,8 +215,9 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
     def make_split(self, data: dict, y, idx: np.ndarray, sample_weight=None) -> RuleTreeBaseStump:
         """
         Split a node on its principal components: the instances are projected with PCA, MCA or FAMD
-        (numerical, categorical or mixed data), a stump is fitted to predict each component, and the
-        best split according to ``clus_impurity`` is kept.
+        (numerical, categorical or mixed data); with ``component_split='best'``, a stump is fitted to
+        predict each component, and the best split according to ``clus_impurity`` is kept; with
+        ``'joint'``, one stump is fitted to predict all the components.
 
         Parameters
         ----------
@@ -244,6 +257,12 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         y_pca = principal_transform.fit_transform(X[idx])
         y_pca_all = np.zeros((X.shape[0], y_pca.shape[1]))
         y_pca_all[idx] = y_pca
+
+        if self.component_split == 'joint':  # one stump for all the components, as targets
+            clf, data_type = self._get_random_split()
+            clf.fit(data, y_pca_all if n_components_split > 1 else y_pca_all[:, 0], idx=idx, context=self,
+                    data_type=data_type)
+            return clf
 
         best_clf = None
         best_score = float('inf')
@@ -411,6 +430,14 @@ class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
     random_state : int, RandomState instance or None, default=None
         Seed of the principal component analysis and of the random choice of the stumps, also given
         to the stumps without a random_state.
+    component_split : {'best', 'joint'}, default='best'
+        How a node is split on its principal components. 'best' fits a stump on each component and
+        keeps the best split according to ``clus_impurity``. 'joint' fits one stump on all the
+        components together (a regression with several targets): the split is the one that most
+        decreases the sum of squared distances of the instances from the centers of the two
+        children, in the space of the components, as a k-means with two clusters whose border is a
+        rule; ``clus_impurity`` is not used. With 'joint', the base stumps must support several
+        targets (e.g. the decision tree, pivot and oblique stumps, not the fair stump).
 
     Attributes
     ----------
@@ -522,6 +549,14 @@ class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
     random_state : int, RandomState instance or None, default=None
         Seed of the principal component analysis and of the random choice of the stumps, also given
         to the stumps without a random_state.
+    component_split : {'best', 'joint'}, default='best'
+        How a node is split on its principal components. 'best' fits a stump on each component and
+        keeps the best split according to ``clus_impurity``. 'joint' fits one stump on all the
+        components together (a regression with several targets): the split is the one that most
+        decreases the sum of squared distances of the instances from the centers of the two
+        children, in the space of the components, as a k-means with two clusters whose border is a
+        rule; ``clus_impurity`` is not used. With 'joint', the base stumps must support several
+        targets (e.g. the decision tree, pivot and oblique stumps, not the fair stump).
 
     Attributes
     ----------

@@ -176,6 +176,8 @@ CASES = {
     "clu_bic": (lambda: RuleTreeCluster(max_depth=3, clus_impurity="bic", random_state=0, base_stumps=dt_reg()), "blobs", None, True),
     "clu_oblique": (lambda: RuleTreeCluster(max_depth=3, random_state=0,
                                             base_stumps=ObliqueDecisionTreeStumpRegressor("bivariate")), "blobs", None, True),
+    "clu_joint": (lambda: RuleTreeCluster(max_depth=3, random_state=0, component_split="joint", base_stumps=dt_reg()),
+                  "blobs", None, True),
     "clu_mixed": (lambda: RuleTreeCluster(max_depth=2, random_state=0, base_stumps=dt_reg()), "mixed", None, True),
     "clu_classifier": (lambda: RuleTreeClusterClassifier(max_depth=3, random_state=0, base_stumps=dt_reg()), "iris", "iris_y", True),
     "clu_regressor": (lambda: RuleTreeClusterRegressor(max_depth=3, bic_eps=0.5, random_state=0, base_stumps=dt_reg()),

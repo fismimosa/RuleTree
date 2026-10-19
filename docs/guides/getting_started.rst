@@ -214,6 +214,36 @@ groups stays high because each cluster lies within a single group.
 without looking at the target, and then predict the majority class or the mean target of each
 cluster.
 
+``component_split`` sets how the principal components are used. With ``"best"`` (the default),
+a stump is fitted on each component and the best split according to ``clus_impurity`` is kept:
+each split looks at one component. With ``"joint"``, one stump is fitted on all the components
+together (a regression with several targets, see `Several targets`_): the split is the one that
+most decreases the squared distances of the instances from the centers of the two children, as a
+k-means with two clusters whose border is a rule. Neither is better in general; the joint split
+helps when the clusters are spread over several components, as four groups at the corners of a
+square:
+
+.. code-block:: python
+
+   rng = np.random.default_rng(0)
+   corners = np.array([[0, 0], [4, 0], [0, 4], [4, 4]])
+   square_groups = rng.integers(0, 4, size=400)
+   X_square = corners[square_groups] + rng.normal(size=(400, 2))
+
+   for component_split in ["best", "joint"]:
+       labels = RuleTreeCluster(max_depth=4, random_state=0, component_split=component_split).fit_predict(X_square)
+       print(f"{component_split}: {len(set(labels.tolist()))} clusters, "
+             f"ARI {adjusted_rand_score(square_groups, labels):.2f}")
+
+.. code-block:: text
+   :caption: Output
+
+   best: 4 clusters, ARI 0.72
+   joint: 4 clusters, ARI 0.90
+
+With ``"joint"``, the base stumps must support several targets (the decision tree, pivot and
+oblique stumps do; the fair stump does not).
+
 
 Working with scikit-learn
 -------------------------
