@@ -1117,7 +1117,6 @@ class RuleTree(RuleTreeBase, ABC):
                     path_features.add(feature_index[path[i]])
                     contrib = values_list[path[i+1]] - \
                              values_list[path[i]]
-                    #path_features.sort()
                     contributions[row][tuple(sorted(path_features))] = \
                         contributions[row].get(tuple(sorted(path_features)), 0) + contrib
             return direct_prediction, biases, contributions

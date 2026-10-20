@@ -188,7 +188,6 @@ def _train_one_class(args):
 
     n_samples = len(y_train)
     residuals = (y_train == classe).astype(float) - base_pred
-    residuals_val = (y_val == classe).astype(float) - base_pred
     y_val_bool = (y_val == classe).astype(float)
     prediction = np.ones((n_samples, )) * base_pred
     prediction_val = np.ones((X_val.shape[0], )) * base_pred

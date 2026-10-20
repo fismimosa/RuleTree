@@ -4,6 +4,10 @@ import pandas as pd
 
 from . import mfa
 
+# dtypes of the categorical columns: since pandas 3 the strings have their own dtype, 'str', which
+# select_dtypes still includes in 'object' only with a deprecation warning (and pandas 2 rejects 'str')
+CATEGORICAL_DTYPES = ['object', 'category'] + (['str'] if int(pd.__version__.split('.')[0]) >= 3 else [])
+
 
 class FAMD(mfa.MFA):
 
@@ -50,7 +54,7 @@ class FAMD(mfa.MFA):
 
         # Separate numerical columns from categorical columns
         num_cols = X.select_dtypes(np.number).columns
-        cat_cols = X .select_dtypes(include=['object','category']).columns
+        cat_cols = X.select_dtypes(include=CATEGORICAL_DTYPES).columns
 
         # Make one group per variable type
         self.groups = {}
@@ -87,7 +91,7 @@ class FAMD(mfa.MFA):
 
         # Separate numerical columns from categorical columns
         num_cols = X.select_dtypes(np.number).columns
-        cat_cols = X .select_dtypes(include=['object','category']).columns
+        cat_cols = X.select_dtypes(include=CATEGORICAL_DTYPES).columns
 
         # Make one group per variable type
         self.groups = {}

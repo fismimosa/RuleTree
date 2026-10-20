@@ -15,34 +15,6 @@ import category_encoders as ce
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
-def _iterative_mean(iter, current_mean, x):
-    """
-    Iteratively calculates mean using Welford's online algorithm.
-    
-    This method allows for efficient computation of the mean by updating it
-    iteratively as new data points arrive, without storing all previous values.
-    
-    Parameters
-    ----------
-    iter : int
-        Non-negative integer representing the current iteration
-    current_mean : numpy.ndarray
-        Current value of the mean
-    x : numpy.ndarray
-        New value to be added to the mean
-        
-    Returns
-    -------
-    numpy.ndarray
-        Updated mean value
-        
-    References
-    ----------
-    http://www.heikohoffmann.de/htmlthesis/node134.html
-    """
-    return current_mean + ((x - current_mean) / (iter + 1))
-
-
 def preprocessing(X, feature_names_r, is_cat_feat, data_encoder=None, numerical_scaler=None):
     """
     Preprocess data by applying encoding and scaling transformations.
@@ -241,8 +213,6 @@ def prepare_data(X_original, max_nbr_values, max_nbr_values_cat, feature_names_o
 
             if len(values) <= max_nbr_values_cat:  # this identifies categorical attributes
                 is_categorical_feature[feature] = True
-
-    # print(is_categorical_feature)
 
     if numerical_scaler is not None and np.sum(~is_categorical_feature) > 0:
         X[:, ~is_categorical_feature] = numerical_scaler.fit_transform(X[:, ~is_categorical_feature])

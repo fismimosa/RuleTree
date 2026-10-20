@@ -454,19 +454,3 @@ def numerical_rule(feature_idx, feature_name: str, threshold, float_precision=3,
     value = str(threshold) if float_precision is None else round(threshold, float_precision)
     return rule_dict(f"{feature_name} <= {value}", f"{feature_name} > {value}", feature_idx=feature_idx,
                      threshold=threshold, is_categorical=False, feature_name=feature_name, **attributes)
-
-
-def _is_number(value) -> bool:
-    """
-    Whether a value is a number (bool excluded), e.g. a numerical threshold.
-
-    Parameters
-    ----------
-    value : object
-        Any value.
-
-    Returns
-    -------
-    is_number : bool
-    """
-    return isinstance(value, (int, float, np.number)) and not isinstance(value, bool)

@@ -6,7 +6,6 @@ import numpy as np
 
 from RuleTree import RuleTreeRegressor
 from RuleTree.tree.RuleTreeRegressor import check_target
-#from RuleTree.stumps.classification.XGBoostStumpClassifier import XGBoostStumpClassifier
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
 

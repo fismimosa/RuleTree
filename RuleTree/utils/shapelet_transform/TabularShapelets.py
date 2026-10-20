@@ -290,8 +290,8 @@ class TabularShapelets(TransformerMixin):
         """
         res_data = [
             np.unique(np.where(np.isin(np.arange(X.shape[1]), combination), X, np.nan), axis=0)
-            for combinations in subsequences_index.values()
-            for combination in combinations
+            for feature_sets in subsequences_index.values()
+            for combination in feature_sets
         ]
 
         if len(res_data) == 0:
@@ -325,7 +325,7 @@ class TabularShapelets(TransformerMixin):
                                                   test_size=min(self.n_shapelets, X.shape[0]),
                                                   random_state=self.random_state)
                 subsample_idx = next(splitter.split(X, y))[1]
-            except Exception as e:
+            except Exception:
                 subsample_idx = np.random.RandomState(self.random_state).choice(
                     X.shape[0],
                     size=min(self.n_shapelets, X.shape[0]),
@@ -351,9 +351,9 @@ class TabularShapelets(TransformerMixin):
         """
         res_data = []
         n_shapelet_for_stratification = []
-        for n_features, combinations in subsequences_index.items():
+        for n_features, feature_sets in subsequences_index.items():
             res_data_n_features = []
-            for combination in combinations:
+            for combination in feature_sets:
                 X_combination = np.ones(X.shape) * np.nan
                 X_combination[:, combination] = X[:, combination]
                 res_data_n_features.append(self._subsample(X=np.unique(X_combination, axis=0), y=None))
@@ -402,8 +402,8 @@ class TabularShapelets(TransformerMixin):
         pivots : numpy.ndarray
         """
         res_data = []
-        for combinations in subsequences_index.values():
-            for combination in combinations:
+        for feature_sets in subsequences_index.values():
+            for combination in feature_sets:
                 res_data += [
                     self._run_kmeans_and_return_centroids(
                         np.unique(np.where(np.isin(np.arange(X.shape[1]), combination), X, np.nan), axis=0)

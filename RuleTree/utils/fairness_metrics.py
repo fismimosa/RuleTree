@@ -141,7 +141,6 @@ def privacy_metric(X, X_bool, sensible_attribute, k_anonymity, l_diversity, t_cl
     t_left, t_right = compute_t_closeness(X, X_bool, sensible_attribute, categorical)
     t = max(t_left, t_right)
 
-    # print('\t', t_left, '\t', t_right)
     if strict and t > t_closeness:
         return False, k, l, t
 
