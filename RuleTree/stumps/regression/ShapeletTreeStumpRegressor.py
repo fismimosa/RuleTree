@@ -1,14 +1,10 @@
 """ShapeletTreeStumpRegressor: the split on the distance from a shapelet, for regression of time series."""
 
-from typing import Optional
-
-
-from RuleTree.stumps.classification.ShapeletTreeStumpClassifier import ShapeletTreeStumpClassifier
+from RuleTree.stumps.ShapeletTreeStump import ShapeletTreeStump
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
-from RuleTree.stumps.transformers.ShapeletTransformer import ShapeletTransformer
 
 
-class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
+class ShapeletTreeStumpRegressor(ShapeletTreeStump, DecisionTreeStumpRegressor):
     """
     Shapelet stump for regression of time series: a threshold on the distance of the time series from a
     *shapelet* (``distance <= t`` goes left).
@@ -119,84 +115,3 @@ class ShapeletTreeStumpRegressor(DecisionTreeStumpRegressor):
         self.min_weight_fraction_leaf = min_weight_fraction_leaf
         self.max_features = max_features
         self.min_impurity_decrease = min_impurity_decrease
-
-    def _splitter_params(self):
-        """
-        Parameters of the splitter: as in the decision tree stump, but without random_state, which is
-        the one of the shapelet selection.
-
-        Returns
-        -------
-        params : dict
-        """
-        return super()._splitter_params() | {"random_state": None}
-
-    def _make_transformer(self):
-        """
-        A new, unfitted ShapeletTransformer with the parameters of the stump.
-
-        Returns
-        -------
-        transformer : ShapeletTransformer
-        """
-        return ShapeletTransformer(n_shapelets=self.n_shapelets,
-                                   n_shapelets_for_selection=self.n_shapelets_for_selection,
-                                   n_ts_for_selection_per_class=self.n_ts_for_selection_per_class,
-                                   sliding_window=self.sliding_window,
-                                   selection=self.selection,
-                                   distance=self.distance,
-                                   mi_n_neighbors=self.mi_n_neighbors,
-                                   random_state=self.random_state,
-                                   n_jobs=self.n_jobs,
-                                   ml_task=self.task)
-
-    @property
-    def st(self):
-        """The fitted shapelet transform."""
-        return self.transformer_.st_
-
-    def get_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
-        """
-        Rule of the split, e.g. ``euclidean(TS, shp) <= 1.2``.
-
-        Parameters
-        ----------
-        columns_names : list of str, default=None
-            Not used.
-        scaler : TransformerMixin, default=None
-            Not supported: must be None.
-        float_precision : int, default=3
-            Number of decimals of the threshold. If None, it is not rounded.
-
-        Returns
-        -------
-        rule : dict
-            See RuleTreeBaseStump.get_rule.
-
-        Raises
-        ------
-        ValueError
-            If a scaler is given.
-        """
-        return ShapeletTreeStumpClassifier.get_rule(self, columns_names, scaler, float_precision)
-
-    def get_graphviz_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
-        """
-        Attributes of the Graphviz node of the split, with a plot of the shapelet (see
-        ShapeletTreeStumpClassifier.get_graphviz_rule).
-
-        Parameters
-        ----------
-        columns_names : list of str, default=None
-            Not used.
-        scaler : TransformerMixin, default=None
-            Not supported: must be None.
-        float_precision : int, default=3
-            Number of decimals of the threshold. If None, it is not rounded.
-
-        Returns
-        -------
-        attributes : dict
-            Attributes of the Graphviz node.
-        """
-        return ShapeletTreeStumpClassifier.get_graphviz_rule(self, columns_names, scaler, float_precision)

@@ -39,6 +39,14 @@ RuleTree.stumps.ProximityTreeStump module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.ShapeletTreeStump module
+----------------------------------------
+
+.. automodule:: RuleTree.stumps.ShapeletTreeStump
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.Stump module
 ----------------------------
 
