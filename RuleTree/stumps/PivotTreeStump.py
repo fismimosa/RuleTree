@@ -3,6 +3,7 @@ PivotTreeStump, MultiplePivotTreeStump and ObliquePivotTreeStump: what the pivot
 common.
 """
 
+from RuleTree.base.RuleTreeBaseStump import numerical_rule
 from RuleTree.stumps.ObliqueTreeStump import combination_rule
 from RuleTree.stumps.ProximityTreeStump import proximity_rule
 from RuleTree.stumps.transformers.MultiplePivotTransformer import MultiplePivotTransformer
@@ -83,23 +84,8 @@ class PivotTreeStump:
         if not self._is_fitted():
             return {}
 
-        feat_name = f"P_{self.feature_original}"
-        threshold = self.threshold_original
-        rounded_value = str(threshold) if float_precision is None else round(threshold, float_precision)
-        condition, negation = f"{feat_name} <= {rounded_value}", f"{feat_name} > {rounded_value}"
-
-        return {
-            "feature_idx": self.feature_original,
-            "threshold": threshold,
-            "is_categorical": False,
-            "feature_name": feat_name,
-            "textual_rule": condition,
-            "blob_rule": condition,
-            "graphviz_rule": {"label": condition},
-            "not_textual_rule": negation,
-            "not_blob_rule": negation,
-            "not_graphviz_rule": {"label": negation},
-        }
+        return numerical_rule(self.feature_original, f"P_{self.feature_original}", self.threshold_original,
+                              float_precision)
 
 
 class MultiplePivotTreeStump:

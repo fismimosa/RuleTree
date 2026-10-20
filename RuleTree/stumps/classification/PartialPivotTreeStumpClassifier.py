@@ -4,6 +4,7 @@ from typing import Optional
 
 import numpy as np
 
+from RuleTree.base.RuleTreeBaseStump import numerical_rule
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.transformers.PartialPivotTransformer import PartialPivotTransformer
 
@@ -170,32 +171,9 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         rule : dict
             See RuleTreeBaseStump.get_rule.
         """
-        rule = {
-            "feature_idx": self.feature_original,
-            "threshold": self.threshold_original,
-            "is_categorical": False,
-        }
-
-        str_feat = describe_partial_pivot(self.st.shapelets[self.feature_original], columns_names, scaler)
-        rule["feature_name"] = f"SP{rule['feature_idx']}({str_feat})"
-
-        comparison = "<="
-        not_comparison = ">"
-        rounded_value = str(rule["threshold"]) if float_precision is None else round(rule["threshold"], float_precision)
-
-        rule["textual_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}"
-        rule["blob_rule"] = f"{rule['feature_name']} {comparison} {rounded_value}"
-        rule["graphviz_rule"] = {
-            "label": f"{rule['feature_name']} {comparison} {rounded_value}",
-        }
-
-        rule["not_textual_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{rule['feature_name']} {not_comparison} {rounded_value}"
-        rule["not_graphviz_rule"] = {
-            "label": f"{rule['feature_name']} {not_comparison} {rounded_value}"
-        }
-
-        return rule
+        description = describe_partial_pivot(self.st.shapelets[self.feature_original], columns_names, scaler)
+        return numerical_rule(self.feature_original, f"SP{self.feature_original}({description})",
+                              self.threshold_original, float_precision)
 
 
 def describe_partial_pivot(pivot, columns_names=None, scaler=None) -> str:

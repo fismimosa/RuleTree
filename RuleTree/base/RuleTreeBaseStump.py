@@ -387,6 +387,75 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         return context.get_cache(self.cache_namespace()) if context is not None else {}
 
 
+def rule_dict(condition: str, negation: str, **attributes) -> dict:
+    """
+    Dictionary of a rule as returned by the ``get_rule`` of the stumps: the condition of the left child
+    and its negation, as text (``textual_rule``, ``blob_rule``) and as Graphviz label (``graphviz_rule``),
+    after the given attributes of the split.
+
+    Parameters
+    ----------
+    condition : str
+        Condition of the left child, e.g. ``"X_3 <= 0.8"``.
+    negation : str
+        Its negation, the condition of the right child, e.g. ``"X_3 > 0.8"``.
+    **attributes : dict
+        Other keys of the rule, e.g. ``feature_idx``, ``threshold``, ``is_categorical``,
+        ``feature_name``.
+
+    Returns
+    -------
+    rule : dict
+
+    Examples
+    --------
+    >>> from RuleTree.base.RuleTreeBaseStump import rule_dict
+    >>> rule = rule_dict("X_3 <= 0.8", "X_3 > 0.8", feature_idx=3, threshold=0.8)
+    >>> rule["textual_rule"], rule["not_graphviz_rule"]
+    ('X_3 <= 0.8', {'label': 'X_3 > 0.8'})
+    """
+    return attributes | {
+        "textual_rule": condition,
+        "blob_rule": condition,
+        "graphviz_rule": {"label": condition},
+        "not_textual_rule": negation,
+        "not_blob_rule": negation,
+        "not_graphviz_rule": {"label": negation},
+    }
+
+
+def numerical_rule(feature_idx, feature_name: str, threshold, float_precision=3, **attributes) -> dict:
+    """
+    Dictionary of a numerical rule, ``feature_name <= threshold`` (see rule_dict).
+
+    Parameters
+    ----------
+    feature_idx : object
+        Identifier of the feature, stored in ``feature_idx``.
+    feature_name : str
+        Text of the feature in the rule, e.g. ``"X_3"`` or ``"P_12"``.
+    threshold : float
+        Threshold of the split.
+    float_precision : int, default=3
+        Number of decimals of the threshold in the text; None for no rounding.
+    **attributes : dict
+        Other keys of the rule.
+
+    Returns
+    -------
+    rule : dict
+
+    Examples
+    --------
+    >>> from RuleTree.base.RuleTreeBaseStump import numerical_rule
+    >>> numerical_rule(112, "P_112", 3.69187, float_precision=2)["not_textual_rule"]
+    'P_112 > 3.69'
+    """
+    value = str(threshold) if float_precision is None else round(threshold, float_precision)
+    return rule_dict(f"{feature_name} <= {value}", f"{feature_name} > {value}", feature_idx=feature_idx,
+                     threshold=threshold, is_categorical=False, feature_name=feature_name, **attributes)
+
+
 def _is_number(value) -> bool:
     """
     Whether a value is a number (bool excluded), e.g. a numerical threshold.

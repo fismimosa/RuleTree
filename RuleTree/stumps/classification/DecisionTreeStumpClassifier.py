@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from RuleTree.base.RuleTreeBaseStump import rule_dict
 from RuleTree.stumps.Stump import Stump
 from RuleTree.stumps.splitters.ClassificationSplitter import ClassificationSplitter
 from RuleTree.stumps.transformers.MatrixTransformer import MatrixTransformer
@@ -166,16 +167,5 @@ class DecisionTreeStumpClassifier(Stump):
         if scaler is not None:
             rounded_value = str(rule["threshold_scaled"]) if float_precision is None else (
                 round(rule["threshold_scaled"], float_precision))
-        rule["textual_rule"] = f"{feat_name} {comparison} {rounded_value}"
-        rule["blob_rule"] = f"{feat_name} {comparison} {rounded_value}"
-        rule["graphviz_rule"] = {
-            "label": f"{feat_name} {'<=' if not self.is_categorical else '='} {rounded_value}",
-        }
-
-        rule["not_textual_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
-        rule["not_blob_rule"] = f"{feat_name} {not_comparison} {rounded_value}"
-        rule["not_graphviz_rule"] = {
-            "label": f"{feat_name} {'>' if not self.is_categorical else '!='} {rounded_value}"
-        }
-
-        return rule
+        return rule_dict(f"{feat_name} {comparison} {rounded_value}", f"{feat_name} {not_comparison} {rounded_value}",
+                         **rule)

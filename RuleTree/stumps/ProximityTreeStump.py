@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from RuleTree.base.RuleTreeBaseStump import rule_dict
 from RuleTree.stumps.transformers.PartialProximityTransformer import PartialProximityTransformer
 from RuleTree.stumps.transformers.ProximityTransformer import ProximityTransformer
 from RuleTree.utils.shapelet_transform.drawing import graphviz_shapelets
@@ -29,19 +30,8 @@ def proximity_rule(feature_idx, first: str, second: str, threshold) -> dict:
     rule : dict
         See RuleTreeBaseStump.get_rule.
     """
-    condition, negation = f"{first} <= {second}", f"{first} > {second}"
-    return {
-        "feature_idx": feature_idx,
-        "threshold": threshold,
-        "is_categorical": False,
-        "feature_name": f"{first} > {second}",
-        "textual_rule": condition,
-        "blob_rule": condition,
-        "graphviz_rule": {"label": condition},
-        "not_textual_rule": negation,
-        "not_blob_rule": negation,
-        "not_graphviz_rule": {"label": negation},
-    }
+    return rule_dict(f"{first} <= {second}", f"{first} > {second}", feature_idx=feature_idx, threshold=threshold,
+                     is_categorical=False, feature_name=f"{first} > {second}")
 
 
 class ProximityTreeStump:

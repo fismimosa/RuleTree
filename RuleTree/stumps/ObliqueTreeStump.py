@@ -1,5 +1,6 @@
 """ObliqueTreeStump: what the oblique stumps for classification and regression have in common."""
 
+from RuleTree.base.RuleTreeBaseStump import numerical_rule
 from RuleTree.stumps.transformers.BivariateTransformer import BivariateTransformer
 from RuleTree.stumps.transformers.HouseholderTransformer import HouseholderTransformer
 
@@ -85,23 +86,8 @@ def combination_rule(feature_idx, names, coefficients, threshold, float_precisio
     rule : dict
         See RuleTreeBaseStump.get_rule; also ``coefficients``.
     """
-    combination = format_combination(names, coefficients, float_precision)
-    value = str(threshold) if float_precision is None else round(threshold, float_precision)
-    condition, negation = f"{combination} <= {value}", f"{combination} > {value}"
-
-    return {
-        "feature_idx": feature_idx,
-        "coefficients": coefficients,
-        "threshold": threshold,
-        "is_categorical": False,
-        "feature_name": combination,
-        "textual_rule": condition,
-        "blob_rule": condition,
-        "graphviz_rule": {"label": condition},
-        "not_textual_rule": negation,
-        "not_blob_rule": negation,
-        "not_graphviz_rule": {"label": negation},
-    }
+    return numerical_rule(feature_idx, format_combination(names, coefficients, float_precision), threshold,
+                          float_precision, coefficients=coefficients)
 
 
 class ObliqueTreeStump:

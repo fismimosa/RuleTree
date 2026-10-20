@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from RuleTree.base.RuleTreeBaseStump import numerical_rule
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.transformers.ShapeletTransformer import ShapeletTransformer
 from RuleTree.utils.shapelet_transform.drawing import graphviz_shapelets
@@ -183,23 +184,9 @@ class ShapeletTreeStumpClassifier(DecisionTreeStumpClassifier):
         if scaler is not None:
             raise ValueError(f"Scaler not supported for {self.__class__.__name__}")
 
-        threshold = self.threshold_original
-        rounded_value = str(threshold) if float_precision is None else round(threshold, float_precision)
-        condition = f"{self.distance}(TS, shp) <= {rounded_value}"
-        negation = f"{self.distance}(TS, shp) > {rounded_value}"
-
-        return {
-            "feature_idx": self.feature_original,
-            "threshold": threshold,
-            "is_categorical": False,
-            "feature_name": f"Shapelet_{self.feature_original}",
-            "textual_rule": condition,
-            "blob_rule": condition,
-            "graphviz_rule": {"label": condition},
-            "not_textual_rule": negation,
-            "not_blob_rule": negation,
-            "not_graphviz_rule": {"label": negation},
-        }
+        rule = numerical_rule(self.feature_original, f"{self.distance}(TS, shp)", self.threshold_original,
+                              float_precision)
+        return rule | {"feature_name": f"Shapelet_{self.feature_original}"}
 
     def get_graphviz_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """
