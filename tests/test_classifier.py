@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import sklearn
 
-from RuleTree import RuleTreeClassifier
+from RuleTree import RuleTreeClassifier, RuleTreeClusterClassifier
 from RuleTree.stumps.Stump import Stump
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier
 from RuleTree.stumps.splitters import ClassificationSplitter
@@ -177,3 +177,12 @@ def test_update_statistics_empty_leaf_predicts_nan(iris):
 
     assert np.all(predictions[y == 0] == 0)
     assert np.all(np.isnan(predictions[y != 0].astype(float)))
+
+
+@pytest.mark.parametrize("model_class", [RuleTreeClassifier, RuleTreeClusterClassifier])
+def test_target_as_a_list(model_class, iris):
+    X, y = iris
+
+    model = model_class(max_depth=2, random_state=0).fit(X, y.tolist())
+
+    assert np.array_equal(model.predict(X), model_class(max_depth=2, random_state=0).fit(X, y).predict(X))

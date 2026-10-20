@@ -141,10 +141,9 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
             self.target_scales_ = self._target_scales(y)
         return super().partial_fit(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, sample_weight=sample_weight)
 
-    def update_statistics(self, X: np.ndarray | None = None, y: np.ndarray | None = None,
-                          X_ts=None, X_img=None, X_txt=None):
-        """Recompute the statistics of the nodes on new data; see RuleTree.update_statistics."""
-        super().update_statistics(X=X, y=check_target(y), X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+    def _check_target(self, y):
+        """The target as an array of shape (n_samples,) or (n_samples, n_targets) (see check_target)."""
+        return check_target(y)
 
     def _target_scales(self, y: np.ndarray):
         """

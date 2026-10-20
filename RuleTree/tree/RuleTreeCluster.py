@@ -18,7 +18,7 @@ from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeSt
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.tree.RuleTreeClassifier import RuleTreeClassifier
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
-from RuleTree.tree.RuleTreeRegressor import RuleTreeRegressor
+from RuleTree.tree.RuleTreeRegressor import RuleTreeRegressor, check_target
 from RuleTree.utils import bic, light_famd
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 
@@ -597,6 +597,10 @@ class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
         node : RuleTreeNode
         """
         return RuleTreeRegressor.prepare_node(self, y, idx, node_id, node)
+
+    def _check_target(self, y):
+        """The target as an array of shape (n_samples,) or (n_samples, n_targets) (see check_target)."""
+        return check_target(y)
 
     def _post_fit_fix(self):
         """Nothing to do: the nodes already predict the mean of the target."""

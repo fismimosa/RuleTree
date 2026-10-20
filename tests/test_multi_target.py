@@ -10,12 +10,14 @@ from sklearn.tree import DecisionTreeRegressor
 from RuleTree import RuleTreeClusterRegressor, RuleTreeRegressor
 from RuleTree.ensemble.EBMRegressor import EBMRegressor
 from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
+from RuleTree.ensemble.XGBoostRegressor import XGBoostRegressor
 from RuleTree.evaluation import evaluate_regression
 from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor,
                                         ObliqueDecisionTreeStumpRegressor, PivotTreeStumpRegressor,
                                         ProximityTreeStumpRegressor, ShapeletTreeStumpRegressor,
                                         XGBoostStumpRegressor)
 from RuleTree.tree.RuleTree import RuleTree
+from RuleTree.tree.RuleTreeXGBoostRegressor import RuleTreeXGBoostRegressor
 from RuleTree.utils.data_utils import json_numpy_encoder
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 
@@ -44,12 +46,30 @@ def test_same_tree_as_scikit_learn(targets):
     assert np.allclose(model.root.prediction_probability, Y.std(axis=0))
 
 
-def test_one_target_keeps_one_dimension(targets):
-    X, Y = targets
+REGRESSORS = {
+    "RuleTreeRegressor": lambda: RuleTreeRegressor(max_depth=2, random_state=0),
+    "RuleTreeClusterRegressor": lambda: RuleTreeClusterRegressor(max_depth=2, random_state=0),
+    "RuleTreeXGBoostRegressor": lambda: RuleTreeXGBoostRegressor(max_depth=2, base_stumps=XGBoostStumpRegressor(lam=1)),
+    "GBoostRegressor": lambda: GBoostRegressor(base_estimator=RuleTreeRegressor(max_depth=2, random_state=0),
+                                               n_estimators=2),
+    "XGBoostRegressor": lambda: XGBoostRegressor(n_estimators=2),
+    "EBMRegressor": lambda: EBMRegressor(base_estimator=RuleTreeRegressor(max_depth=1, random_state=0),
+                                         n_iterations=1),
+}
 
-    assert RuleTreeRegressor(max_depth=2, random_state=0).fit(X, Y[:, 0]).predict(X).shape == (len(X),)
-    single_column = RuleTreeRegressor(max_depth=2, random_state=0).fit(X, Y[:, :1])  # as scikit-learn
-    assert single_column.predict(X).shape == (len(X),) and single_column.n_targets_ == 1
+
+@pytest.mark.parametrize("make_model", REGRESSORS.values(), ids=REGRESSORS.keys())
+@pytest.mark.parametrize("target_shape", ["vector", "column", "list"])
+def test_one_target_predicts_a_vector(make_model, target_shape, targets):
+    """With one target, also given as a column (as scikit-learn) or as a list, the predictions are a vector."""
+    X, Y = targets
+    y = {"vector": Y[:, 0], "column": Y[:, :1], "list": Y[:, 0].tolist()}[target_shape]
+
+    model = make_model().fit(X[:, :4], y)
+
+    assert np.asarray(model.predict(X[:, :4])).shape == (len(X),)
+    if hasattr(model, "root"):
+        assert isinstance(model.root.prediction, float)
 
 
 @pytest.mark.parametrize("leaf_prediction, statistic", [("mean", np.mean), ("median", np.median),

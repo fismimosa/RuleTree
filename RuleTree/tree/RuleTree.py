@@ -327,6 +327,7 @@ class RuleTree(RuleTreeBase, ABC):
             If no input is given, the inputs have different numbers of instances, or no stump supports
             the provided data.
         """
+        y = self._check_target(y)
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
         self.clear_cache()
@@ -379,6 +380,7 @@ class RuleTree(RuleTreeBase, ABC):
         if self.root is None:
             return self.fit(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, sample_weight=sample_weight)
 
+        y = self._check_target(y)
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
         if not hasattr(self, "_seed"):
@@ -484,6 +486,22 @@ class RuleTree(RuleTreeBase, ABC):
             self.root = self.root.simplify()
 
         self._post_fit_fix()
+
+    def _check_target(self, y):
+        """
+        The target as an array (None for clustering); called by fit, partial_fit and update_statistics.
+        The regression trees also turn a target of shape (n_samples, 1) into (n_samples,), so that they
+        predict a vector.
+
+        Parameters
+        ----------
+        y : array-like or None
+
+        Returns
+        -------
+        y : numpy.ndarray or None
+        """
+        return None if y is None else np.asarray(y)
 
     def _split_target(self, y):
         """
@@ -685,6 +703,7 @@ class RuleTree(RuleTreeBase, ABC):
         X_txt : array-like of shape (n_samples,), default=None
             Texts.
         """
+        y = self._check_target(y)
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
         self._set_classes(y)
 

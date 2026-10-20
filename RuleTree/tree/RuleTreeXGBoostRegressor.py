@@ -5,6 +5,7 @@ import warnings
 import numpy as np
 
 from RuleTree import RuleTreeRegressor
+from RuleTree.tree.RuleTreeRegressor import check_target
 #from RuleTree.stumps.classification.XGBoostStumpClassifier import XGBoostStumpClassifier
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
 from RuleTree.tree.RuleTreeNode import RuleTreeNode
@@ -103,6 +104,7 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
         EmptyXGBTreeException
             If the pruning removes all the splits.
         """
+        y = check_target(y)  # also used below to compute the leaf values
         super().fit(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt, sample_weight=sample_weight)
         if self._gamma_pruning(self.root).is_leaf():
             raise EmptyXGBTreeException('The value of gamma lead to an empty XGBoostTree.')
