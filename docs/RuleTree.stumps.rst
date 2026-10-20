@@ -15,6 +15,14 @@ Subpackages
 Submodules
 ----------
 
+RuleTree.stumps.DecisionTreeStump module
+----------------------------------------
+
+.. automodule:: RuleTree.stumps.DecisionTreeStump
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.ObliqueTreeStump module
 ---------------------------------------
 

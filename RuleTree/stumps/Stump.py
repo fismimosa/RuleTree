@@ -10,7 +10,7 @@ import numpy as np
 import sklearn
 from sklearn.base import BaseEstimator
 
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, rule_dict
 
 
 class Stump(RuleTreeBaseStump):
@@ -222,27 +222,57 @@ class Stump(RuleTreeBaseStump):
 
     def get_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
-        Rule of the split, e.g. ``X_2 <= 4.5``: the feature is named after the transformer's feature id.
+        Rule of the split, e.g. ``petal length <= 2.45`` or ``color = red``: the feature is named
+        after the transformer's feature id.
 
         Parameters
         ----------
         columns_names : list of str, default=None
-            Names of the columns of the tabular data, used for the features that are columns.
+            Names of the features. If None, ``X_<index>``. Features named by the transformer (see
+            RuleTreeBaseTransformer.feature_id) keep their name.
         scaler : TransformerMixin, default=None
-            Scaler used to preprocess the data: the threshold is also given in the original scale.
+            Scaler used to preprocess the data: the threshold is also given in the original scale
+            (``threshold_scaled``) and shown in the rule.
         float_precision : int, default=3
-            Number of decimals of the threshold; None for no rounding.
+            Number of decimals of the threshold. If None, it is not rounded.
 
         Returns
         -------
         rule : dict
-            The textual, blob and Graphviz forms of the condition of the left child and of its negation
-            (see :meth:`RuleTreeBaseStump.get_rule`).
+            ``feature_idx``, ``threshold``, ``is_categorical``, ``feature_name``, ``threshold_scaled``
+            (with a scaler), the condition of the left child (``textual_rule``, ``blob_rule``,
+            ``graphviz_rule``) and its negation (``not_textual_rule``, ``not_blob_rule``,
+            ``not_graphviz_rule``).
         """
-        from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
+        rule = {
+            "feature_idx": self.feature_original,
+            "threshold": self.threshold_original,
+            "is_categorical": self.is_categorical,
+        }
 
-        return DecisionTreeStumpClassifier.get_rule(self, columns_names=columns_names, scaler=scaler,
-                                                    float_precision=float_precision)
+        if isinstance(rule["feature_idx"], str):  # a feature named by the transformer, e.g. "mean"
+            feat_name = rule["feature_idx"]
+        elif columns_names is not None:
+            feat_name = columns_names[self.feature_original]
+        else:
+            feat_name = f"X_{rule['feature_idx']}"
+        rule["feature_name"] = feat_name
+
+        if scaler is not None:
+            array = np.zeros((1, scaler.n_features_in_))
+            array[0, self.feature_original] = self.threshold_original
+
+            rule["threshold_scaled"] = scaler.inverse_transform(array)[0, self.feature_original]
+
+        comparison = "<=" if not self.is_categorical else "="
+        not_comparison = ">" if not self.is_categorical else "!="
+        rounded_value = str(rule["threshold"]) if float_precision is None or self.is_categorical else (
+            round(rule["threshold"], float_precision))
+        if scaler is not None:
+            rounded_value = str(rule["threshold_scaled"]) if float_precision is None else (
+                round(rule["threshold_scaled"], float_precision))
+        return rule_dict(f"{feat_name} {comparison} {rounded_value}", f"{feat_name} {not_comparison} {rounded_value}",
+                         **rule)
 
     def node_to_dict(self):
         """

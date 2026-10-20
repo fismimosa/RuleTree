@@ -4,7 +4,6 @@ from typing import Union
 
 import psutil
 
-from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.stumps.splitters.FairSplitter import FairSplitter
 from RuleTree.utils.define import DATA_TYPE_TABULAR
@@ -124,29 +123,3 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
                             penalization_weight=self.penalization_weight, ideal_distribution=self.ideal_distribution,
                             k_anonymity=self.k_anonymity, l_diversity=self.l_diversity, t_closeness=self.t_closeness,
                             strict=self.strict, use_t=self.use_t, n_jobs=self.n_jobs, criterion=self.criterion)
-
-    def get_rule(self, columns_names=None, scaler=None, float_precision=3):
-        """
-        Get a human-readable rule representation of the tree stump.
-
-        Parameters
-        ----------
-        columns_names : array-like, default=None
-            Names of the features. If None, generic feature names are used.
-
-        scaler : object, default=None
-            If not None, the scaler is used to transform the threshold values
-            back to the original scale.
-
-        float_precision : int, default=3
-            Number of decimal places to use when rounding threshold values.
-
-        Returns
-        -------
-        rule : dict
-            Dictionary representation of the learned rule.
-        """
-        return DecisionTreeStumpClassifier.get_rule(self,
-                                                    columns_names=columns_names,
-                                                    scaler=scaler,
-                                                    float_precision=float_precision)
