@@ -94,3 +94,20 @@ def test_update_statistics(model, iris):
 
     assert model.root.samples == len(subset)
     assert np.array_equal(model.predict(X), predictions)  # same splits, same majority classes
+
+
+def test_print_rules_digits_in_all_the_leaves(diabetes, capsys):
+    from RuleTree import RuleTreeRegressor
+
+    X, y = diabetes
+    model = RuleTreeRegressor(max_depth=2, random_state=0).fit(X, y)
+
+    RuleTree.print_rules(model.get_rules(), digits=0)
+
+    outputs = [line.split("output: ")[1] for line in capsys.readouterr().out.splitlines() if "output:" in line]
+    assert len(outputs) == 4 and all(output.endswith(".0") for output in outputs)
+
+
+def test_tree_paths_from_the_root_by_default(model):
+    assert model._get_tree_paths() == model._get_tree_paths(model.root)
+    assert {path[0] for path in model._get_tree_paths()} == set(model.get_leaf_nodes())

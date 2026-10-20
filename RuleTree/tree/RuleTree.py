@@ -872,25 +872,16 @@ class RuleTree(RuleTreeBase, ABC):
         paths : list of list of str
             For each leaf, the node ids from the leaf to ``current_node``.
         """
-        if current_node.is_leaf():
-            return [[current_node.node_id]]
-        
         if current_node is None:
             current_node = self.root
-                
 
-        if current_node.node_l:  
-            left_paths = self._get_tree_paths(current_node.node_l)
-            right_paths = self._get_tree_paths(current_node.node_r)
-            
-            for path in left_paths:
-                path.append(current_node.node_id) 
-                
-            for path in right_paths:
-                path.append(current_node.node_id)
-                
-            paths = left_paths + right_paths
-            
+        if current_node.is_leaf():
+            return [[current_node.node_id]]
+
+        paths = self._get_tree_paths(current_node.node_l) + self._get_tree_paths(current_node.node_r)
+        for path in paths:
+            path.append(current_node.node_id)
+
         return paths
     
     def _node_dict(self, current_node=None, d=None, i=0):
@@ -1122,26 +1113,15 @@ class RuleTree(RuleTreeBase, ABC):
             return direct_prediction, biases, contributions
         
         else:
-            unique_leaves = np.unique(leaves)
             unique_contributions = {}
-            
-            for row, leaf in enumerate(unique_leaves):
-                for path in paths:
-                    if leaf == path[-1]:
-                        break
-                
+            for leaf in np.unique(leaves):
+                path = leaf_to_path[leaf]
                 contribs = np.zeros(line_shape)
                 for i in range(len(path) - 1):
-                    
-                    contrib = values_list[path[i+1]] - \
-                             values_list[path[i]]
-                    contribs[feature_index[path[i]]] += contrib
+                    contribs[feature_index[path[i]]] += values_list[path[i + 1]] - values_list[path[i]]
                 unique_contributions[leaf] = contribs
-                
-            for row, leaf in enumerate(leaves):
-                contributions.append(unique_contributions[leaf])
 
-            return direct_prediction, biases, np.array(contributions)
+            return direct_prediction, biases, np.array([unique_contributions[leaf] for leaf in leaves])
 
 
     
@@ -1171,9 +1151,9 @@ class RuleTree(RuleTreeBase, ABC):
             
         else:
             print(f"{indentation}|--- {rules['textual_rule']}")
-            cls.print_rules(rules=rules['left_node'], indent=indent + 1)
+            cls.print_rules(rules=rules['left_node'], digits=digits, indent=indent + 1)
             print(f"{indentation}|--- {rules['not_textual_rule']}")
-            cls.print_rules(rules=rules['right_node'], indent=indent + 1)
+            cls.print_rules(rules=rules['right_node'], digits=digits, indent=indent + 1)
 
     def to_dict(self, filename=None):
         """
