@@ -1,6 +1,5 @@
 """RuleTreeRegressor: the RuleTree for regression."""
 
-import heapq
 from typing import Union, Optional
 
 import numpy as np
@@ -183,19 +182,6 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
         scales = getattr(self, "target_scales_", None)
         return y if scales is None else y * scales
 
-    def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
-        """
-        Push a node into the queue, with priority to the shallowest nodes (breadth-first growth).
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-        idx : numpy.ndarray
-            Indices of the instances reaching the node.
-        """
-        heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
-
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Create a node (or update ``node``) with the prediction (see ``leaf_prediction``) and the
@@ -278,38 +264,6 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
         """
         return MODEL_TYPE_REG
         
-    def _get_prediction_probas(self, current_node = None, probas=None):
-        """
-        Predictions of the nodes in depth-first order (see RuleTree._get_prediction_probas).
-
-        Parameters
-        ----------
-        current_node : RuleTreeNode, default=None
-            Root of the subtree. If None, the root of the tree.
-        probas : list, default=None
-            List being filled.
-
-        Returns
-        -------
-        probas : list of float
-        """
-        if probas is None:
-            probas = []
-            
-        if current_node is None:
-            current_node = self.root
-        
-    
-        if current_node.prediction is not None:
-            probas.append(current_node.prediction)
-           
-        if current_node.node_l:
-            self._get_prediction_probas(current_node.node_l, probas)
-            self._get_prediction_probas(current_node.node_r, probas)
-        
-        return probas
-    
-    
     def local_interpretation(self, X, joint_contribution = False):
         """
         Contribution of each feature to the predictions, as in treeinterpreter: the prediction of an

@@ -1,6 +1,5 @@
 """RuleTreeClassifier: the RuleTree for classification."""
 
-import heapq
 from typing import Union, Optional
 
 import numpy as np
@@ -106,19 +105,6 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         """
         return len(np.unique(y[curr_idx])) == 1  # only 1 target
 
-    def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
-        """
-        Push a node into the queue, with priority to the shallowest nodes (breadth-first growth).
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-        idx : numpy.ndarray
-            Indices of the instances reaching the node.
-        """
-        heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
-
     def prepare_node(self, y: np.ndarray, idx: np.ndarray, node_id: str, node: Optional[RuleTreeNode] = None) -> RuleTreeNode:
         """
         Create a node (or update ``node``) with the majority class, the class probabilities, the
@@ -203,35 +189,20 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         """
         return MODEL_TYPE_CLF
 
-    def _get_prediction_probas(self, current_node = None, probas=None):
+    def _node_value(self, node: RuleTreeNode):
         """
-        Class probabilities of the nodes in depth-first order (see RuleTree._get_prediction_probas).
+        Value of a node in _get_prediction_probas: its class probabilities.
 
         Parameters
         ----------
-        current_node : RuleTreeNode, default=None
-            Root of the subtree. If None, the root of the tree.
-        probas : list, default=None
-            List being filled.
+        node : RuleTreeNode
+            The node.
 
         Returns
         -------
-        probas : list of numpy.ndarray
+        probabilities : numpy.ndarray
         """
-        if probas is None:
-            probas = []
-            
-        if current_node is None:
-            current_node = self.root
-        
-        if current_node.prediction is not None:
-            probas.append(current_node.prediction_probability)
-           
-        if current_node.node_l:
-            self._get_prediction_probas(current_node.node_l, probas)
-            self._get_prediction_probas(current_node.node_r, probas)
-        
-        return probas
+        return node.prediction_probability
 
     def local_interpretation(self, X, joint_contribution = False):
         """

@@ -833,10 +833,10 @@ class RuleTree(RuleTreeBase, ABC):
         """
         pass
 
-    @abstractmethod
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
-        Push a node to split into the queue: the priority defines the order in which the tree grows.
+        Push a node to split into the queue: the priority defines the order in which the tree grows. By
+        default, the shallowest nodes first (breadth-first growth).
 
         Parameters
         ----------
@@ -845,7 +845,7 @@ class RuleTree(RuleTreeBase, ABC):
         idx : numpy.ndarray
             Indices of the instances reaching the node.
         """
-        pass
+        heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
 
     @abstractmethod
     def _get_stumps_task(self) -> str:
@@ -930,16 +930,15 @@ class RuleTree(RuleTreeBase, ABC):
     
         return d, i
 
-    @abstractmethod
-    def _get_prediction_probas(self, current_node, probas=None):
+    def _get_prediction_probas(self, current_node=None, probas=None):
         """
-        Values of the nodes in depth-first order, used by local_interpretation: the class probabilities
-        for classification, the prediction for regression.
+        Values of the nodes with a prediction in depth-first order (see _node_value), used by
+        local_interpretation.
 
         Parameters
         ----------
-        current_node : RuleTreeNode
-            Root of the subtree.
+        current_node : RuleTreeNode, default=None
+            Root of the subtree. If None, the root of the tree.
         probas : list, default=None
             List being filled.
 
@@ -947,7 +946,35 @@ class RuleTree(RuleTreeBase, ABC):
         -------
         probas : list
         """
-        pass
+        if probas is None:
+            probas = []
+
+        if current_node is None:
+            current_node = self.root
+
+        if current_node.prediction is not None:
+            probas.append(self._node_value(current_node))
+
+        if current_node.node_l:
+            self._get_prediction_probas(current_node.node_l, probas)
+            self._get_prediction_probas(current_node.node_r, probas)
+
+        return probas
+
+    def _node_value(self, node: RuleTreeNode):
+        """
+        Value of a node in _get_prediction_probas: by default its prediction.
+
+        Parameters
+        ----------
+        node : RuleTreeNode
+            The node.
+
+        Returns
+        -------
+        value : object
+        """
+        return node.prediction
 
     def _tree_value(self):
         """
