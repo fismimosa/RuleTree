@@ -135,3 +135,17 @@ def test_entropy_with_classes_without_instances():
         impurity = entropy(y, None, {0: 1.0, 1: 1.0, 2: 1.0})
 
     assert impurity == pytest.approx(entropy(y))
+
+
+def test_mean_squared_error_as_scikit_learn():
+    """The impurity of the regression splits gives the same numbers as sklearn.metrics.mean_squared_error."""
+    from sklearn.metrics import mean_squared_error
+
+    from RuleTree.stumps.splitters.RegressionSplitter import _mean_squared_error
+
+    rng = np.random.default_rng(0)
+    for shape in [(1,), (500,), (300, 3)]:
+        for scale in (1e-3, 1, 1e4):
+            y = rng.normal(scale=scale, size=shape)
+            prediction = np.broadcast_to(y.mean(axis=0), y.shape)
+            assert _mean_squared_error(y, prediction) == mean_squared_error(y, prediction)

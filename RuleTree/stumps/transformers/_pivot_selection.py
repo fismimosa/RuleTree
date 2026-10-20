@@ -72,10 +72,15 @@ class PivotSelection:
         self.tree_params = tree_params
 
     def _base_model(self):
-        """Decision tree of the task, with tree_params, whose root split finds the discriminative pivot."""
+        """
+        Decision tree of the task, with tree_params, whose root split finds the discriminative pivot. Only
+        the root is needed, so the tree has depth 1: scikit-learn chooses the split of the root before
+        the rest of the tree, so the root is the same as with a deeper tree.
+        """
+        tree_params = self.tree_params | {"max_depth": 1}
         if self.ml_task == MODEL_TYPE_REG:
-            return DecisionTreeRegressor(**self.tree_params)
-        return DecisionTreeClassifier(**self.tree_params)
+            return DecisionTreeRegressor(**tree_params)
+        return DecisionTreeClassifier(**tree_params)
 
     def compute_descriptive(self, sub_matrix):
         """

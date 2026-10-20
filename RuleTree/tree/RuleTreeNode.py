@@ -450,12 +450,12 @@ class RuleTreeNode:
             )
 
             labels_clf = self.stump.apply(data, idx)
-            if sum(labels_clf == 1) != 0:
+            if np.any(labels_clf == 1):
                 child_labels, leaves[labels_clf == 1], proba[labels_clf == 1] = (
                     self.node_l.predict(data, idx=idx[labels_clf == 1], prediction_step=prediction_step - 1))
                 labels = _with_dtype_for(labels, child_labels)
                 labels[labels_clf == 1] = child_labels
-            if sum(labels_clf == 2) != 0:
+            if np.any(labels_clf == 2):
                 child_labels, leaves[labels_clf == 2], proba[labels_clf == 2] = (
                     self.node_r.predict(data, idx=idx[labels_clf == 2], prediction_step=prediction_step - 1))
                 labels = _with_dtype_for(labels, child_labels)

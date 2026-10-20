@@ -1,7 +1,7 @@
 """RegressionSplitter: the best split for regression."""
 
 import numpy as np
-from sklearn.metrics import mean_absolute_error, mean_poisson_deviance, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_poisson_deviance
 from sklearn.tree import DecisionTreeRegressor
 
 from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
@@ -103,7 +103,7 @@ class RegressionSplitter(RuleTreeBaseSplitter):
             For 'friedman_mse'.
         """
         if imp == "squared_error":
-            return mean_squared_error
+            return _mean_squared_error
         elif imp == "friedman_mse":
             raise NotImplementedError("not implemented")  # TODO: implement in DecisionTreeRegressor?
         elif imp == "absolute_error":
@@ -267,3 +267,13 @@ class RegressionSplitter(RuleTreeBaseSplitter):
             Sample weights of the instances in the node.
         """
         self.impurity_ = self._split_impurity(self.criterion, y, self.apply(X) == 1)
+
+
+def _mean_squared_error(y_true, y_pred) -> float:
+    """
+    sklearn.metrics.mean_squared_error (averaged over the targets), with the same operations and so
+    the same result, without its checks of the input, which are most of its time in the loops over
+    the candidate splits.
+    """
+    errors = (np.asarray(y_true) - np.asarray(y_pred)) ** 2
+    return float(np.mean(errors) if errors.ndim == 1 else np.mean(np.mean(errors, axis=0)))
