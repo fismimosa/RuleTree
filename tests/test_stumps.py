@@ -129,13 +129,6 @@ def test_partial_pivot_classifier(iris):
     assert np.mean(model.predict(X) == y) > 0.9
 
 
-def test_pivot_regressor(diabetes):
-    X, y = diabetes
-    model = RuleTreeRegressor(max_depth=2, base_stumps=PivotTreeStumpRegressor()).fit(X, y)
-
-    assert len(np.unique(model.predict(X))) > 1
-
-
 def test_shapelet_classifier(time_series):
     X, y = time_series
     model = RuleTreeClassifier(max_depth=2, base_stumps=ShapeletTreeStumpClassifier(**shapelet_kwargs()))
@@ -143,17 +136,6 @@ def test_shapelet_classifier(time_series):
     model.fit(X_ts=X, y=y)
 
     assert np.mean(model.predict(X_ts=X) == y) > 0.9
-
-
-@pytest.mark.slow
-def test_fair_regressor(diabetes):
-    X, y = diabetes
-    X = np.column_stack([X, X[:, 1] > 0])
-    stump = FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1, n_jobs=1)
-
-    model = RuleTreeRegressor(max_depth=2, base_stumps=stump).fit(X, y)
-
-    assert model.predict(X).shape == y.shape
 
 
 def json_round_trip(dictionary):

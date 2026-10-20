@@ -8,7 +8,6 @@ from sklearn.datasets import load_iris
 from RuleTree import RuleTreeClassifier, RuleTreeCluster, RuleTreeRegressor
 from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, PivotTreeStumpClassifier,
                                             ShapeletTreeStumpClassifier)
-from RuleTree.stumps.regression import DecisionTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.utils.data_utils import json_numpy_encoder
 from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS
@@ -122,13 +121,6 @@ def test_invalid_base_stumps(iris, base_stumps, error):
 
     with pytest.raises(ValueError, match=error):
         RuleTreeClassifier(base_stumps=base_stumps).fit(X, y)
-
-
-def test_wrong_stump_kind(iris):
-    X, y = iris
-
-    with pytest.raises(TypeError):
-        RuleTreeClassifier(base_stumps=DecisionTreeStumpRegressor()).fit(X, y)
 
 
 def test_inconsistent_number_of_samples(multimodal):

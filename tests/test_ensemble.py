@@ -10,6 +10,7 @@ from RuleTree.ensemble.EBMRegressor import EBMRegressor
 from RuleTree.ensemble.GBoostClassifier import GBoostClassifier
 from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
 from RuleTree.ensemble.XGBoostRegressor import XGBoostRegressor
+from RuleTree.ensemble._boosting import validation_split
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
 from RuleTree.tree.RuleTreeXGBoostRegressor import RuleTreeXGBoostRegressor
 
@@ -19,13 +20,6 @@ def test_gboost_regressor(diabetes):
     model = GBoostRegressor(base_estimator=RuleTreeRegressor(max_depth=2), n_estimators=10).fit(X, y)
 
     assert r2_score(y, model.predict(X)) > 0.4
-
-
-def test_ebm_regressor(diabetes):
-    X, y = diabetes
-    model = EBMRegressor(base_estimator=RuleTreeRegressor(max_depth=2), n_iterations=2, random_state=0).fit(X, y)
-
-    assert model.predict(X).shape == y.shape
 
 
 def test_xgboost_regressor_default_base_estimator():
@@ -39,23 +33,6 @@ def test_xgboost_regressor_default_base_estimator():
     assert isinstance(base_estimator.base_stumps, XGBoostStumpRegressor)
 
 
-@pytest.mark.slow
-def test_gboost_classifier(iris):
-    X, y = iris
-    y = (y == 1).astype(int)
-
-    model = GBoostClassifier(base_estimator=RuleTreeRegressor(max_depth=2), n_estimators=5).fit(X, y)
-
-    assert set(model.predict(X)) <= {0, 1}
-
-
-def test_xgboost_regressor(diabetes):
-    X, y = diabetes
-    model = XGBoostRegressor(n_estimators=3).fit(X, y)
-
-    assert model.predict(X).shape == y.shape
-
-
 def test_xgboost_tree_update_statistics(diabetes):
     X, y = diabetes
     model = RuleTreeXGBoostRegressor(max_depth=2, base_stumps=XGBoostStumpRegressor(lam=1)).fit(X, y)
@@ -66,35 +43,27 @@ def test_xgboost_tree_update_statistics(diabetes):
     assert np.allclose(model.predict(X), predictions)  # XGBoost output values, as in fit
 
 
-def validation_split(n_samples, val_size, random_state):
-    """Indices of the training and validation sets of GBoostRegressor and EBMRegressor."""
-    np.random.seed(random_state)
-    idx = np.random.permutation(n_samples)
-    n_val = int(val_size * n_samples)
-    return idx[n_val:], idx[:n_val]
-
-
 @pytest.mark.parametrize("patience", [1, 3])
 def test_early_stopping_keeps_only_the_estimators_that_improve(diabetes, patience):
     """After early stopping, the last estimator kept decreased the validation error."""
     X, y = diabetes
-    train_idx, val_idx = validation_split(len(y), val_size=.15, random_state=0)
+    _, X_val, _, y_val = validation_split(X, y, val_size=.15, random_state=0)  # as GBoostRegressor and EBMRegressor
 
     gboost = GBoostRegressor(base_estimator=RuleTreeRegressor(max_depth=2, random_state=0), n_estimators=200,
                              learning_rate=.5, patience=patience, random_state=0).fit(X, y)
-    steps = [gboost.learning_rate * est.predict(X[val_idx]) for est in gboost.estimators_]
-    predictions = gboost.base_prediction_ + np.cumsum([np.zeros(len(val_idx))] + steps, axis=0)
-    errors = np.abs(y[val_idx] - predictions).sum(axis=1)
+    steps = [gboost.learning_rate * est.predict(X_val) for est in gboost.estimators_]
+    predictions = gboost.base_prediction_ + np.cumsum([np.zeros(len(y_val))] + steps, axis=0)
+    errors = np.abs(y_val - predictions).sum(axis=1)
     assert 0 < len(gboost.estimators_) < 200
     assert errors[-1] <= errors[-2]
 
     ebm = EBMRegressor(base_estimator=RuleTreeRegressor(max_depth=1, random_state=0), n_iterations=200,
                        learning_rate=.5, patience=patience, random_state=0).fit(X, y)
     n_iterations = len(ebm.estimators_[0])
-    steps = [sum(ebm.learning_rate * estimators[i].predict(X[val_idx][:, feature_idx].reshape(len(val_idx), -1))
+    steps = [sum(ebm.learning_rate * estimators[i].predict(X_val[:, feature_idx].reshape(len(y_val), -1))
                  for feature_idx, estimators in ebm.estimators_.items())
              for i in range(n_iterations)]
-    errors = np.abs(y[val_idx] - np.cumsum([np.zeros(len(val_idx))] + steps, axis=0)).sum(axis=1)
+    errors = np.abs(y_val - np.cumsum([np.zeros(len(y_val))] + steps, axis=0)).sum(axis=1)
     assert 0 < n_iterations < 200
     assert errors[-1] <= errors[-2]
 

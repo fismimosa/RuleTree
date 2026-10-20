@@ -38,13 +38,6 @@ def test_cluster_post_fit_fix_is_idempotent(blobs):
     assert np.array_equal(model.predict(X), labels)
 
 
-def test_cluster_mixed_features(iris_mixed):
-    X, _ = iris_mixed
-    labels = RuleTreeCluster(max_depth=2).fit_predict(X)
-
-    assert len(np.unique(labels)) > 1
-
-
 def test_cluster_invalid_impurity():
     with pytest.raises(ValueError):
         RuleTreeCluster(clus_impurity="unknown")

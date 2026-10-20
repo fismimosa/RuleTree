@@ -19,7 +19,15 @@ from tests.reference.cases import ALL_CASES, fit_case
 
 # the slowest cases, skipped by pytest -m "not slow"
 SLOW_CASES = {"ens_gboost_classifier", "reg_fair"}
-CASES = [pytest.param(name, marks=pytest.mark.slow) if name in SLOW_CASES else name for name in ALL_CASES]
+
+
+def params(names):
+    return [pytest.param(name, marks=pytest.mark.slow) if name in SLOW_CASES else name for name in names]
+
+
+CASES = params(ALL_CASES)
+# the ensembles are not RuleTrees: they are not saved with to_dict
+SAVED_CASES = params(name for name in ALL_CASES if not name.startswith("ens_"))
 
 REFERENCE_DIR = Path(__file__).parent / "reference"
 with open(REFERENCE_DIR / "predictions.json") as f:
@@ -101,11 +109,9 @@ def test_same_outputs(name):
             assert_same(outputs[key], expected[key])
 
 
-@pytest.mark.parametrize("name", CASES)
+@pytest.mark.parametrize("name", SAVED_CASES)
 def test_same_outputs_after_saving(name):
     model, inputs, _ = fit_case(name)
-    if not isinstance(model, RuleTree):
-        pytest.skip("not a RuleTree")
     expected = REFERENCE[name]
 
     loaded = RuleTree.from_dict(json.loads(json.dumps(model.to_dict(), cls=json_numpy_encoder)))
