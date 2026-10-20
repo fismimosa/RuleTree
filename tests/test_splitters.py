@@ -61,12 +61,23 @@ def test_no_split(splitter):
         splitter.fit(X[:, :2].astype(float), np.ones(len(X)), [0, 1], [])
 
 
-def test_binary_feature_threshold_halfway():
-    X_binary = np.array([[0.0], [0.0], [1.0], [1.0]])
+@pytest.mark.parametrize("splitter, y", [(ClassificationSplitter(), np.array([0, 0, 1, 1])),
+                                         (RegressionSplitter(), np.array([1.0, 1.1, 5.0, 5.2]))], ids=["clf", "reg"])
+def test_binary_feature_threshold_halfway(splitter, y):
+    """Not the threshold of scikit-learn, computed on the values in float32."""
+    X_binary = np.array([[0.1], [0.1], [0.7], [0.7]])
 
-    splitter = ClassificationSplitter().fit(X_binary, np.array([0, 0, 1, 1]), [0], [])
+    splitter.fit(X_binary, y, [0], [])
 
-    assert splitter.threshold_ == 0.5
+    assert splitter.threshold_ == (0.1 + 0.7) / 2
+
+
+@pytest.mark.parametrize("splitter, y", [(ClassificationSplitter(), y_clf), (RegressionSplitter(), y_reg)],
+                         ids=["clf", "reg"])
+def test_no_degenerate_categorical_split(splitter, y):
+    """A categorical value of all the instances would leave the right child empty."""
+    with pytest.raises(NoSplitFoundWarning):
+        splitter.fit(np.full((len(y), 1), "a", dtype=object), y, [], [0])
 
 
 def test_fair_split():

@@ -12,6 +12,14 @@ RuleTree.stumps.splitters.ClassificationSplitter module
    :show-inheritance:
    :undoc-members:
 
+RuleTree.stumps.splitters.DecisionTreeSplitter module
+-----------------------------------------------------
+
+.. automodule:: RuleTree.stumps.splitters.DecisionTreeSplitter
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 RuleTree.stumps.splitters.FairSplitter module
 ---------------------------------------------
 
