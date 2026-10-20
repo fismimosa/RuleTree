@@ -301,6 +301,7 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
             tree.root.node_l.make_leaf()
             tree.root.node_r.make_leaf()
             tree.root.node_id, tree.root.node_l.node_id, tree.root.node_r.node_id = 'R', 'Rl', 'Rr'
+            tree.root.set_stump(tree.root.stump)  # node_id_ of the stump: the root of the new tree
 
             trees[(node.stump.feature_original, node.stump.threshold_original)] = tree
 

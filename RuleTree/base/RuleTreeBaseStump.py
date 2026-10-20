@@ -1,6 +1,7 @@
 """Abstract base class of the stumps: the single splits that make up the nodes of a RuleTree."""
 
 import hashlib
+import inspect
 import json
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -32,6 +33,11 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     hyperparameters share a cache, named by :meth:`cache_namespace`. Everything needed by ``apply``
     must be stored in the stump itself.
 
+    The tree also passes ``node_id``, the identifier of the node being split (``"R"``, ``"Rl"``,
+    ...): with ``context.get_node_by_id(node_id)`` the stump reaches the node, and from it its
+    ancestors and their stumps. The node is a leaf while its stump is fitted; its ancestors are
+    already split.
+
     Subclasses that work on a 2D matrix can implement ``_transform`` (data of the stump's data
     type -> matrix) and ``_apply_matrix`` (matrix -> 1/2 labels) and reuse :meth:`apply` and
     :meth:`update_statistics`. The stumps of the library are made of a transformer and a splitter
@@ -45,6 +51,9 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Kind of target, MODEL_TYPE_CLF (classification) or MODEL_TYPE_REG (regression).
     data_type_ : str
         Data type the stump has been fitted on.
+    node_id_ : str or None
+        Identifier of the node of the stump in its tree (set by ``fit`` and by RuleTreeNode.set_stump),
+        None for a stump outside a tree.
 
     See Also
     --------
@@ -54,8 +63,12 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
     supported_data_types = (DATA_TYPE_TABULAR,)
 
+    # identifier of the node of the stump in its tree, None outside a tree
+    node_id_ = None
+
     @abstractmethod
-    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
+    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True,
+            node_id=None):
         """
         Fit the stump on the instances ``idx`` of ``data``.
 
@@ -75,6 +88,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             Sample weights of the whole data set.
         check_input : bool, default=True
             Whether to check the input data.
+        node_id : str, default=None
+            Identifier of the node being split, stored in ``node_id_``. None outside a tree.
 
         Returns
         -------
@@ -454,3 +469,36 @@ def numerical_rule(feature_idx, feature_name: str, threshold, float_precision=3,
     value = str(threshold) if float_precision is None else round(threshold, float_precision)
     return rule_dict(f"{feature_name} <= {value}", f"{feature_name} > {value}", feature_idx=feature_idx,
                      threshold=threshold, is_categorical=False, feature_name=feature_name, **attributes)
+
+
+def tree_arguments(method, context=None, node_id=None) -> dict:
+    """
+    The arguments ``context`` (the tree) and ``node_id`` (the node being split) for a ``fit`` method,
+    if it declares them (or accepts ``**kwargs``): components written without them keep working.
+
+    Parameters
+    ----------
+    method : callable
+        The method that may receive them, e.g. ``transformer.fit``.
+    context : RuleTree, default=None
+        The tree.
+    node_id : str, default=None
+        Identifier of the node.
+
+    Returns
+    -------
+    arguments : dict
+        The keyword arguments to pass.
+
+    Examples
+    --------
+    >>> from RuleTree.base.RuleTreeBaseStump import tree_arguments
+    >>> def fit(X, y, node_id=None):
+    ...     pass
+    >>> tree_arguments(fit, context="tree", node_id="Rl")
+    {'node_id': 'Rl'}
+    """
+    parameters = inspect.signature(method).parameters
+    any_keyword = any(parameter.kind is inspect.Parameter.VAR_KEYWORD for parameter in parameters.values())
+    return {name: value for name, value in (("context", context), ("node_id", node_id))
+            if any_keyword or name in parameters}

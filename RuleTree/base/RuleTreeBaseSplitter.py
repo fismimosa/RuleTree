@@ -66,7 +66,7 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
 
     @abstractmethod
     def fit(self, X: np.ndarray, y: np.ndarray, numerical: list, categorical: list, sample_weight=None,
-            check_input=True):
+            check_input=True, context=None, node_id=None):
         """
         Find the best split of X.
 
@@ -84,6 +84,11 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
             Sample weights of the instances in the node.
         check_input : bool, default=True
             Whether to check the input data.
+        context : RuleTree, default=None
+            Tree being built (None outside a tree). Passed only if ``fit`` declares it.
+        node_id : str, default=None
+            Identifier of the node being split, e.g. ``"Rl"``: ``context.get_node_by_id(node_id)`` is the
+            node (None outside a tree). Passed only if ``fit`` declares it.
 
         Returns
         -------

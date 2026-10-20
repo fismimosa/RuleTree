@@ -10,7 +10,7 @@ import numpy as np
 import sklearn
 from sklearn.base import BaseEstimator
 
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, rule_dict
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, rule_dict, tree_arguments
 
 
 class Stump(RuleTreeBaseStump):
@@ -81,12 +81,14 @@ class Stump(RuleTreeBaseStump):
         """Task of the stump: the one of its splitter (MODEL_TYPE_CLF or MODEL_TYPE_REG)."""
         return self._make_splitter().task
 
-    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True):
+    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True,
+            node_id=None):
         """
         Fit the stump on the instances ``idx`` of ``data``: the transformer on the whole data set of the
         selected type (with the indices of the node and the cache of the tree), the splitter on the
         feature matrix of the node; then the transformer keeps only what is needed by the chosen feature
-        (and the splitter is fitted again if the feature matrix changes).
+        (and the splitter is fitted again if the feature matrix changes). The transformer and the
+        splitter also receive the tree (``context``) and ``node_id`` if their ``fit`` declares them.
 
         Parameters
         ----------
@@ -104,6 +106,8 @@ class Stump(RuleTreeBaseStump):
             Sample weights of the whole data set.
         check_input : bool, default=True
             Whether to check the input data.
+        node_id : str, default=None
+            Identifier of the node being split, stored in ``node_id_``. None outside a tree.
 
         Returns
         -------
@@ -120,15 +124,22 @@ class Stump(RuleTreeBaseStump):
             idx = np.arange(len(X))
         sample_weight_idx = None if sample_weight is None else sample_weight[idx]
 
-        transformer = self._make_transformer().fit(X, y, idx, data_type=self.data_type_,
-                                                   cache=self._get_cache(context), sample_weight=sample_weight)
-        splitter = self._make_splitter().fit(transformer.transform(X[idx]), y[idx], transformer.numerical_,
-                                             transformer.categorical_, sample_weight_idx, check_input)
+        self.node_id_ = node_id
 
+        transformer = self._make_transformer()
+        transformer.fit(X, y, idx, data_type=self.data_type_, cache=self._get_cache(context),
+                        sample_weight=sample_weight, **tree_arguments(transformer.fit, context, node_id))
+
+        def fit_splitter():
+            splitter = self._make_splitter()
+            return splitter.fit(transformer.transform(X[idx]), y[idx], transformer.numerical_,
+                                transformer.categorical_, sample_weight_idx, check_input,
+                                **tree_arguments(splitter.fit, context, node_id))
+
+        splitter = fit_splitter()
         feature = transformer.select(splitter.feature_)
         if transformer.refit_after_select:
-            splitter = self._make_splitter().fit(transformer.transform(X[idx]), y[idx], transformer.numerical_,
-                                                 transformer.categorical_, sample_weight_idx, check_input)
+            splitter = fit_splitter()
         else:
             splitter.feature_ = feature
 

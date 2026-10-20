@@ -61,6 +61,25 @@ class RandomProjectionTransformer(RuleTreeBaseTransformer):
         return self
 
 
+class UnusedFeaturesTransformer(MatrixTransformer):
+    """The features not used by the splits of the ancestors of the node: a transformer that uses the tree."""
+
+    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+        super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight)
+
+        used = set()
+        ancestor = context.get_node_by_id(node_id).parent if context is not None else None
+        while ancestor is not None:
+            used.add(ancestor.stump.feature_original)
+            ancestor = ancestor.parent
+
+        self.numerical_ = [feature for feature in self.numerical_ if feature not in used]
+        self.categorical_ = [feature for feature in self.categorical_ if feature not in used]
+        if not self.numerical_ and not self.categorical_:
+            raise NoSplitFoundWarning("The ancestors use all the features")
+        return self
+
+
 class MisclassificationSplitter(RuleTreeBaseGainSplitter):
     """Split minimizing the number of errors of the majority classes of the two sides."""
 
@@ -185,3 +204,20 @@ def test_cache_namespace_of_composed_stumps(iris):
     assert matrix_stump.cache_namespace() != projection_stump.cache_namespace()
     assert set(model.cache_) == {matrix_stump.cache_namespace(), projection_stump.cache_namespace()}
     assert ("feature_types", DATA_TYPE_TABULAR) in model.get_cache(matrix_stump.cache_namespace())
+
+
+def test_transformer_using_the_tree(iris):
+    """Each path from the root tests each feature at most once, also in the loaded tree."""
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=6, random_state=0,
+                               base_stumps=Stump(UnusedFeaturesTransformer(), ClassificationSplitter())).fit(X, y)
+
+    for leaf in model.get_leaf_nodes().values():
+        features, node = [], leaf.parent
+        while node is not None:
+            features.append(node.stump.feature_original)
+            node = node.parent
+        assert len(features) == len(set(features)) <= X.shape[1]
+    assert max(leaf.get_depth() for leaf in model.get_leaf_nodes().values()) <= X.shape[1]
+    assert np.array_equal(json_round_trip(model).predict(X), model.predict(X))
+    assert UnusedFeaturesTransformer().fit(X, y).numerical_ == [0, 1, 2, 3]  # outside a tree: all the features

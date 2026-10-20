@@ -79,7 +79,7 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
     refit_after_select = False
 
     def fit(self, X: np.ndarray, y: np.ndarray, idx: np.ndarray = None, data_type: str = None, cache: dict = None,
-            sample_weight=None):
+            sample_weight=None, context=None, node_id=None):
         """
         Fit the transformer and set ``numerical_`` and ``categorical_``.
 
@@ -100,6 +100,11 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
             Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
+        context : RuleTree, default=None
+            Tree being built (None outside a tree). Passed only if ``fit`` declares it.
+        node_id : str, default=None
+            Identifier of the node being split, e.g. ``"Rl"``: ``context.get_node_by_id(node_id)`` is the
+            node (None outside a tree). Passed only if ``fit`` declares it.
 
         Returns
         -------

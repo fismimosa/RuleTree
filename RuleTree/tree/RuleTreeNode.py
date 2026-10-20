@@ -145,7 +145,7 @@ class RuleTreeNode:
 
     def set_stump(self, stump:RuleTreeBaseStump):
         """
-        Set the split of the node.
+        Set the split of the node, and the identifier of the node in the stump (``node_id_``).
 
         Parameters
         ----------
@@ -153,6 +153,7 @@ class RuleTreeNode:
             The fitted stump.
         """
         self.stump = stump
+        stump.node_id_ = self.node_id
 
     def get_possible_outputs(self) -> tuple[set, set]:
         """
@@ -319,7 +320,7 @@ class RuleTreeNode:
                             classes=info_dict['prediction_classes_'],
                             **{name: info_dict[name] for name in SAVED_STATISTICS if name in info_dict})
         if not info_dict['is_leaf']:
-            node.stump = stump_class(info_dict).dict_to_node(info_dict)
+            node.set_stump(stump_class(info_dict).dict_to_node(info_dict))
 
         return node
 

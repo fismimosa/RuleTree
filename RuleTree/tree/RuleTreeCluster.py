@@ -12,7 +12,7 @@ from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 
 from RuleTree.utils.define import MODEL_TYPE_REG
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, tree_arguments
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
@@ -212,7 +212,8 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         """
         heapq.heappush(self.queue, (-len(idx), next(self.tiebreaker), idx, node))
 
-    def make_split(self, data: dict, y, idx: np.ndarray, sample_weight=None) -> RuleTreeBaseStump:
+    def make_split(self, data: dict, y, idx: np.ndarray, sample_weight=None,
+                   node_id: Optional[str] = None) -> RuleTreeBaseStump:
         """
         Split a node on its principal components: the instances are projected with PCA, MCA or FAMD
         (numerical, categorical or mixed data); with ``component_split='best'``, a stump is fitted to
@@ -229,6 +230,8 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
             Indices of the instances in the node.
         sample_weight : None
             Not used, present for API consistency.
+        node_id : str, default=None
+            Identifier of the node, passed to the stumps.
 
         Returns
         -------
@@ -260,8 +263,8 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
 
         if self.component_split == 'joint':  # one stump for all the components, as targets
             clf, data_type = self._get_random_split()
-            clf.fit(data, y_pca_all if n_components_split > 1 else y_pca_all[:, 0], idx=idx, context=self,
-                    data_type=data_type)
+            clf.fit(data, y_pca_all if n_components_split > 1 else y_pca_all[:, 0], idx=idx, data_type=data_type,
+                    **tree_arguments(clf.fit, self, node_id))
             return clf
 
         best_clf = None
@@ -270,7 +273,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
             clf, data_type = self._get_random_split()
 
             try:
-                clf.fit(data, y_pca_all[:, i], idx=idx, context=self, data_type=data_type)
+                clf.fit(data, y_pca_all[:, i], idx=idx, data_type=data_type, **tree_arguments(clf.fit, self, node_id))
             except NoSplitFoundWarning:
                 continue
 

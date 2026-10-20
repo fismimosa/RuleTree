@@ -188,6 +188,9 @@ parameters, as in ``base_stumps``, the dictionary of a fitted stump has:
   ``threshold``, ``feature_idx``, ...). The rule is saved to be read without loading the tree:
   ``from_dict`` does not use it.
 
+The stump has no identifier of its own in the dictionary: when the tree is loaded, it gets the
+``node_id`` of its node back in ``node_id_`` (see :doc:`extending`).
+
 .. code-block:: python
 
    root = dictionary["nodes"][0]

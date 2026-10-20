@@ -384,6 +384,79 @@ derive directly from :class:`~RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump`
 its methods: see the documentation of that class.
 
 
+Using the tree and the node
+---------------------------
+
+A component can also look at the tree it is part of. Inside a tree, the ``fit`` of a transformer
+and of a splitter receives two more arguments, if it declares them: ``context``, the tree being
+built, and ``node_id``, the identifier of the node being split (``"R"`` for the root, then ``"l"``
+or ``"r"`` for each step to the left or to the right, e.g. ``"Rlr"``). Outside a tree both are
+None. ``context.get_node_by_id(node_id)`` is the node: it is still a leaf, while its ancestors
+(``node.parent``, ``node.parent.parent``, ...) are already split and have their fitted stump. This
+transformer leaves out the features used by the ancestors, so that each path from the root tests
+each feature at most once:
+
+.. code-block:: python
+
+   class UnusedFeaturesTransformer(MatrixTransformer):
+       """The features not used by the splits of the ancestors of the node."""
+
+       def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+           super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight)
+
+           used = set()
+           ancestor = context.get_node_by_id(node_id).parent if context is not None else None
+           while ancestor is not None:
+               used.add(ancestor.stump.feature_original)
+               ancestor = ancestor.parent
+
+           self.numerical_ = [feature for feature in self.numerical_ if feature not in used]
+           self.categorical_ = [feature for feature in self.categorical_ if feature not in used]
+           if not self.numerical_ and not self.categorical_:
+               raise NoSplitFoundWarning("The ancestors use all the features")
+           return self
+
+.. code-block:: python
+
+   model = RuleTreeClassifier(max_depth=3, random_state=0,
+                              base_stumps=Stump(UnusedFeaturesTransformer(), ClassificationSplitter()))
+   model.fit(iris.data, iris.target)
+
+   model.print_rules(model.get_rules(columns_names=iris.feature_names))
+   print([node.stump.node_id_ for node in model.get_predicates().values()])
+
+.. code-block:: text
+   :caption: Output
+
+   |--- petal width (cm) <= 0.8
+   |    output: 0
+   |--- petal width (cm) > 0.8
+   |   |--- petal length (cm) <= 4.75
+   |   |   |--- sepal length (cm) <= 4.95
+   |   |   |    output: 1
+   |   |   |--- sepal length (cm) > 4.95
+   |   |   |    output: 1
+   |   |--- petal length (cm) > 4.75
+   |   |   |--- sepal length (cm) <= 7.0
+   |   |   |    output: 2
+   |   |   |--- sepal length (cm) > 7.0
+   |   |   |    output: 2
+   ['R', 'Rr', 'Rrl', 'Rrr']
+
+A decision tree with the same parameters splits ``Rr`` again on petal width.
+
+- Components whose ``fit`` does not declare ``context`` and ``node_id`` (or ``**kwargs``) do not
+  receive them, so the components written before keep working.
+- The stump itself receives ``node_id`` in its ``fit``, together with ``context``, and keeps it in
+  ``node_id_``: the identifier of its node, also after ``from_dict`` (it is the ``node_id`` of the
+  saved node). ``node_id_[:-1]`` is the identifier of the parent, and ``len(node_id_) - 1`` the
+  depth of the node.
+- The tree is available only during ``fit``: a component must not keep it, since the stump is
+  saved with the tree. What it needs later, e.g. the features left out, goes in its state.
+- The ancestors may use other stumps: a component that reads their split checks their class
+  before using attributes such as ``feature_original``.
+
+
 Saving trees with new stumps
 ----------------------------
 

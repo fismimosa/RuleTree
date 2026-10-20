@@ -25,7 +25,7 @@ from sklearn.utils import check_random_state
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.tree.RuleTreeNode import RuleTreeNode, stump_class
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, tree_arguments
 from RuleTree.utils.data_utils import json_numpy_encoder
 
 
@@ -447,7 +447,8 @@ class RuleTree(RuleTreeBase, ABC):
                 continue
 
             try:
-                clf = self.make_split(data, y_split, idx, sample_weight=sample_weight)
+                clf = self.make_split(data, y_split, idx, sample_weight=sample_weight,
+                                      node_id=current_node.node_id)
                 labels = clf.apply(data, idx)
             except NoSplitFoundWarning:
                 self.make_leaf(node=current_node)
@@ -538,7 +539,8 @@ class RuleTree(RuleTreeBase, ABC):
         node.balance_score_global = counts.min() / counts.sum()
         node.balance_score = node.balance_score_global
 
-    def make_split(self, data: dict, y: np.ndarray|None, idx: np.ndarray, sample_weight=None) -> RuleTreeBaseStump:
+    def make_split(self, data: dict, y: np.ndarray|None, idx: np.ndarray, sample_weight=None,
+                   node_id: Optional[str] = None) -> RuleTreeBaseStump:
         """
         Fit the split of a node, choosing among ``candidate_splits_`` according to ``stump_selection``:
         a random pair (stump, data type), or the pair with the highest gain (``gain_``).
@@ -553,6 +555,8 @@ class RuleTree(RuleTreeBase, ABC):
             Indices of the instances in the node.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the whole data set.
+        node_id : str, default=None
+            Identifier of the node, passed to the stumps.
 
         Returns
         -------
@@ -566,7 +570,8 @@ class RuleTree(RuleTreeBase, ABC):
         """
         if self.stump_selection == 'random':
             stump, data_type = self._get_random_split()
-            stump.fit(data, y, idx=idx, context=self, data_type=data_type, sample_weight=sample_weight)
+            stump.fit(data, y, idx=idx, data_type=data_type, sample_weight=sample_weight,
+                      **tree_arguments(stump.fit, self, node_id))
 
             return stump
 
@@ -576,7 +581,8 @@ class RuleTree(RuleTreeBase, ABC):
             for _, stump, data_type in self.candidate_splits_:
                 try:
                     stump = sklearn.clone(stump)
-                    stump.fit(data, y, idx=idx, context=self, data_type=data_type, sample_weight=sample_weight)
+                    stump.fit(data, y, idx=idx, data_type=data_type, sample_weight=sample_weight,
+                              **tree_arguments(stump.fit, self, node_id))
 
                     info_gains.append(stump.gain_)
                     clfs.append(stump)
