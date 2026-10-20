@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 
 from RuleTree import RuleTreeRegressor
 from RuleTree.base.RuleTreeBase import RuleTreeBase
+from RuleTree.ensemble._boosting import EarlyStopping
 
 
 class GBoostClassifier(ClassifierMixin, RuleTreeBase):
@@ -196,7 +197,7 @@ def _train_one_class(args):
 
     estimators = []
 
-    wait = 0
+    stopping = EarlyStopping(patience, strict=True, previous=np.mean(np.abs(y_val_bool - prediction_val)))
     for _ in range(n_estimators):
         est = copy.deepcopy(base_estimator)
         est.fit(X_train, residuals)
@@ -217,13 +218,10 @@ def _train_one_class(args):
         log_odds_prediction_val += res_delta_val
         new_prediction = expit(log_odds_prediction)
         new_prediction_val = expit(log_odds_prediction_val)
-        if np.mean(np.abs(y_val_bool - new_prediction_val)) < np.mean(np.abs(y_val_bool - prediction_val)):
-            wait = 0
-        else:
-            wait += 1
-            if wait >= patience:
-                estimators = estimators[:len(estimators) - patience + 1]  # [:-0] would be empty
-                break
+        if stopping.stop(np.mean(np.abs(y_val_bool - new_prediction_val))):
+            # the current estimator is not added: the last patience - 1 ones did not improve the error
+            estimators = estimators[:len(estimators) - patience + 1]
+            break
         prediction = new_prediction
         prediction_val = new_prediction_val
         residuals = (y_train == classe).astype(float) - prediction

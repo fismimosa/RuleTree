@@ -8,6 +8,7 @@ from sklearn.base import RegressorMixin
 from RuleTree import RuleTreeRegressor
 from RuleTree.tree.RuleTreeRegressor import check_target
 from RuleTree.base.RuleTreeBase import RuleTreeBase
+from RuleTree.ensemble._boosting import EarlyStopping, validation_split
 
 
 class GBoostRegressor(RegressorMixin, RuleTreeBase):
@@ -113,23 +114,15 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
         self : GBoostRegressor
         """
         y = check_target(y)
-        np.random.seed(self.random_state)
-        n_val = int(self.val_size * X.shape[0])
-        idx = np.random.permutation(X.shape[0])
-        val_idx = idx[:n_val]
-        train_idx = idx[n_val:]
-
-        X_train, X_val = X[train_idx], X[val_idx]
-        y_train, y_val = y[train_idx], y[val_idx]
+        X_train, X_val, y_train, y_val = validation_split(X, y, self.val_size, self.random_state)
 
         self.base_prediction_ = self._get_base_prediction(y_train)
         self.estimators_ = []
         residuals = y_train - self.base_prediction_
         residuals_val = y_val - self.base_prediction_
-        prev_residuals_val = np.inf
 
         base_estimator = self._get_base_estimator()
-        wait = 0
+        stopping = EarlyStopping(self.patience)
         for _ in range(self.n_estimators):
             est = copy.deepcopy(base_estimator)
             est.fit(X_train, residuals)
@@ -140,15 +133,10 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
             residuals_val -= res_delta_val
 
             self.estimators_.append(est)
-            if np.sum(np.abs(residuals_val)) <= prev_residuals_val:
-                wait = 0
-            else:
-                wait += 1
-                if wait >= self.patience:
-                    # the last patience estimators did not improve the validation error
-                    self.estimators_ = self.estimators_[:len(self.estimators_) - self.patience]
-                    break
-            prev_residuals_val = np.sum(np.abs(residuals_val))
+            if stopping.stop(np.sum(np.abs(residuals_val))):
+                # the last patience estimators did not improve the validation error
+                self.estimators_ = self.estimators_[:len(self.estimators_) - self.patience]
+                break
 
         return self
 

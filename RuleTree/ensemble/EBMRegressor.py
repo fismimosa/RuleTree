@@ -9,6 +9,7 @@ from sklearn.base import RegressorMixin
 from RuleTree import RuleTreeRegressor
 from RuleTree.tree.RuleTreeRegressor import check_target
 from RuleTree.base.RuleTreeBase import RuleTreeBase
+from RuleTree.ensemble._boosting import EarlyStopping, validation_split
 
 
 class EBMRegressor(RegressorMixin, RuleTreeBase):
@@ -105,24 +106,16 @@ class EBMRegressor(RegressorMixin, RuleTreeBase):
         self : EBMRegressor
         """
         y = check_target(y)
-        np.random.seed(self.random_state)
-        n_val = int(self.val_size * X.shape[0])
-        idx = np.random.permutation(X.shape[0])
-        val_idx = idx[:n_val]
-        train_idx = idx[n_val:]
-
-        X_train, X_val = X[train_idx], X[val_idx]
-        y_train, y_val = y[train_idx], y[val_idx]
+        X_train, X_val, y_train, y_val = validation_split(X, y, self.val_size, self.random_state)
 
         self.base_prediction_ = self._get_base_prediction(y_train)
         residuals = y_train - self.base_prediction_
-        prev_residuals_val = np.inf
         residuals_val = y_val - self.base_prediction_
 
         pairs = list(combinations(range(X.shape[1]), 2))
         self.estimators_ = {idx: [] for idx in list(range(X.shape[1])) + pairs}
 
-        wait = 0
+        stopping = EarlyStopping(self.patience)
         for _ in range(self.n_iterations):
             for feature_idx in self.estimators_.keys():
                 est = copy.deepcopy(self.base_estimator)
@@ -134,17 +127,11 @@ class EBMRegressor(RegressorMixin, RuleTreeBase):
                 residuals_val -= res_delta_val
                 self.estimators_[feature_idx].append(est)
 
-            if np.sum(np.abs(residuals_val)) <= prev_residuals_val:
-                wait = 0
-            else:
-                wait += 1
-                if wait >= self.patience:
-                    for feature_idx in self.estimators_.keys():
-                        estimators = self.estimators_[feature_idx]
-                        # the last patience estimators did not improve the validation error
-                        self.estimators_[feature_idx] = estimators[:len(estimators) - self.patience]
-                    break
-            prev_residuals_val = np.sum(np.abs(residuals_val))
+            if stopping.stop(np.sum(np.abs(residuals_val))):
+                for feature_idx, estimators in self.estimators_.items():
+                    # the last patience estimators did not improve the validation error
+                    self.estimators_[feature_idx] = estimators[:len(estimators) - self.patience]
+                break
 
         return self
 
