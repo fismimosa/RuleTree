@@ -39,7 +39,115 @@ def closer_to_second(distances: np.ndarray, pairs: list) -> np.ndarray:
     return (distances[:, pairs[:, 0]] > distances[:, pairs[:, 1]]).astype(float)
 
 
-class ProximityTransformer(ShapeletTransformer):
+class ProximityComparisons:
+    """
+    Mixin of the proximity transformers (ProximityTransformer and PartialProximityTransformer): the
+    feature matrix has one 0/1 column for each pair of references (shapelets or partial pivots) of the
+    fitted ``st_`` (see :func:`closer_to_second`); after the splitter has chosen a pair, only its two
+    references are kept.
+
+    The subclass sets the pairs in fit with :meth:`_set_pairs` and defines :meth:`_keep_references`.
+    """
+
+    def _set_pairs(self, pairs: list, error: str):
+        """
+        Set the pairs of references compared by the columns of the feature matrix.
+
+        Parameters
+        ----------
+        pairs : list of tuple
+            Pairs of indices of the references.
+        error : str
+            Message of the NoSplitFoundWarning if there is no pair.
+
+        Raises
+        ------
+        NoSplitFoundWarning
+            If there is no pair.
+        """
+        if not pairs:
+            raise NoSplitFoundWarning(error)
+        self.pairs_ = pairs
+        self.numerical_, self.categorical_ = list(range(len(pairs))), []
+
+    def _keep_references(self, indices: list):
+        """
+        Keep only some references in ``st_``.
+
+        Parameters
+        ----------
+        indices : list of int
+            Indices of the references to keep, in order.
+        """
+        raise NotImplementedError
+
+    def transform(self, X):
+        """
+        Proximity comparisons of each instance for each pair of references (for the chosen pair, after
+        select).
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Data of the type of the transformer.
+
+        Returns
+        -------
+        X_transformed : numpy.ndarray of shape (n_samples, n_pairs)
+            1 if the instance is closer to the second reference of the pair, 0 otherwise.
+        """
+        return closer_to_second(self.st_.transform(X), self.pairs_)
+
+    def select(self, feature):
+        """
+        Keep only the two references of the chosen pair.
+
+        Parameters
+        ----------
+        feature : int
+            Column chosen by the splitter.
+
+        Returns
+        -------
+        feature : int
+            Always 0: the comparison of the only pair kept.
+        """
+        self._keep_references(list(self.pairs_[feature]))
+        self.pairs_ = [(0, 1)]
+        self.numerical_, self.categorical_ = [0], []
+        return 0
+
+    def get_state(self):
+        """
+        Fitted state: the references and the pairs.
+
+        Returns
+        -------
+        state : dict
+            JSON-friendly dictionary, restored by set_state.
+        """
+        return super().get_state() | {"pairs": [[int(i), int(j)] for i, j in self.pairs_]}
+
+    def set_state(self, state):
+        """
+        Restore the fitted state saved by get_state.
+
+        Parameters
+        ----------
+        state : dict
+            Dictionary created by get_state.
+
+        Returns
+        -------
+        self : ProximityComparisons
+        """
+        super().set_state(state)
+        self.pairs_ = [tuple(pair) for pair in state["pairs"]]
+        self.numerical_, self.categorical_ = list(range(len(self.pairs_))), []
+        return self
+
+
+class ProximityTransformer(ProximityComparisons, ShapeletTransformer):
     """
     Transformer of time series into proximity comparisons: for each pair of shapelets, whether the
     time series is closer to the second one than to the first.
@@ -133,74 +241,18 @@ class ProximityTransformer(ShapeletTransformer):
         """
         super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight)
 
-        self.pairs_ = list(itertools.combinations(range(len(self.st_.shapelets)), 2))
-        if not self.pairs_:
-            raise NoSplitFoundWarning(f"{self.__class__.__name__} needs at least two shapelets")
-        self.numerical_, self.categorical_ = list(range(len(self.pairs_))), []
+        self._set_pairs(list(itertools.combinations(range(len(self.st_.shapelets)), 2)),
+                        f"{self.__class__.__name__} needs at least two shapelets")
 
         return self
 
-    def transform(self, X):
+    def _keep_references(self, indices):
         """
-        Proximity comparisons of each time series for each pair of shapelets (for the chosen pair, after
-        select).
+        Keep only some shapelets.
 
         Parameters
         ----------
-        X : numpy.ndarray
-            Time series, of shape (n_samples, n_signals, length).
-
-        Returns
-        -------
-        X_transformed : numpy.ndarray of shape (n_samples, n_pairs)
-            1 if the series is closer to the second shapelet of the pair, 0 otherwise.
+        indices : list of int
+            Indices of the shapelets to keep, in order.
         """
-        return closer_to_second(self.st_.transform(X), self.pairs_)
-
-    def select(self, feature):
-        """
-        Keep only the two shapelets of the chosen pair.
-
-        Parameters
-        ----------
-        feature : int
-            Column chosen by the splitter.
-
-        Returns
-        -------
-        feature : int
-            Always 0: the comparison of the only pair kept.
-        """
-        self.st_.shapelets = self.st_.shapelets[list(self.pairs_[feature])]
-        self.pairs_ = [(0, 1)]
-        self.numerical_, self.categorical_ = [0], []
-        return 0
-
-    def get_state(self):
-        """
-        Fitted state: the shapelets and the pairs.
-
-        Returns
-        -------
-        state : dict
-            JSON-friendly dictionary, restored by set_state.
-        """
-        return super().get_state() | {"pairs": [[int(i), int(j)] for i, j in self.pairs_]}
-
-    def set_state(self, state):
-        """
-        Restore the fitted state saved by get_state.
-
-        Parameters
-        ----------
-        state : dict
-            Dictionary created by get_state.
-
-        Returns
-        -------
-        self : ProximityTransformer
-        """
-        super().set_state(state)
-        self.pairs_ = [tuple(pair) for pair in state["pairs"]]
-        self.numerical_, self.categorical_ = list(range(len(self.pairs_))), []
-        return self
+        self.st_.shapelets = self.st_.shapelets[indices]

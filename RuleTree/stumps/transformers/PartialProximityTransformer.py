@@ -4,12 +4,11 @@ import itertools
 
 import numpy as np
 
-from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.transformers.PartialPivotTransformer import PartialPivotTransformer
-from RuleTree.stumps.transformers.ProximityTransformer import closer_to_second
+from RuleTree.stumps.transformers.ProximityTransformer import ProximityComparisons
 
 
-class PartialProximityTransformer(PartialPivotTransformer):
+class PartialProximityTransformer(ProximityComparisons, PartialPivotTransformer):
     """
     Transformer of tabular data into proximity comparisons: for each pair of partial pivots (instances
     of the node restricted to a few features), whether the instance is closer to the second one than
@@ -116,74 +115,19 @@ class PartialProximityTransformer(PartialPivotTransformer):
         super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight)
 
         used = ~np.isnan(np.asarray(self.st_.shapelets, dtype=float))  # features used by each pivot
-        self.pairs_ = [(i, j) for i, j in itertools.combinations(range(len(used)), 2)
-                       if not self.proximity_on_same_features or np.array_equal(used[i], used[j])]
-        if not self.pairs_:
-            raise NoSplitFoundWarning(f"{self.__class__.__name__}: no pair of partial pivots to compare")
-        self.numerical_, self.categorical_ = list(range(len(self.pairs_))), []
+        self._set_pairs([(i, j) for i, j in itertools.combinations(range(len(used)), 2)
+                         if not self.proximity_on_same_features or np.array_equal(used[i], used[j])],
+                        f"{self.__class__.__name__}: no pair of partial pivots to compare")
 
         return self
 
-    def transform(self, X):
+    def _keep_references(self, indices):
         """
-        Proximity comparisons of each instance for each pair of pivots (for the chosen pair, after select).
+        Keep only some partial pivots.
 
         Parameters
         ----------
-        X : numpy.ndarray
-            Tabular data.
-
-        Returns
-        -------
-        X_transformed : numpy.ndarray of shape (n_samples, n_pairs)
-            1 if the instance is closer to the second pivot of the pair, 0 otherwise.
+        indices : list of int
+            Indices of the partial pivots to keep, in order.
         """
-        return closer_to_second(self.st_.transform(X), self.pairs_)
-
-    def select(self, feature):
-        """
-        Keep only the two pivots of the chosen pair.
-
-        Parameters
-        ----------
-        feature : int
-            Column chosen by the splitter.
-
-        Returns
-        -------
-        feature : int
-            Always 0: the comparison of the only pair kept.
-        """
-        self.st_._optimize_memory(np.array(self.pairs_[feature]))
-        self.pairs_ = [(0, 1)]
-        self.numerical_, self.categorical_ = [0], []
-        return 0
-
-    def get_state(self):
-        """
-        Fitted state: the partial pivots and the pairs.
-
-        Returns
-        -------
-        state : dict
-            JSON-friendly dictionary, restored by set_state.
-        """
-        return super().get_state() | {"pairs": [[int(i), int(j)] for i, j in self.pairs_]}
-
-    def set_state(self, state):
-        """
-        Restore the fitted state saved by get_state.
-
-        Parameters
-        ----------
-        state : dict
-            Dictionary created by get_state.
-
-        Returns
-        -------
-        self : PartialProximityTransformer
-        """
-        super().set_state(state)
-        self.pairs_ = [tuple(pair) for pair in state["pairs"]]
-        self.numerical_, self.categorical_ = list(range(len(self.pairs_))), []
-        return self
+        self.st_._optimize_memory(np.array(indices))
