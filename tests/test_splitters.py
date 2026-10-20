@@ -149,3 +149,53 @@ def test_mean_squared_error_as_scikit_learn():
             y = rng.normal(scale=scale, size=shape)
             prediction = np.broadcast_to(y.mean(axis=0), y.shape)
             assert _mean_squared_error(y, prediction) == mean_squared_error(y, prediction)
+
+
+def exhaustive_xgboost_split(splitter, X, y, numerical, categorical):
+    """The search of XGBoostSplitter before its vectorization: every threshold of every feature, in order."""
+    from RuleTree.utils.tree_utils import xgboost_similarity_score_regression as similarity
+
+    root = similarity(y, len(y), splitter.lam)
+    best = (-np.inf, -1, -1)
+    for feature in range(X.shape[1]):
+        for threshold in splitter.get_threshold_values(X, feature, categorical):
+            left = X[:, feature] <= threshold if feature in numerical else X[:, feature] == threshold
+            if min(left.sum(), (~left).sum()) < splitter.min_cover:
+                continue
+            gain = similarity(y[left], left.sum(), splitter.lam) + similarity(y[~left], (~left).sum(), splitter.lam) - root
+            if gain > best[0]:
+                best = (gain, feature, threshold)
+    return best[1], best[2]
+
+
+@pytest.mark.parametrize("case", ["continuous", "ties", "categorical", "min_cover", "quantile", "lam=0", "large",
+                                  "small residuals", "few instances"])
+def test_xgboost_splitter_as_the_exhaustive_search(case):
+    """The vectorized search finds the same split as the exhaustive one, also with ties and rounding."""
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(400, 6))
+    y = X[:, 2] * 3 + rng.normal(size=400)
+    numerical, categorical, kwargs = list(range(6)), [], {"lam": 1}
+    if case == "ties":
+        X = np.round(X)
+    elif case == "categorical":
+        X = np.column_stack([X[:, :3], rng.integers(0, 4, size=(400, 2))]).astype(float)
+        numerical, categorical = [0, 1, 2], [3, 4]
+        y = y + 3 * (X[:, 3] == 2)
+    elif case == "min_cover":
+        kwargs["min_cover"] = 50
+    elif case == "quantile":
+        kwargs["approximation"] = "quantile"
+    elif case == "lam=0":
+        kwargs["lam"] = 0
+    elif case == "large":
+        y = y * 1e9 + 1e12
+    elif case == "small residuals":
+        y = y * 1e-9
+    elif case == "few instances":
+        X, y = X[:7], y[:7]
+
+    for target in (y - y.mean(), y):
+        splitter = XGBoostSplitter(**kwargs).fit(X, target, numerical, categorical)
+        assert (splitter.feature_, splitter.threshold_) == exhaustive_xgboost_split(splitter, X, target, numerical,
+                                                                                  categorical)

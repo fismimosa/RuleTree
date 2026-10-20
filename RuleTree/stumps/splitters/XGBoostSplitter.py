@@ -148,37 +148,39 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         """
         check_one_target(y, self.__class__.__name__)
         cover_fn, sim_fn = self._get_cover_similarity_fun()
+        root_similarity = sim_fn(y, cover_fn(y), self.lam)
 
-        root_cover = cover_fn(y)
-        root_similarity = sim_fn(y, root_cover, self.lam)
-        best_gain, best_feature_idx, best_threshold, best_categorical = -np.inf, -1, -1, False
-
+        # The result is the one of the exhaustive search: the first candidate, in the order of the features
+        # and of their thresholds, with the highest gain. The gains of all the thresholds of a numerical
+        # feature are first computed at once (sorting and cumulative sums), then the exact gain of the
+        # candidates close to the best one is computed as the exhaustive search does, so that the rounding
+        # of the cumulative sums cannot change the result.
+        candidates, approximate_gains = [], []  # (feature, threshold), in the order of the exhaustive search
         for feature_idx in range(X.shape[1]):
-            for threshold in self.get_threshold_values(X, feature_idx, categorical):
-                if feature_idx in numerical:
-                    cond_l = X[:, feature_idx] <= threshold
-                    cond_r = ~cond_l
-                else:
-                    cond_l = X[:, feature_idx] == threshold
-                    cond_r = ~cond_l
+            thresholds = self.get_threshold_values(X, feature_idx, categorical)
+            if feature_idx in numerical and (cover_fn, sim_fn) == (xgboost_cover_regression,
+                                                                   xgboost_similarity_score_regression):
+                gains = self._approximate_gains(X[:, feature_idx], y, thresholds, root_similarity)
+            else:
+                gains = [self._gain(X, y, feature_idx, threshold, numerical, root_similarity)
+                         for threshold in thresholds]
+            candidates += [(feature_idx, threshold) for threshold in thresholds]
+            approximate_gains = np.concatenate([approximate_gains, gains])
 
-                cover_l = cover_fn(y[cond_l])
-                cover_r = cover_fn(y[cond_r])
-                if cover_l < self.min_cover or cover_r < self.min_cover:
-                    continue
-                similarity_l = xgboost_similarity_score_regression(y[cond_l], cover_l, self.lam)
-                similarity_r = xgboost_similarity_score_regression(y[cond_r], cover_r, self.lam)
-
-                gain = similarity_l + similarity_r - root_similarity
-
-                if gain > best_gain:
-                    best_gain = gain
-                    best_feature_idx = feature_idx
-                    best_threshold = threshold
-                    best_categorical = feature_idx in categorical
-
-        if best_feature_idx == -1:
+        finite = np.isfinite(approximate_gains)
+        if not finite.any():
             raise NoSplitFoundWarning('No split found')
+        best_approximate = approximate_gains[finite].max()
+        scale = 1 + abs(root_similarity) + np.abs(approximate_gains[finite] + root_similarity).max()
+        close = finite & (approximate_gains >= best_approximate - 1e-9 * scale)
+
+        best_gain, best_feature_idx, best_threshold = -np.inf, -1, -1
+        for k in np.flatnonzero(close):
+            feature_idx, threshold = candidates[k]
+            gain = self._gain(X, y, feature_idx, threshold, numerical, root_similarity)
+            if gain > best_gain:
+                best_gain, best_feature_idx, best_threshold = gain, feature_idx, threshold
+        best_categorical = best_feature_idx in categorical
 
         self.feature_ = best_feature_idx
         self.threshold_ = best_threshold
@@ -187,6 +189,70 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         self.update_statistics(X, y, sample_weight=sample_weight)
 
         return self
+
+    def _gain(self, X, y, feature_idx, threshold, numerical, root_similarity):
+        """
+        Gain of a candidate split, as the exhaustive search computes it.
+
+        Parameters
+        ----------
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Feature matrix of the instances in the node.
+        y : numpy.ndarray of shape (n_samples,)
+            Residuals of the instances in the node.
+        feature_idx : int
+            Column of the split.
+        threshold : float or object
+            Threshold (numerical feature, ``x <= threshold`` goes left) or value (``x == value``).
+        numerical : list of int
+            Indices of the numerical columns of X.
+        root_similarity : float
+            Similarity score of the node.
+
+        Returns
+        -------
+        gain : float
+            -inf if a child has a cover smaller than min_cover.
+        """
+        cover_fn, sim_fn = self._get_cover_similarity_fun()
+        cond_l = X[:, feature_idx] <= threshold if feature_idx in numerical else X[:, feature_idx] == threshold
+        cover_l, cover_r = cover_fn(y[cond_l]), cover_fn(y[~cond_l])
+        if cover_l < self.min_cover or cover_r < self.min_cover:
+            return -np.inf
+        return sim_fn(y[cond_l], cover_l, self.lam) + sim_fn(y[~cond_l], cover_r, self.lam) - root_similarity
+
+    def _approximate_gains(self, x, y, thresholds, root_similarity) -> np.ndarray:
+        """
+        Gains of all the thresholds of a numerical feature at once, from the cumulative sums of the
+        residuals sorted by the feature (regression similarity: sum ** 2 / (cover + lam)). They can differ
+        from the exact gains by the rounding of the sums.
+
+        Parameters
+        ----------
+        x : numpy.ndarray of shape (n_samples,)
+            Values of the feature.
+        y : numpy.ndarray of shape (n_samples,)
+            Residuals.
+        thresholds : numpy.ndarray
+            Thresholds (``x <= threshold`` goes left).
+        root_similarity : float
+            Similarity score of the node.
+
+        Returns
+        -------
+        gains : numpy.ndarray
+            -inf for the thresholds with a child smaller than min_cover.
+        """
+        x = np.asarray(x, dtype=float)
+        order = np.argsort(x, kind="stable")
+        n_left = np.searchsorted(x[order], np.asarray(thresholds, dtype=float), side="right")
+        n_right = len(y) - n_left
+        cumulative = np.concatenate([[0.0], np.cumsum(y[order])])
+        sum_left = cumulative[n_left]
+        gains = sum_left ** 2 / (n_left + self.lam) + (cumulative[-1] - sum_left) ** 2 / (n_right + self.lam) \
+            - root_similarity
+        gains[(n_left < self.min_cover) | (n_right < self.min_cover)] = -np.inf
+        return gains
 
     def update_statistics(self, X, y, sample_weight=None):
         """
