@@ -110,7 +110,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
                                 use_combination=self.use_combination,
                                 n_jobs=self.n_jobs)
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
+    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
         """
         Select the partial pivots among the instances in the node.
 
@@ -128,6 +128,10 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
             Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
+        context : RuleTree, default=None
+            Tree being built, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
         -------

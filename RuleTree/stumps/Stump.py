@@ -10,7 +10,7 @@ import numpy as np
 import sklearn
 from sklearn.base import BaseEstimator
 
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, rule_dict, tree_arguments
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, rule_dict
 
 
 class Stump(RuleTreeBaseStump):
@@ -88,7 +88,7 @@ class Stump(RuleTreeBaseStump):
         selected type (with the indices of the node and the cache of the tree), the splitter on the
         feature matrix of the node; then the transformer keeps only what is needed by the chosen feature
         (and the splitter is fitted again if the feature matrix changes). The transformer and the
-        splitter also receive the tree (``context``) and ``node_id`` if their ``fit`` declares them.
+        splitter also receive the tree (``context``) and ``node_id``.
 
         Parameters
         ----------
@@ -128,13 +128,13 @@ class Stump(RuleTreeBaseStump):
 
         transformer = self._make_transformer()
         transformer.fit(X, y, idx, data_type=self.data_type_, cache=self._get_cache(context),
-                        sample_weight=sample_weight, **tree_arguments(transformer.fit, context, node_id))
+                        sample_weight=sample_weight, context=context, node_id=node_id)
 
         def fit_splitter():
             splitter = self._make_splitter()
             return splitter.fit(transformer.transform(X[idx]), y[idx], transformer.numerical_,
                                 transformer.categorical_, sample_weight_idx, check_input,
-                                **tree_arguments(splitter.fit, context, node_id))
+                                context=context, node_id=node_id)
 
         splitter = fit_splitter()
         feature = transformer.select(splitter.feature_)
@@ -178,7 +178,7 @@ class Stump(RuleTreeBaseStump):
         """
         return self.splitter_.apply(X)
 
-    def _update_statistics_matrix(self, X, y, sample_weight=None):
+    def _update_statistics_matrix(self, X, y, sample_weight=None, context=None, node_id=None):
         """
         Recompute the statistics of the splitter on a feature matrix.
 
@@ -190,8 +190,12 @@ class Stump(RuleTreeBaseStump):
             Target of the instances in the node.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the instances in the node.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
-        self.splitter_.update_statistics(X, y, sample_weight)
+        self.splitter_.update_statistics(X, y, sample_weight, context=context, node_id=node_id)
 
     def _is_fitted(self):
         """

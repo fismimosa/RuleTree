@@ -1,7 +1,6 @@
 """Abstract base class of the stumps: the single splits that make up the nodes of a RuleTree."""
 
 import hashlib
-import inspect
 import json
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -81,7 +80,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         idx : numpy.ndarray, default=None
             Indices of the instances reaching the node. If None, all the instances.
         context : RuleTree, default=None
-            Tree being built, used to share cached values among the splits.
+            Tree being built, None outside a tree: it holds the cache shared among the splits, and it is
+            passed to the transformer and the splitter.
         data_type : str, default=None
             Data type to use. If None, the first supported data type available in ``data``.
         sample_weight : numpy.ndarray, default=None
@@ -227,7 +227,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
         return self._apply_matrix(self._transform(X))
 
-    def update_statistics(self, data, y, idx=None, context=None, sample_weight=None, check_input=True):
+    def update_statistics(self, data, y, idx=None, context=None, sample_weight=None, check_input=True,
+                          node_id=None):
         """
         Recompute the statistics of the split (e.g. impurity) on the instances ``idx`` of ``data``,
         without changing the split.
@@ -241,17 +242,20 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         idx : numpy.ndarray, default=None
             Indices of the instances reaching the node. If None, all the instances.
         context : RuleTree, default=None
-            Not used, kept for symmetry with :meth:`fit`.
+            The tree, None outside a tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the whole data set.
         check_input : bool, default=True
             Not used, kept for symmetry with :meth:`fit`.
+        node_id : str, default=None
+            Identifier of the node, None outside a tree.
         """
         if idx is None:
             idx = slice(None)
         X = self._transform(self._get_data(data)[idx])
 
-        self._update_statistics_matrix(X, y[idx], None if sample_weight is None else sample_weight[idx])
+        self._update_statistics_matrix(X, y[idx], None if sample_weight is None else sample_weight[idx],
+                                       context=context, node_id=node_id)
 
     def _transform(self, X: np.ndarray) -> np.ndarray:
         """
@@ -285,7 +289,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         raise NotImplementedError(f"{self.__class__.__name__} must implement apply or _apply_matrix.")
 
-    def _update_statistics_matrix(self, X: np.ndarray, y: np.ndarray, sample_weight=None):
+    def _update_statistics_matrix(self, X: np.ndarray, y: np.ndarray, sample_weight=None, context=None,
+                                  node_id=None):
         """
         Recompute the split statistics on the matrix returned by :meth:`_transform`.
 
@@ -297,6 +302,10 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             Target of the instances in the node.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the instances in the node.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
 
     def _resolve_fit_data(self, data, data_type=None) -> tuple[np.ndarray, str]:
@@ -469,36 +478,3 @@ def numerical_rule(feature_idx, feature_name: str, threshold, float_precision=3,
     value = str(threshold) if float_precision is None else round(threshold, float_precision)
     return rule_dict(f"{feature_name} <= {value}", f"{feature_name} > {value}", feature_idx=feature_idx,
                      threshold=threshold, is_categorical=False, feature_name=feature_name, **attributes)
-
-
-def tree_arguments(method, context=None, node_id=None) -> dict:
-    """
-    The arguments ``context`` (the tree) and ``node_id`` (the node being split) for a ``fit`` method,
-    if it declares them (or accepts ``**kwargs``): components written without them keep working.
-
-    Parameters
-    ----------
-    method : callable
-        The method that may receive them, e.g. ``transformer.fit``.
-    context : RuleTree, default=None
-        The tree.
-    node_id : str, default=None
-        Identifier of the node.
-
-    Returns
-    -------
-    arguments : dict
-        The keyword arguments to pass.
-
-    Examples
-    --------
-    >>> from RuleTree.base.RuleTreeBaseStump import tree_arguments
-    >>> def fit(X, y, node_id=None):
-    ...     pass
-    >>> tree_arguments(fit, context="tree", node_id="Rl")
-    {'node_id': 'Rl'}
-    """
-    parameters = inspect.signature(method).parameters
-    any_keyword = any(parameter.kind is inspect.Parameter.VAR_KEYWORD for parameter in parameters.values())
-    return {name: value for name, value in (("context", context), ("node_id", node_id))
-            if any_keyword or name in parameters}

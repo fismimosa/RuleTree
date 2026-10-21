@@ -12,7 +12,7 @@ from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 
 from RuleTree.utils.define import MODEL_TYPE_REG
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, tree_arguments
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
@@ -264,7 +264,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         if self.component_split == 'joint':  # one stump for all the components, as targets
             clf, data_type = self._get_random_split()
             clf.fit(data, y_pca_all if n_components_split > 1 else y_pca_all[:, 0], idx=idx, data_type=data_type,
-                    **tree_arguments(clf.fit, self, node_id))
+                    context=self, node_id=node_id)
             return clf
 
         best_clf = None
@@ -273,7 +273,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
             clf, data_type = self._get_random_split()
 
             try:
-                clf.fit(data, y_pca_all[:, i], idx=idx, data_type=data_type, **tree_arguments(clf.fit, self, node_id))
+                clf.fit(data, y_pca_all[:, i], idx=idx, data_type=data_type, context=self, node_id=node_id)
             except NoSplitFoundWarning:
                 continue
 

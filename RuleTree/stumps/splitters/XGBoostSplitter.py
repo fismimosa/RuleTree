@@ -115,7 +115,8 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
             else:
                 return np.quantile(X[:, feature_idx], np.linspace(0, 1, self.n_quantiles))
 
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
+            node_id=None):
         """
         Find the split with the highest XGBoost gain among all the features and thresholds.
 
@@ -133,6 +134,10 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
             Sample weights of the instances in the node.
         check_input : bool, default=True
             Whether to check the input data.
+        context : RuleTree, default=None
+            Tree being built, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
         -------
@@ -186,7 +191,7 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         self.threshold_ = best_threshold
         self.is_categorical_ = best_categorical
         self.impurity_ = None
-        self.update_statistics(X, y, sample_weight=sample_weight)
+        self.update_statistics(X, y, sample_weight=sample_weight, context=context, node_id=node_id)
 
         return self
 
@@ -254,7 +259,7 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         gains[(n_left < self.min_cover) | (n_right < self.min_cover)] = -np.inf
         return gains
 
-    def update_statistics(self, X, y, sample_weight=None):
+    def update_statistics(self, X, y, sample_weight=None, context=None, node_id=None):
         """
         Recompute the similarity scores and the gain of the split (``gain`` and ``gain_``).
 
@@ -266,6 +271,10 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
             Target of the instances in the node.
         sample_weight : numpy.ndarray of shape (n_samples,), default=None
             Sample weights of the instances in the node.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
         left = self.apply(X) == 1
 

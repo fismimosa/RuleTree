@@ -84,7 +84,7 @@ class PartialProximityTransformer(ProximityComparisons, PartialPivotTransformer)
                          use_combination=use_combination, random_state=random_state, n_jobs=n_jobs)
         self.proximity_on_same_features = proximity_on_same_features
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
+    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
         """
         Select the partial pivots among the instances in the node, and the pairs to compare.
 
@@ -102,6 +102,10 @@ class PartialProximityTransformer(ProximityComparisons, PartialPivotTransformer)
             Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Not supported: ignored with a warning.
+        context : RuleTree, default=None
+            Tree being built, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
         -------
@@ -112,7 +116,8 @@ class PartialProximityTransformer(ProximityComparisons, PartialPivotTransformer)
         NoSplitFoundWarning
             If there is no pair of pivots to compare.
         """
-        super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight)
+        super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight, context=context,
+                    node_id=node_id)
 
         used = ~np.isnan(np.asarray(self.st_.shapelets, dtype=float))  # features used by each pivot
         self._set_pairs([(i, j) for i, j in itertools.combinations(range(len(used)), 2)

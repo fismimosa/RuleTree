@@ -36,7 +36,7 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
 
     supported_data_types = (DATA_TYPE_TABULAR,)
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
+    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
         """
         Choose the oblique directions on the numerical features of the instances in the node.
 
@@ -54,6 +54,10 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
             Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
+        context : RuleTree, default=None
+            Tree being built, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
         -------

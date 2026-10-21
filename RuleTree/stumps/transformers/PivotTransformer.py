@@ -86,7 +86,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.reg_max_thresholds = reg_max_thresholds
         self.tree_params = tree_params
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
+    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
         """
         Select the candidate pivots of the node (see PivotSelection), on the standardized numerical features. The
         scaler and the distance matrix of the whole data set are taken from the cache.
@@ -105,6 +105,10 @@ class PivotTransformer(RuleTreeBaseTransformer):
             Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
+        context : RuleTree, default=None
+            Tree being built, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
         -------

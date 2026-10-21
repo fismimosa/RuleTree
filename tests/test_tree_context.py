@@ -4,7 +4,6 @@ import json
 import pytest
 
 from RuleTree import RuleTreeClassifier, RuleTreeCluster, RuleTreeClusterClassifier, RuleTreeRegressor
-from RuleTree.base.RuleTreeBaseStump import tree_arguments
 from RuleTree.stumps.Stump import Stump
 from RuleTree.stumps.classification import DecisionTreeStumpClassifier, PivotTreeStumpClassifier
 from RuleTree.stumps.splitters import ClassificationSplitter
@@ -30,13 +29,18 @@ def record(component, context, node_id):
 class RecordingTransformer(MatrixTransformer):
     def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
         record("transformer", context, node_id)
-        return super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight)
+        return super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight, context=context,
+                           node_id=node_id)
 
 
 class RecordingSplitter(ClassificationSplitter):
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, **kwargs):
-        record("splitter", kwargs["context"], kwargs["node_id"])
-        return super().fit(X, y, numerical, categorical, sample_weight, check_input)
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None, node_id=None):
+        record("splitter", context, node_id)
+        return super().fit(X, y, numerical, categorical, sample_weight, check_input, context=context, node_id=node_id)
+
+    def update_statistics(self, X, y, sample_weight=None, context=None, node_id=None):
+        record("update_statistics", context, node_id)
+        return super().update_statistics(X, y, sample_weight, context=context, node_id=node_id)
 
 
 @pytest.mark.parametrize("make_model, dataset", [
@@ -91,16 +95,14 @@ def test_components_receive_the_tree_and_the_node(iris):
         [("transformer", None, None), ("splitter", None, None)]
 
 
-def test_tree_arguments_only_if_declared():
-    def without(X, y):
-        pass
+def test_update_statistics_receives_the_tree_and_the_node(iris):
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, random_state=0,
+                               base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
+    CALLS.clear()
 
-    def with_node(X, y, node_id=None):
-        pass
+    model.update_statistics(X, y)
 
-    def with_kwargs(X, y, **kwargs):
-        pass
-
-    assert tree_arguments(without, "tree", "Rl") == {}
-    assert tree_arguments(with_node, "tree", "Rl") == {"node_id": "Rl"}
-    assert tree_arguments(with_kwargs, "tree", "Rl") == {"context": "tree", "node_id": "Rl"}
+    assert [component for component, _, _, _, _ in CALLS] == ["update_statistics"] * len(model.get_predicates())
+    assert {node_id for _, _, node_id, _, _ in CALLS} == set(model.get_predicates())
+    assert all(context is model for _, context, _, _, _ in CALLS)

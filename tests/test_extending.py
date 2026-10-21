@@ -37,7 +37,7 @@ class RandomProjectionTransformer(RuleTreeBaseTransformer):
         self.n_projections = n_projections
         self.random_state = random_state
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
+    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
         rng = np.random.default_rng(self.random_state)
         self.directions_ = rng.normal(size=(X.shape[1], self.n_projections))
         self.numerical_, self.categorical_ = list(range(self.n_projections)), []
@@ -65,7 +65,8 @@ class UnusedFeaturesTransformer(MatrixTransformer):
     """The features not used by the splits of the ancestors of the node: a transformer that uses the tree."""
 
     def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
-        super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight)
+        super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight, context=context,
+                    node_id=node_id)
 
         used = set()
         ancestor = context.get_node_by_id(node_id).parent if context is not None else None

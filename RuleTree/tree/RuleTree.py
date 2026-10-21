@@ -25,7 +25,7 @@ from sklearn.utils import check_random_state
 from RuleTree.base.RuleTreeBase import RuleTreeBase
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.tree.RuleTreeNode import RuleTreeNode, stump_class
-from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, tree_arguments
+from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.data_utils import json_numpy_encoder
 
 
@@ -571,7 +571,7 @@ class RuleTree(RuleTreeBase, ABC):
         if self.stump_selection == 'random':
             stump, data_type = self._get_random_split()
             stump.fit(data, y, idx=idx, data_type=data_type, sample_weight=sample_weight,
-                      **tree_arguments(stump.fit, self, node_id))
+                      context=self, node_id=node_id)
 
             return stump
 
@@ -582,7 +582,7 @@ class RuleTree(RuleTreeBase, ABC):
                 try:
                     stump = sklearn.clone(stump)
                     stump.fit(data, y, idx=idx, data_type=data_type, sample_weight=sample_weight,
-                              **tree_arguments(stump.fit, self, node_id))
+                              context=self, node_id=node_id)
 
                     info_gains.append(stump.gain_)
                     clfs.append(stump)

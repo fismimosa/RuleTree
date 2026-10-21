@@ -101,10 +101,10 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
         context : RuleTree, default=None
-            Tree being built (None outside a tree). Passed only if ``fit`` declares it.
+            Tree being built, None outside a tree.
         node_id : str, default=None
             Identifier of the node being split, e.g. ``"Rl"``: ``context.get_node_by_id(node_id)`` is the
-            node (None outside a tree). Passed only if ``fit`` declares it.
+            node (still a leaf; its ancestors are already split). None outside a tree.
 
         Returns
         -------

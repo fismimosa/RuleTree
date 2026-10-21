@@ -153,7 +153,7 @@ This one draws random projections of the tabular data at each node:
            self.n_projections = n_projections
            self.random_state = random_state
 
-       def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None):
+       def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
            rng = np.random.default_rng(self.random_state)
            self.directions_ = rng.normal(size=(X.shape[1], self.n_projections))
            self.numerical_, self.categorical_ = list(range(self.n_projections)), []
@@ -183,7 +183,9 @@ This one draws random projections of the tabular data at each node:
   indices of the numerical and categorical columns of the feature matrix. Values that are the
   same for every node (e.g. the distances between all the instances) can be computed once and
   stored in ``cache``, a dictionary shared by the stumps of the same class with the same
-  hyperparameters (see :doc:`lifecycle`).
+  hyperparameters (see :doc:`lifecycle`). ``context`` and ``node_id`` are the tree and the node
+  being split (see `Using the tree and the node`_); every ``fit`` accepts them, also when it does
+  not use them.
 - ``select`` (optional) is called after the splitter has chosen a column: the transformer keeps
   only what that column needs and returns its new index. Here, a single projection is kept.
   A transformer whose ``select`` changes the feature matrix in other ways sets
@@ -269,8 +271,9 @@ sets the attributes of the split: ``feature_`` (the column), ``threshold_`` (the
 categorical value), ``is_categorical_``, ``gain_`` (used to compare stumps with
 ``stump_selection="best"``) and ``impurity_`` (the impurity of the node and of the two children,
 or None). When no split is possible, ``fit`` raises
-:class:`~RuleTree.exceptions.NoSplitFoundWarning`, and the node becomes a leaf. ``apply`` and the
-saving of the split are inherited. This regression splitter splits each feature at its median and
+:class:`~RuleTree.exceptions.NoSplitFoundWarning`, and the node becomes a leaf. As for the
+transformers, ``fit`` also accepts ``context`` and ``node_id``. ``apply`` and the saving of the
+split are inherited. This regression splitter splits each feature at its median and
 keeps the one that reduces the variance most:
 
 .. code-block:: python
@@ -285,7 +288,8 @@ keeps the one that reduces the variance most:
 
        task = MODEL_TYPE_REG
 
-       def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+       def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
+               node_id=None):
            self.feature_, self.gain_ = None, -np.inf
            for feature in numerical:
                threshold = float(np.median(X[:, feature]))
@@ -387,11 +391,10 @@ its methods: see the documentation of that class.
 Using the tree and the node
 ---------------------------
 
-A component can also look at the tree it is part of. Inside a tree, the ``fit`` of a transformer
-and of a splitter receives two more arguments, if it declares them: ``context``, the tree being
-built, and ``node_id``, the identifier of the node being split (``"R"`` for the root, then ``"l"``
-or ``"r"`` for each step to the left or to the right, e.g. ``"Rlr"``). Outside a tree both are
-None. ``context.get_node_by_id(node_id)`` is the node: it is still a leaf, while its ancestors
+A component can also look at the tree it is part of. The ``fit`` of every stump, transformer and
+splitter receives two arguments for this: ``context``, the tree being built, and ``node_id``, the
+identifier of the node being split (``"R"`` for the root, then ``"l"`` or ``"r"`` for each step to
+the left or to the right, e.g. ``"Rlr"``). Outside a tree both are None. ``context.get_node_by_id(node_id)`` is the node: it is still a leaf, while its ancestors
 (``node.parent``, ``node.parent.parent``, ...) are already split and have their fitted stump. This
 transformer leaves out the features used by the ancestors, so that each path from the root tests
 each feature at most once:
@@ -402,7 +405,8 @@ each feature at most once:
        """The features not used by the splits of the ancestors of the node."""
 
        def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
-           super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight)
+           super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight,
+                       context=context, node_id=node_id)
 
            used = set()
            ancestor = context.get_node_by_id(node_id).parent if context is not None else None
@@ -445,11 +449,12 @@ each feature at most once:
 
 A decision tree with the same parameters splits ``Rr`` again on petal width.
 
-- Components whose ``fit`` does not declare ``context`` and ``node_id`` (or ``**kwargs``) do not
-  receive them, so the components written before keep working.
-- The stump itself receives ``node_id`` in its ``fit``, together with ``context``, and keeps it in
-  ``node_id_``: the identifier of its node, also after ``from_dict`` (it is the ``node_id`` of the
-  saved node). ``node_id_[:-1]`` is the identifier of the parent, and ``len(node_id_) - 1`` the
+- Every ``fit`` must accept ``context`` and ``node_id``, also when it does not use them, and a
+  ``fit`` that calls the one of its base class passes them on.
+- ``update_statistics`` of the stumps and of the splitters receives them too, when the tree
+  recomputes the statistics of its nodes on new data.
+- The stump keeps ``node_id`` in ``node_id_``: the identifier of its node, also after
+  ``from_dict`` (it is the ``node_id`` of the saved node). ``node_id_[:-1]`` is the identifier of the parent, and ``len(node_id_) - 1`` the
   depth of the node.
 - The tree is available only during ``fit``: a component must not keep it, since the stump is
   saved with the tree. What it needs later, e.g. the features left out, goes in its state.

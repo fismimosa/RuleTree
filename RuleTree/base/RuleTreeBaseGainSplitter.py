@@ -84,7 +84,8 @@ class RuleTreeBaseGainSplitter(RuleTreeBaseSplitter, ABC):
         values = np.unique(x.astype(float))
         return (values[:-1] + values[1:]) / 2
 
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
+            node_id=None):
         """
         Test every candidate split and keep the one with the highest gain.
 
@@ -102,6 +103,10 @@ class RuleTreeBaseGainSplitter(RuleTreeBaseSplitter, ABC):
             Sample weights of the instances in the node, passed to gain.
         check_input : bool, default=True
             Not used.
+        context : RuleTree, default=None
+            Tree being built, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
         -------

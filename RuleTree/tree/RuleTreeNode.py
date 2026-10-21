@@ -266,7 +266,7 @@ class RuleTreeNode:
         self.samples = len(y_local)
 
         if self.stump is not None and not self.is_leaf():
-            self.stump.update_statistics(data, y, idx=idx, context=context)
+            self.stump.update_statistics(data, y, idx=idx, context=context, node_id=self.node_id)
     
     def node_to_dict(self):
         """

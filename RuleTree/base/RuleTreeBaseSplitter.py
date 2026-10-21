@@ -48,7 +48,8 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
     >>> class MedianSplitter(RuleTreeBaseSplitter):
     ...     task = MODEL_TYPE_REG
     ...
-    ...     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True):
+    ...     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
+    ...             node_id=None):
     ...         self.feature_ = numerical[0]
     ...         self.threshold_ = float(np.median(X[:, self.feature_]))
     ...         self.is_categorical_, self.gain_, self.impurity_ = False, 0.0, None
@@ -85,10 +86,10 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
         check_input : bool, default=True
             Whether to check the input data.
         context : RuleTree, default=None
-            Tree being built (None outside a tree). Passed only if ``fit`` declares it.
+            Tree being built, None outside a tree.
         node_id : str, default=None
             Identifier of the node being split, e.g. ``"Rl"``: ``context.get_node_by_id(node_id)`` is the
-            node (None outside a tree). Passed only if ``fit`` declares it.
+            node (still a leaf; its ancestors are already split). None outside a tree.
 
         Returns
         -------
@@ -121,7 +122,7 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
 
         return np.where(X_feature <= self.threshold_, 1, 2)
 
-    def update_statistics(self, X: np.ndarray, y: np.ndarray, sample_weight=None):
+    def update_statistics(self, X: np.ndarray, y: np.ndarray, sample_weight=None, context=None, node_id=None):
         """
         Recompute the statistics of the split (e.g. impurity) on new data, without changing the split.
         The default implementation does nothing.
@@ -134,6 +135,10 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
             Target of the instances in the node.
         sample_weight : numpy.ndarray of shape (n_samples,), default=None
             Sample weights of the instances in the node.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
 
     def get_state(self) -> dict:

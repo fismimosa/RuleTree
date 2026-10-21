@@ -251,7 +251,7 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
 
         self.prepare_node(y, idx, node.node_id, node=node)
         if node.stump is not None and not node.is_leaf():
-            node.stump.update_statistics(data, self._split_target(y), idx=idx, context=self)
+            node.stump.update_statistics(data, self._split_target(y), idx=idx, context=self, node_id=node.node_id)
 
     def _get_stumps_task(self):
         """
