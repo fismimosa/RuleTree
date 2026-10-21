@@ -173,7 +173,7 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         proba : numpy.ndarray of shape (n_samples, n_classes)
             Probabilities of the classes, in the order of ``classes_``.
         """
-        _, _, proba = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
+        _, _, proba = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt), context=self)
 
         return proba
 
@@ -334,7 +334,7 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
             node.prediction_probability[i] = np.sum(np.where(y == classe, 1, 0)) / len(y)
 
         if not node.is_leaf():            
-            labels_clf = node.stump.apply(X)
+            labels_clf = node.stump.apply(X, node_id=node.node_id)
             X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
             y_l, y_r = y[labels_clf == 1], y[labels_clf == 2]         
             if X_l.shape[0] != 0:

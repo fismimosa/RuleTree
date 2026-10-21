@@ -115,8 +115,8 @@ class FairSplitter(RuleTreeBaseSplitter):
         self.n_jobs = n_jobs
         self.criterion = criterion
 
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
-            node_id=None):
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context,
+            node_id):
         """
         Find the split with the highest penalized gain among the thresholds of the numerical features (the
         sensitive attribute excluded) that satisfy the fairness constraint.
@@ -135,9 +135,9 @@ class FairSplitter(RuleTreeBaseSplitter):
             Sample weights of the instances in the node.
         check_input : bool, default=True
             Whether to check the input data.
-        context : RuleTree, default=None
+        context : RuleTree or None
             Tree being built, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
@@ -203,7 +203,7 @@ class FairSplitter(RuleTreeBaseSplitter):
 
         return self
 
-    def update_statistics(self, X, y, sample_weight=None, context=None, node_id=None):
+    def update_statistics(self, X, y, sample_weight=None, *, context, node_id):
         """
         Recompute the impurity of the node and of the two children.
 
@@ -215,12 +215,13 @@ class FairSplitter(RuleTreeBaseSplitter):
             Target of the instances in the node.
         sample_weight : numpy.ndarray of shape (n_samples,), default=None
             Sample weights of the instances in the node.
-        context : RuleTree, default=None
+        context : RuleTree or None
             The tree, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
-        self.impurity_ = RegressionSplitter._split_impurity(self.criterion, y, self.apply(X) == 1)
+        left = self.apply(X, context=context, node_id=node_id) == 1
+        self.impurity_ = RegressionSplitter._split_impurity(self.criterion, y, left)
 
 
 def _check_balance(labels: np.ndarray, prot_attr: np.ndarray):

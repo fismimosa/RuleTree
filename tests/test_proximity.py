@@ -39,7 +39,8 @@ def time_series():
 ], ids=["Proximity", "PartialProximity"])
 def test_closer_to_the_first_reference_goes_left(make_stump, dataset, request):
     X, y = request.getfixturevalue(dataset)
-    stump = make_stump().fit(X, y, data_type=DATA_TYPE_TS if dataset == "time_series" else None)
+    stump = make_stump()
+    stump = stump.fit(X, y, data_type=DATA_TYPE_TS if dataset == "time_series" else None, context=None, node_id=None)
 
     distances = stump.st.transform(X)
 
@@ -48,7 +49,8 @@ def test_closer_to_the_first_reference_goes_left(make_stump, dataset, request):
 
 def test_proximity_rule(time_series):
     X, y = time_series
-    stump = ProximityTreeStumpClassifier(**shapelet_kwargs(), distance="cityblock").fit(X, y, data_type=DATA_TYPE_TS)
+    stump = ProximityTreeStumpClassifier(**shapelet_kwargs(), distance="cityblock")
+    stump = stump.fit(X, y, data_type=DATA_TYPE_TS, context=None, node_id=None)
 
     rule = stump.get_rule()
 
@@ -60,7 +62,8 @@ def test_proximity_rule(time_series):
 
 def test_partial_proximity_rule_with_columns_names(iris):
     X, y = iris
-    stump = PartialProximityTreeStumpClassifier(n_features_strategy=1, random_state=0).fit(X, y)
+    stump = PartialProximityTreeStumpClassifier(n_features_strategy=1, random_state=0)
+    stump = stump.fit(X, y, context=None, node_id=None)
 
     rule = stump.get_rule(columns_names=["sl", "sw", "pl", "pw"])["textual_rule"]
 
@@ -98,7 +101,8 @@ def test_proximity_drawing_with_both_shapelets(time_series, tmp_path, monkeypatc
     pytest.importorskip("matplotlib")
     monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
     X, y = time_series
-    stump = ProximityTreeStumpClassifier(**shapelet_kwargs()).fit(X, y, data_type=DATA_TYPE_TS)
+    stump = ProximityTreeStumpClassifier(**shapelet_kwargs())
+    stump = stump.fit(X, y, data_type=DATA_TYPE_TS, context=None, node_id=None)
 
     assert "image" not in stump.get_rule()["graphviz_rule"] and os.listdir(tmp_path) == []
     attributes = stump.get_graphviz_rule()

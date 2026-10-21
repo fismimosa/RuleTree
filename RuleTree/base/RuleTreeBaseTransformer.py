@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
 
+from RuleTree.base.RuleTreeBaseStump import estimator_namespace
 from RuleTree.utils.define import DATA_TYPE_TABULAR
 
 
@@ -22,7 +23,9 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
 
     A transformer is fitted on the whole data set of its type (``X``, all the instances) and on
     ``idx``, the instances reaching the node, so that values computed on the whole data set can be
-    shared among the splits through ``cache`` (a dictionary that lives as long as the tree's cache).
+    shared among the splits through its cache in the tree, ``self._get_cache(context)``: a dictionary
+    shared by the transformers of the same class with the same hyperparameters (see
+    :meth:`cache_namespace`), that lives as long as the tree's cache.
 
     After the splitter has chosen a feature, :meth:`select` lets the transformer keep only what is
     needed to compute that feature (e.g. a single pivot); if the feature matrix changes,
@@ -59,7 +62,7 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
     >>> class MeanTransformer(RuleTreeBaseTransformer):
     ...     supported_data_types = (DATA_TYPE_TS,)
     ...
-    ...     def transform(self, X):
+    ...     def transform(self, X, context=None, node_id=None):
     ...         return X.mean(axis=2)  # mean of each signal
     ...
     ...     def feature_id(self, feature):
@@ -78,8 +81,8 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
     # whether select changes the feature matrix, so that the splitter must be fitted again
     refit_after_select = False
 
-    def fit(self, X: np.ndarray, y: np.ndarray, idx: np.ndarray = None, data_type: str = None, cache: dict = None,
-            sample_weight=None, context=None, node_id=None):
+    def fit(self, X: np.ndarray, y: np.ndarray, idx: np.ndarray = None, data_type: str = None, sample_weight=None, *,
+            context, node_id):
         """
         Fit the transformer and set ``numerical_`` and ``categorical_``.
 
@@ -96,13 +99,11 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
             Indices of the instances in the node. If None, all the instances.
         data_type : str, default=None
             Type of X, used as key of the cached values.
-        cache : dict, default=None
-            Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
-        context : RuleTree, default=None
-            Tree being built, None outside a tree.
-        node_id : str, default=None
+        context : RuleTree or None
+            Tree being built, None outside a tree. Its cache for the transformer is ``self._get_cache(context)``.
+        node_id : str or None
             Identifier of the node being split, e.g. ``"Rl"``: ``context.get_node_by_id(node_id)`` is the
             node (still a leaf; its ancestors are already split). None outside a tree.
 
@@ -116,11 +117,48 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         NoSplitFoundWarning
             If the data of the node cannot be transformed into features (e.g. no numerical feature).
         """
-        self.numerical_, self.categorical_ = get_feature_types(self.transform(X))
+        self.numerical_, self.categorical_ = get_feature_types(self.transform(X, context=context, node_id=node_id))
         return self
 
+    def cache_namespace(self) -> str:
+        """
+        Name of the cache of the transformer in the tree (see RuleTree.get_cache): the class name and a
+        hash of the hyperparameters. Transformers of the same class with different hyperparameters do
+        not share cached values; the stumps that use the same transformer share them.
+
+        Returns
+        -------
+        namespace : str
+            E.g. ``"PivotTransformer-1a2b3c4d"``.
+
+        Examples
+        --------
+        >>> from RuleTree.stumps.transformers import PivotTransformer
+        >>> PivotTransformer().cache_namespace() == PivotTransformer().cache_namespace()
+        True
+        >>> PivotTransformer().cache_namespace() != PivotTransformer(distance_measure="cosine").cache_namespace()
+        True
+        """
+        return estimator_namespace(self)
+
+    def _get_cache(self, context) -> dict:
+        """
+        Cache of the transformer in the tree ``context``, named by :meth:`cache_namespace`.
+
+        Parameters
+        ----------
+        context : RuleTree or None
+            The tree being built.
+
+        Returns
+        -------
+        cache : dict
+            The cache of the transformer; without a tree, an empty dictionary that is not kept.
+        """
+        return context.get_cache(self.cache_namespace()) if context is not None else {}
+
     @abstractmethod
-    def transform(self, X: np.ndarray) -> np.ndarray:
+    def transform(self, X: np.ndarray, context=None, node_id=None) -> np.ndarray:
         """
         Feature matrix of the instances in X.
 
@@ -128,6 +166,10 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         ----------
         X : numpy.ndarray
             Data of the transformer's type.
+        context : RuleTree, default=None
+            The tree, when called by it (fit, predictions); None otherwise.
+        node_id : str, default=None
+            Identifier of the node of the stump, when called by the tree; None otherwise.
 
         Returns
         -------
@@ -161,6 +203,10 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         ----------
         feature : int
             Column of the feature matrix.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node of the stump, None outside a tree.
 
         Returns
         -------

@@ -69,7 +69,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
     >>> from RuleTree.stumps.splitters import ClassificationSplitter
     >>> from RuleTree.stumps.transformers import PivotTransformer
     >>> X, y = load_iris(return_X_y=True)
-    >>> transformer = PivotTransformer().fit(X, y)
+    >>> transformer = PivotTransformer().fit(X, y, context=None, node_id=None)
     >>> transformer.transform(X[:2]).shape  # distances from 6 candidate pivots
     (2, 6)
     >>> model = RuleTreeClassifier(max_depth=2, base_stumps=Stump(PivotTransformer(), ClassificationSplitter()))
@@ -86,7 +86,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.reg_max_thresholds = reg_max_thresholds
         self.tree_params = tree_params
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
         """
         Select the candidate pivots of the node (see PivotSelection), on the standardized numerical features. The
         scaler and the distance matrix of the whole data set are taken from the cache.
@@ -101,13 +101,11 @@ class PivotTransformer(RuleTreeBaseTransformer):
             Indices of the instances in the node. If None, all the instances.
         data_type : str, default=None
             Type of X, used as key of the cached values.
-        cache : dict, default=None
-            Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
-        context : RuleTree, default=None
+        context : RuleTree or None
             Tree being built, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
@@ -121,13 +119,13 @@ class PivotTransformer(RuleTreeBaseTransformer):
         """
         if idx is None:
             idx = np.arange(len(X))
-        self.num_pre_transformed_, self.cat_pre_transformed_ = get_feature_types(X, cache, data_type)
+        self.num_pre_transformed_, self.cat_pre_transformed_ = get_feature_types(X, self._get_cache(context), data_type)
 
         if len(self.num_pre_transformed_) == 0:
             raise NoSplitFoundWarning(f"{self.__class__.__name__} needs numerical features")
 
         self.scaler_, distance_matrix = _pivot_cache(X, self.num_pre_transformed_, self.distance_measure, data_type,
-                                                     cache)
+                                                     self._get_cache(context))
         X_scaled = self.scaler_.transform(X[idx][:, self.num_pre_transformed_])
 
         selection = self._selection()
@@ -144,7 +142,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X, context=None, node_id=None):
         """
         Distances of the instances from the candidate pivots (from the chosen pivot, after select).
 
@@ -152,6 +150,10 @@ class PivotTransformer(RuleTreeBaseTransformer):
         ----------
         X : numpy.ndarray
             Tabular data.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node of the stump, None outside a tree.
 
         Returns
         -------
@@ -289,7 +291,7 @@ def scaler_from_state(state: dict) -> StandardScaler:
 
 def _pivot_cache(X, numerical, distance_measure, data_type, cache):
     """
-    Scaler and distance matrix of the whole data set X, stored in the cache of the stump so that
+    Scaler and distance matrix of the whole data set X, stored in the cache of the transformer so that
     they are computed once per data type and distance.
     """
     cache = {} if cache is None else cache

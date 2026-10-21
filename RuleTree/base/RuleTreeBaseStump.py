@@ -28,14 +28,16 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 
     The tree passed as ``context`` holds a cache that lives until the next ``fit`` (or
     ``clear_cache()``), where stumps can store anything that can be shared among splits, e.g.
-    embeddings computed on the whole data set. The stumps of the same class with the same
-    hyperparameters share a cache, named by :meth:`cache_namespace`. Everything needed by ``apply``
-    must be stored in the stump itself.
+    embeddings computed on the whole data set. A stump that implements ``fit`` uses its own cache,
+    ``self._get_cache(context)``, shared by the stumps of the same class with the same
+    hyperparameters (:meth:`cache_namespace`); the transformers of a Stump have theirs. Everything
+    needed by ``apply`` must be stored in the stump itself.
 
     The tree also passes ``node_id``, the identifier of the node being split (``"R"``, ``"Rl"``,
     ...): with ``context.get_node_by_id(node_id)`` the stump reaches the node, and from it its
     ancestors and their stumps. The node is a leaf while its stump is fitted; its ancestors are
-    already split.
+    already split. ``context`` and ``node_id`` are required in ``fit`` and ``update_statistics``
+    (None outside a tree), optional in ``apply``.
 
     Subclasses that work on a 2D matrix can implement ``_transform`` (data of the stump's data
     type -> matrix) and ``_apply_matrix`` (matrix -> 1/2 labels) and reuse :meth:`apply` and
@@ -66,8 +68,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
     node_id_ = None
 
     @abstractmethod
-    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True,
-            node_id=None):
+    def fit(self, data, y, idx=None, data_type=None, sample_weight=None, check_input=True, *, context, node_id):
         """
         Fit the stump on the instances ``idx`` of ``data``.
 
@@ -79,16 +80,16 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             Target of the whole data set.
         idx : numpy.ndarray, default=None
             Indices of the instances reaching the node. If None, all the instances.
-        context : RuleTree, default=None
-            Tree being built, None outside a tree: it holds the cache shared among the splits, and it is
-            passed to the transformer and the splitter.
         data_type : str, default=None
             Data type to use. If None, the first supported data type available in ``data``.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the whole data set.
         check_input : bool, default=True
             Whether to check the input data.
-        node_id : str, default=None
+        context : RuleTree or None
+            Tree being built, None outside a tree: it holds the cache shared among the splits, and it is
+            passed to the transformer and the splitter.
+        node_id : str or None
             Identifier of the node being split, stored in ``node_id_``. None outside a tree.
 
         Returns
@@ -205,7 +206,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         return data_type in self.supported_data_types
 
-    def apply(self, data, idx=None) -> np.ndarray:
+    def apply(self, data, idx=None, context=None, node_id=None) -> np.ndarray:
         """
         Apply the split to the instances ``idx`` of ``data``.
 
@@ -215,6 +216,10 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             Data set, as ``{data_type: array}`` or a single array of the stump's data type.
         idx : numpy.ndarray, default=None
             Indices of the instances to split. If None, all the instances.
+        context : RuleTree, default=None
+            The tree, when called by it (fit, predictions); None otherwise.
+        node_id : str, default=None
+            Identifier of the node of the stump, when called by the tree; None otherwise.
 
         Returns
         -------
@@ -225,10 +230,10 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         if idx is not None:
             X = X[idx]
 
-        return self._apply_matrix(self._transform(X))
+        return self._apply_matrix(self._transform(X, context=context, node_id=node_id), context=context,
+                                  node_id=node_id)
 
-    def update_statistics(self, data, y, idx=None, context=None, sample_weight=None, check_input=True,
-                          node_id=None):
+    def update_statistics(self, data, y, idx=None, sample_weight=None, check_input=True, *, context, node_id):
         """
         Recompute the statistics of the split (e.g. impurity) on the instances ``idx`` of ``data``,
         without changing the split.
@@ -241,23 +246,23 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             Target of the whole data set.
         idx : numpy.ndarray, default=None
             Indices of the instances reaching the node. If None, all the instances.
-        context : RuleTree, default=None
-            The tree, None outside a tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the whole data set.
         check_input : bool, default=True
             Not used, kept for symmetry with :meth:`fit`.
-        node_id : str, default=None
+        context : RuleTree or None
+            The tree, None outside a tree.
+        node_id : str or None
             Identifier of the node, None outside a tree.
         """
         if idx is None:
             idx = slice(None)
-        X = self._transform(self._get_data(data)[idx])
+        X = self._transform(self._get_data(data)[idx], context=context, node_id=node_id)
 
         self._update_statistics_matrix(X, y[idx], None if sample_weight is None else sample_weight[idx],
                                        context=context, node_id=node_id)
 
-    def _transform(self, X: np.ndarray) -> np.ndarray:
+    def _transform(self, X: np.ndarray, context=None, node_id=None) -> np.ndarray:
         """
         Turn data of the stump's data type into the matrix the split is applied on.
 
@@ -265,6 +270,10 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         ----------
         X : numpy.ndarray
             Data of the stump's data type.
+        context : RuleTree, default=None
+            The tree, when called by it (fit, predictions); None otherwise.
+        node_id : str, default=None
+            Identifier of the node of the stump, when called by the tree; None otherwise.
 
         Returns
         -------
@@ -273,7 +282,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         return X
 
-    def _apply_matrix(self, X: np.ndarray) -> np.ndarray:
+    def _apply_matrix(self, X: np.ndarray, context=None, node_id=None) -> np.ndarray:
         """
         Apply the split to the matrix returned by :meth:`_transform`.
 
@@ -281,6 +290,10 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         ----------
         X : numpy.ndarray of shape (n_samples, n_features)
             Feature matrix.
+        context : RuleTree, default=None
+            The tree, when called by it (fit, predictions); None otherwise.
+        node_id : str, default=None
+            Identifier of the node of the stump, when called by the tree; None otherwise.
 
         Returns
         -------
@@ -289,8 +302,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         raise NotImplementedError(f"{self.__class__.__name__} must implement apply or _apply_matrix.")
 
-    def _update_statistics_matrix(self, X: np.ndarray, y: np.ndarray, sample_weight=None, context=None,
-                                  node_id=None):
+    def _update_statistics_matrix(self, X: np.ndarray, y: np.ndarray, sample_weight=None, *, context, node_id):
         """
         Recompute the split statistics on the matrix returned by :meth:`_transform`.
 
@@ -302,9 +314,9 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             Target of the instances in the node.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the instances in the node.
-        context : RuleTree, default=None
+        context : RuleTree or None
             The tree, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
 
@@ -388,11 +400,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         >>> a.cache_namespace() == DecisionTreeStumpClassifier().cache_namespace() != b.cache_namespace()
         True
         """
-        params = {name: f"<{type(value).__module__}.{type(value).__qualname__}>"
-                  if isinstance(value, BaseEstimator) else value
-                  for name, value in self.get_params(deep=True).items()}
-        digest = hashlib.md5(json.dumps(params, sort_keys=True, default=repr).encode()).hexdigest()
-        return f"{self.__class__.__name__}-{digest[:8]}"
+        return estimator_namespace(self)
 
     def _get_cache(self, context) -> dict:
         """
@@ -478,3 +486,25 @@ def numerical_rule(feature_idx, feature_name: str, threshold, float_precision=3,
     value = str(threshold) if float_precision is None else round(threshold, float_precision)
     return rule_dict(f"{feature_name} <= {value}", f"{feature_name} > {value}", feature_idx=feature_idx,
                      threshold=threshold, is_categorical=False, feature_name=feature_name, **attributes)
+
+
+def estimator_namespace(estimator: BaseEstimator) -> str:
+    """
+    Name of the cache of an estimator (a stump or a transformer) in a tree: its class name and a hash
+    of its hyperparameters, also of its components.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The stump or the transformer.
+
+    Returns
+    -------
+    namespace : str
+        E.g. ``"PivotTransformer-1a2b3c4d"``.
+    """
+    params = {name: f"<{type(value).__module__}.{type(value).__qualname__}>"
+              if isinstance(value, BaseEstimator) else value
+              for name, value in estimator.get_params(deep=True).items()}
+    digest = hashlib.md5(json.dumps(params, sort_keys=True, default=repr).encode()).hexdigest()
+    return f"{estimator.__class__.__name__}-{digest[:8]}"

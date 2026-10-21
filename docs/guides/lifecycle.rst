@@ -116,11 +116,11 @@ The cache of the stumps
 -----------------------
 
 Some stumps compute values on the whole training set that every split can reuse: the types of
-the features, or the distance matrix of the pivot stumps. They store them in the cache of the
-tree. Each stump has its own namespace, ``cache_namespace()``: its class name and a hash of its
-hyperparameters, so that only the stumps of the same class with the same hyperparameters share
-cached values (the tree gives its ``random_state`` to the stumps, so the stumps it uses are the
-copies in ``candidate_splits_``):
+the features, or the distance matrix of the pivot stumps. Their transformers store them in the
+cache of the tree, which they reach through ``context``. Each transformer has its own namespace,
+``cache_namespace()``: its class name and a hash of its hyperparameters, so that only the
+transformers of the same class with the same hyperparameters share cached values, also when they
+belong to different stumps:
 
 .. code-block:: python
 
@@ -128,14 +128,14 @@ copies in ``candidate_splits_``):
 
    model = RuleTreeClassifier(max_depth=2, base_stumps=PivotTreeStumpClassifier(), random_state=0).fit(X, y)
 
-   stump = model.candidate_splits_[0][1]
-   print(list(model.cache_) == [stump.cache_namespace()], stump.cache_namespace().split("-")[0])
-   print(sorted(key[0] for key in model.get_cache(stump.cache_namespace())))
+   transformer = model.root.stump.transformer_
+   print(list(model.cache_) == [transformer.cache_namespace()], transformer.cache_namespace().split("-")[0])
+   print(sorted(key[0] for key in model.get_cache(transformer.cache_namespace())))
 
 .. code-block:: text
    :caption: Output
 
-   True PivotTreeStumpClassifier
+   True PivotTransformer
    ['feature_types', 'pivot']
 
 The cache is emptied by ``fit`` and kept by ``partial_fit``, so that growing a tree does not

@@ -405,7 +405,7 @@ class RuleTreeNode:
 
         return graph
 
-    def predict(self, data, idx:np.ndarray=None, prediction_step=np.inf):
+    def predict(self, data, idx:np.ndarray=None, prediction_step=np.inf, context=None):
         """
         Predictions, leaves and probabilities of the instances, traversing the subtree.
 
@@ -418,6 +418,8 @@ class RuleTreeNode:
         prediction_step : int, default=numpy.inf
             Maximum number of splits to traverse: with a finite value, the prediction of the node
             reached after that many splits.
+        context : RuleTree, default=None
+            The tree, passed to the stumps with the identifier of their node.
 
         Returns
         -------
@@ -450,15 +452,17 @@ class RuleTreeNode:
                 ), dtype=float) * -1
             )
 
-            labels_clf = self.stump.apply(data, idx)
+            labels_clf = self.stump.apply(data, idx, context=context, node_id=self.node_id)
             if np.any(labels_clf == 1):
                 child_labels, leaves[labels_clf == 1], proba[labels_clf == 1] = (
-                    self.node_l.predict(data, idx=idx[labels_clf == 1], prediction_step=prediction_step - 1))
+                    self.node_l.predict(data, idx=idx[labels_clf == 1], prediction_step=prediction_step - 1,
+                                        context=context))
                 labels = _with_dtype_for(labels, child_labels)
                 labels[labels_clf == 1] = child_labels
             if np.any(labels_clf == 2):
                 child_labels, leaves[labels_clf == 2], proba[labels_clf == 2] = (
-                    self.node_r.predict(data, idx=idx[labels_clf == 2], prediction_step=prediction_step - 1))
+                    self.node_r.predict(data, idx=idx[labels_clf == 2], prediction_step=prediction_step - 1,
+                                        context=context))
                 labels = _with_dtype_for(labels, child_labels)
                 labels[labels_clf == 2] = child_labels
 

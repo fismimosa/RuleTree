@@ -53,7 +53,7 @@ class PivotTreeStump:
         >>> from sklearn.datasets import load_iris
         >>> from RuleTree.stumps.classification import PivotTreeStumpClassifier
         >>> X, y = load_iris(return_X_y=True)
-        >>> pivots = PivotTreeStumpClassifier(random_state=0).fit(X, y).get_pivots()
+        >>> pivots = PivotTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None).get_pivots()
         >>> pivots["descriptives"], pivots["discriminatives"], pivots["used"]
         ([7, 96, 112], [27, 77, 127], 112)
         """

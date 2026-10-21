@@ -262,8 +262,9 @@ class RuleTree(RuleTreeBase, ABC):
         Parameters
         ----------
         namespace : str
-            Name of the cache. Each stump uses its ``cache_namespace()``: its class name and a hash of
-            its hyperparameters, e.g. ``get_cache(stump.cache_namespace())``.
+            Name of the cache. Each transformer uses its ``cache_namespace()``: its class name and a hash
+            of its hyperparameters, e.g. ``get_cache(transformer.cache_namespace())`` (the same for
+            the stumps that implement ``fit`` without a transformer).
 
         Returns
         -------
@@ -415,7 +416,7 @@ class RuleTree(RuleTreeBase, ABC):
             self.queue_push(node, idx)
             return
 
-        labels = node.stump.apply(data, idx)
+        labels = node.stump.apply(data, idx, context=self, node_id=node.node_id)
         self._push_leaves(node.node_l, data, idx[labels == 1])
         self._push_leaves(node.node_r, data, idx[labels == 2])
 
@@ -449,7 +450,7 @@ class RuleTree(RuleTreeBase, ABC):
             try:
                 clf = self.make_split(data, y_split, idx, sample_weight=sample_weight,
                                       node_id=current_node.node_id)
-                labels = clf.apply(data, idx)
+                labels = clf.apply(data, idx, context=self, node_id=current_node.node_id)
             except NoSplitFoundWarning:
                 self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
@@ -520,8 +521,7 @@ class RuleTree(RuleTreeBase, ABC):
         """
         return y
 
-    @staticmethod
-    def _set_balance_score(node: RuleTreeNode, stump: RuleTreeBaseStump, data: dict):
+    def _set_balance_score(self, node: RuleTreeNode, stump: RuleTreeBaseStump, data: dict):
         """
         Set ``balance_score`` of a node: the fraction of the whole data set in the smaller side of its
         split (see RuleTreeClassifier.get_balanced_stumps).
@@ -535,7 +535,7 @@ class RuleTree(RuleTreeBase, ABC):
         data : dict
             Whole data set, as ``{data_type: array}``.
         """
-        _, counts = np.unique(stump.apply(data), return_counts=True)
+        _, counts = np.unique(stump.apply(data, context=self, node_id=node.node_id), return_counts=True)
         node.balance_score_global = counts.min() / counts.sum()
         node.balance_score = node.balance_score_global
 
@@ -660,7 +660,7 @@ class RuleTree(RuleTreeBase, ABC):
         y_pred : numpy.ndarray of shape (n_samples,)
             Predicted classes, values or cluster labels.
         """
-        labels, _, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
+        labels, _, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt), context=self)
 
         return labels
 
@@ -684,7 +684,7 @@ class RuleTree(RuleTreeBase, ABC):
         leaves : numpy.ndarray of shape (n_samples,)
             Identifier (node_id) of the leaf reached by each instance.
         """
-        _, leaves, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt))
+        _, leaves, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt), context=self)
 
         return leaves
 
@@ -739,7 +739,7 @@ class RuleTree(RuleTreeBase, ABC):
         if node.is_leaf() or node.stump is None:
             return
 
-        labels = node.stump.apply(data, idx)
+        labels = node.stump.apply(data, idx, context=self, node_id=node.node_id)
         idx_l = idx[labels == 1]
         idx_r = idx[labels == 2]
 

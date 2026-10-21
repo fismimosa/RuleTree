@@ -277,7 +277,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
             except NoSplitFoundWarning:
                 continue
 
-            labels = clf.apply(data, idx)
+            labels = clf.apply(data, idx, context=self, node_id=node_id)
             if self.clus_impurity == 'r2':
                 # fraction of the variance of the i-th component explained by the split
                 component = y_pca[:, i]

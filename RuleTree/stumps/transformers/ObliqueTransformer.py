@@ -36,7 +36,7 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
 
     supported_data_types = (DATA_TYPE_TABULAR,)
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
         """
         Choose the oblique directions on the numerical features of the instances in the node.
 
@@ -50,13 +50,11 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
             Indices of the instances in the node. If None, all the instances.
         data_type : str, default=None
             Type of X, used as key of the cached values.
-        cache : dict, default=None
-            Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
-        context : RuleTree, default=None
+        context : RuleTree or None
             Tree being built, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
@@ -71,7 +69,7 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
         if idx is None:
             idx = np.arange(len(X))
 
-        self.num_pre_transformed_, _ = get_feature_types(X, cache, data_type)
+        self.num_pre_transformed_, _ = get_feature_types(X, self._get_cache(context), data_type)
         if len(self.num_pre_transformed_) == 0:
             raise NoSplitFoundWarning(f"{self.__class__.__name__} needs numerical features")
 
@@ -105,7 +103,7 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
         """Numerical features of X, as floats."""
         return np.asarray(X)[:, self.num_pre_transformed_].astype(float)
 
-    def transform(self, X):
+    def transform(self, X, context=None, node_id=None):
         """
         Projection of the instances on the oblique directions (on the chosen one, after select).
 
@@ -113,6 +111,10 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
         ----------
         X : numpy.ndarray
             Tabular data.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node of the stump, None outside a tree.
 
         Returns
         -------

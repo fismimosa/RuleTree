@@ -57,7 +57,7 @@ class DecisionTreeStumpClassifier(DecisionTreeStump):
     >>> from RuleTree import RuleTreeClassifier
     >>> from RuleTree.stumps.classification import DecisionTreeStumpClassifier
     >>> X, y = load_iris(return_X_y=True)
-    >>> stump = DecisionTreeStumpClassifier(criterion="entropy", random_state=0).fit(X, y)
+    >>> stump = DecisionTreeStumpClassifier(criterion="entropy", random_state=0).fit(X, y, context=None, node_id=None)
     >>> stump.get_rule()["textual_rule"]
     'X_3 <= 0.8'
     >>> stump.apply(X[[0, 100]])  # 1: left child, 2: right child

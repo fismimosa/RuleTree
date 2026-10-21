@@ -77,7 +77,7 @@ class ObliqueDecisionTreeStumpClassifier(ObliqueTreeStump, DecisionTreeStumpClas
     >>> from RuleTree import RuleTreeClassifier
     >>> from RuleTree.stumps.classification import ObliqueDecisionTreeStumpClassifier
     >>> X, y = load_iris(return_X_y=True)
-    >>> stump = ObliqueDecisionTreeStumpClassifier(random_state=0).fit(X, y)
+    >>> stump = ObliqueDecisionTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None)
     >>> stump.get_rule(columns_names=["sl", "sw", "pl", "pw"])["textual_rule"]
     '-0.085 * sw + 0.857 * pl <= 1.85'
     >>> stump.feature_original, [round(c, 3) for c in stump.coefficients]

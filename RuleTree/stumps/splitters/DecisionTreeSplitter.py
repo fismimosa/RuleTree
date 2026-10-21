@@ -102,8 +102,8 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
             Impurity of the node, of the left child and of the right child.
         """
 
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
-            node_id=None):
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context,
+            node_id):
         """
         Find the best split: the threshold of the scikit-learn tree on the numerical features (halfway
         between the two values of a binary feature), replaced by a categorical split if one has a higher
@@ -197,7 +197,7 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
                     self.is_categorical_ = True
                     self.impurity_ = impurity
 
-    def update_statistics(self, X, y, sample_weight=None, context=None, node_id=None):
+    def update_statistics(self, X, y, sample_weight=None, *, context, node_id):
         """
         Recompute the impurity of the node and of the two children.
 
@@ -209,9 +209,9 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
             Target of the instances in the node.
         sample_weight : numpy.ndarray of shape (n_samples,), default=None
             Sample weights of the instances in the node.
-        context : RuleTree, default=None
+        context : RuleTree or None
             The tree, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
-        self.impurity_ = self._impurities(y, self.apply(X) == 1, sample_weight)
+        self.impurity_ = self._impurities(y, self.apply(X, context=context, node_id=node_id) == 1, sample_weight)

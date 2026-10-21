@@ -65,7 +65,8 @@ class RegressionSplitter(DecisionTreeSplitter):
     >>> from sklearn.datasets import load_diabetes
     >>> from RuleTree.stumps.splitters import RegressionSplitter
     >>> X, y = load_diabetes(return_X_y=True)
-    >>> splitter = RegressionSplitter(random_state=0).fit(X, y, numerical=list(range(10)), categorical=[])
+    >>> splitter = RegressionSplitter(random_state=0)
+    >>> splitter = splitter.fit(X, y, numerical=list(range(10)), categorical=[], context=None, node_id=None)
     >>> splitter.feature_, round(float(splitter.threshold_), 4)
     (8, -0.0038)
     """

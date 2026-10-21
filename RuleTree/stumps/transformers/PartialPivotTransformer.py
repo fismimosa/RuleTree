@@ -60,7 +60,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
     >>> from sklearn.datasets import load_iris
     >>> from RuleTree.stumps.transformers import PartialPivotTransformer
     >>> X, y = load_iris(return_X_y=True)
-    >>> PartialPivotTransformer(n_shapelets=4, random_state=0).fit(X, y).transform(X).shape
+    >>> PartialPivotTransformer(n_shapelets=4, random_state=0).fit(X, y, context=None, node_id=None).transform(X).shape
     (150, 4)
     """
 
@@ -110,7 +110,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
                                 use_combination=self.use_combination,
                                 n_jobs=self.n_jobs)
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
         """
         Select the partial pivots among the instances in the node.
 
@@ -124,13 +124,11 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
             Indices of the instances in the node. If None, all the instances.
         data_type : str, default=None
             Type of X, used as key of the cached values.
-        cache : dict, default=None
-            Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
-        context : RuleTree, default=None
+        context : RuleTree or None
             Tree being built, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
@@ -153,7 +151,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X, context=None, node_id=None):
         """
         Distance of each instance from each partial pivot (from the chosen one, after select).
 
@@ -161,6 +159,10 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         ----------
         X : numpy.ndarray
             Tabular data.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node of the stump, None outside a tree.
 
         Returns
         -------

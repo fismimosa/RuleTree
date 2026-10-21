@@ -81,11 +81,10 @@ class Stump(RuleTreeBaseStump):
         """Task of the stump: the one of its splitter (MODEL_TYPE_CLF or MODEL_TYPE_REG)."""
         return self._make_splitter().task
 
-    def fit(self, data, y, idx=None, context=None, data_type=None, sample_weight=None, check_input=True,
-            node_id=None):
+    def fit(self, data, y, idx=None, data_type=None, sample_weight=None, check_input=True, *, context, node_id):
         """
         Fit the stump on the instances ``idx`` of ``data``: the transformer on the whole data set of the
-        selected type (with the indices of the node and the cache of the tree), the splitter on the
+        selected type (with the indices of the node; its cache is in the tree), the splitter on the
         feature matrix of the node; then the transformer keeps only what is needed by the chosen feature
         (and the splitter is fitted again if the feature matrix changes). The transformer and the
         splitter also receive the tree (``context``) and ``node_id``.
@@ -98,15 +97,15 @@ class Stump(RuleTreeBaseStump):
             Target of the whole data set.
         idx : numpy.ndarray, default=None
             Indices of the instances reaching the node. If None, all the instances.
-        context : RuleTree, default=None
-            Tree being built, whose cache is shared by the stumps of the same class.
         data_type : str, default=None
             Data type to use. If None, the first supported data type available in ``data``.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the whole data set.
         check_input : bool, default=True
             Whether to check the input data.
-        node_id : str, default=None
+        context : RuleTree or None
+            Tree being built, None outside a tree.
+        node_id : str or None
             Identifier of the node being split, stored in ``node_id_``. None outside a tree.
 
         Returns
@@ -127,14 +126,14 @@ class Stump(RuleTreeBaseStump):
         self.node_id_ = node_id
 
         transformer = self._make_transformer()
-        transformer.fit(X, y, idx, data_type=self.data_type_, cache=self._get_cache(context),
-                        sample_weight=sample_weight, context=context, node_id=node_id)
+        transformer.fit(X, y, idx, data_type=self.data_type_, sample_weight=sample_weight, context=context,
+                        node_id=node_id)
 
         def fit_splitter():
             splitter = self._make_splitter()
-            return splitter.fit(transformer.transform(X[idx]), y[idx], transformer.numerical_,
-                                transformer.categorical_, sample_weight_idx, check_input,
-                                context=context, node_id=node_id)
+            X_node = transformer.transform(X[idx], context=context, node_id=node_id)
+            return splitter.fit(X_node, y[idx], transformer.numerical_, transformer.categorical_, sample_weight_idx,
+                                check_input, context=context, node_id=node_id)
 
         splitter = fit_splitter()
         feature = transformer.select(splitter.feature_)
@@ -147,7 +146,7 @@ class Stump(RuleTreeBaseStump):
 
         return self
 
-    def _transform(self, X):
+    def _transform(self, X, context=None, node_id=None):
         """
         Feature matrix of X, computed by the fitted transformer.
 
@@ -155,14 +154,18 @@ class Stump(RuleTreeBaseStump):
         ----------
         X : numpy.ndarray
             Data of the stump's data type.
+        context : RuleTree, default=None
+            The tree, when called by it (fit, predictions); None otherwise.
+        node_id : str, default=None
+            Identifier of the node of the stump, when called by the tree; None otherwise.
 
         Returns
         -------
         X_transformed : numpy.ndarray of shape (n_samples, n_features)
         """
-        return self.transformer_.transform(X)
+        return self.transformer_.transform(X, context=context, node_id=node_id)
 
-    def _apply_matrix(self, X):
+    def _apply_matrix(self, X, context=None, node_id=None):
         """
         Split of a feature matrix, computed by the fitted splitter.
 
@@ -170,15 +173,19 @@ class Stump(RuleTreeBaseStump):
         ----------
         X : numpy.ndarray of shape (n_samples, n_features)
             Feature matrix.
+        context : RuleTree, default=None
+            The tree, when called by it (fit, predictions); None otherwise.
+        node_id : str, default=None
+            Identifier of the node of the stump, when called by the tree; None otherwise.
 
         Returns
         -------
         labels : numpy.ndarray of int
             1 for the rows that go to the left child, 2 otherwise.
         """
-        return self.splitter_.apply(X)
+        return self.splitter_.apply(X, context=context, node_id=node_id)
 
-    def _update_statistics_matrix(self, X, y, sample_weight=None, context=None, node_id=None):
+    def _update_statistics_matrix(self, X, y, sample_weight=None, *, context, node_id):
         """
         Recompute the statistics of the splitter on a feature matrix.
 
@@ -190,9 +197,9 @@ class Stump(RuleTreeBaseStump):
             Target of the instances in the node.
         sample_weight : numpy.ndarray, default=None
             Sample weights of the instances in the node.
-        context : RuleTree, default=None
+        context : RuleTree or None
             The tree, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
         self.splitter_.update_statistics(X, y, sample_weight, context=context, node_id=node_id)

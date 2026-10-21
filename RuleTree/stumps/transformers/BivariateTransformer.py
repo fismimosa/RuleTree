@@ -53,7 +53,8 @@ class BivariateTransformer(ObliqueTransformer):
     >>> from sklearn.datasets import load_iris
     >>> from RuleTree.stumps.transformers import BivariateTransformer
     >>> X, y = load_iris(return_X_y=True)
-    >>> transformer = BivariateTransformer(n_orientations=4, tree_params={"random_state": 0}).fit(X, y)
+    >>> transformer = BivariateTransformer(n_orientations=4, tree_params={"random_state": 0})
+    >>> transformer = transformer.fit(X, y, context=None, node_id=None)
     >>> transformer.transform(X).shape  # one column per angle
     (150, 4)
     >>> transformer.feature_id(1)  # the chosen pair of features

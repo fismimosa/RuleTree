@@ -35,7 +35,7 @@ def distances_from(stump, X, pivots):
 def test_multiple_pivot_rule_is_the_split(stump_class, iris):
     """P_a <= P_b: the instances closer to the training instance a than to b go left."""
     X, y = iris
-    stump = stump_class(random_state=0).fit(X, y)
+    stump = stump_class(random_state=0).fit(X, y, context=None, node_id=None)
 
     a, b = stump.feature_original
     distances = distances_from(stump, X, (a, b))
@@ -48,7 +48,8 @@ def test_multiple_pivot_rule_is_the_split(stump_class, iris):
 @pytest.mark.parametrize("oblique_split_type", ["householder", "bivariate"])
 def test_oblique_pivot_rule_is_the_split(oblique_split_type, iris):
     X, y = iris
-    stump = ObliquePivotTreeStumpClassifier(oblique_split_type=oblique_split_type, random_state=0).fit(X, y)
+    stump = ObliquePivotTreeStumpClassifier(oblique_split_type=oblique_split_type, random_state=0)
+    stump = stump.fit(X, y, context=None, node_id=None)
 
     rule = stump.get_rule(float_precision=None)
     left = distances_from(stump, X, rule["feature_idx"]) @ np.array(rule["coefficients"]) <= rule["threshold"]

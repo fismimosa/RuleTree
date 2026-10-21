@@ -102,7 +102,7 @@ The simplest transformer computes the features from each instance alone: it defi
        supported_data_types = (DATA_TYPE_TS,)
        statistics = {"mean": np.mean, "std": np.std, "min": np.min, "max": np.max}
 
-       def transform(self, X):
+       def transform(self, X, context=None, node_id=None):
            return np.column_stack([f(X[:, 0, :], axis=1) for f in self.statistics.values()])
 
        def feature_id(self, feature):
@@ -153,13 +153,13 @@ This one draws random projections of the tabular data at each node:
            self.n_projections = n_projections
            self.random_state = random_state
 
-       def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+       def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
            rng = np.random.default_rng(self.random_state)
            self.directions_ = rng.normal(size=(X.shape[1], self.n_projections))
            self.numerical_, self.categorical_ = list(range(self.n_projections)), []
            return self
 
-       def transform(self, X):
+       def transform(self, X, context=None, node_id=None):
            return X @ self.directions_
 
        def select(self, feature):
@@ -180,12 +180,15 @@ This one draws random projections of the tabular data at each node:
   scikit-learn estimator. A ``random_state`` parameter left to None receives the one of the tree.
 - ``fit`` receives the data of all the instances (``X``, ``y``) and the indices of the instances
   in the node (``idx``, None for all of them); it sets ``numerical_`` and ``categorical_``, the
-  indices of the numerical and categorical columns of the feature matrix. Values that are the
-  same for every node (e.g. the distances between all the instances) can be computed once and
-  stored in ``cache``, a dictionary shared by the stumps of the same class with the same
-  hyperparameters (see :doc:`lifecycle`). ``context`` and ``node_id`` are the tree and the node
-  being split (see `Using the tree and the node`_); every ``fit`` accepts them, also when it does
-  not use them.
+  indices of the numerical and categorical columns of the feature matrix. ``context`` and
+  ``node_id`` are the tree and the node being split (see `Using the tree and the node`_): every
+  ``fit`` requires them, as keyword arguments, also when it does not use them (outside a tree
+  they are None). Values that are the same for every node (e.g. the distances between all the
+  instances) can be computed once and stored in ``self._get_cache(context)``, a dictionary of the
+  tree shared by the transformers of the same class with the same hyperparameters (see
+  :doc:`lifecycle`).
+- ``transform`` also accepts ``context`` and ``node_id``, optional: the tree passes them when it
+  predicts.
 - ``select`` (optional) is called after the splitter has chosen a column: the transformer keeps
   only what that column needs and returns its new index. Here, a single projection is kept.
   A transformer whose ``select`` changes the feature matrix in other ways sets
@@ -272,7 +275,7 @@ categorical value), ``is_categorical_``, ``gain_`` (used to compare stumps with
 ``stump_selection="best"``) and ``impurity_`` (the impurity of the node and of the two children,
 or None). When no split is possible, ``fit`` raises
 :class:`~RuleTree.exceptions.NoSplitFoundWarning`, and the node becomes a leaf. As for the
-transformers, ``fit`` also accepts ``context`` and ``node_id``. ``apply`` and the saving of the
+transformers, ``fit`` requires ``context`` and ``node_id``. ``apply`` and the saving of the
 split are inherited. This regression splitter splits each feature at its median and
 keeps the one that reduces the variance most:
 
@@ -288,8 +291,8 @@ keeps the one that reduces the variance most:
 
        task = MODEL_TYPE_REG
 
-       def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
-               node_id=None):
+       def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context,
+               node_id):
            self.feature_, self.gain_ = None, -np.inf
            for feature in numerical:
                threshold = float(np.median(X[:, feature]))
@@ -370,8 +373,9 @@ parameter, passed to the splitter, makes the stump reproducible, and lets the tr
 ``random_state`` when it is None.
 
 The fitted transformer and splitter of a stump are in ``stump.transformer_`` and
-``stump.splitter_``. The cache is shared by the stumps of the same class with the same
-hyperparameters, including the ones of their components (see ``cache_namespace``).
+``stump.splitter_``. The cache is the one of the transformer: it is shared by the transformers of
+the same class with the same hyperparameters, also when they belong to different stumps (see
+``cache_namespace``).
 
 The rule of a split is written by ``get_rule``, with the feature named by ``feature_id`` of the
 transformer. A stump with a rule of its own (e.g. ``P_<i> <= t`` for the pivots) overrides
@@ -394,7 +398,8 @@ Using the tree and the node
 A component can also look at the tree it is part of. The ``fit`` of every stump, transformer and
 splitter receives two arguments for this: ``context``, the tree being built, and ``node_id``, the
 identifier of the node being split (``"R"`` for the root, then ``"l"`` or ``"r"`` for each step to
-the left or to the right, e.g. ``"Rlr"``). Outside a tree both are None. ``context.get_node_by_id(node_id)`` is the node: it is still a leaf, while its ancestors
+the left or to the right, e.g. ``"Rlr"``). Outside a tree both are None.
+``context.get_node_by_id(node_id)`` is the node: it is still a leaf, while its ancestors
 (``node.parent``, ``node.parent.parent``, ...) are already split and have their fitted stump. This
 transformer leaves out the features used by the ancestors, so that each path from the root tests
 each feature at most once:
@@ -404,8 +409,8 @@ each feature at most once:
    class UnusedFeaturesTransformer(MatrixTransformer):
        """The features not used by the splits of the ancestors of the node."""
 
-       def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
-           super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight,
+       def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+           super().fit(X, y, idx, data_type=data_type, sample_weight=sample_weight,
                        context=context, node_id=node_id)
 
            used = set()
@@ -449,10 +454,14 @@ each feature at most once:
 
 A decision tree with the same parameters splits ``Rr`` again on petal width.
 
-- Every ``fit`` must accept ``context`` and ``node_id``, also when it does not use them, and a
-  ``fit`` that calls the one of its base class passes them on.
-- ``update_statistics`` of the stumps and of the splitters receives them too, when the tree
-  recomputes the statistics of its nodes on new data.
+- In ``fit`` (and in ``update_statistics`` of the stumps and of the splitters, called when the
+  tree recomputes the statistics of its nodes on new data) ``context`` and ``node_id`` are
+  required keyword arguments, also when they are not used; a ``fit`` that calls the one of its
+  base class passes them on. Outside a tree they are None:
+  ``stump.fit(X, y, context=None, node_id=None)``.
+- In the methods used by the predictions (``apply`` of the stumps and of the splitters,
+  ``transform`` of the transformers) they are optional: the tree passes them, a direct call can
+  leave them out.
 - The stump keeps ``node_id`` in ``node_id_``: the identifier of its node, also after
   ``from_dict`` (it is the ``node_id`` of the saved node). ``node_id_[:-1]`` is the identifier of the parent, and ``len(node_id_) - 1`` the
   depth of the node.

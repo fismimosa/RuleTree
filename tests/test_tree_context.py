@@ -27,20 +27,32 @@ def record(component, context, node_id):
 
 
 class RecordingTransformer(MatrixTransformer):
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
         record("transformer", context, node_id)
-        return super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight, context=context,
+        return super().fit(X, y, idx, data_type=data_type, sample_weight=sample_weight, context=context,
                            node_id=node_id)
+
+    def transform(self, X, context=None, node_id=None):
+        record("transform", context, node_id)
+        return super().transform(X, context=context, node_id=node_id)
 
 
 class RecordingSplitter(ClassificationSplitter):
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None, node_id=None):
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context, node_id):
         record("splitter", context, node_id)
         return super().fit(X, y, numerical, categorical, sample_weight, check_input, context=context, node_id=node_id)
 
-    def update_statistics(self, X, y, sample_weight=None, context=None, node_id=None):
+    def update_statistics(self, X, y, sample_weight=None, *, context, node_id):
         record("update_statistics", context, node_id)
         return super().update_statistics(X, y, sample_weight, context=context, node_id=node_id)
+
+    def apply(self, X, context=None, node_id=None):
+        record("apply", context, node_id)
+        return super().apply(X, context=context, node_id=node_id)
+
+
+def fitted_calls(component_names):
+    return [call for call in CALLS if call[0] in component_names]
 
 
 @pytest.mark.parametrize("make_model, dataset", [
@@ -65,7 +77,7 @@ def test_stump_outside_a_tree(iris):
     X, y = iris
 
     assert DecisionTreeStumpClassifier().node_id_ is None
-    assert DecisionTreeStumpClassifier().fit(X, y).node_id_ is None
+    assert DecisionTreeStumpClassifier().fit(X, y, context=None, node_id=None).node_id_ is None
 
 
 def test_trees_of_the_stumps_rename_the_node(iris):
@@ -84,14 +96,15 @@ def test_components_receive_the_tree_and_the_node(iris):
     model = RuleTreeClassifier(max_depth=2, random_state=0,
                                base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
 
+    fits = fitted_calls(("transformer", "splitter"))
     # the pure nodes become leaves without fitting a stump
-    assert {(component, node_id) for component, _, node_id, _, _ in CALLS} == \
+    assert {(component, node_id) for component, _, node_id, _, _ in fits} == \
         {(component, node_id) for component in ("transformer", "splitter") for node_id in model.get_predicates()}
-    assert all(context is model and is_leaf and parent_is_split for _, context, _, is_leaf, parent_is_split in CALLS)
+    assert all(context is model and is_leaf and parent_is_split for _, context, _, is_leaf, parent_is_split in fits)
 
     CALLS.clear()
-    Stump(RecordingTransformer(), RecordingSplitter()).fit(X, y)
-    assert [(component, context, node_id) for component, context, node_id, _, _ in CALLS] == \
+    Stump(RecordingTransformer(), RecordingSplitter()).fit(X, y, context=None, node_id=None)
+    assert [call[:3] for call in fitted_calls(("transformer", "splitter"))] == \
         [("transformer", None, None), ("splitter", None, None)]
 
 
@@ -103,6 +116,50 @@ def test_update_statistics_receives_the_tree_and_the_node(iris):
 
     model.update_statistics(X, y)
 
-    assert [component for component, _, _, _, _ in CALLS] == ["update_statistics"] * len(model.get_predicates())
-    assert {node_id for _, _, node_id, _, _ in CALLS} == set(model.get_predicates())
-    assert all(context is model for _, context, _, _, _ in CALLS)
+    updates = fitted_calls(("update_statistics",))
+    assert len(updates) == len(model.get_predicates())
+    assert {node_id for _, _, node_id, _, _ in updates} == set(model.get_predicates())
+    assert all(context is model for _, context, _, _, _ in updates)
+
+
+@pytest.mark.parametrize("predict", ["predict", "predict_proba", "apply"])
+def test_predictions_pass_the_tree_and_the_node(predict, iris):
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, random_state=0,
+                               base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
+    CALLS.clear()
+
+    getattr(model, predict)(X)
+
+    for component in ("transform", "apply"):
+        calls = fitted_calls((component,))
+        assert {node_id for _, _, node_id, _, _ in calls} == set(model.get_predicates())
+        assert all(context is model for _, context, _, _, _ in calls)
+
+
+def test_context_and_node_id_are_optional_in_the_predictions(iris):
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, random_state=0,
+                               base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
+    CALLS.clear()
+
+    labels = model.root.stump.apply(X)
+
+    assert set(labels) == {1, 2}
+    assert [call[:3] for call in CALLS] == [("transform", None, None), ("apply", None, None)]
+
+
+def test_context_and_node_id_are_required(iris):
+    X, y = iris
+    stump = DecisionTreeStumpClassifier().fit(X, y, context=None, node_id=None)
+
+    with pytest.raises(TypeError, match="context"):
+        DecisionTreeStumpClassifier().fit(X, y)
+    with pytest.raises(TypeError, match="context"):
+        stump.update_statistics(X, y)
+    with pytest.raises(TypeError, match="context"):
+        MatrixTransformer().fit(X, y)
+    with pytest.raises(TypeError, match="context"):
+        ClassificationSplitter().fit(X, y, [0, 1, 2, 3], [])
+    with pytest.raises(TypeError, match="context"):
+        stump.splitter_.update_statistics(X, y)

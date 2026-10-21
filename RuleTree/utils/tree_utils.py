@@ -169,7 +169,7 @@ def _eval_rule(X: np.ndarray, rule: RuleTreeNode) -> np.ndarray:
     if rule.is_leaf():
         raise ValueError("The rule is a leaf node, cannot evaluate.")
 
-    return rule.stump.apply(X)
+    return rule.stump.apply(X, node_id=rule.node_id)
 
 
 def xgboost_similarity_score_regression(residuals:np.ndarray, cover:int, _lambda:int=0) -> float:

@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import sklearn
 
+from RuleTree import RuleTreeClassifier
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.transformers import (BivariateTransformer, HouseholderTransformer, MatrixTransformer,
                                           MultiplePivotTransformer, ObliquePivotTransformer, PartialPivotTransformer,
@@ -29,16 +30,16 @@ def json_round_trip(state):
 
 def test_matrix_transformer(iris_mixed, time_series):
     X, y = iris_mixed
-    cache = {}
+    tree = RuleTreeClassifier()  # the context, with the cache
 
-    transformer = MatrixTransformer().fit(X, y, data_type=DATA_TYPE_TABULAR, cache=cache)
+    transformer = MatrixTransformer().fit(X, y, data_type=DATA_TYPE_TABULAR, context=tree, node_id="R")
 
     assert transformer.transform(X) is X  # tabular data are used as they are
     assert (transformer.numerical_, transformer.categorical_) == ([1, 2], [0])
-    assert cache[("feature_types", DATA_TYPE_TABULAR)] == ([1, 2], [0])
+    assert tree.get_cache(transformer.cache_namespace())[("feature_types", DATA_TYPE_TABULAR)] == ([1, 2], [0])
 
     X_ts, y_ts = time_series
-    transformer = MatrixTransformer().fit(X_ts, y_ts, data_type=DATA_TYPE_TS)
+    transformer = MatrixTransformer().fit(X_ts, y_ts, data_type=DATA_TYPE_TS, context=None, node_id=None)
     assert transformer.transform(X_ts).shape == (40, 30)  # flattened
     assert transformer.numerical_ == list(range(30))
 
@@ -46,14 +47,15 @@ def test_matrix_transformer(iris_mixed, time_series):
 def test_pivot_transformer(iris):
     X, y = iris
     idx = np.arange(0, len(y), 2)
-    cache = {}
+    tree = RuleTreeClassifier()  # the context, with the cache
 
-    transformer = PivotTransformer(MODEL_TYPE_CLF).fit(X, y, idx, data_type=DATA_TYPE_TABULAR, cache=cache)
+    transformer = PivotTransformer(MODEL_TYPE_CLF)
+    transformer.fit(X, y, idx, data_type=DATA_TYPE_TABULAR, context=tree, node_id="R")
 
     candidates = len(transformer.candidates_)
     assert transformer.transform(X[idx]).shape == (len(idx), candidates)
     assert set(transformer.candidate_names_) <= set(idx)  # pivots are instances of the node
-    assert ("pivot", DATA_TYPE_TABULAR, "euclidean") in cache
+    assert ("pivot", DATA_TYPE_TABULAR, "euclidean") in tree.get_cache(transformer.cache_namespace())
 
     name = transformer.feature_id(1)
     distances = transformer.transform(X)[:, 1]
@@ -70,13 +72,14 @@ def test_pivot_transformer_needs_numerical_features(iris_mixed):
     X, y = iris_mixed
 
     with pytest.raises(NoSplitFoundWarning):
-        PivotTransformer().fit(X[:, [0]], y)
+        PivotTransformer().fit(X[:, [0]], y, context=None, node_id=None)
 
 
 def test_shapelet_transformer(time_series):
     X, y = time_series
 
-    transformer = ShapeletTransformer(n_shapelets=3, sliding_window=10, selection="random").fit(X, y)
+    transformer = ShapeletTransformer(n_shapelets=3, sliding_window=10, selection="random")
+    transformer = transformer.fit(X, y, context=None, node_id=None)
 
     assert transformer.transform(X).shape == (len(y), 3)
     assert transformer.numerical_ == [0, 1, 2]
@@ -85,13 +88,13 @@ def test_shapelet_transformer(time_series):
     assert np.allclose(loaded.transform(X), transformer.transform(X))
 
     with pytest.raises(ValueError, match="sample_weight"):
-        ShapeletTransformer().fit(X, y, sample_weight=np.ones(len(y)))
+        ShapeletTransformer().fit(X, y, sample_weight=np.ones(len(y)), context=None, node_id=None)
 
 
 def test_partial_pivot_transformer(iris):
     X, y = iris
 
-    transformer = PartialPivotTransformer(n_shapelets=3).fit(X, y)
+    transformer = PartialPivotTransformer(n_shapelets=3).fit(X, y, context=None, node_id=None)
     assert transformer.refit_after_select
     assert transformer.transform(X).shape[1] == len(transformer.st_.shapelets)
 
@@ -130,7 +133,7 @@ def test_oblique_transformer(transformer, iris_mixed):
     idx = np.arange(0, len(y), 2)
 
     transformer.fit(X, y.astype(float) if transformer.get_params().get("ml_task") == MODEL_TYPE_REG else y, idx,
-                    data_type=DATA_TYPE_TABULAR)
+                    data_type=DATA_TYPE_TABULAR, context=None, node_id=None)
 
     X_transformed = transformer.transform(X)
     assert transformer.num_pre_transformed_ == [1, 2]
@@ -154,7 +157,7 @@ def test_householder_transformer_reflects_the_principal_component():
     rng = np.random.default_rng(0)
     X = rng.normal(size=(200, 1)) @ np.array([[0.6, 0.8]]) + rng.normal(scale=0.01, size=(200, 2))
 
-    transformer = HouseholderTransformer().fit(X, np.zeros(200))
+    transformer = HouseholderTransformer().fit(X, np.zeros(200), context=None, node_id=None)
 
     projected = transformer.transform(X)
     assert np.isclose(projected.var(axis=0).max(), X.var(axis=0).sum(), rtol=1e-3)  # all the variance on one axis
@@ -164,9 +167,9 @@ def test_oblique_transformers_need_numerical_features(iris_mixed):
     X, y = iris_mixed
 
     with pytest.raises(NoSplitFoundWarning):
-        HouseholderTransformer().fit(X[:, [0]], y)
+        HouseholderTransformer().fit(X[:, [0]], y, context=None, node_id=None)
     with pytest.raises(NoSplitFoundWarning, match="two numerical"):
-        BivariateTransformer().fit(X[:, [0, 1]], y)
+        BivariateTransformer().fit(X[:, [0, 1]], y, context=None, node_id=None)
 
 
 @pytest.mark.parametrize("transformer, dataset", [
@@ -177,7 +180,7 @@ def test_proximity_transformer(transformer, dataset, request):
     """One 0/1 column per pair of references: 1 where the instance is closer to the second one."""
     X, y = request.getfixturevalue(dataset)
 
-    transformer.fit(X, y)
+    transformer.fit(X, y, context=None, node_id=None)
 
     distances = transformer.st_.transform(X)
     comparisons = transformer.transform(X)
@@ -199,7 +202,8 @@ def test_partial_proximity_compares_pivots_on_the_same_features(iris):
 
     for same_features in (True, False):
         transformer = PartialProximityTransformer(n_shapelets=6, n_features_strategy=(1, 2), random_state=0,
-                                                  proximity_on_same_features=same_features).fit(X, y)
+                                                  proximity_on_same_features=same_features)
+        transformer.fit(X, y, context=None, node_id=None)
         used = ~np.isnan(transformer.st_.shapelets)
         same = [np.array_equal(used[i], used[j]) for i, j in transformer.pairs_]
         assert all(same) if same_features else len(transformer.pairs_) == 15
@@ -209,7 +213,8 @@ def test_proximity_transformer_needs_two_shapelets(time_series):
     X, y = time_series
 
     with pytest.raises(NoSplitFoundWarning, match="two shapelets"):
-        ProximityTransformer(n_shapelets=1, sliding_window=10, selection="random").fit(X, y)
+        ProximityTransformer(n_shapelets=1, sliding_window=10, selection="random").fit(X, y, context=None,
+                                                                                     node_id=None)
 
 
 @pytest.mark.parametrize("discriminative, max_per_class", [("tree", 1), ("householder", 2), ("bivariate", 2)])
@@ -238,7 +243,8 @@ def test_multiple_pivot_transformer(ml_task, iris):
     X, y = iris
     target = y if ml_task == MODEL_TYPE_CLF else X[:, 3]
 
-    transformer = MultiplePivotTransformer(ml_task, tree_params={"random_state": 0}).fit(X, target)
+    transformer = MultiplePivotTransformer(ml_task, tree_params={"random_state": 0})
+    transformer = transformer.fit(X, target, context=None, node_id=None)
 
     labels = dict(zip(transformer.candidate_names_, transformer.candidate_labels_))
     distances = PivotTransformer.transform(transformer, X)
@@ -266,7 +272,7 @@ def test_oblique_pivot_transformer(oblique_split_type, iris):
     X, y = iris
 
     transformer = ObliquePivotTransformer(oblique_split_type=oblique_split_type, n_orientations=4,
-                                          tree_params={"random_state": 0}).fit(X, y)
+                                          tree_params={"random_state": 0}).fit(X, y, context=None, node_id=None)
 
     distances = PivotTransformer.transform(transformer, X)
     names = list(transformer.candidate_names_)

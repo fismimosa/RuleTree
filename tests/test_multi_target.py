@@ -170,7 +170,7 @@ def test_stumps_with_several_targets(stump, targets):
     X, Y = targets
     data = {DATA_TYPE_TABULAR: X}
 
-    fitted = clone(stump).fit(data, Y, data_type=DATA_TYPE_TABULAR)
+    fitted = clone(stump).fit(data, Y, data_type=DATA_TYPE_TABULAR, context=None, node_id=None)
     loaded = type(fitted).dict_to_node(json_round_trip(fitted.node_to_dict()))
     assert set(fitted.apply(data)) == {1, 2}
     assert np.array_equal(loaded.apply(data), fitted.apply(data))

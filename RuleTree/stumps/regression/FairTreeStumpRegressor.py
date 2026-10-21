@@ -78,7 +78,8 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
     >>> from RuleTree.stumps.regression import FairTreeStumpRegressor
     >>> X, y = load_diabetes(return_X_y=True)
     >>> X = np.column_stack([X, X[:, 1] > 0])  # last column: the sensitive attribute
-    >>> stump = FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1, n_jobs=1).fit(X, y)
+    >>> stump = FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1, n_jobs=1)
+    >>> stump = stump.fit(X, y, context=None, node_id=None)
     >>> stump.get_rule()["textual_rule"]
     'X_4 <= -0.03'
     """

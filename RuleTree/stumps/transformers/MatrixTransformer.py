@@ -30,13 +30,13 @@ class MatrixTransformer(RuleTreeBaseTransformer):
     >>> import numpy as np
     >>> from RuleTree.stumps.transformers import MatrixTransformer
     >>> X_ts = np.zeros((10, 2, 5))  # 10 time series with 2 signals of length 5
-    >>> MatrixTransformer().fit(X_ts, None).transform(X_ts).shape
+    >>> MatrixTransformer().fit(X_ts, None, context=None, node_id=None).transform(X_ts).shape
     (10, 10)
     """
 
     supported_data_types = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
         """
         Compute the feature types of the (flattened) data on the whole data set.
 
@@ -50,23 +50,22 @@ class MatrixTransformer(RuleTreeBaseTransformer):
             Indices of the instances in the node. If None, all the instances.
         data_type : str, default=None
             Type of X, used as key of the cached values.
-        cache : dict, default=None
-            Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
-        context : RuleTree, default=None
+        context : RuleTree or None
             Tree being built, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
         -------
         self : MatrixTransformer
         """
-        self.numerical_, self.categorical_ = get_feature_types(self.transform(X), cache, data_type)
+        self.numerical_, self.categorical_ = get_feature_types(self.transform(X, context=context, node_id=node_id),
+                                                               self._get_cache(context), data_type)
         return self
 
-    def transform(self, X):
+    def transform(self, X, context=None, node_id=None):
         """
         The data: tabular data as they are, time series and images flattened.
 
@@ -74,6 +73,10 @@ class MatrixTransformer(RuleTreeBaseTransformer):
         ----------
         X : numpy.ndarray
             Data of a supported type.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node of the stump, None outside a tree.
 
         Returns
         -------

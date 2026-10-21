@@ -77,7 +77,7 @@ class ObliquePivotTreeStumpClassifier(ObliquePivotTreeStump, DecisionTreeStumpCl
     >>> from RuleTree import RuleTreeClassifier
     >>> from RuleTree.stumps.classification import ObliquePivotTreeStumpClassifier
     >>> X, y = load_iris(return_X_y=True)
-    >>> stump = ObliquePivotTreeStumpClassifier(random_state=0).fit(X, y)
+    >>> stump = ObliquePivotTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None)
     >>> stump.get_rule()["textual_rule"]
     '-0.447 * P_22 + 0.468 * P_118 <= 0.955'
     >>> model = RuleTreeClassifier(max_depth=2, base_stumps=ObliquePivotTreeStumpClassifier("cosine")).fit(X, y)

@@ -65,7 +65,7 @@ class MultiplePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTreeStump
     >>> from RuleTree import RuleTreeClassifier
     >>> from RuleTree.stumps.classification import MultiplePivotTreeStumpClassifier
     >>> X, y = load_iris(return_X_y=True)
-    >>> stump = MultiplePivotTreeStumpClassifier(random_state=0).fit(X, y)
+    >>> stump = MultiplePivotTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None)
     >>> stump.get_rule()["textual_rule"]  # closer to the training instance a than to b
     'P_27 <= P_77'
     >>> model = RuleTreeClassifier(max_depth=2, base_stumps=MultiplePivotTreeStumpClassifier()).fit(X, y)

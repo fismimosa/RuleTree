@@ -53,7 +53,8 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
     >>> from sklearn.datasets import load_diabetes
     >>> from RuleTree.stumps.splitters import XGBoostSplitter
     >>> X, y = load_diabetes(return_X_y=True)
-    >>> splitter = XGBoostSplitter(lam=1).fit(X, y - y.mean(), numerical=list(range(10)), categorical=[])
+    >>> splitter = XGBoostSplitter(lam=1)
+    >>> splitter = splitter.fit(X, y - y.mean(), numerical=list(range(10)), categorical=[], context=None, node_id=None)
     >>> splitter.feature_
     8
     """
@@ -115,8 +116,8 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
             else:
                 return np.quantile(X[:, feature_idx], np.linspace(0, 1, self.n_quantiles))
 
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
-            node_id=None):
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context,
+            node_id):
         """
         Find the split with the highest XGBoost gain among all the features and thresholds.
 
@@ -134,9 +135,9 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
             Sample weights of the instances in the node.
         check_input : bool, default=True
             Whether to check the input data.
-        context : RuleTree, default=None
+        context : RuleTree or None
             Tree being built, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
@@ -259,7 +260,7 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         gains[(n_left < self.min_cover) | (n_right < self.min_cover)] = -np.inf
         return gains
 
-    def update_statistics(self, X, y, sample_weight=None, context=None, node_id=None):
+    def update_statistics(self, X, y, sample_weight=None, *, context, node_id):
         """
         Recompute the similarity scores and the gain of the split (``gain`` and ``gain_``).
 
@@ -276,7 +277,7 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         node_id : str, default=None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
         """
-        left = self.apply(X) == 1
+        left = self.apply(X, context=context, node_id=node_id) == 1
 
         cover_fn, sim_fn = self._get_cover_similarity_fun()
 

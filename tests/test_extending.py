@@ -23,7 +23,7 @@ class SummaryTransformer(RuleTreeBaseTransformer):
     supported_data_types = (DATA_TYPE_TS,)
     statistics = {"mean": np.mean, "std": np.std, "min": np.min, "max": np.max}
 
-    def transform(self, X):
+    def transform(self, X, context=None, node_id=None):
         return np.column_stack([f(X[:, 0, :], axis=1) for f in self.statistics.values()])
 
     def feature_id(self, feature):
@@ -37,13 +37,13 @@ class RandomProjectionTransformer(RuleTreeBaseTransformer):
         self.n_projections = n_projections
         self.random_state = random_state
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
         rng = np.random.default_rng(self.random_state)
         self.directions_ = rng.normal(size=(X.shape[1], self.n_projections))
         self.numerical_, self.categorical_ = list(range(self.n_projections)), []
         return self
 
-    def transform(self, X):
+    def transform(self, X, context=None, node_id=None):
         return X @ self.directions_
 
     def select(self, feature):
@@ -64,8 +64,8 @@ class RandomProjectionTransformer(RuleTreeBaseTransformer):
 class UnusedFeaturesTransformer(MatrixTransformer):
     """The features not used by the splits of the ancestors of the node: a transformer that uses the tree."""
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
-        super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight, context=context,
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+        super().fit(X, y, idx, data_type=data_type, sample_weight=sample_weight, context=context,
                     node_id=node_id)
 
         used = set()
@@ -164,7 +164,7 @@ def test_gain_splitter(iris):
     X, y = iris
     splitter = MisclassificationSplitter()
 
-    splitter.fit(X, y, numerical=[0, 1, 2, 3], categorical=[])
+    splitter.fit(X, y, numerical=[0, 1, 2, 3], categorical=[], context=None, node_id=None)
 
     assert splitter.feature_ in (2, 3)  # petal length or width separate setosa
     assert set(splitter.apply(X)) == {1, 2}
@@ -175,11 +175,12 @@ def test_gain_splitter(iris):
 def test_gain_splitter_categorical_and_min_samples_leaf(iris_mixed):
     X, y = iris_mixed
 
-    splitter = MisclassificationSplitter().fit(X, y, numerical=[], categorical=[0])
+    splitter = MisclassificationSplitter().fit(X, y, numerical=[], categorical=[0], context=None, node_id=None)
     assert splitter.is_categorical_ and splitter.threshold_ in ("red", "green", "blue")
 
     with pytest.raises(NoSplitFoundWarning):
-        MisclassificationSplitter(min_samples_leaf=len(y)).fit(X, y, numerical=[1, 2], categorical=[0])
+        MisclassificationSplitter(min_samples_leaf=len(y)).fit(X, y, numerical=[1, 2], categorical=[0], context=None,
+                                                               node_id=None)
 
 
 def test_named_stump(time_series):
@@ -201,10 +202,21 @@ def test_cache_namespace_of_composed_stumps(iris):
         Stump(RandomProjectionTransformer(), ClassificationSplitter()),
     ]).fit(X, y)
 
-    matrix_stump, projection_stump = (stump for _, stump, _ in model.candidate_splits_)
-    assert matrix_stump.cache_namespace() != projection_stump.cache_namespace()
-    assert set(model.cache_) == {matrix_stump.cache_namespace(), projection_stump.cache_namespace()}
-    assert ("feature_types", DATA_TYPE_TABULAR) in model.get_cache(matrix_stump.cache_namespace())
+    matrix, projection = (stump._make_transformer() for _, stump, _ in model.candidate_splits_)
+    # RandomProjectionTransformer does not use the cache
+    assert set(model.cache_) == {matrix.cache_namespace()} and matrix.cache_namespace() != projection.cache_namespace()
+    assert ("feature_types", DATA_TYPE_TABULAR) in model.get_cache(matrix.cache_namespace())
+
+
+def test_stumps_with_the_same_transformer_share_its_cache(iris):
+    """The cache depends only on the transformer: here, the types of the features of iris."""
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, stump_selection="best", base_stumps=[
+        Stump(MatrixTransformer(), ClassificationSplitter()),
+        Stump(MatrixTransformer(), ClassificationSplitter(criterion="entropy")),
+    ]).fit(X, y)
+
+    assert list(model.cache_) == [MatrixTransformer().cache_namespace()]
 
 
 def test_transformer_using_the_tree(iris):
@@ -221,4 +233,5 @@ def test_transformer_using_the_tree(iris):
         assert len(features) == len(set(features)) <= X.shape[1]
     assert max(leaf.get_depth() for leaf in model.get_leaf_nodes().values()) <= X.shape[1]
     assert np.array_equal(json_round_trip(model).predict(X), model.predict(X))
-    assert UnusedFeaturesTransformer().fit(X, y).numerical_ == [0, 1, 2, 3]  # outside a tree: all the features
+    outside = UnusedFeaturesTransformer().fit(X, y, context=None, node_id=None)
+    assert outside.numerical_ == [0, 1, 2, 3]  # outside a tree: all the features

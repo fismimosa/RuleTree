@@ -69,7 +69,7 @@ class MultiplePivotTransformer(PivotTransformer):
     >>> from sklearn.datasets import load_iris
     >>> from RuleTree.stumps.transformers import MultiplePivotTransformer
     >>> X, y = load_iris(return_X_y=True)
-    >>> transformer = MultiplePivotTransformer(tree_params={"random_state": 0}).fit(X, y)
+    >>> transformer = MultiplePivotTransformer(tree_params={"random_state": 0}).fit(X, y, context=None, node_id=None)
     >>> len(transformer.candidate_names_), len(transformer.pairs_)  # pairs of pivots of different classes
     (6, 12)
     """
@@ -93,7 +93,7 @@ class MultiplePivotTransformer(PivotTransformer):
                               max_oblique_features=self.max_oblique_features, tau=self.tau,
                               n_orientations=self.n_orientations, **(self.tree_params or {}))
 
-    def fit(self, X, y, idx=None, data_type=None, cache=None, sample_weight=None, context=None, node_id=None):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
         """
         Select the candidate pivots of the node (see PivotTransformer.fit) and the pairs to compare.
 
@@ -107,13 +107,11 @@ class MultiplePivotTransformer(PivotTransformer):
             Indices of the instances in the node. If None, all the instances.
         data_type : str, default=None
             Type of X, used as key of the cached values.
-        cache : dict, default=None
-            Values shared among the splits of the tree.
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
-        context : RuleTree, default=None
+        context : RuleTree or None
             Tree being built, None outside a tree.
-        node_id : str, default=None
+        node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
 
         Returns
@@ -125,7 +123,7 @@ class MultiplePivotTransformer(PivotTransformer):
         NoSplitFoundWarning
             If the data have no numerical feature or there is no pair of pivots to compare.
         """
-        super().fit(X, y, idx, data_type=data_type, cache=cache, sample_weight=sample_weight, context=context,
+        super().fit(X, y, idx, data_type=data_type, sample_weight=sample_weight, context=context,
                     node_id=node_id)
 
         self.pairs_ = [(a, b) for a, b in itertools.combinations(range(len(self.candidate_names_)), 2)
@@ -137,7 +135,7 @@ class MultiplePivotTransformer(PivotTransformer):
 
         return self
 
-    def transform(self, X):
+    def transform(self, X, context=None, node_id=None):
         """
         Pivot comparisons of each instance for each pair of candidates (for the chosen pair, after select).
 
@@ -145,13 +143,17 @@ class MultiplePivotTransformer(PivotTransformer):
         ----------
         X : numpy.ndarray
             Tabular data.
+        context : RuleTree, default=None
+            The tree, None outside a tree.
+        node_id : str, default=None
+            Identifier of the node of the stump, None outside a tree.
 
         Returns
         -------
         X_transformed : numpy.ndarray of shape (n_samples, n_pairs)
             1 if the instance is closer to the second pivot of the pair, 0 otherwise.
         """
-        return closer_to_second(super().transform(X), self.pairs_)
+        return closer_to_second(super().transform(X, context=context, node_id=node_id), self.pairs_)
 
     def select(self, feature):
         """

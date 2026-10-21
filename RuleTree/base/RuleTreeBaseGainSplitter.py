@@ -42,7 +42,8 @@ class RuleTreeBaseGainSplitter(RuleTreeBaseSplitter, ABC):
     ...         errors = lambda labels: len(labels) - np.unique(labels, return_counts=True)[1].max()
     ...         return errors(y) - errors(y[left]) - errors(y[~left])
     >>> X = np.array([[1.0], [2.0], [3.0], [4.0]])
-    >>> splitter = MisclassificationSplitter().fit(X, np.array([0, 0, 1, 1]), numerical=[0], categorical=[])
+    >>> splitter = MisclassificationSplitter()
+    >>> splitter = splitter.fit(X, np.array([0, 0, 1, 1]), numerical=[0], categorical=[], context=None, node_id=None)
     >>> splitter.feature_, splitter.threshold_
     (0, 2.5)
     """
@@ -84,8 +85,8 @@ class RuleTreeBaseGainSplitter(RuleTreeBaseSplitter, ABC):
         values = np.unique(x.astype(float))
         return (values[:-1] + values[1:]) / 2
 
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, context=None,
-            node_id=None):
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context,
+            node_id):
         """
         Test every candidate split and keep the one with the highest gain.
 
