@@ -23,7 +23,7 @@ class SummaryTransformer(RuleTreeBaseTransformer):
     supported_data_types = (DATA_TYPE_TS,)
     statistics = {"mean": np.mean, "std": np.std, "min": np.min, "max": np.max}
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         return np.column_stack([f(X[:, 0, :], axis=1) for f in self.statistics.values()])
 
     def feature_id(self, feature):
@@ -37,13 +37,13 @@ class RandomProjectionTransformer(RuleTreeBaseTransformer):
         self.n_projections = n_projections
         self.random_state = random_state
 
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         rng = np.random.default_rng(self.random_state)
         self.directions_ = rng.normal(size=(X.shape[1], self.n_projections))
         self.numerical_, self.categorical_ = list(range(self.n_projections)), []
         return self
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         return X @ self.directions_
 
     def select(self, feature):
@@ -64,9 +64,9 @@ class RandomProjectionTransformer(RuleTreeBaseTransformer):
 class UnusedFeaturesTransformer(MatrixTransformer):
     """The features not used by the splits of the ancestors of the node: a transformer that uses the tree."""
 
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         super().fit(X, y, idx, data_type=data_type, sample_weight=sample_weight, context=context,
-                    node_id=node_id)
+                    node_id=node_id, cache=cache)
 
         used = set()
         ancestor = context.get_node_by_id(node_id).parent if context is not None else None
@@ -164,7 +164,7 @@ def test_gain_splitter(iris):
     X, y = iris
     splitter = MisclassificationSplitter()
 
-    splitter.fit(X, y, numerical=[0, 1, 2, 3], categorical=[], context=None, node_id=None)
+    splitter.fit(X, y, numerical=[0, 1, 2, 3], categorical=[], context=None, node_id=None, cache=None)
 
     assert splitter.feature_ in (2, 3)  # petal length or width separate setosa
     assert set(splitter.apply(X)) == {1, 2}
@@ -175,12 +175,13 @@ def test_gain_splitter(iris):
 def test_gain_splitter_categorical_and_min_samples_leaf(iris_mixed):
     X, y = iris_mixed
 
-    splitter = MisclassificationSplitter().fit(X, y, numerical=[], categorical=[0], context=None, node_id=None)
+    splitter = MisclassificationSplitter()
+    splitter = splitter.fit(X, y, numerical=[], categorical=[0], context=None, node_id=None, cache=None)
     assert splitter.is_categorical_ and splitter.threshold_ in ("red", "green", "blue")
 
     with pytest.raises(NoSplitFoundWarning):
         MisclassificationSplitter(min_samples_leaf=len(y)).fit(X, y, numerical=[1, 2], categorical=[0], context=None,
-                                                               node_id=None)
+                                                               node_id=None, cache=None)
 
 
 def test_named_stump(time_series):
@@ -233,5 +234,5 @@ def test_transformer_using_the_tree(iris):
         assert len(features) == len(set(features)) <= X.shape[1]
     assert max(leaf.get_depth() for leaf in model.get_leaf_nodes().values()) <= X.shape[1]
     assert np.array_equal(json_round_trip(model).predict(X), model.predict(X))
-    outside = UnusedFeaturesTransformer().fit(X, y, context=None, node_id=None)
+    outside = UnusedFeaturesTransformer().fit(X, y, context=None, node_id=None, cache=None)
     assert outside.numerical_ == [0, 1, 2, 3]  # outside a tree: all the features

@@ -36,7 +36,7 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
 
     supported_data_types = (DATA_TYPE_TABULAR,)
 
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
         Choose the oblique directions on the numerical features of the instances in the node.
 
@@ -56,6 +56,9 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
             Tree being built, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
@@ -69,7 +72,7 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
         if idx is None:
             idx = np.arange(len(X))
 
-        self.num_pre_transformed_, _ = get_feature_types(X, self._get_cache(context), data_type)
+        self.num_pre_transformed_, _ = get_feature_types(X, self._get_cache(cache), data_type)
         if len(self.num_pre_transformed_) == 0:
             raise NoSplitFoundWarning(f"{self.__class__.__name__} needs numerical features")
 
@@ -103,7 +106,7 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
         """Numerical features of X, as floats."""
         return np.asarray(X)[:, self.num_pre_transformed_].astype(float)
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         """
         Projection of the instances on the oblique directions (on the chosen one, after select).
 
@@ -115,6 +118,8 @@ class ObliqueTransformer(RuleTreeBaseTransformer, ABC):
             The tree, None outside a tree.
         node_id : str, default=None
             Identifier of the node of the stump, None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------

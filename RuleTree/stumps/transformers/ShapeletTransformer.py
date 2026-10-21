@@ -64,7 +64,7 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
     >>> rng = np.random.default_rng(0)
     >>> X_ts, y = rng.normal(size=(20, 1, 30)), rng.integers(0, 2, size=20)
     >>> transformer = ShapeletTransformer(n_shapelets=3, sliding_window=5, selection="random")
-    >>> transformer = transformer.fit(X_ts, y, context=None, node_id=None)
+    >>> transformer = transformer.fit(X_ts, y, context=None, node_id=None, cache=None)
     >>> transformer.transform(X_ts).shape
     (20, 3)
     """
@@ -118,7 +118,7 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
                          n_jobs=self.n_jobs,
                          ml_task=self.ml_task)
 
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
         Select the shapelets among the subsequences of the time series in the node.
 
@@ -138,6 +138,9 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
             Tree being built, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
@@ -160,7 +163,7 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
 
         return self
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         """
         Distance of each time series from each shapelet.
 
@@ -172,6 +175,8 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
             The tree, None outside a tree.
         node_id : str, default=None
             Identifier of the node of the stump, None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------

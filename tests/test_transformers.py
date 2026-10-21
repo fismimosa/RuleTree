@@ -32,14 +32,16 @@ def test_matrix_transformer(iris_mixed, time_series):
     X, y = iris_mixed
     tree = RuleTreeClassifier()  # the context, with the cache
 
-    transformer = MatrixTransformer().fit(X, y, data_type=DATA_TYPE_TABULAR, context=tree, node_id="R")
+    transformer = MatrixTransformer()
+    transformer = transformer.fit(X, y, data_type=DATA_TYPE_TABULAR,
+                                  context=tree, node_id="R", cache=tree._stump_cache())
 
     assert transformer.transform(X) is X  # tabular data are used as they are
     assert (transformer.numerical_, transformer.categorical_) == ([1, 2], [0])
     assert tree.get_cache(transformer.cache_namespace())[("feature_types", DATA_TYPE_TABULAR)] == ([1, 2], [0])
 
     X_ts, y_ts = time_series
-    transformer = MatrixTransformer().fit(X_ts, y_ts, data_type=DATA_TYPE_TS, context=None, node_id=None)
+    transformer = MatrixTransformer().fit(X_ts, y_ts, data_type=DATA_TYPE_TS, context=None, node_id=None, cache=None)
     assert transformer.transform(X_ts).shape == (40, 30)  # flattened
     assert transformer.numerical_ == list(range(30))
 
@@ -50,7 +52,7 @@ def test_pivot_transformer(iris):
     tree = RuleTreeClassifier()  # the context, with the cache
 
     transformer = PivotTransformer(MODEL_TYPE_CLF)
-    transformer.fit(X, y, idx, data_type=DATA_TYPE_TABULAR, context=tree, node_id="R")
+    transformer.fit(X, y, idx, data_type=DATA_TYPE_TABULAR, context=tree, node_id="R", cache=tree._stump_cache())
 
     candidates = len(transformer.candidates_)
     assert transformer.transform(X[idx]).shape == (len(idx), candidates)
@@ -72,14 +74,14 @@ def test_pivot_transformer_needs_numerical_features(iris_mixed):
     X, y = iris_mixed
 
     with pytest.raises(NoSplitFoundWarning):
-        PivotTransformer().fit(X[:, [0]], y, context=None, node_id=None)
+        PivotTransformer().fit(X[:, [0]], y, context=None, node_id=None, cache=None)
 
 
 def test_shapelet_transformer(time_series):
     X, y = time_series
 
     transformer = ShapeletTransformer(n_shapelets=3, sliding_window=10, selection="random")
-    transformer = transformer.fit(X, y, context=None, node_id=None)
+    transformer = transformer.fit(X, y, context=None, node_id=None, cache=None)
 
     assert transformer.transform(X).shape == (len(y), 3)
     assert transformer.numerical_ == [0, 1, 2]
@@ -88,13 +90,13 @@ def test_shapelet_transformer(time_series):
     assert np.allclose(loaded.transform(X), transformer.transform(X))
 
     with pytest.raises(ValueError, match="sample_weight"):
-        ShapeletTransformer().fit(X, y, sample_weight=np.ones(len(y)), context=None, node_id=None)
+        ShapeletTransformer().fit(X, y, sample_weight=np.ones(len(y)), context=None, node_id=None, cache=None)
 
 
 def test_partial_pivot_transformer(iris):
     X, y = iris
 
-    transformer = PartialPivotTransformer(n_shapelets=3).fit(X, y, context=None, node_id=None)
+    transformer = PartialPivotTransformer(n_shapelets=3).fit(X, y, context=None, node_id=None, cache=None)
     assert transformer.refit_after_select
     assert transformer.transform(X).shape[1] == len(transformer.st_.shapelets)
 
@@ -133,7 +135,7 @@ def test_oblique_transformer(transformer, iris_mixed):
     idx = np.arange(0, len(y), 2)
 
     transformer.fit(X, y.astype(float) if transformer.get_params().get("ml_task") == MODEL_TYPE_REG else y, idx,
-                    data_type=DATA_TYPE_TABULAR, context=None, node_id=None)
+                    data_type=DATA_TYPE_TABULAR, context=None, node_id=None, cache=None)
 
     X_transformed = transformer.transform(X)
     assert transformer.num_pre_transformed_ == [1, 2]
@@ -157,7 +159,7 @@ def test_householder_transformer_reflects_the_principal_component():
     rng = np.random.default_rng(0)
     X = rng.normal(size=(200, 1)) @ np.array([[0.6, 0.8]]) + rng.normal(scale=0.01, size=(200, 2))
 
-    transformer = HouseholderTransformer().fit(X, np.zeros(200), context=None, node_id=None)
+    transformer = HouseholderTransformer().fit(X, np.zeros(200), context=None, node_id=None, cache=None)
 
     projected = transformer.transform(X)
     assert np.isclose(projected.var(axis=0).max(), X.var(axis=0).sum(), rtol=1e-3)  # all the variance on one axis
@@ -167,9 +169,9 @@ def test_oblique_transformers_need_numerical_features(iris_mixed):
     X, y = iris_mixed
 
     with pytest.raises(NoSplitFoundWarning):
-        HouseholderTransformer().fit(X[:, [0]], y, context=None, node_id=None)
+        HouseholderTransformer().fit(X[:, [0]], y, context=None, node_id=None, cache=None)
     with pytest.raises(NoSplitFoundWarning, match="two numerical"):
-        BivariateTransformer().fit(X[:, [0, 1]], y, context=None, node_id=None)
+        BivariateTransformer().fit(X[:, [0, 1]], y, context=None, node_id=None, cache=None)
 
 
 @pytest.mark.parametrize("transformer, dataset", [
@@ -180,7 +182,7 @@ def test_proximity_transformer(transformer, dataset, request):
     """One 0/1 column per pair of references: 1 where the instance is closer to the second one."""
     X, y = request.getfixturevalue(dataset)
 
-    transformer.fit(X, y, context=None, node_id=None)
+    transformer.fit(X, y, context=None, node_id=None, cache=None)
 
     distances = transformer.st_.transform(X)
     comparisons = transformer.transform(X)
@@ -203,7 +205,7 @@ def test_partial_proximity_compares_pivots_on_the_same_features(iris):
     for same_features in (True, False):
         transformer = PartialProximityTransformer(n_shapelets=6, n_features_strategy=(1, 2), random_state=0,
                                                   proximity_on_same_features=same_features)
-        transformer.fit(X, y, context=None, node_id=None)
+        transformer.fit(X, y, context=None, node_id=None, cache=None)
         used = ~np.isnan(transformer.st_.shapelets)
         same = [np.array_equal(used[i], used[j]) for i, j in transformer.pairs_]
         assert all(same) if same_features else len(transformer.pairs_) == 15
@@ -214,7 +216,7 @@ def test_proximity_transformer_needs_two_shapelets(time_series):
 
     with pytest.raises(NoSplitFoundWarning, match="two shapelets"):
         ProximityTransformer(n_shapelets=1, sliding_window=10, selection="random").fit(X, y, context=None,
-                                                                                     node_id=None)
+                                                                                     node_id=None, cache=None)
 
 
 @pytest.mark.parametrize("discriminative, max_per_class", [("tree", 1), ("householder", 2), ("bivariate", 2)])
@@ -244,7 +246,7 @@ def test_multiple_pivot_transformer(ml_task, iris):
     target = y if ml_task == MODEL_TYPE_CLF else X[:, 3]
 
     transformer = MultiplePivotTransformer(ml_task, tree_params={"random_state": 0})
-    transformer = transformer.fit(X, target, context=None, node_id=None)
+    transformer = transformer.fit(X, target, context=None, node_id=None, cache=None)
 
     labels = dict(zip(transformer.candidate_names_, transformer.candidate_labels_))
     distances = PivotTransformer.transform(transformer, X)
@@ -272,7 +274,8 @@ def test_oblique_pivot_transformer(oblique_split_type, iris):
     X, y = iris
 
     transformer = ObliquePivotTransformer(oblique_split_type=oblique_split_type, n_orientations=4,
-                                          tree_params={"random_state": 0}).fit(X, y, context=None, node_id=None)
+                                          tree_params={"random_state": 0})
+    transformer.fit(X, y, context=None, node_id=None, cache=None)
 
     distances = PivotTransformer.transform(transformer, X)
     names = list(transformer.candidate_names_)

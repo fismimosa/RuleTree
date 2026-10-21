@@ -30,13 +30,13 @@ class MatrixTransformer(RuleTreeBaseTransformer):
     >>> import numpy as np
     >>> from RuleTree.stumps.transformers import MatrixTransformer
     >>> X_ts = np.zeros((10, 2, 5))  # 10 time series with 2 signals of length 5
-    >>> MatrixTransformer().fit(X_ts, None, context=None, node_id=None).transform(X_ts).shape
+    >>> MatrixTransformer().fit(X_ts, None, context=None, node_id=None, cache=None).transform(X_ts).shape
     (10, 10)
     """
 
     supported_data_types = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
 
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
         Compute the feature types of the (flattened) data on the whole data set.
 
@@ -56,16 +56,19 @@ class MatrixTransformer(RuleTreeBaseTransformer):
             Tree being built, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
         self : MatrixTransformer
         """
-        self.numerical_, self.categorical_ = get_feature_types(self.transform(X, context=context, node_id=node_id),
-                                                               self._get_cache(context), data_type)
+        X_transformed = self.transform(X, context=context, node_id=node_id, cache=cache)
+        self.numerical_, self.categorical_ = get_feature_types(X_transformed, self._get_cache(cache), data_type)
         return self
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         """
         The data: tabular data as they are, time series and images flattened.
 
@@ -77,6 +80,8 @@ class MatrixTransformer(RuleTreeBaseTransformer):
             The tree, None outside a tree.
         node_id : str, default=None
             Identifier of the node of the stump, None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------

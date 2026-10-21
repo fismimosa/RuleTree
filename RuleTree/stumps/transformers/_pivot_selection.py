@@ -254,7 +254,7 @@ class PivotSelection:
         oblique = self._oblique_model()
         try:
             # distances of the node from the candidates: no cache of the tree
-            oblique.fit(sub_matrix, y, sample_weight=sample_weight, context=None, node_id=None)
+            oblique.fit(sub_matrix, y, sample_weight=sample_weight, context=None, node_id=None, cache=None)
         except NoSplitFoundWarning:
             return []
         return oblique.oblique_features()

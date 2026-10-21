@@ -48,13 +48,14 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
     >>> class MedianSplitter(RuleTreeBaseSplitter):
     ...     task = MODEL_TYPE_REG
     ...
-    ...     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context, node_id):
+    ...     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context, node_id,
+    ...             cache):
     ...         self.feature_ = numerical[0]
     ...         self.threshold_ = float(np.median(X[:, self.feature_]))
     ...         self.is_categorical_, self.gain_, self.impurity_ = False, 0.0, None
     ...         return self
     >>> X = np.array([[1.0], [2.0], [3.0], [4.0]])
-    >>> MedianSplitter().fit(X, None, numerical=[0], categorical=[], context=None, node_id=None).apply(X)
+    >>> MedianSplitter().fit(X, None, numerical=[0], categorical=[], context=None, node_id=None, cache=None).apply(X)
     array([1, 1, 2, 2])
     """
 
@@ -66,7 +67,7 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
 
     @abstractmethod
     def fit(self, X: np.ndarray, y: np.ndarray, numerical: list, categorical: list, sample_weight=None,
-            check_input=True, *, context, node_id):
+            check_input=True, *, context, node_id, cache):
         """
         Find the best split of X.
 
@@ -89,6 +90,9 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
         node_id : str or None
             Identifier of the node being split, e.g. ``"Rl"``: ``context.get_node_by_id(node_id)`` is the
             node (still a leaf; its ancestors are already split). None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
@@ -101,7 +105,7 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
             If no split is found.
         """
 
-    def apply(self, X: np.ndarray, context=None, node_id=None) -> np.ndarray:
+    def apply(self, X: np.ndarray, context=None, node_id=None, cache=None) -> np.ndarray:
         """
         Apply the split to a feature matrix.
 
@@ -113,6 +117,8 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
             The tree, when called by it (fit, predictions); None otherwise.
         node_id : str, default=None
             Identifier of the node of the stump, when called by the tree; None otherwise.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------
@@ -125,7 +131,7 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
 
         return np.where(X_feature <= self.threshold_, 1, 2)
 
-    def update_statistics(self, X: np.ndarray, y: np.ndarray, sample_weight=None, *, context, node_id):
+    def update_statistics(self, X: np.ndarray, y: np.ndarray, sample_weight=None, *, context, node_id, cache):
         """
         Recompute the statistics of the split (e.g. impurity) on new data, without changing the split.
         The default implementation does nothing.
@@ -142,6 +148,9 @@ class RuleTreeBaseSplitter(BaseEstimator, ABC):
             The tree, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
         """
 
     def get_state(self) -> dict:

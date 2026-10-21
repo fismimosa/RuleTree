@@ -60,7 +60,8 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
     >>> from sklearn.datasets import load_iris
     >>> from RuleTree.stumps.transformers import PartialPivotTransformer
     >>> X, y = load_iris(return_X_y=True)
-    >>> PartialPivotTransformer(n_shapelets=4, random_state=0).fit(X, y, context=None, node_id=None).transform(X).shape
+    >>> transformer = PartialPivotTransformer(n_shapelets=4, random_state=0)
+    >>> transformer.fit(X, y, context=None, node_id=None, cache=None).transform(X).shape
     (150, 4)
     """
 
@@ -110,7 +111,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
                                 use_combination=self.use_combination,
                                 n_jobs=self.n_jobs)
 
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
         Select the partial pivots among the instances in the node.
 
@@ -130,6 +131,9 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
             Tree being built, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
@@ -151,7 +155,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
 
         return self
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         """
         Distance of each instance from each partial pivot (from the chosen one, after select).
 
@@ -163,6 +167,8 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
             The tree, None outside a tree.
         node_id : str, default=None
             Identifier of the node of the stump, None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------

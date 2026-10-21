@@ -43,7 +43,8 @@ class RuleTreeBaseGainSplitter(RuleTreeBaseSplitter, ABC):
     ...         return errors(y) - errors(y[left]) - errors(y[~left])
     >>> X = np.array([[1.0], [2.0], [3.0], [4.0]])
     >>> splitter = MisclassificationSplitter()
-    >>> splitter = splitter.fit(X, np.array([0, 0, 1, 1]), numerical=[0], categorical=[], context=None, node_id=None)
+    >>> splitter = splitter.fit(X, np.array([0, 0, 1, 1]), numerical=[0], categorical=[],
+    ...                         context=None, node_id=None, cache=None)
     >>> splitter.feature_, splitter.threshold_
     (0, 2.5)
     """
@@ -86,7 +87,7 @@ class RuleTreeBaseGainSplitter(RuleTreeBaseSplitter, ABC):
         return (values[:-1] + values[1:]) / 2
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context,
-            node_id):
+            node_id, cache):
         """
         Test every candidate split and keep the one with the highest gain.
 
@@ -108,6 +109,8 @@ class RuleTreeBaseGainSplitter(RuleTreeBaseSplitter, ABC):
             Tree being built, None outside a tree.
         node_id : str, default=None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------

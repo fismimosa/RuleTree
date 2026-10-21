@@ -70,7 +70,8 @@ class ObliquePivotTransformer(PivotTransformer):
     >>> from sklearn.datasets import load_iris
     >>> from RuleTree.stumps.transformers import ObliquePivotTransformer
     >>> X, y = load_iris(return_X_y=True)
-    >>> transformer = ObliquePivotTransformer(tree_params={"random_state": 0}).fit(X, y, context=None, node_id=None)
+    >>> transformer = ObliquePivotTransformer(tree_params={"random_state": 0})
+    >>> transformer = transformer.fit(X, y, context=None, node_id=None, cache=None)
     >>> transformer.transform(X).shape[1] == len(transformer.candidate_names_)  # one direction per candidate
     True
     """
@@ -106,7 +107,7 @@ class ObliquePivotTransformer(PivotTransformer):
         """Distances of the instances from the candidate pivots."""
         return PivotTransformer.transform(self, X)
 
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
         Select the candidate pivots of the node (see PivotTransformer.fit), then the oblique directions on
         the distances of the instances of the node from them.
@@ -127,6 +128,9 @@ class ObliquePivotTransformer(PivotTransformer):
             Tree being built, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
@@ -140,17 +144,17 @@ class ObliquePivotTransformer(PivotTransformer):
         if idx is None:
             idx = np.arange(len(X))
         super().fit(X, y, idx, data_type=data_type, sample_weight=sample_weight, context=context,
-                    node_id=node_id)
+                    node_id=node_id, cache=cache)
 
         # on the distances of the node from the candidates: no cache of the tree
         self.oblique_ = self._oblique().fit(self._distances(X[idx]), np.asarray(y)[idx],
                                             sample_weight=None if sample_weight is None else sample_weight[idx],
-                                            context=None, node_id=node_id)
+                                            context=None, node_id=node_id, cache=None)
         self.numerical_, self.categorical_ = self.oblique_.numerical_, []
 
         return self
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         """
         Projection of the distances from the candidates on the oblique directions (on the chosen one,
         after select).
@@ -163,6 +167,8 @@ class ObliquePivotTransformer(PivotTransformer):
             The tree, None outside a tree.
         node_id : str, default=None
             Identifier of the node of the stump, None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------

@@ -81,7 +81,7 @@ class ProximityComparisons:
         """
         raise NotImplementedError
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         """
         Proximity comparisons of each instance for each pair of references (for the chosen pair, after
         select).
@@ -94,6 +94,8 @@ class ProximityComparisons:
             The tree, None outside a tree.
         node_id : str, default=None
             Identifier of the node of the stump, None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------
@@ -209,12 +211,12 @@ class ProximityTransformer(ProximityComparisons, ShapeletTransformer):
     >>> rng = np.random.default_rng(0)
     >>> X_ts, y = rng.normal(size=(20, 1, 30)), rng.integers(0, 2, size=20)
     >>> transformer = ProximityTransformer(n_shapelets=4, sliding_window=5, selection="random")
-    >>> transformer = transformer.fit(X_ts, y, context=None, node_id=None)
+    >>> transformer = transformer.fit(X_ts, y, context=None, node_id=None, cache=None)
     >>> transformer.transform(X_ts).shape  # one column for each of the 6 pairs of shapelets
     (20, 6)
     """
 
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
         Select the shapelets among the subsequences of the time series in the node.
 
@@ -234,6 +236,9 @@ class ProximityTransformer(ProximityComparisons, ShapeletTransformer):
             Tree being built, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
@@ -247,7 +252,7 @@ class ProximityTransformer(ProximityComparisons, ShapeletTransformer):
             If fewer than two shapelets are selected.
         """
         super().fit(X, y, idx, data_type=data_type, sample_weight=sample_weight, context=context,
-                    node_id=node_id)
+                    node_id=node_id, cache=cache)
 
         self._set_pairs(list(itertools.combinations(range(len(self.st_.shapelets)), 2)),
                         f"{self.__class__.__name__} needs at least two shapelets")

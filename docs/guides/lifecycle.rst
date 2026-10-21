@@ -116,11 +116,12 @@ The cache of the stumps
 -----------------------
 
 Some stumps compute values on the whole training set that every split can reuse: the types of
-the features, or the distance matrix of the pivot stumps. Their transformers store them in the
-cache of the tree, which they reach through ``context``. Each transformer has its own namespace,
-``cache_namespace()``: its class name and a hash of its hyperparameters, so that only the
-transformers of the same class with the same hyperparameters share cached values, also when they
-belong to different stumps:
+the features, or the distance matrix of the pivot stumps. The tree passes its cache (``cache_``)
+to every stump, transformer and splitter, and each decides whether and how to use it: the
+transformers of the library store the values under their own namespace, ``cache_namespace()``
+(the class name and a hash of the hyperparameters), so that only the transformers of the same
+class with the same hyperparameters share cached values, also when they belong to different
+stumps:
 
 .. code-block:: python
 

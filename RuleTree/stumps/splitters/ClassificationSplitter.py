@@ -68,7 +68,7 @@ class ClassificationSplitter(DecisionTreeSplitter):
     >>> from RuleTree.stumps.splitters import ClassificationSplitter
     >>> X, y = load_iris(return_X_y=True)
     >>> splitter = ClassificationSplitter(random_state=0)
-    >>> splitter = splitter.fit(X, y, numerical=[0, 1, 2, 3], categorical=[], context=None, node_id=None)
+    >>> splitter = splitter.fit(X, y, numerical=[0, 1, 2, 3], categorical=[], context=None, node_id=None, cache=None)
     >>> splitter.feature_, round(float(splitter.threshold_), 2), round(float(splitter.gain_), 3)
     (3, 0.8, 0.333)
     >>> splitter.apply(X[[0, 100]])

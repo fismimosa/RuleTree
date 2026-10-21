@@ -116,7 +116,7 @@ class FairSplitter(RuleTreeBaseSplitter):
         self.criterion = criterion
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context,
-            node_id):
+            node_id, cache):
         """
         Find the split with the highest penalized gain among the thresholds of the numerical features (the
         sensitive attribute excluded) that satisfy the fairness constraint.
@@ -139,6 +139,9 @@ class FairSplitter(RuleTreeBaseSplitter):
             Tree being built, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
@@ -203,7 +206,7 @@ class FairSplitter(RuleTreeBaseSplitter):
 
         return self
 
-    def update_statistics(self, X, y, sample_weight=None, *, context, node_id):
+    def update_statistics(self, X, y, sample_weight=None, *, context, node_id, cache):
         """
         Recompute the impurity of the node and of the two children.
 
@@ -219,8 +222,11 @@ class FairSplitter(RuleTreeBaseSplitter):
             The tree, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
         """
-        left = self.apply(X, context=context, node_id=node_id) == 1
+        left = self.apply(X, context=context, node_id=node_id, cache=cache) == 1
         self.impurity_ = RegressionSplitter._split_impurity(self.criterion, y, left)
 
 

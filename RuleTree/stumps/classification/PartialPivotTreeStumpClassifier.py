@@ -86,7 +86,7 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
     >>> from RuleTree.stumps.classification import PartialPivotTreeStumpClassifier
     >>> X, y = load_iris(return_X_y=True)
     >>> stump = PartialPivotTreeStumpClassifier(n_shapelets=10, n_features_strategy=2, random_state=0)
-    >>> stump = stump.fit(X, y, context=None, node_id=None)
+    >>> stump = stump.fit(X, y, context=None, node_id=None, cache=None)
     >>> stump.get_rule(float_precision=2)["textual_rule"]
     'SP0(d: Feat. 2=1.3, Feat. 3=0.2) <= 1.28'
     """

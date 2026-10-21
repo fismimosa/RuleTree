@@ -103,7 +103,7 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
         """
 
     def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context,
-            node_id):
+            node_id, cache):
         """
         Find the best split: the threshold of the scikit-learn tree on the numerical features (halfway
         between the two values of a binary feature), replaced by a categorical split if one has a higher
@@ -127,6 +127,8 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
             Tree being built, None outside a tree.
         node_id : str, default=None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------
@@ -197,7 +199,7 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
                     self.is_categorical_ = True
                     self.impurity_ = impurity
 
-    def update_statistics(self, X, y, sample_weight=None, *, context, node_id):
+    def update_statistics(self, X, y, sample_weight=None, *, context, node_id, cache):
         """
         Recompute the impurity of the node and of the two children.
 
@@ -213,5 +215,9 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
             The tree, None outside a tree.
         node_id : str or None
             Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
         """
-        self.impurity_ = self._impurities(y, self.apply(X, context=context, node_id=node_id) == 1, sample_weight)
+        left = self.apply(X, context=context, node_id=node_id, cache=cache) == 1
+        self.impurity_ = self._impurities(y, left, sample_weight)

@@ -21,7 +21,7 @@ NUMERICAL, CATEGORICAL = [0, 1], [2]
 @pytest.mark.parametrize("splitter, y", [(ClassificationSplitter(), y_clf), (RegressionSplitter(), y_reg),
                                          (XGBoostSplitter(lam=1), y_reg)], ids=["clf", "reg", "xgboost"])
 def test_numerical_split(splitter, y):
-    splitter.fit(X, y, NUMERICAL, CATEGORICAL, context=None, node_id=None)
+    splitter.fit(X, y, NUMERICAL, CATEGORICAL, context=None, node_id=None, cache=None)
 
     assert splitter.feature_ == 1
     assert splitter.threshold_ == 5
@@ -34,7 +34,7 @@ def test_numerical_split(splitter, y):
                          ids=["clf", "reg"])
 def test_categorical_split(splitter, y):
     """Without the numerical features, the best split is on the categorical one."""
-    splitter.fit(X, y, [], CATEGORICAL, context=None, node_id=None)
+    splitter.fit(X, y, [], CATEGORICAL, context=None, node_id=None, cache=None)
 
     assert splitter.feature_ == 2
     assert splitter.is_categorical_
@@ -49,7 +49,7 @@ def test_categorical_split_when_no_numerical_split(splitter, y):
     X_constant = X.copy()
     X_constant[:, 0] = 1.0
 
-    splitter.fit(X_constant, y, [0], CATEGORICAL, context=None, node_id=None)
+    splitter.fit(X_constant, y, [0], CATEGORICAL, context=None, node_id=None, cache=None)
 
     assert splitter.feature_ == 2
     assert splitter.is_categorical_
@@ -58,7 +58,7 @@ def test_categorical_split_when_no_numerical_split(splitter, y):
                                       XGBoostSplitter(lam=1, min_cover=len(X))], ids=["clf", "reg", "xgboost"])
 def test_no_split(splitter):
     with pytest.raises(NoSplitFoundWarning):
-        splitter.fit(X[:, :2].astype(float), np.ones(len(X)), [0, 1], [], context=None, node_id=None)
+        splitter.fit(X[:, :2].astype(float), np.ones(len(X)), [0, 1], [], context=None, node_id=None, cache=None)
 
 
 @pytest.mark.parametrize("splitter, y", [(ClassificationSplitter(), np.array([0, 0, 1, 1])),
@@ -67,7 +67,7 @@ def test_binary_feature_threshold_halfway(splitter, y):
     """Not the threshold of scikit-learn, computed on the values in float32."""
     X_binary = np.array([[0.1], [0.1], [0.7], [0.7]])
 
-    splitter.fit(X_binary, y, [0], [], context=None, node_id=None)
+    splitter.fit(X_binary, y, [0], [], context=None, node_id=None, cache=None)
 
     assert splitter.threshold_ == (0.1 + 0.7) / 2
 
@@ -77,7 +77,7 @@ def test_binary_feature_threshold_halfway(splitter, y):
 def test_no_degenerate_categorical_split(splitter, y):
     """A categorical value of all the instances would leave the right child empty."""
     with pytest.raises(NoSplitFoundWarning):
-        splitter.fit(np.full((len(y), 1), "a", dtype=object), y, [], [0], context=None, node_id=None)
+        splitter.fit(np.full((len(y), 1), "a", dtype=object), y, [], [0], context=None, node_id=None, cache=None)
 
 
 def test_fair_split():
@@ -86,7 +86,7 @@ def test_fair_split():
     y = X_fair[:, 0] * 3 + rng.normal(scale=0.1, size=60)
 
     splitter = FairSplitter(penalty="balance", sensible_attribute=2, n_jobs=1)
-    splitter = splitter.fit(X_fair, y, [0, 1, 2], [], context=None, node_id=None)
+    splitter = splitter.fit(X_fair, y, [0, 1, 2], [], context=None, node_id=None, cache=None)
 
     assert splitter.feature_ == 0
     assert set(splitter.apply(X_fair)) == {1, 2}
@@ -100,16 +100,16 @@ def test_fair_split_never_uses_the_sensitive_attribute(sensible_attribute):
     y = X_fair[:, 2] * 10 + rng.normal(scale=0.1, size=60)
 
     splitter = FairSplitter(penalty="balance", sensible_attribute=sensible_attribute, penalization_weight=0, n_jobs=1)
-    splitter.fit(X_fair, y, [0, 1, 2], [], context=None, node_id=None)
+    splitter.fit(X_fair, y, [0, 1, 2], [], context=None, node_id=None, cache=None)
 
     assert splitter.feature_ != 2
 
 
 def test_update_statistics():
-    splitter = ClassificationSplitter().fit(X, y_clf, NUMERICAL, CATEGORICAL, context=None, node_id=None)
+    splitter = ClassificationSplitter().fit(X, y_clf, NUMERICAL, CATEGORICAL, context=None, node_id=None, cache=None)
     assert splitter.impurity_[1:] == [0, 0]  # pure children
 
-    splitter.update_statistics(X[:6], np.array([0, 1, 0, 0, 1, 1]), context=None, node_id=None)
+    splitter.update_statistics(X[:6], np.array([0, 1, 0, 0, 1, 1]), context=None, node_id=None, cache=None)
 
     assert splitter.impurity_[1] > 0
 
@@ -117,7 +117,7 @@ def test_update_statistics():
 @pytest.mark.parametrize("splitter, y", [(ClassificationSplitter(), y_clf), (RegressionSplitter(), y_reg),
                                          (XGBoostSplitter(lam=1), y_reg)], ids=["clf", "reg", "xgboost"])
 def test_state_round_trip(splitter, y):
-    splitter.fit(X, y, NUMERICAL, CATEGORICAL, context=None, node_id=None)
+    splitter.fit(X, y, NUMERICAL, CATEGORICAL, context=None, node_id=None, cache=None)
     state = json.loads(json.dumps(splitter.get_state(), cls=json_numpy_encoder))
 
     loaded = sklearn.clone(splitter).set_state(state)
@@ -208,6 +208,7 @@ def test_xgboost_splitter_as_the_exhaustive_search(case):
         X, y = X[:7], y[:7]
 
     for target in (y - y.mean(), y):
-        splitter = XGBoostSplitter(**kwargs).fit(X, target, numerical, categorical, context=None, node_id=None)
+        splitter = XGBoostSplitter(**kwargs)
+        splitter = splitter.fit(X, target, numerical, categorical, context=None, node_id=None, cache=None)
         assert (splitter.feature_, splitter.threshold_) == exhaustive_xgboost_split(splitter, X, target, numerical,
                                                                                   categorical)

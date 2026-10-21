@@ -54,7 +54,8 @@ class DecisionTreeStumpRegressor(DecisionTreeStump):
     >>> from sklearn.datasets import load_diabetes
     >>> from RuleTree.stumps.regression import DecisionTreeStumpRegressor
     >>> X, y = load_diabetes(return_X_y=True)
-    >>> stump = DecisionTreeStumpRegressor(min_samples_leaf=20, random_state=0).fit(X, y, context=None, node_id=None)
+    >>> stump = DecisionTreeStumpRegressor(min_samples_leaf=20, random_state=0)
+    >>> stump = stump.fit(X, y, context=None, node_id=None, cache=None)
     >>> stump.get_rule()["textual_rule"]
     'X_8 <= -0.004'
     """

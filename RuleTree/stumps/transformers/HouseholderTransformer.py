@@ -49,7 +49,7 @@ class HouseholderTransformer(ObliqueTransformer):
     >>> from sklearn.datasets import load_iris
     >>> from RuleTree.stumps.transformers import HouseholderTransformer
     >>> X, y = load_iris(return_X_y=True)
-    >>> transformer = HouseholderTransformer().fit(X, y, context=None, node_id=None)
+    >>> transformer = HouseholderTransformer().fit(X, y, context=None, node_id=None, cache=None)
     >>> transformer.transform(X).shape  # one column per reflected axis
     (150, 4)
     >>> features, coefficients = transformer.combination(1)  # the reflected axis of feature 1

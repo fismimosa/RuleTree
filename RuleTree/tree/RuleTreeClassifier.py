@@ -173,7 +173,8 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         proba : numpy.ndarray of shape (n_samples, n_classes)
             Probabilities of the classes, in the order of ``classes_``.
         """
-        _, _, proba = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt), context=self)
+        _, _, proba = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt),
+                                        context=self, cache=getattr(self, "cache_", None))
 
         return proba
 

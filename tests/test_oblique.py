@@ -27,7 +27,7 @@ def test_rule_is_the_split(oblique_split_type, iris):
     """The combination and the threshold of the rule give the same split as apply."""
     X, y = iris
     stump = ObliqueDecisionTreeStumpClassifier(oblique_split_type, random_state=0)
-    stump.fit(X, y, context=None, node_id=None)
+    stump.fit(X, y, context=None, node_id=None, cache=None)
 
     rule = stump.get_rule(float_precision=None)
     left = X[:, list(rule["feature_idx"])] @ np.array(rule["coefficients"]) <= rule["threshold"]
@@ -39,7 +39,8 @@ def test_rule_is_the_split(oblique_split_type, iris):
 
 def test_rule_with_columns_names(iris):
     X, y = iris
-    stump = ObliqueDecisionTreeStumpClassifier("bivariate", random_state=0).fit(X, y, context=None, node_id=None)
+    stump = ObliqueDecisionTreeStumpClassifier("bivariate", random_state=0)
+    stump = stump.fit(X, y, context=None, node_id=None, cache=None)
     names = ["sepal length", "sepal width", "petal length", "petal width"]
 
     rule = stump.get_rule(columns_names=names)

@@ -50,7 +50,8 @@ class XGBoostStumpRegressor(DecisionTreeStumpRegressor):
     >>> from sklearn.datasets import load_diabetes
     >>> from RuleTree.stumps.regression import XGBoostStumpRegressor
     >>> X, y = load_diabetes(return_X_y=True)
-    >>> stump = XGBoostStumpRegressor(lam=1).fit(X, y - y.mean(), context=None, node_id=None)  # residuals of the mean
+    >>> stump = XGBoostStumpRegressor(lam=1)
+    >>> stump = stump.fit(X, y - y.mean(), context=None, node_id=None, cache=None)  # residuals of the mean
     >>> stump.get_rule()["textual_rule"]
     'X_8 <= -0.004'
     """

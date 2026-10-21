@@ -18,6 +18,8 @@ def json_round_trip(model):
 
 # what the components receive at each fit: (component, tree, node id, the node is a leaf, its parent is split)
 CALLS = []
+# the cache received at each call: (component, cache)
+CACHES = []
 
 
 def record(component, context, node_id):
@@ -27,28 +29,35 @@ def record(component, context, node_id):
 
 
 class RecordingTransformer(MatrixTransformer):
-    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id):
+    def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         record("transformer", context, node_id)
+        CACHES.append(("transformer", cache))
         return super().fit(X, y, idx, data_type=data_type, sample_weight=sample_weight, context=context,
-                           node_id=node_id)
+                           node_id=node_id, cache=cache)
 
-    def transform(self, X, context=None, node_id=None):
+    def transform(self, X, context=None, node_id=None, cache=None):
         record("transform", context, node_id)
-        return super().transform(X, context=context, node_id=node_id)
+        CACHES.append(("transform", cache))
+        return super().transform(X, context=context, node_id=node_id, cache=cache)
 
 
 class RecordingSplitter(ClassificationSplitter):
-    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context, node_id):
+    def fit(self, X, y, numerical, categorical, sample_weight=None, check_input=True, *, context, node_id,
+            cache):
         record("splitter", context, node_id)
-        return super().fit(X, y, numerical, categorical, sample_weight, check_input, context=context, node_id=node_id)
+        CACHES.append(("splitter", cache))
+        return super().fit(X, y, numerical, categorical, sample_weight, check_input,
+                           context=context, node_id=node_id, cache=cache)
 
-    def update_statistics(self, X, y, sample_weight=None, *, context, node_id):
+    def update_statistics(self, X, y, sample_weight=None, *, context, node_id, cache):
         record("update_statistics", context, node_id)
-        return super().update_statistics(X, y, sample_weight, context=context, node_id=node_id)
+        CACHES.append(("update_statistics", cache))
+        return super().update_statistics(X, y, sample_weight, context=context, node_id=node_id, cache=cache)
 
-    def apply(self, X, context=None, node_id=None):
+    def apply(self, X, context=None, node_id=None, cache=None):
         record("apply", context, node_id)
-        return super().apply(X, context=context, node_id=node_id)
+        CACHES.append(("apply", cache))
+        return super().apply(X, context=context, node_id=node_id, cache=cache)
 
 
 def fitted_calls(component_names):
@@ -77,7 +86,7 @@ def test_stump_outside_a_tree(iris):
     X, y = iris
 
     assert DecisionTreeStumpClassifier().node_id_ is None
-    assert DecisionTreeStumpClassifier().fit(X, y, context=None, node_id=None).node_id_ is None
+    assert DecisionTreeStumpClassifier().fit(X, y, context=None, node_id=None, cache=None).node_id_ is None
 
 
 def test_trees_of_the_stumps_rename_the_node(iris):
@@ -92,6 +101,7 @@ def test_trees_of_the_stumps_rename_the_node(iris):
 def test_components_receive_the_tree_and_the_node(iris):
     X, y = iris
     CALLS.clear()
+    CACHES.clear()
 
     model = RuleTreeClassifier(max_depth=2, random_state=0,
                                base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
@@ -103,7 +113,8 @@ def test_components_receive_the_tree_and_the_node(iris):
     assert all(context is model and is_leaf and parent_is_split for _, context, _, is_leaf, parent_is_split in fits)
 
     CALLS.clear()
-    Stump(RecordingTransformer(), RecordingSplitter()).fit(X, y, context=None, node_id=None)
+    CACHES.clear()
+    Stump(RecordingTransformer(), RecordingSplitter()).fit(X, y, context=None, node_id=None, cache=None)
     assert [call[:3] for call in fitted_calls(("transformer", "splitter"))] == \
         [("transformer", None, None), ("splitter", None, None)]
 
@@ -113,6 +124,7 @@ def test_update_statistics_receives_the_tree_and_the_node(iris):
     model = RuleTreeClassifier(max_depth=2, random_state=0,
                                base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
     CALLS.clear()
+    CACHES.clear()
 
     model.update_statistics(X, y)
 
@@ -128,6 +140,7 @@ def test_predictions_pass_the_tree_and_the_node(predict, iris):
     model = RuleTreeClassifier(max_depth=2, random_state=0,
                                base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
     CALLS.clear()
+    CACHES.clear()
 
     getattr(model, predict)(X)
 
@@ -142,6 +155,7 @@ def test_context_and_node_id_are_optional_in_the_predictions(iris):
     model = RuleTreeClassifier(max_depth=2, random_state=0,
                                base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
     CALLS.clear()
+    CACHES.clear()
 
     labels = model.root.stump.apply(X)
 
@@ -151,7 +165,7 @@ def test_context_and_node_id_are_optional_in_the_predictions(iris):
 
 def test_context_and_node_id_are_required(iris):
     X, y = iris
-    stump = DecisionTreeStumpClassifier().fit(X, y, context=None, node_id=None)
+    stump = DecisionTreeStumpClassifier().fit(X, y, context=None, node_id=None, cache=None)
 
     with pytest.raises(TypeError, match="context"):
         DecisionTreeStumpClassifier().fit(X, y)
@@ -163,3 +177,28 @@ def test_context_and_node_id_are_required(iris):
         ClassificationSplitter().fit(X, y, [0, 1, 2, 3], [])
     with pytest.raises(TypeError, match="context"):
         stump.splitter_.update_statistics(X, y)
+    with pytest.raises(TypeError, match="cache"):
+        DecisionTreeStumpClassifier().fit(X, y, context=None, node_id=None)
+
+
+def test_every_component_receives_the_cache_of_the_tree(iris):
+    """In fit, update_statistics and in the predictions; each component decides whether to use it."""
+    X, y = iris
+    CACHES.clear()
+    model = RuleTreeClassifier(max_depth=2, random_state=0,
+                               base_stumps=Stump(RecordingTransformer(), RecordingSplitter())).fit(X, y)
+    model.update_statistics(X, y)
+    model.predict(X)
+
+    assert {name for name, _ in CACHES} == {"transformer", "transform", "splitter", "update_statistics", "apply"}
+    assert all(cache is model.cache_ for _, cache in CACHES)
+
+
+def test_predictions_of_a_loaded_tree_do_not_create_the_cache(iris):
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, random_state=0).fit(X, y)
+    loaded = RuleTree.from_dict(json.loads(json.dumps(model.to_dict(), cls=json_numpy_encoder)))
+
+    loaded.predict(X)
+
+    assert not hasattr(loaded, "cache_")

@@ -346,7 +346,7 @@ that JSON cannot represent:
 
    from RuleTree.stumps.classification import ObliqueDecisionTreeStumpClassifier
 
-   stump = ObliqueDecisionTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None)
+   stump = ObliqueDecisionTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None, cache=None)
    copy = type(stump).dict_to_node(json.loads(json.dumps(stump.node_to_dict(), cls=json_numpy_encoder)))
 
    print((copy.apply(X) == stump.apply(X)).all(), copy.get_rule()["textual_rule"])

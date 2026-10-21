@@ -264,7 +264,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         if self.component_split == 'joint':  # one stump for all the components, as targets
             clf, data_type = self._get_random_split()
             clf.fit(data, y_pca_all if n_components_split > 1 else y_pca_all[:, 0], idx=idx, data_type=data_type,
-                    context=self, node_id=node_id)
+                    context=self, node_id=node_id, cache=self._stump_cache())
             return clf
 
         best_clf = None
@@ -273,11 +273,12 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
             clf, data_type = self._get_random_split()
 
             try:
-                clf.fit(data, y_pca_all[:, i], idx=idx, data_type=data_type, context=self, node_id=node_id)
+                clf.fit(data, y_pca_all[:, i], idx=idx, data_type=data_type,
+                        context=self, node_id=node_id, cache=self._stump_cache())
             except NoSplitFoundWarning:
                 continue
 
-            labels = clf.apply(data, idx, context=self, node_id=node_id)
+            labels = clf.apply(data, idx, context=self, node_id=node_id, cache=self._stump_cache())
             if self.clus_impurity == 'r2':
                 # fraction of the variance of the i-th component explained by the split
                 component = y_pca[:, i]

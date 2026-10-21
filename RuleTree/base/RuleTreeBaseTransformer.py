@@ -23,7 +23,7 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
 
     A transformer is fitted on the whole data set of its type (``X``, all the instances) and on
     ``idx``, the instances reaching the node, so that values computed on the whole data set can be
-    shared among the splits through its cache in the tree, ``self._get_cache(context)``: a dictionary
+    shared among the splits through its cache in the tree, ``self._get_cache(cache)``: a dictionary
     shared by the transformers of the same class with the same hyperparameters (see
     :meth:`cache_namespace`), that lives as long as the tree's cache.
 
@@ -62,7 +62,7 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
     >>> class MeanTransformer(RuleTreeBaseTransformer):
     ...     supported_data_types = (DATA_TYPE_TS,)
     ...
-    ...     def transform(self, X, context=None, node_id=None):
+    ...     def transform(self, X, context=None, node_id=None, cache=None):
     ...         return X.mean(axis=2)  # mean of each signal
     ...
     ...     def feature_id(self, feature):
@@ -82,7 +82,7 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
     refit_after_select = False
 
     def fit(self, X: np.ndarray, y: np.ndarray, idx: np.ndarray = None, data_type: str = None, sample_weight=None, *,
-            context, node_id):
+            context, node_id, cache):
         """
         Fit the transformer and set ``numerical_`` and ``categorical_``.
 
@@ -102,10 +102,13 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         sample_weight : numpy.ndarray, default=None
             Sample weights, all the instances.
         context : RuleTree or None
-            Tree being built, None outside a tree. Its cache for the transformer is ``self._get_cache(context)``.
+            Tree being built, None outside a tree.
         node_id : str or None
             Identifier of the node being split, e.g. ``"Rl"``: ``context.get_node_by_id(node_id)`` is the
             node (still a leaf; its ancestors are already split). None outside a tree.
+        cache : dict or None
+            Cache of the tree (namespace -> dictionary of values), None outside a tree: the component
+            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).
 
         Returns
         -------
@@ -117,7 +120,8 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         NoSplitFoundWarning
             If the data of the node cannot be transformed into features (e.g. no numerical feature).
         """
-        self.numerical_, self.categorical_ = get_feature_types(self.transform(X, context=context, node_id=node_id))
+        X_transformed = self.transform(X, context=context, node_id=node_id, cache=cache)
+        self.numerical_, self.categorical_ = get_feature_types(X_transformed)
         return self
 
     def cache_namespace(self) -> str:
@@ -141,24 +145,24 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
         """
         return estimator_namespace(self)
 
-    def _get_cache(self, context) -> dict:
+    def _get_cache(self, cache) -> dict:
         """
-        Cache of the transformer in the tree ``context``, named by :meth:`cache_namespace`.
+        Values of the transformer in the cache of the tree, under :meth:`cache_namespace`.
 
         Parameters
         ----------
-        context : RuleTree or None
-            The tree being built.
+        cache : dict or None
+            Cache of the tree, as received by ``fit`` (namespace -> dictionary of values).
 
         Returns
         -------
-        cache : dict
-            The cache of the transformer; without a tree, an empty dictionary that is not kept.
+        values : dict
+            The cache of the transformer; without a cache, an empty dictionary that is not kept.
         """
-        return context.get_cache(self.cache_namespace()) if context is not None else {}
+        return cache.setdefault(self.cache_namespace(), {}) if cache is not None else {}
 
     @abstractmethod
-    def transform(self, X: np.ndarray, context=None, node_id=None) -> np.ndarray:
+    def transform(self, X: np.ndarray, context=None, node_id=None, cache=None) -> np.ndarray:
         """
         Feature matrix of the instances in X.
 
@@ -170,6 +174,8 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
             The tree, when called by it (fit, predictions); None otherwise.
         node_id : str, default=None
             Identifier of the node of the stump, when called by the tree; None otherwise.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------
@@ -207,6 +213,8 @@ class RuleTreeBaseTransformer(BaseEstimator, ABC):
             The tree, None outside a tree.
         node_id : str, default=None
             Identifier of the node of the stump, None outside a tree.
+        cache : dict, default=None
+            Cache of the tree, when called by it; None otherwise.
 
         Returns
         -------

@@ -218,7 +218,7 @@ class RuleTreeNode:
     
         return rule
 
-    def update_statistics(self, data, y, idx=None, context=None):
+    def update_statistics(self, data, y, idx=None, context=None, cache=None):
         """
         Recompute the statistics of classification of the node (majority class, class probabilities,
         log-odds, number of instances) on the instances ``idx``, and the statistics of its stump.
@@ -234,6 +234,8 @@ class RuleTreeNode:
             Indices of the instances reaching the node. If None, all the instances.
         context : RuleTree, default=None
             The tree, whose ``classes_`` are used when the node has none.
+        cache : dict, default=None
+            Cache of the tree, passed to the stump.
         """
         if idx is None:
             idx = slice(None)
@@ -266,7 +268,7 @@ class RuleTreeNode:
         self.samples = len(y_local)
 
         if self.stump is not None and not self.is_leaf():
-            self.stump.update_statistics(data, y, idx=idx, context=context, node_id=self.node_id)
+            self.stump.update_statistics(data, y, idx=idx, context=context, node_id=self.node_id, cache=cache)
     
     def node_to_dict(self):
         """
@@ -405,7 +407,7 @@ class RuleTreeNode:
 
         return graph
 
-    def predict(self, data, idx:np.ndarray=None, prediction_step=np.inf, context=None):
+    def predict(self, data, idx:np.ndarray=None, prediction_step=np.inf, context=None, cache=None):
         """
         Predictions, leaves and probabilities of the instances, traversing the subtree.
 
@@ -420,6 +422,8 @@ class RuleTreeNode:
             reached after that many splits.
         context : RuleTree, default=None
             The tree, passed to the stumps with the identifier of their node.
+        cache : dict, default=None
+            Cache of the tree, passed to the stumps.
 
         Returns
         -------
@@ -452,17 +456,17 @@ class RuleTreeNode:
                 ), dtype=float) * -1
             )
 
-            labels_clf = self.stump.apply(data, idx, context=context, node_id=self.node_id)
+            labels_clf = self.stump.apply(data, idx, context=context, node_id=self.node_id, cache=cache)
             if np.any(labels_clf == 1):
                 child_labels, leaves[labels_clf == 1], proba[labels_clf == 1] = (
                     self.node_l.predict(data, idx=idx[labels_clf == 1], prediction_step=prediction_step - 1,
-                                        context=context))
+                                        context=context, cache=cache))
                 labels = _with_dtype_for(labels, child_labels)
                 labels[labels_clf == 1] = child_labels
             if np.any(labels_clf == 2):
                 child_labels, leaves[labels_clf == 2], proba[labels_clf == 2] = (
                     self.node_r.predict(data, idx=idx[labels_clf == 2], prediction_step=prediction_step - 1,
-                                        context=context))
+                                        context=context, cache=cache))
                 labels = _with_dtype_for(labels, child_labels)
                 labels[labels_clf == 2] = child_labels
 

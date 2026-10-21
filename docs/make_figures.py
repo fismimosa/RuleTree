@@ -96,7 +96,7 @@ def figure_splits(output_dir):
 
     figure, axes = plt.subplots(2, 2, figsize=(8, 7.2))
     for ax, (name, stump, description) in zip(axes.ravel(), stumps):
-        stump.fit(X, y, context=None, node_id=None)
+        stump.fit(X, y, context=None, node_id=None, cache=None)
         sides = stump.apply(grid).reshape(xx.shape)
         regions = ax.contourf(xx, yy, sides, levels=[0.5, 1.5, 2.5], colors=[LEFT_COLOR, RIGHT_COLOR])
         regions.set_rasterized(True)  # a small image instead of thousands of polygons

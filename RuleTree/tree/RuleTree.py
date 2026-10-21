@@ -271,10 +271,21 @@ class RuleTree(RuleTreeBase, ABC):
         cache : dict
             The cache of the namespace (created if missing).
         """
+        return self._stump_cache().setdefault(namespace, {})
+
+    def _stump_cache(self) -> dict:
+        """
+        Cache of the tree passed to the stumps and to their components (created if missing): a
+        dictionary namespace -> dictionary of values (see :meth:`get_cache`).
+
+        Returns
+        -------
+        cache : dict
+        """
         if not hasattr(self, "cache_"):
             self.cache_ = {}
 
-        return self.cache_.setdefault(namespace, {})
+        return self.cache_
 
     def clear_cache(self):
         """Remove all the values cached by the stumps (see :meth:`get_cache`)."""
@@ -416,7 +427,7 @@ class RuleTree(RuleTreeBase, ABC):
             self.queue_push(node, idx)
             return
 
-        labels = node.stump.apply(data, idx, context=self, node_id=node.node_id)
+        labels = node.stump.apply(data, idx, context=self, node_id=node.node_id, cache=self._stump_cache())
         self._push_leaves(node.node_l, data, idx[labels == 1])
         self._push_leaves(node.node_r, data, idx[labels == 2])
 
@@ -450,7 +461,7 @@ class RuleTree(RuleTreeBase, ABC):
             try:
                 clf = self.make_split(data, y_split, idx, sample_weight=sample_weight,
                                       node_id=current_node.node_id)
-                labels = clf.apply(data, idx, context=self, node_id=current_node.node_id)
+                labels = clf.apply(data, idx, context=self, node_id=current_node.node_id, cache=self._stump_cache())
             except NoSplitFoundWarning:
                 self.make_leaf(node=current_node)
                 nbr_curr_nodes += 1
@@ -535,7 +546,8 @@ class RuleTree(RuleTreeBase, ABC):
         data : dict
             Whole data set, as ``{data_type: array}``.
         """
-        _, counts = np.unique(stump.apply(data, context=self, node_id=node.node_id), return_counts=True)
+        labels = stump.apply(data, context=self, node_id=node.node_id, cache=self._stump_cache())
+        _, counts = np.unique(labels, return_counts=True)
         node.balance_score_global = counts.min() / counts.sum()
         node.balance_score = node.balance_score_global
 
@@ -571,7 +583,7 @@ class RuleTree(RuleTreeBase, ABC):
         if self.stump_selection == 'random':
             stump, data_type = self._get_random_split()
             stump.fit(data, y, idx=idx, data_type=data_type, sample_weight=sample_weight,
-                      context=self, node_id=node_id)
+                      context=self, node_id=node_id, cache=self._stump_cache())
 
             return stump
 
@@ -582,7 +594,7 @@ class RuleTree(RuleTreeBase, ABC):
                 try:
                     stump = sklearn.clone(stump)
                     stump.fit(data, y, idx=idx, data_type=data_type, sample_weight=sample_weight,
-                              context=self, node_id=node_id)
+                              context=self, node_id=node_id, cache=self._stump_cache())
 
                     info_gains.append(stump.gain_)
                     clfs.append(stump)
@@ -638,7 +650,7 @@ class RuleTree(RuleTreeBase, ABC):
         idx : numpy.ndarray
             Indices of the instances reaching the node.
         """
-        node.update_statistics(data, y, idx, self)
+        node.update_statistics(data, y, idx, self, cache=self._stump_cache())
 
     def predict(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
         """
@@ -660,7 +672,8 @@ class RuleTree(RuleTreeBase, ABC):
         y_pred : numpy.ndarray of shape (n_samples,)
             Predicted classes, values or cluster labels.
         """
-        labels, _, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt), context=self)
+        labels, _, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt),
+                                         context=self, cache=getattr(self, "cache_", None))
 
         return labels
 
@@ -684,7 +697,8 @@ class RuleTree(RuleTreeBase, ABC):
         leaves : numpy.ndarray of shape (n_samples,)
             Identifier (node_id) of the leaf reached by each instance.
         """
-        _, leaves, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt), context=self)
+        _, leaves, _ = self.root.predict(self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt),
+                                         context=self, cache=getattr(self, "cache_", None))
 
         return leaves
 
@@ -739,7 +753,7 @@ class RuleTree(RuleTreeBase, ABC):
         if node.is_leaf() or node.stump is None:
             return
 
-        labels = node.stump.apply(data, idx, context=self, node_id=node.node_id)
+        labels = node.stump.apply(data, idx, context=self, node_id=node.node_id, cache=self._stump_cache())
         idx_l = idx[labels == 1]
         idx_r = idx[labels == 2]
 

@@ -82,7 +82,7 @@ class PartialProximityTreeStumpClassifier(PartialProximityTreeStump, PartialPivo
     >>> from RuleTree.stumps.classification import PartialProximityTreeStumpClassifier
     >>> X, y = load_iris(return_X_y=True)
     >>> stump = PartialProximityTreeStumpClassifier(n_features_strategy=1, random_state=0)
-    >>> stump = stump.fit(X, y, context=None, node_id=None)
+    >>> stump = stump.fit(X, y, context=None, node_id=None, cache=None)
     >>> stump.get_rule(columns_names=["sl", "sw", "pl", "pw"])["textual_rule"]
     'euclidean(x, SP0(d: pw=1.8)) <= euclidean(x, SP1(d: pw=0.1))'
     >>> model = RuleTreeClassifier(max_depth=3, base_stumps=PartialProximityTreeStumpClassifier()).fit(X, y)

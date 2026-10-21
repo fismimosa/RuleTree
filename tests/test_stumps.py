@@ -79,7 +79,7 @@ def test_stump_contract(make_stump, data_type, dataset, continuous, request):
 
     stump = make_stump()
     stump = stump.fit(data, y.astype(float) if continuous else y, idx=idx, data_type=data_type, context=None,
-                      node_id=None)
+                      node_id=None, cache=None)
 
     assert stump.data_type_ == data_type
     labels = stump.apply(data, idx)
@@ -93,7 +93,8 @@ def test_stump_rejects_unsupported_data(time_series):
     X, y = time_series
 
     with pytest.raises(ValueError, match="does not support"):
-        PivotTreeStumpClassifier().fit({DATA_TYPE_TS: X}, y, data_type=DATA_TYPE_TS, context=None, node_id=None)
+        PivotTreeStumpClassifier().fit({DATA_TYPE_TS: X}, y, data_type=DATA_TYPE_TS,
+                                       context=None, node_id=None, cache=None)
 
 
 def test_pivot_classifier(iris):
@@ -155,7 +156,8 @@ def test_stump_serialization(make_stump, data_type, dataset, continuous, request
     assert loaded.get_params() == unfitted.get_params()
 
     fitted = make_stump()
-    fitted = fitted.fit(data, y.astype(float) if continuous else y, data_type=data_type, context=None, node_id=None)
+    fitted = fitted.fit(data, y.astype(float) if continuous else y, data_type=data_type,
+                        context=None, node_id=None, cache=None)
     loaded = type(fitted).dict_to_node(json_round_trip(fitted.node_to_dict()))
     assert loaded.get_params() == fitted.get_params()
     assert loaded.data_type_ == data_type
@@ -249,7 +251,7 @@ def test_pivots_of_the_stump(stump_class, dataset, request):
 
 def test_pivot_rule_ignores_columns_names(iris):
     X, y = iris
-    stump = PivotTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None)
+    stump = PivotTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None, cache=None)
 
     rule = stump.get_rule(columns_names=["a", "b", "c", "d"])
 
@@ -264,7 +266,7 @@ def test_shapelet_image_only_in_the_graphviz_drawing(tmp_path, monkeypatch):
     rng = np.random.default_rng(0)
     X, y = rng.normal(size=(30, 1, 20)), np.arange(30) % 2
     stump = ShapeletTreeStumpClassifier(n_shapelets=3, sliding_window=5, selection="random")
-    stump = stump.fit(X, y, data_type="ts", context=None, node_id=None)
+    stump = stump.fit(X, y, data_type="ts", context=None, node_id=None, cache=None)
 
     assert "image" not in stump.get_rule()["graphviz_rule"] and os.listdir(tmp_path) == []
     attributes = stump.get_graphviz_rule()

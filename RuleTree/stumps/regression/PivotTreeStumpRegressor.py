@@ -81,7 +81,7 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
     >>> from sklearn.datasets import load_diabetes
     >>> from RuleTree.stumps.regression import PivotTreeStumpRegressor
     >>> X, y = load_diabetes(return_X_y=True)
-    >>> stump = PivotTreeStumpRegressor(random_state=0).fit(X[:200], y[:200], context=None, node_id=None)
+    >>> stump = PivotTreeStumpRegressor(random_state=0).fit(X[:200], y[:200], context=None, node_id=None, cache=None)
     >>> stump.get_rule()["textual_rule"]  # distance from the training instance 62
     'P_62 <= 4.311'
     """
