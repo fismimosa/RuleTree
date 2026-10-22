@@ -147,7 +147,7 @@ Where to go next
       Trees, nodes, stumps and their components, in one page.
 
    .. grid-item-card:: :octicon:`book;1.2em` User guide
-      :link: guides/stumps
+      :link: guides/index
       :link-type: doc
 
       Stumps, data types, rules, saving, ensembles, evaluation, extensions.
@@ -172,39 +172,12 @@ Where to go next
 
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
-   :caption: Getting started
-   :hidden:
 
-   guides/getting_started
-   guides/concepts
-
-.. toctree::
-   :maxdepth: 2
-   :caption: User guide
-   :hidden:
-
-   guides/stumps
-   guides/multimodal
-   guides/inspecting
-   guides/lifecycle
-   guides/saving
-   guides/ensembles
-   guides/evaluating
-   guides/extending
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Examples
-   :hidden:
-
-   examples/index
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Reference
-   :hidden:
-
-   api/index
-   glossary
-   citing
+   Getting started <guides/getting_started>
+   User guide <guides/index>
+   Examples <examples/index>
+   API reference <api/index>
+   Glossary <glossary>
+   Citing <citing>

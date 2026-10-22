@@ -1,6 +1,6 @@
 # Sphinx and the theme (docs/conf.py)
 sphinx>=7.4.5
-sphinx-book-theme>=1.0.0
+pydata-sphinx-theme>=0.16.0
 
 # Extensions enabled by docs/conf.py when installed
 sphinx-copybutton>=0.5.2

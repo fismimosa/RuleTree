@@ -103,3 +103,35 @@ table.table td a.reference code {
 .sd-tab-set > label {
   color: var(--pst-color-text-muted);
 }
+
+/* Navbar ----------------------------------------------------------------- */
+
+.navbar-version {
+  align-self: center;
+  margin-left: 0.6rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--pst-color-text-muted);
+  border: 1px solid var(--rt-card-border);
+  border-radius: 1rem;
+}
+
+.navbar-header-items__start .navbar-item {
+  display: flex;
+}
+
+html[data-theme="light"] .bd-header-announcement {
+  background-color: #fbf6c4;
+}
+
+html[data-theme="dark"] .bd-header-announcement {
+  background-color: #3b3712;
+}
+
+/* long method names in the table of contents of the API pages */
+.toc-entry a > code,
+.toc-entry a > code span.pre {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

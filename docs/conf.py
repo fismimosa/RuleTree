@@ -128,10 +128,9 @@ napoleon_custom_sections = None
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_book_theme'
+html_theme = 'pydata_sphinx_theme'  # the theme of scikit-learn, pandas, NumPy
 html_static_path = ['_static']
-html_title = "RuleTree Documentation"
-html_logo = "_static/logo.png"
+html_title = "RuleTree"
 
 # Load custom CSS
 html_css_files = [
@@ -139,26 +138,42 @@ html_css_files = [
 ]
 
 html_theme_options = {
-    "repository_url": "https://github.com/fismimosa/RuleTree",
-    "use_repository_button": True,
-    "use_issues_button": True,
-    "use_download_button": True,
-    "use_fullscreen_button": True,
-    "path_to_docs": "docs",
-    "show_navbar_depth": 2,
-    "show_toc_level": 2,
-    "announcement": "This project is in active development. API may change.",
-    "icon_links": [
-        {
-            "name": "GitHub",
-            "url": "https://github.com/fismimosa/RuleTree",
-            "icon": "fa-brands fa-github",
-        }
-    ],
     "logo": {
-        "image_light": "_static/logo.png",
-        "image_dark": "_static/logo_dark.png",  # Add dark mode logo if available
+        "image_light": "_static/logo_navbar.png",
+        "image_dark": "_static/logo_navbar_dark.png",
+        "alt_text": "RuleTree",
     },
+    "announcement": "This project is in active development. API may change.",
+    "navbar_start": ["navbar-logo", "navbar-version"],
+    "navbar_align": "left",
+    "header_links_before_dropdown": 5,
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "icon_links": [
+        {"name": "GitHub", "url": "https://github.com/fismimosa/RuleTree", "icon": "fa-brands fa-github"},
+        {"name": "PyPI", "url": "https://pypi.org/project/RuleTree/", "icon": "fa-brands fa-python"},
+    ],
+    "use_edit_page_button": True,
+    "secondary_sidebar_items": ["page-toc", "edit-this-page", "sourcelink"],
+    "show_toc_level": 2,
+    "navigation_with_keys": False,
+    "pygments_light_style": "tango",
+    "pygments_dark_style": "github-dark",
+}
+
+# "Edit on GitHub" links
+html_context = {
+    "github_user": "fismimosa",
+    "github_repo": "RuleTree",
+    "github_version": "main",
+    "doc_path": "docs",
+}
+
+# pages without the navigation on the left, as in scikit-learn
+html_sidebars = {
+    "index": [],
+    "guides/getting_started": [],
+    "glossary": [],
+    "citing": [],
 }
 
 # Favicon configuration
