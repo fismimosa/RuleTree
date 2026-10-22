@@ -246,8 +246,11 @@ def figure_stump_components(output_dir):
 
 # --------------------------------------------------------------------------- nodes of a tree
 
+TREE_FONTSIZE = 9
+
+
 def tree_colors():
-    """The colors of plot_tree for the current theme."""
+    """The colors of plot_tree for the current theme (the figures use a fixed font size, TREE_FONTSIZE)."""
     return {"text": TEXT, "split": BOX_COLOR, "split_edge": BOX_EDGE, "leaf": PANEL, "leaf_edge": BOX_EDGE,
             "edge": MUTED, "classes": CLASS_COLORS}
 
@@ -263,7 +266,7 @@ def figure_node_ids(output_dir):
 
     figure, ax = plt.subplots(figsize=(7, 3.6))
     model.plot_tree(ax, columns_names=list(data.feature_names), class_names=list(data.target_names),
-                    colors=tree_colors())
+                    colors=tree_colors(), fontsize=TREE_FONTSIZE)
     save(figure, output_dir, "node_ids")
 
 
@@ -280,9 +283,10 @@ def figure_first_tree(output_dir):
                                               stratify=iris.target)
     model = RuleTreeClassifier(max_depth=3, random_state=42).fit(X_train, y_train)
 
+    names = [name.replace(" (cm)", "") for name in iris.feature_names]
     figure, ax = plt.subplots(figsize=(10, 4.6))
-    model.plot_tree(ax, columns_names=list(iris.feature_names), class_names=list(iris.target_names),
-                    colors=tree_colors())
+    model.plot_tree(ax, columns_names=names, class_names=list(iris.target_names), colors=tree_colors(),
+                    fontsize=TREE_FONTSIZE)
     save(figure, output_dir, "first_tree")
 
 
@@ -298,7 +302,8 @@ def figure_plot_tree(output_dir):
     model = RuleTreeClassifier(max_depth=3, random_state=0).fit(iris.data, iris.target)
 
     figure, ax = plt.subplots(figsize=(10, 4.6))
-    model.plot_tree(ax, columns_names=names, class_names=list(iris.target_names), colors=tree_colors())
+    model.plot_tree(ax, columns_names=names, class_names=list(iris.target_names), colors=tree_colors(),
+                    fontsize=TREE_FONTSIZE)
     save(figure, output_dir, "plot_tree")
 
 
@@ -317,7 +322,7 @@ def figure_proximity_tree(output_dir):
     model = RuleTreeClassifier(max_depth=1, base_stumps=proximity, random_state=0).fit(X_ts=X_shape, y=y_shape)
 
     figure, ax = plt.subplots(figsize=(6.5, 3.6))
-    model.plot_tree(ax, colors=tree_colors())
+    model.plot_tree(ax, colors=tree_colors(), fontsize=TREE_FONTSIZE)
     save(figure, output_dir, "proximity_tree")
 
 

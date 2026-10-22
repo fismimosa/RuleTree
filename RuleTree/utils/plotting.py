@@ -89,9 +89,9 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
         ax.annotate("", xy=end, xytext=start, zorder=2,
                     arrowprops=dict(arrowstyle="-|>", color=colors["edge"], linewidth=1, shrinkA=0, shrinkB=1))
         left = box["side"] == "true"
-        ax.annotate(box["side"], ((2 * start[0] + end[0]) / 3, (2 * start[1] + end[1]) / 3),
+        ax.annotate(box["side"], ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2),
                     xytext=(-3 if left else 3, 2), textcoords="offset points", ha="right" if left else "left",
-                    va="bottom", color=colors["edge"], fontsize=size * 0.8, zorder=4)
+                    va="bottom", color=colors["edge"], fontsize=size * 0.9, zorder=4)
 
     for box in boxes:
         if box["shapes"]:
