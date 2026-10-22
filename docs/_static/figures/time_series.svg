@@ -24,8 +24,9 @@
 L 714.96 194.035781 
 L 714.96 0 
 L 0 0 
+L 0 194.035781 
 z
-" style="fill: #ffffff"/>
+" style="fill: none"/>
   </g>
   <g id="axes_1">
    <g id="patch_2">
@@ -33,8 +34,9 @@ z
 L 283.857778 157.835078 
 L 283.857778 31.741934 
 L 7.2 31.741934 
+L 7.2 157.835078 
 z
-" style="fill: #ffffff"/>
+" style="fill: none"/>
    </g>
    <g id="patch_3">
     <path d="M 96.767314 90.142969 
@@ -1183,8 +1185,9 @@ z
 L 495.808889 157.835078 
 L 495.808889 31.741934 
 L 322.897778 31.741934 
+L 322.897778 157.835078 
 z
-" style="fill: #ffffff"/>
+" style="fill: none"/>
    </g>
    <g id="matplotlib.axis_3">
     <g id="xtick_7">
@@ -1682,8 +1685,9 @@ z
 L 707.76 157.835078 
 L 707.76 31.741934 
 L 534.848889 31.741934 
+L 534.848889 157.835078 
 z
-" style="fill: #ffffff"/>
+" style="fill: none"/>
    </g>
    <g id="matplotlib.axis_5">
     <g id="xtick_12">
@@ -1823,7 +1827,7 @@ L 647.503098 102.040428
 L 664.968866 83.386842 
 L 682.434635 82.651558 
 L 699.900404 65.529846 
-" clip-path="url(#p84245fe774)" style="fill: none; stroke: #2ca02c; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p84245fe774)" style="fill: none; stroke: #2e9d4f; stroke-width: 2; stroke-linecap: square"/>
    </g>
    <g id="line2d_35">
     <path d="M 542.708485 81.203723 
@@ -1836,7 +1840,7 @@ L 647.503098 152.103572
 L 664.968866 140.607494 
 L 682.434635 118.581628 
 L 699.900404 102.398661 
-" clip-path="url(#p84245fe774)" style="fill: none; stroke: #d62728; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p84245fe774)" style="fill: none; stroke: #d0352b; stroke-width: 2; stroke-linecap: square"/>
    </g>
    <g id="patch_12">
     <path d="M 534.848889 157.835078 

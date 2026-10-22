@@ -112,39 +112,41 @@ transformer and the splitter of a :class:`~RuleTree.stumps.Stump.Stump`, are sav
    print({name: value for name, value in dictionary["args"].items() if name != "base_stumps"})
    print(json.dumps(dictionary["args"]["base_stumps"], indent=1))
 
-.. code-block:: text
-   :caption: Output
+.. dropdown:: Output: the parameters and the base stumps in the dictionary
 
-   RuleTree.tree.RuleTreeClassifier RuleTreeClassifier
-   {'max_depth': 2, 'max_leaf_nodes': inf, 'min_samples_split': 2, 'prune_useless_leaves': False, 'random_state': 0, 'stump_selection': 'random'}
-   [
-    [
-     1.0,
-     {
-      "stump_type": "RuleTree.stumps.Stump",
-      "stump_class": "Stump",
-      "args": {
-       "splitter": {
-        "__estimator__": "RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter",
-        "params": {
-         "class_weight": null,
-         "criterion": "entropy",
-         "max_features": null,
-         "min_impurity_decrease": 0.0,
-         "min_samples_leaf": 1,
-         "min_weight_fraction_leaf": 0.0,
-         "random_state": null
-        }
-       },
-       "transformer": {
-        "__estimator__": "RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer",
-        "params": {}
-       }
-      }
-     },
-     null
-    ]
-   ]
+   .. code-block:: text
+      :caption: Output
+
+      RuleTree.tree.RuleTreeClassifier RuleTreeClassifier
+      {'max_depth': 2, 'max_leaf_nodes': inf, 'min_samples_split': 2, 'prune_useless_leaves': False, 'random_state': 0, 'stump_selection': 'random'}
+      [
+       [
+        1.0,
+        {
+         "stump_type": "RuleTree.stumps.Stump",
+         "stump_class": "Stump",
+         "args": {
+          "splitter": {
+           "__estimator__": "RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter",
+           "params": {
+            "class_weight": null,
+            "criterion": "entropy",
+            "max_features": null,
+            "min_impurity_decrease": 0.0,
+            "min_samples_leaf": 1,
+            "min_weight_fraction_leaf": 0.0,
+            "random_state": null
+           }
+          },
+          "transformer": {
+           "__estimator__": "RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer",
+           "params": {}
+          }
+         }
+        },
+        null
+       ]
+      ]
 
 Nodes
 ~~~~~
@@ -222,7 +224,7 @@ How a tree is rebuilt
    ``set_state``;
 5. links the nodes through ``left_node`` and ``right_node``, and takes ``"R"`` as the root.
 
-.. figure:: /_static/figures/saved_tree.svg
+.. themed-figure:: /_static/figures/saved_tree.svg
    :alt: The flat list of the saved nodes, each with its id and the ids of its children, and the tree
          rebuilt from it.
    :width: 100%

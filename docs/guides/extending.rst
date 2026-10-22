@@ -21,7 +21,7 @@ stump sends each instance to the left or to the right child. Most stumps of the 
   split of that matrix: a threshold on a numerical feature (``x <= threshold`` goes left) or a
   value of a categorical feature (``x == value`` goes left).
 
-.. figure:: /_static/figures/stump_components.svg
+.. themed-figure:: /_static/figures/stump_components.svg
    :alt: The data go through the transformer, which gives a feature matrix, then through the splitter,
          which sends each instance to the left or to the right child.
    :width: 100%

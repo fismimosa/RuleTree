@@ -18,7 +18,7 @@ node: the same tree can split the root with a threshold on a feature, a child wi
 from an instance of the training set (a :term:`pivot`), and a grandchild with the distance of a
 time series from a :term:`shapelet`.
 
-.. figure:: /_static/figures/tree_of_stumps.svg
+.. themed-figure:: /_static/figures/tree_of_stumps.svg
    :alt: Left: a tree whose root is split by a decision tree stump on tabular data, its right child
          by a pivot stump and a grandchild by a shapelet stump on time series. Right: the four steps
          that split a node.

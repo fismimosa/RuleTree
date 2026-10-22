@@ -1,9 +1,9 @@
 """
 The examples of the guides in docs/guides (and of docs/index.rst) run and print what the guides show.
 
-In each guide, the ``.. code-block:: python`` blocks are run in order in the same namespace. When a
-block is followed by a ``.. code-block:: text`` block with ``:caption: Output``, what the code
-prints must be that text.
+In each guide, the ``.. code-block:: python`` blocks are run in order in the same namespace, also
+when they are indented in another directive (a tab, a dropdown). When a block is followed by a
+``.. code-block:: text`` block with ``:caption: Output``, what the code prints must be that text.
 """
 import contextlib
 import io
@@ -24,12 +24,12 @@ def parse_blocks(text: str) -> list[tuple[str, str, str]]:
     lines = text.split("\n")
     i = 0
     while i < len(lines):
-        match = re.match(r"\.\. code-block:: (\w+)\s*$", lines[i])
+        match = re.match(r"( *)\.\. code-block:: (\w+)\s*$", lines[i])
         if not match:
             i += 1
             continue
 
-        language, caption = match.group(1), ""
+        directive_indent, language, caption = len(match.group(1)), match.group(2), ""
         i += 1
         while i < len(lines) and re.match(r"\s+:\w+:", lines[i]):  # options of the directive
             option = re.match(r"\s+:caption:\s*(.*)$", lines[i])
@@ -37,7 +37,8 @@ def parse_blocks(text: str) -> list[tuple[str, str, str]]:
             i += 1
 
         content = []
-        while i < len(lines) and (lines[i].strip() == "" or lines[i].startswith("   ")):
+        while i < len(lines) and (lines[i].strip() == ""
+                                  or len(lines[i]) - len(lines[i].lstrip()) > directive_indent):
             content.append(lines[i])
             i += 1
         indent = min((len(line) - len(line.lstrip()) for line in content if line.strip()), default=0)

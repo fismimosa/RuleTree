@@ -18,6 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(Path(__file__).resolve().parent / "_ext"))  # local extensions
 # the kernels that execute the example notebooks import RuleTree from the repository too
 os.environ["PYTHONPATH"] = os.pathsep.join(filter(None, [str(ROOT), os.environ.get("PYTHONPATH")]))
 
@@ -66,6 +67,7 @@ extensions = [
     'sphinx.ext.mathjax',      # Better math support
     'sphinx.ext.autosummary',  # Generate summary tables
     'myst_nb',  # The example notebooks
+    'themed_figure',  # Figures with a light and a dark version (docs/_ext)
 ]
 
 optional_extensions = [

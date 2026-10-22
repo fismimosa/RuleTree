@@ -10,23 +10,34 @@ tools for model selection. How the trees are built is described in :doc:`concept
 Installation
 ------------
 
-RuleTree requires Python 3.10 or later. Install it from PyPI, or from the root of the repository
-with ``pip install .``:
+RuleTree requires Python 3.10 or later. Some features need packages that are not installed by
+default: they are installed by the *extras* of RuleTree.
 
-.. code-block:: bash
+.. tab-set::
 
-   pip install RuleTree
+   .. tab-item:: PyPI
 
-Some features need packages that are not installed by default. They are installed by the
-*extras* of RuleTree:
+      .. code-block:: bash
 
-.. code-block:: bash
+         pip install RuleTree
 
-   pip install "RuleTree[shapelets]"   # shapelet, proximity and partial pivot stumps (numba)
-   pip install "RuleTree[graphviz]"    # drawing the trees (also requires the Graphviz binaries)
-   pip install "RuleTree[kmedoids]"    # shapelets selected with k-medoids (scikit-learn-extra)
-   pip install "RuleTree[all]"         # all of the above
-   pip install "RuleTree[test]"        # running the tests
+   .. tab-item:: With the extras
+
+      .. code-block:: bash
+
+         pip install "RuleTree[shapelets]"   # shapelet, proximity and partial pivot stumps (numba)
+         pip install "RuleTree[graphviz]"    # drawing the trees (also requires the Graphviz binaries)
+         pip install "RuleTree[kmedoids]"    # shapelets selected with k-medoids (scikit-learn-extra)
+         pip install "RuleTree[all]"         # all of the above
+
+   .. tab-item:: From the repository
+
+      .. code-block:: bash
+
+         git clone https://github.com/fismimosa/RuleTree.git
+         cd RuleTree
+         pip install ".[all]"
+         pip install ".[test]"               # running the tests
 
 .. note::
 
@@ -92,6 +103,15 @@ The rules of the tree can be printed with the names of the features:
    |   |   |    output: 1
    |   |   |--- petal length (cm) > 4.85
    |   |   |    output: 2
+
+.. themed-figure:: /_static/figures/first_tree.svg
+   :alt: The tree above drawn as boxes: the root splits on petal length at 2.45, then petal width
+         at 1.55 and petal length at 4.95 and 4.85; the leaves predict setosa, versicolor or
+         virginica.
+   :width: 100%
+
+   The same tree, with the class and the number of training instances of each leaf. The left child
+   of a node gets the instances for which its rule is true.
 
 See :doc:`inspecting` for the other ways to read a tree.
 
@@ -210,6 +230,14 @@ Information Criterion of the clustering (``bic_eps`` makes this stricter).
 The labels identify the leaves, numbered in breadth-first order (the root is 0). Here the tree
 splits two of the three groups once more, so there are five clusters; the agreement with the
 groups stays high because each cluster lies within a single group.
+
+.. themed-figure:: /_static/figures/clustering.svg
+   :alt: The three blobs coloured by cluster, with the regions of the five leaves of the tree:
+         three large regions, one per blob, and two small ones with a few points.
+   :width: 75%
+
+   The clusters of the tree above: each leaf is a region bounded by the rules of its path.
+
 :class:`~RuleTree.RuleTreeClusterClassifier` and
 :class:`~RuleTree.RuleTreeClusterRegressor` build the tree in the same way,
 without looking at the target, and then predict the majority class or the mean target of each

@@ -79,8 +79,9 @@ pip install -r requirements.txt -r requirements.docs.txt
 make -C docs html   # docs/_build/html/index.html
 ```
 
-The figures of the guides (`docs/_static/figures`) are drawn from fitted models by
-`python docs/make_figures.py` (it needs matplotlib): run it again when a change affects them.
+The figures of the guides (`docs/_static/figures`, each in a light and a dark version) are drawn
+from fitted models by `python docs/make_figures.py` (it needs matplotlib): run it again when a
+change affects them.
 
 More examples are in the notebooks of [`Examples`](Examples), which the HTML documentation runs
 again at every build. To cite RuleTree, see [`docs/citing.rst`](docs/citing.rst).

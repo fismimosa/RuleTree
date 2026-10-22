@@ -31,6 +31,14 @@ Gradient boosting
 :class:`~RuleTree.ensemble.GBoostRegressor.GBoostRegressor` fits each tree on the residuals of the
 previous ones (squared loss). The base estimator can be any RuleTreeRegressor, with any stumps:
 
+.. themed-figure:: /_static/figures/boosting.svg
+   :alt: F0, the mean of the target, followed by tree 1, tree 2 and tree n, each fitted on the
+         residuals of the previous prediction and added with the learning rate lr.
+   :width: 100%
+
+   Each tree is fitted on the residuals of the sum of the previous ones, and added with the
+   learning rate ``learning_rate``.
+
 .. code-block:: python
 
    from RuleTree.ensemble.GBoostRegressor import GBoostRegressor

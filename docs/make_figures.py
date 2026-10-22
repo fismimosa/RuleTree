@@ -1,7 +1,7 @@
 """
 Figures of the user guide, drawn with matplotlib from models fitted on fixed data:
 
-    python docs/make_figures.py            # writes docs/_static/figures/*.svg
+    python docs/make_figures.py            # writes docs/_static/figures/*.svg and *_dark.svg
 
 Run it after changes that affect the figures (e.g. the splits of a stump); tests/test_figures.py
 checks that it still runs.
@@ -22,43 +22,76 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch  # noqa: E402
 
 OUTPUT_DIR = Path(__file__).resolve().parent / "_static" / "figures"
 
-TEXT = "#2b2b2b"
-MUTED = "#6b6b6b"
-CLASS_COLORS = ["#2f6db3", "#e07b22", "#3a9a5b"]  # blue, orange, green
-LEFT_COLOR, RIGHT_COLOR = "#d6e4f5", "#fbe3cc"  # regions of the left and right child
-BOX_COLOR, BOX_EDGE = "#f4f6f8", "#9aa5b1"
+# Each figure is drawn twice, for the light and the dark theme of the documentation (name.svg and
+# name_dark.svg, see the themed-figure directive in docs/_ext), on a transparent background.
+THEMES = {
+    "light": dict(
+        TEXT="#2b2b2b", MUTED="#6b6b6b", AXES="#b0b0b0", PANEL="#ffffff", FAINT="#c0c0c0",
+        CLASS_COLORS=["#2f6db3", "#e07b22", "#3a9a5b"],  # blue, orange, green
+        CLUSTER_COLORS=["#2f6db3", "#e07b22", "#3a9a5b", "#9b59b6", "#c0392b"],
+        LEFT_COLOR="#d6e4f5", RIGHT_COLOR="#fbe3cc",  # regions of the left and right child
+        BOX_COLOR="#f4f6f8", BOX_EDGE="#9aa5b1",
+        ACCENT="#dbe9f7", ACCENT_EDGE="#5b8fc7", ACCENT2="#fbe6d2", ACCENT2_EDGE="#d98b45",
+        STAR="#f2e933", SHAPELET_COLORS=["#2e9d4f", "#d0352b"],
+    ),
+    "dark": dict(
+        TEXT="#e3e6ea", MUTED="#a3abb5", AXES="#5c6773", PANEL="#1b1f24", FAINT="#4a525c",
+        CLASS_COLORS=["#6ea8ec", "#f2a35e", "#6cc489"],
+        CLUSTER_COLORS=["#6ea8ec", "#f2a35e", "#6cc489", "#c39be0", "#ef7c6f"],
+        LEFT_COLOR="#1f3550", RIGHT_COLOR="#4a3220",
+        BOX_COLOR="#262c34", BOX_EDGE="#66717e",
+        ACCENT="#1d3a5c", ACCENT_EDGE="#6ea8ec", ACCENT2="#4a3220", ACCENT2_EDGE="#f2a35e",
+        STAR="#f2e933", SHAPELET_COLORS=["#6cc489", "#ef7c6f"],
+    ),
+}
+THEME = "light"
 
-plt.rcParams.update({
-    "font.size": 9,
-    "font.family": "DejaVu Sans",
-    "text.color": TEXT,
-    "axes.labelcolor": TEXT,
-    "axes.edgecolor": "#b0b0b0",
-    "xtick.color": MUTED,
-    "ytick.color": MUTED,
-    "figure.facecolor": "white",
-    "savefig.facecolor": "white",
-    "svg.hashsalt": "ruletree",  # the same file at every run
-})
+
+def use_theme(name: str):
+    """Set the colors of the theme for the next figures."""
+    global THEME
+    THEME = name
+    globals().update(THEMES[name])
+    plt.rcParams.update({
+        "font.size": 9,
+        "font.family": "DejaVu Sans",
+        "text.color": TEXT,
+        "axes.labelcolor": TEXT,
+        "axes.edgecolor": AXES,
+        "axes.facecolor": "none",
+        "xtick.color": MUTED,
+        "ytick.color": MUTED,
+        "figure.facecolor": "none",
+        "savefig.facecolor": "none",
+        "legend.labelcolor": TEXT,
+        "svg.hashsalt": "ruletree",  # the same file at every run
+    })
+
+
+use_theme("light")
 
 
 def save(figure, output_dir: Path, name: str):
     """Save a figure as SVG, without the creation date (so that the file changes only with the figure)."""
     output_dir.mkdir(parents=True, exist_ok=True)
-    figure.savefig(output_dir / f"{name}.svg", bbox_inches="tight", dpi=150, metadata={"Date": None})
+    suffix = "" if THEME == "light" else f"_{THEME}"
+    figure.savefig(output_dir / f"{name}{suffix}.svg", bbox_inches="tight", dpi=150, transparent=True,
+                   metadata={"Date": None})
     plt.close(figure)
 
 
-def box(ax, x, y, text, width, height, color=BOX_COLOR, edge=BOX_EDGE, fontsize=9, family=None, weight=None):
+def box(ax, x, y, text, width, height, color=None, edge=None, fontsize=9, family=None, weight=None):
     """A rounded box with centered text, in data coordinates."""
+    color, edge = color or BOX_COLOR, edge or BOX_EDGE
     ax.add_patch(FancyBboxPatch((x - width / 2, y - height / 2), width, height,
                                 boxstyle="round,pad=0.02,rounding_size=0.08", facecolor=color, edgecolor=edge,
                                 linewidth=1))
     ax.text(x, y, text, ha="center", va="center", fontsize=fontsize, family=family, weight=weight)
 
 
-def arrow(ax, start, end, text=None, style="-|>", color=MUTED, linestyle="-", text_offset=(0, 0.12)):
+def arrow(ax, start, end, text=None, style="-|>", color=None, linestyle="-", text_offset=(0, 0.12)):
     """An arrow between two points, with an optional label at its middle."""
+    color = color or MUTED
     ax.add_patch(FancyArrowPatch(start, end, arrowstyle=style, mutation_scale=10, color=color, linewidth=1,
                                  linestyle=linestyle, shrinkA=2, shrinkB=2))
     if text:
@@ -102,18 +135,18 @@ def figure_splits(output_dir):
         regions.set_rasterized(True)  # a small image instead of thousands of polygons
         ax.contour(xx, yy, sides, levels=[1.5], colors=[MUTED], linewidths=1)
         for label in (0, 1):
-            ax.scatter(*X[y == label].T, s=12, color=CLASS_COLORS[label], edgecolor="white", linewidth=0.4,
+            ax.scatter(*X[y == label].T, s=12, color=CLASS_COLORS[label], edgecolor=PANEL, linewidth=0.4,
                        label=f"class {label}")
 
         if hasattr(stump, "get_pivots"):
             used = stump.get_pivots()["used"]
             for pivot in ([used] if np.ndim(used) == 0 else used):
-                ax.scatter(*X[pivot], marker="*", s=220, color="#ffd23f", edgecolor=TEXT, linewidth=0.8, zorder=5)
+                ax.scatter(*X[pivot], marker="*", s=220, color=STAR, edgecolor=TEXT, linewidth=0.8, zorder=5)
                 ax.annotate(f"P_{pivot}", X[pivot], xytext=(6, 6), textcoords="offset points", fontsize=8)
 
         ax.set_title(f"{name}\n{description}", fontsize=9)
         ax.text(0.02, 0.02, stump.get_rule()["textual_rule"], transform=ax.transAxes, fontsize=8, family="monospace",
-                bbox=dict(boxstyle="round,pad=0.25", facecolor="white", edgecolor="#cccccc"))
+                bbox=dict(boxstyle="round,pad=0.25", facecolor=PANEL, edgecolor=BOX_EDGE))
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_xlabel("X_0")
@@ -153,9 +186,9 @@ def figure_tree_of_stumps(output_dir):
         if internal:
             box(ax, x, y, text, 3.0, 0.8, fontsize=8)
         else:
-            box(ax, x, y, text, 1.3, 0.6, color="white", edge=CLASS_COLORS[0 if "0" in text else 2], fontsize=8)
+            box(ax, x, y, text, 1.3, 0.6, color=PANEL, edge=CLASS_COLORS[0 if "0" in text else 2], fontsize=8)
     for x in (2.75, 4.45):  # the two leaves of Rrl
-        arrow(ax, (3.6, 0.88), (x, 0.42), color="#c0c0c0")
+        arrow(ax, (3.6, 0.88), (x, 0.42), color=FAINT)
 
     ax.text(10.4, 5.15, "how a node is split", ha="center", fontsize=9, weight="bold")
     steps = [
@@ -166,8 +199,8 @@ def figure_tree_of_stumps(output_dir):
     ]
     for i, text in enumerate(steps):
         y = 4.3 - i * 1.0
-        box(ax, 10.4, y, text, 4.4, 0.8, color="#dbe9f7" if i == 2 else BOX_COLOR,
-            edge="#5b8fc7" if i == 2 else BOX_EDGE, fontsize=8)
+        box(ax, 10.4, y, text, 4.4, 0.8, color=ACCENT if i == 2 else BOX_COLOR,
+            edge=ACCENT_EDGE if i == 2 else BOX_EDGE, fontsize=8)
         if i:
             arrow(ax, (10.4, y + 0.7), (10.4, y + 0.4))
     ax.text(10.4, 0.35, "until the nodes are pure or a limit is reached\n(max_depth, max_leaf_nodes, min_samples_split)",
@@ -186,9 +219,9 @@ def figure_stump_components(output_dir):
 
     y = 2.5
     box(ax, 1.0, y, "data of one type\nX, X_ts, X_img\n(all the instances)", 1.8, 0.9)
-    box(ax, 3.5, y, "transformer", 1.7, 0.9, color="#dbe9f7", edge="#5b8fc7", weight="bold")
+    box(ax, 3.5, y, "transformer", 1.7, 0.9, color=ACCENT, edge=ACCENT_EDGE, weight="bold")
     box(ax, 6.5, y, "feature matrix\n(instances of the node\n× features)", 2.3, 0.9)
-    box(ax, 9.4, y, "splitter", 1.5, 0.9, color="#fbe6d2", edge="#d98b45", weight="bold")
+    box(ax, 9.4, y, "splitter", 1.5, 0.9, color=ACCENT2, edge=ACCENT2_EDGE, weight="bold")
     box(ax, 11.4, y, "left (1)\nright (2)", 1.0, 0.9)
     arrow(ax, (1.9, y), (2.65, y))
     arrow(ax, (4.35, y), (5.35, y), "transform", text_offset=(0, 0.18))
@@ -248,7 +281,7 @@ def draw_tree(ax, model, columns_names, class_names):
         if node.is_leaf():
             text = f"{node_id}\nclass {class_names[node.prediction]}\nsamples = {node.samples}"
             color = CLASS_COLORS[int(node.prediction)]
-            box(ax, x, y, text, 1.9, 0.75, color="white", edge=color)
+            box(ax, x, y, text, 1.9, 0.75, color=PANEL, edge=color)
         else:
             rule = node.stump.get_rule(columns_names=columns_names)["textual_rule"]
             box(ax, x, y, f"{node_id}\n{rule}\nsamples = {node.samples}", 2.1, 0.75)
@@ -272,6 +305,89 @@ def figure_node_ids(output_dir):
     figure, ax = plt.subplots(figsize=(7, 3.6))
     draw_tree(ax, model, list(data.feature_names), list(data.target_names))
     save(figure, output_dir, "node_ids")
+
+
+def figure_first_tree(output_dir):
+    """The tree of the classification example of the getting started guide."""
+    from sklearn.datasets import load_iris
+    from sklearn.model_selection import train_test_split
+
+    from RuleTree import RuleTreeClassifier
+
+    # the data and the tree of docs/guides/getting_started.rst
+    iris = load_iris()
+    X_train, _, y_train, _ = train_test_split(iris.data, iris.target, test_size=0.3, random_state=42,
+                                              stratify=iris.target)
+    model = RuleTreeClassifier(max_depth=3, random_state=42).fit(X_train, y_train)
+
+    names = [name.replace(" (cm)", "") for name in iris.feature_names]
+    figure, ax = plt.subplots(figsize=(10, 4.6))
+    draw_tree(ax, model, names, list(iris.target_names))
+    save(figure, output_dir, "first_tree")
+
+
+# --------------------------------------------------------------------------- clustering
+
+def figure_clustering(output_dir):
+    """The clusters of RuleTreeCluster on three blobs: each leaf is a cluster, bounded by the rules."""
+    from sklearn.datasets import make_blobs
+
+    from RuleTree import RuleTreeCluster
+
+    # the data and the tree of docs/guides/getting_started.rst
+    X, _ = make_blobs(n_samples=300, centers=3, cluster_std=0.5, random_state=0)
+    clustering = RuleTreeCluster(max_depth=3, random_state=0)
+    labels = clustering.fit_predict(X)
+    clusters = sorted(set(labels.tolist()))
+    index = {cluster: i for i, cluster in enumerate(clusters)}
+
+    margin = 0.8
+    xx, yy = np.meshgrid(np.linspace(X[:, 0].min() - margin, X[:, 0].max() + margin, 300),
+                         np.linspace(X[:, 1].min() - margin, X[:, 1].max() + margin, 300))
+    regions = np.vectorize(index.get)(clustering.predict(np.column_stack([xx.ravel(), yy.ravel()]))).reshape(xx.shape)
+
+    figure, ax = plt.subplots(figsize=(6, 4.2))
+    filled = ax.contourf(xx, yy, regions, levels=np.arange(len(clusters) + 1) - 0.5, colors=CLUSTER_COLORS,
+                         alpha=0.18)
+    filled.set_rasterized(True)
+    ax.contour(xx, yy, regions, levels=np.arange(len(clusters)) + 0.5, colors=[MUTED], linewidths=0.8)
+    for cluster in clusters:
+        points = X[labels == cluster]
+        ax.scatter(*points.T, s=12, color=CLUSTER_COLORS[index[cluster]], edgecolor=PANEL, linewidth=0.4,
+                   label=f"cluster {cluster}")
+    ax.set_title(f"RuleTreeCluster on three blobs: {len(clusters)} leaves, one cluster each", fontsize=9)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.legend(frameon=False, fontsize=8, loc="center left", bbox_to_anchor=(1, 0.5))
+    save(figure, output_dir, "clustering")
+
+
+# --------------------------------------------------------------------------- boosting
+
+def figure_boosting(output_dir):
+    """Gradient boosting: each tree is fitted on the residuals of the previous ones."""
+    figure, ax = plt.subplots(figsize=(10, 2.9))
+    ax.set_xlim(0, 12.7)
+    ax.set_ylim(0, 3.3)
+    ax.axis("off")
+
+    y_tree, y_residual = 2.4, 0.9
+    box(ax, 0.9, y_tree, "F0 = mean(y)", 1.5, 0.6)
+    trees = [(3.6, "tree 1"), (6.6, "tree 2"), (10.3, "tree n")]
+    for k, (x, label) in enumerate(trees):
+        box(ax, x, y_tree, f"{label}\nRuleTreeRegressor", 2.2, 0.7, color=ACCENT, edge=ACCENT_EDGE)
+        target = "y - F0" if k == 0 else ("y - F1" if k == 1 else "y - F(n-1)")
+        box(ax, x, y_residual, f"residuals\n{target}", 1.6, 0.6, color=PANEL, edge=BOX_EDGE)
+        arrow(ax, (x, y_residual + 0.32), (x, y_tree - 0.37), "fit on", text_offset=(0.35, 0))
+    arrow(ax, (1.65, y_tree), (2.48, y_tree))
+    arrow(ax, (4.72, y_tree), (5.48, y_tree), "+ lr x", text_offset=(0, 0.15))
+    arrow(ax, (7.72, y_tree), (8.4, y_tree), "+ lr x", text_offset=(0, 0.15))
+    ax.text(8.8, y_tree, "...", ha="center", va="center", fontsize=12, color=MUTED)
+    box(ax, 12.3, y_tree, "F", 0.6, 0.6, color=ACCENT2, edge=ACCENT2_EDGE, weight="bold")
+    arrow(ax, (11.42, y_tree), (11.98, y_tree))
+    ax.text(6.35, 0.1, "F = F0 + lr x (tree 1 + tree 2 + ... + tree n); training stops early when the error on the "
+                      "validation set stops improving", ha="center", fontsize=8, color=MUTED, style="italic")
+    save(figure, output_dir, "boosting")
 
 
 # --------------------------------------------------------------------------- time series
@@ -322,7 +438,7 @@ def figure_time_series(output_dir):
     axes[1].set_xlabel("time")
 
     proximity_stump = proximity_model.root.stump
-    for k, color in enumerate(("tab:green", "tab:red")):
+    for k, color in enumerate(SHAPELET_COLORS):
         axes[2].plot(proximity_stump.st.shapelets[k, 0], color=color, linewidth=2)
     axes[2].set_title("shapelets of a proximity split\ngreen_shp and red_shp", fontsize=9)
     axes[2].set_xlabel("time")
@@ -362,12 +478,12 @@ def figure_saved_tree(output_dir):
             arrow(ax, (start[0], start[1] - 0.3), (end[0], end[1] + 0.3))
     for node_id, (x, y) in tree_positions.items():
         internal = node_id in ("R", "Rr")
-        box(ax, x, y, node_id, 0.8, 0.5, color="#dbe9f7" if internal else "white", edge="#5b8fc7")
+        box(ax, x, y, node_id, 0.8, 0.5, color=ACCENT if internal else PANEL, edge=ACCENT_EDGE)
 
     for node_id in ("R", "Rr"):
         start = list_positions[node_id]
         end = tree_positions[node_id]
-        arrow(ax, start, (end[0] - 0.42, end[1]), linestyle="--", color="#9aa5b1")
+        arrow(ax, start, (end[0] - 0.42, end[1]), linestyle="--", color=BOX_EDGE)
 
     ax.text(5.75, 0.35, "from_dict: RuleTreeNode.dict_to_node for each entry (the stump with the dict_to_node of its "
                        "class),\nthen the children are linked by left_node / right_node and \"R\" is the root",
@@ -425,6 +541,9 @@ FIGURES = {
     "splits": figure_splits,
     "stump_components": figure_stump_components,
     "node_ids": figure_node_ids,
+    "first_tree": figure_first_tree,
+    "clustering": figure_clustering,
+    "boosting": figure_boosting,
     "time_series": figure_time_series,
     "saved_tree": figure_saved_tree,
     "size_accuracy": figure_size_accuracy,
@@ -432,13 +551,16 @@ FIGURES = {
 
 
 def main(output_dir=OUTPUT_DIR, names=None):
-    """Draw the figures (all of them, or the given names) into output_dir."""
+    """Draw the figures (all of them, or the given names) in the light and dark themes into output_dir."""
     import warnings
 
     warnings.simplefilter("ignore")
-    for name in names or FIGURES:
-        FIGURES[name](Path(output_dir))
-        print(f"{name}.svg")
+    for theme in THEMES:
+        use_theme(theme)
+        for name in names or FIGURES:
+            FIGURES[name](Path(output_dir))
+            print(f"{name}{'' if theme == 'light' else '_' + theme}.svg")
+    use_theme("light")
 
 
 if __name__ == "__main__":

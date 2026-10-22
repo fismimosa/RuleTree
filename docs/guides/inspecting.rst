@@ -95,7 +95,7 @@ Nodes
 Each node has an id that is its path from the root: ``"R"`` is the root, ``"Rl"`` and ``"Rr"``
 its left and right children, ``"Rrl"`` the left child of ``"Rr"``, and so on.
 
-.. figure:: /_static/figures/node_ids.svg
+.. themed-figure:: /_static/figures/node_ids.svg
    :alt: A tree of depth 2 on iris with the nodes R, Rl, Rr, Rrl and Rrr, the rule of each internal
          node and the class and number of instances of each node.
    :width: 80%

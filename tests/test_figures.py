@@ -1,4 +1,7 @@
-"""The figures of the user guide: docs/make_figures.py still draws them, and the guides use existing files."""
+"""
+The figures of the user guide: docs/make_figures.py still draws them (in the light and dark themes), and
+the guides use existing files.
+"""
 import importlib.util
 import re
 from pathlib import Path
@@ -24,13 +27,20 @@ def test_make_figures(tmp_path):
     script.main(tmp_path)
 
     for name in script.FIGURES:
-        assert (tmp_path / f"{name}.svg").read_text().startswith("<?xml")
+        for file in (f"{name}.svg", f"{name}_dark.svg"):
+            assert (tmp_path / file).read_text().startswith("<?xml"), file
 
 
 def test_guides_use_existing_figures():
     referenced = set()
-    for page in [*sorted((DOCS_DIR / "guides").glob("*.rst")), DOCS_DIR / "index.rst"]:
-        referenced |= set(re.findall(r"\.\. figure:: /_static/figures/(\S+)", page.read_text()))
+    for page in DOCS_DIR.rglob("*.rst"):
+        if "_build" in page.parts or "generated" in page.parts:
+            continue
+        text = page.read_text()
+        referenced |= set(re.findall(r"\.\. figure:: /_static/figures/(\S+)", text))
+        for name in re.findall(r"\.\. themed-figure:: /_static/figures/(\S+)", text):  # light and dark
+            stem, extension = name.rsplit(".", 1)
+            referenced |= {name, f"{stem}_dark.{extension}"}
 
     assert referenced, "no figure in the guides"
     for name in referenced:

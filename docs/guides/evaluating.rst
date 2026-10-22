@@ -297,7 +297,7 @@ The size of the rules counts as much as their accuracy: combining the two functi
 trade-off of a family of models. With oblique stumps, a tree with two leaves is more accurate than
 axis-parallel trees with sixteen:
 
-.. figure:: /_static/figures/size_accuracy.svg
+.. themed-figure:: /_static/figures/size_accuracy.svg
    :alt: Test accuracy against the number of leaves of trees of depth 1 to 6: RuleTree with oblique
          stumps above the axis-parallel RuleTree and scikit-learn trees.
    :width: 85%

@@ -8,7 +8,7 @@ fits one of them (or all of them, and keeps the best) on the instances of the no
 Different stumps split the same instances in different ways. Here, the root split of four of them
 on two classes separated by a diagonal; the shaded regions are the two children:
 
-.. figure:: /_static/figures/splits.svg
+.. themed-figure:: /_static/figures/splits.svg
    :alt: The root split of four stumps on the same two-dimensional data: a vertical line, a
          diagonal line, a circle around a pivot and the line equidistant from two pivots.
    :width: 100%

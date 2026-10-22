@@ -123,7 +123,7 @@ than in how close a series is to one of them, e.g. a bump against a dip:
 The two shapelets of the split are ``model.root.stump.st.shapelets``, the first one green and the
 second one red in the Graphviz drawing.
 
-.. figure:: /_static/figures/time_series.svg
+.. themed-figure:: /_static/figures/time_series.svg
    :alt: Some time series of the two classes, the shapelet of the root split of the shapelet tree,
          and the two shapelets of the proximity split.
    :width: 100%
