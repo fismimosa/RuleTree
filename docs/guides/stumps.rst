@@ -89,6 +89,41 @@ stumps predict the principal components of the data. By default, the trees use t
 stump of their task.
 
 
+Which stump to use
+------------------
+
+The best stump depends on the data and on the kind of rule that is easy to read for whoever uses
+the tree. A starting point:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 45 55
+
+   * - If
+     - Try
+   * - the features are meaningful one by one, and the rules should be as simple as possible
+     - the decision tree stump (the default): ``petal width <= 0.8``
+   * - the classes are separated by combinations of features (e.g. along a diagonal)
+     - the oblique stumps, on standardized data (`Oblique stumps`_)
+   * - the instances are better described by their similarity to some examples than by single
+       features, e.g. many features or embeddings
+     - the pivot stumps (`Pivot stumps`_); the multiple pivot stumps to compare two examples; the
+       partial pivot stumps for shorter rules
+   * - time series whose pattern can occur at any time
+     - the shapelet stumps (:doc:`multimodal`)
+   * - time series whose classes differ by the shape of the pattern (a bump against a dip)
+     - the proximity stumps (:doc:`multimodal`)
+   * - time series aligned in time, or images, where single values matter
+     - the decision tree stump, on one feature per time step or pixel
+   * - images or texts, by similarity
+     - the pivot stumps on embeddings (e.g. from a pre-trained network) given as tabular data
+   * - the splits must respect a sensitive attribute
+     - the fair stump, in regression and clustering trees (`Fair splits`_)
+   * - several of the above may work
+     - all of them, with ``stump_selection="best"`` (`Combining stumps`_): each node takes the
+       best one
+
+
 Parameters of the stumps
 ------------------------
 

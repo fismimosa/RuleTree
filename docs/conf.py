@@ -7,10 +7,16 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import os
+import re
+import shutil
 import sys
 import importlib
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath('..'))
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+# the kernels that execute the example notebooks import RuleTree from the repository too
+os.environ["PYTHONPATH"] = os.pathsep.join(filter(None, [str(ROOT), os.environ.get("PYTHONPATH")]))
 
 project = 'RuleTree'
 copyright = '2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti'
@@ -38,6 +44,7 @@ extensions = [
     'sphinx.ext.intersphinx',  # Link to other projects' documentation
     'sphinx.ext.mathjax',      # Better math support
     'sphinx.ext.autosummary',  # Generate summary tables
+    'myst_nb',  # The example notebooks
 ]
 
 optional_extensions = [
@@ -54,7 +61,7 @@ extensions.extend(
 )
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
 # -- Options for autodoc extension ---------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#configuration
@@ -154,8 +161,21 @@ copybutton_line_continuation_character = "\\"
 # Enable autosectionlabel to make it easier to link to sections
 autosectionlabel_prefix_document = True
 
-# Enable autosummary features
+# Enable autosummary features: one page for each object listed in docs/api (in docs/api/generated)
 autosummary_generate = True
+
+# -- Example notebooks ---------------------------------------------------------
+# Sphinx reads only the files under docs/: the notebooks of Examples/ are copied into docs/examples/
+# and executed at every build, so that their outputs are the ones of the current version.
+
+EXAMPLES_DIR = Path(__file__).resolve().parent / "examples"
+for notebook in sorted((ROOT / "Examples").glob("*.ipynb")):
+    slug = re.sub(r"[^a-z0-9]+", "_", notebook.stem.lower()).strip("_")
+    shutil.copyfile(notebook, EXAMPLES_DIR / f"{slug}.ipynb")
+
+nb_execution_mode = "force"
+nb_execution_raise_on_error = True
+nb_execution_timeout = 300
 
 # Add last updated timestamp to each page
 html_last_updated_fmt = "%b %d, %Y"

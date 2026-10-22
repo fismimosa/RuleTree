@@ -65,10 +65,11 @@ model.fit(X=X, X_ts=X_ts, y=y)
 The user guide is in [`docs/guides`](docs/guides):
 
 - [Getting started](docs/guides/getting_started.rst): classification, regression, clustering.
-- [Stumps](docs/guides/stumps.rst): the available stumps and how to combine them.
+- [How RuleTree works](docs/guides/concepts.rst): trees, nodes, stumps and their components.
+- [Stumps](docs/guides/stumps.rst): the available stumps, which one to use and how to combine them.
 - [Tabular data, time series and images](docs/guides/multimodal.rst).
 - [Reading the tree](docs/guides/inspecting.rst): rules, drawings, nodes, feature contributions.
-- [Saving, growing and updating trees](docs/guides/lifecycle.rst).
+- [Growing and updating trees](docs/guides/lifecycle.rst): `partial_fit`, `update_statistics` and the cache of the stumps.
 - [Saving and loading trees](docs/guides/saving.rst): what `to_dict` saves and how `from_dict` rebuilds a tree.
 - [Ensembles](docs/guides/ensembles.rst): boosting of RuleTrees.
 - [Evaluating the models](docs/guides/evaluating.rst): metrics of predictions, clusters, tree size and fairness; all but the tree size need only the output of a model, so they evaluate any model.
@@ -84,7 +85,8 @@ make -C docs html   # docs/_build/html/index.html
 The figures of the guides (`docs/_static/figures`) are drawn from fitted models by
 `python docs/make_figures.py` (it needs matplotlib): run it again when a change affects them.
 
-More examples are in the notebooks of [`Examples`](Examples).
+More examples are in the notebooks of [`Examples`](Examples), which the HTML documentation runs
+again at every build. To cite RuleTree, see [`docs/citing.rst`](docs/citing.rst).
 
 ## Tests
 

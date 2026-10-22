@@ -38,9 +38,15 @@ The trees follow the scikit-learn API and support classification
 
 .. toctree::
    :maxdepth: 2
-   :caption: User guide
+   :caption: Getting started
 
    guides/getting_started
+   guides/concepts
+
+.. toctree::
+   :maxdepth: 2
+   :caption: User guide
+
    guides/stumps
    guides/multimodal
    guides/inspecting
@@ -51,13 +57,15 @@ The trees follow the scikit-learn API and support classification
    guides/extending
 
 .. toctree::
-   :maxdepth: 2
-   :caption: API reference
+   :maxdepth: 1
+   :caption: Examples
 
-   RuleTree.tree
-   RuleTree.stumps
-   RuleTree.base
-   RuleTree.ensemble
-   RuleTree.evaluation
-   RuleTree.exceptions
-   RuleTree.utils
+   examples/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference
+
+   api/index
+   glossary
+   citing

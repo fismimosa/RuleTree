@@ -195,7 +195,7 @@ This one draws random projections of the tabular data at each node:
   A transformer whose ``select`` changes the feature matrix in other ways sets
   ``refit_after_select = True``, so that the splitter is fitted again on the new matrix.
 - ``get_state`` and ``set_state`` save and restore the fitted state, as a JSON-friendly
-  dictionary, when the tree is saved (see :doc:`lifecycle`).
+  dictionary, when the tree is saved (see :doc:`saving`).
 
 .. code-block:: python
 

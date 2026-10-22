@@ -127,6 +127,54 @@ def figure_splits(output_dir):
     save(figure, output_dir, "splits")
 
 
+# --------------------------------------------------------------------------- how a tree is grown
+
+def figure_tree_of_stumps(output_dir):
+    """A tree whose nodes are split by different stumps on different data types, and how each node is split."""
+    figure, ax = plt.subplots(figsize=(10, 4.2))
+    ax.set_xlim(0, 13)
+    ax.set_ylim(0, 5.4)
+    ax.axis("off")
+
+    ax.text(3.6, 5.15, "a fitted tree", ha="center", fontsize=9, weight="bold")
+    nodes = {
+        "R": (3.6, 4.3, "R\npetal width <= 0.8\ndecision tree stump, X", True),
+        "Rl": (1.4, 2.8, "Rl\nclass 0", False),
+        "Rr": (5.0, 2.8, "Rr\nP_112 <= 1.05\npivot stump, X", True),
+        "Rrl": (3.6, 1.3, "Rrl\neuclidean(TS, shp) <= 2.21\nshapelet stump, X_ts", True),
+        "Rrr": (6.6, 1.3, "Rrr\nclass 2", False),
+    }
+    for parent, children in {"R": ("Rl", "Rr"), "Rr": ("Rrl", "Rrr")}.items():
+        for child, label in zip(children, ("true", "false")):
+            start, end = nodes[parent][:2], nodes[child][:2]
+            arrow(ax, (start[0], start[1] - 0.42), (end[0], end[1] + 0.42), label,
+                  text_offset=(-0.3 if label == "true" else 0.3, 0.05))
+    for x, y, text, internal in nodes.values():
+        if internal:
+            box(ax, x, y, text, 3.0, 0.8, fontsize=8)
+        else:
+            box(ax, x, y, text, 1.3, 0.6, color="white", edge=CLASS_COLORS[0 if "0" in text else 2], fontsize=8)
+    for x in (2.75, 4.45):  # the two leaves of Rrl
+        arrow(ax, (3.6, 0.88), (x, 0.42), color="#c0c0c0")
+
+    ax.text(10.4, 5.15, "how a node is split", ha="center", fontsize=9, weight="bold")
+    steps = [
+        "candidate splits: each base stump\non each data type it supports",
+        'stump_selection="random": draw one\n"best": fit all, keep the highest gain',
+        "fit the stump on the instances of the node\n(transformer, then splitter)",
+        "rule true: left child, false: right child\nchildren split later (breadth-first)",
+    ]
+    for i, text in enumerate(steps):
+        y = 4.3 - i * 1.0
+        box(ax, 10.4, y, text, 4.4, 0.8, color="#dbe9f7" if i == 2 else BOX_COLOR,
+            edge="#5b8fc7" if i == 2 else BOX_EDGE, fontsize=8)
+        if i:
+            arrow(ax, (10.4, y + 0.7), (10.4, y + 0.4))
+    ax.text(10.4, 0.35, "until the nodes are pure or a limit is reached\n(max_depth, max_leaf_nodes, min_samples_split)",
+            ha="center", fontsize=8, color=MUTED, style="italic")
+    save(figure, output_dir, "tree_of_stumps")
+
+
 # --------------------------------------------------------------------------- components of a stump
 
 def figure_stump_components(output_dir):
@@ -373,6 +421,7 @@ def figure_size_accuracy(output_dir):
 
 
 FIGURES = {
+    "tree_of_stumps": figure_tree_of_stumps,
     "splits": figure_splits,
     "stump_components": figure_stump_components,
     "node_ids": figure_node_ids,

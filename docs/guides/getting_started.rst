@@ -271,10 +271,13 @@ hyper-parameter searches:
 Next steps
 ----------
 
-- :doc:`stumps`: the available stumps and how to combine them.
+- :doc:`concepts`: how a tree is built from stumps, and the objects it is made of.
+- :doc:`stumps`: the available stumps, which one to use and how to combine them.
 - :doc:`multimodal`: trees on time series and images, alone or together with tabular data.
 - :doc:`inspecting`: rules, Graphviz drawings, leaves and feature contributions.
-- :doc:`lifecycle`: saving and loading trees, growing them further, updating their statistics.
+- :doc:`lifecycle`: growing trees further and updating their statistics.
+- :doc:`saving`: saving trees to JSON and loading them back.
 - :doc:`ensembles`: gradient boosting and explainable boosting with RuleTrees.
 - :doc:`evaluating`: metrics of the predictions, of the clusters and of the size of the trees.
 - :doc:`extending`: writing new stumps.
+- :doc:`/examples/index`: notebooks that train a tree end to end.

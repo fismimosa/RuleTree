@@ -1,59 +1,18 @@
-Saving, growing and updating trees
-==================================
+Growing and updating trees
+==========================
 
-This guide covers what happens to a tree after ``fit``: saving and loading it, growing it further,
-recomputing its statistics on new data, and the cache shared by its stumps.
+This guide covers what can change in a tree after ``fit``: growing it further, recomputing its
+statistics on new data, and the cache shared by its stumps. Saving a tree and loading it back is
+described in :doc:`saving`.
 
 .. code-block:: python
-
-   import json
 
    from sklearn.datasets import load_iris
 
    from RuleTree import RuleTreeClassifier
-   from RuleTree.tree.RuleTree import RuleTree
 
    X, y = load_iris(return_X_y=True)
    model = RuleTreeClassifier(max_depth=2, random_state=0).fit(X, y)
-
-
-Saving and loading
-------------------
-
-``to_dict`` turns a fitted tree into a JSON-friendly dictionary (and saves it to a file, if a name
-is given); ``RuleTree.from_dict`` rebuilds the tree, of the class it had:
-
-.. code-block:: python
-
-   model.to_dict(filename="iris_tree.json")
-
-   loaded = RuleTree.from_dict("iris_tree.json")
-   print(type(loaded).__name__, (loaded.predict(X) == model.predict(X)).all())
-
-.. code-block:: text
-   :caption: Output
-
-   RuleTreeClassifier True
-
-The dictionary has the parameters of the tree (``args``), the classes (for classification) and
-the nodes, each with its statistics and the state of its stump:
-
-.. code-block:: python
-
-   dictionary = model.to_dict()
-   print(sorted(dictionary))
-   print(dictionary["nodes"][0]["textual_rule"], "-", dictionary["nodes"][0]["stump_class"])
-
-.. code-block:: text
-   :caption: Output
-
-   ['args', 'classes_', 'n_classes_', 'nodes', 'tree_class', 'tree_type']
-   X_3 <= 0.800000011920929 - DecisionTreeStumpClassifier
-
-The thresholds are saved without rounding (scikit-learn computes them in single precision).
-:doc:`saving` describes the dictionary in detail: what is saved for the tree, the nodes and each
-stump, how ``from_dict`` rebuilds the tree, what is not saved, and what a new stump needs to be
-saved.
 
 
 Refitting and growing a tree
