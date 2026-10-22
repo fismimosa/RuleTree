@@ -7,6 +7,8 @@ for some stumps (shapelets, proximity), the shapes to plot below it. Each leaf s
 prediction. The leaves are placed from left to right in the order of the tree, and each internal
 node above the middle of its children, so the boxes never overlap.
 """
+import re
+import textwrap
 from typing import Optional
 
 import numpy as np
@@ -33,7 +35,7 @@ SHAPE_LINES = 4  # empty lines reserved below the rule for the plot of the shape
 def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_names: Optional[list] = None,
               scaler=None, float_precision: Optional[int] = 3, max_depth: Optional[int] = None,
               node_ids: bool = True, samples: bool = True, filled: bool = True,
-              fontsize: Optional[float] = None, colors: Optional[dict] = None):
+              fontsize: Optional[float] = None, colors: Optional[dict] = None, wrap: Optional[int] = None):
     """
     Draw the subtree of a node with matplotlib. See ``RuleTree.plot_tree`` for the parameters.
 
@@ -50,15 +52,17 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
     boxes = _layout(node, max_depth)
     leaf_colors = _leaf_colors(boxes, colors) if filled else {}
     for box in boxes:
-        _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors)
+        _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
+                  wrap)
 
     n_leaves = 1 + max(box["x"] for box in boxes)
     depth = max(box["depth"] for box in boxes)
     if ax is None:  # wide enough for the longest line at about 10 points
         characters = max(len(line) for box in boxes for line in box["label"].split("\n"))
         lines = max(box["label"].count("\n") + 1 for box in boxes)
-        _, ax = plt.subplots(figsize=(min(max(4.0, n_leaves * max(1.8, 0.09 * characters)), 30.0),
-                                      max(2.5, (depth + 1) * max(1.3, 0.2 * lines + 0.5))))
+        figure = plt.figure(figsize=(min(max(4.0, n_leaves * max(1.3, 0.09 * characters)), 30.0),
+                                     max(2.5, (depth + 1) * max(1.3, 0.2 * lines + 0.5))))
+        ax = figure.add_axes((0, 0, 1, 1))  # no margins: the axes are hidden
     ax.set_xlim(-0.5, n_leaves - 0.5)
     ax.set_ylim(-depth - 0.5, 0.5)
     ax.set_axis_off()
@@ -100,7 +104,8 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
     return ax
 
 
-def _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors):
+def _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
+              wrap):
     """The text, the colors and the shapes of a box."""
     current = box["node"]
     box["shapes"] = None
@@ -118,10 +123,23 @@ def _describe(box, columns_names, class_names, scaler, float_precision, node_ids
         if rule.get("shapes"):
             box["shapes"] = rule
 
-    lines = ([current.node_id] if node_ids else []) + [label]
+    lines = ([current.node_id] if node_ids else []) + _wrap(label, wrap, rule=not current.is_leaf())
     if samples and getattr(current, "samples", None) is not None:
         lines.append(f"samples = {current.samples}")
     box["label"] = "\n".join(lines) + "\n" * (SHAPE_LINES if box["shapes"] else 0)
+
+
+def _wrap(text, width, rule=True):
+    """
+    The lines of a text of at most width characters (if possible): a rule is split before its
+    comparison operator (``mean area`` / ``<= 901.95``), then each part between words; the
+    prediction of a leaf only between words (``class =`` / ``malignant``).
+    """
+    if width is None or len(text) <= width:
+        return [text]
+    operator = re.search(r" (<=|>=|==|!=|<|>|=) ", text) if rule else None
+    parts = [text[:operator.start()], text[operator.start() + 1:]] if operator else [text]
+    return [line for part in parts for line in (textwrap.wrap(part, width, break_long_words=False) or [part])]
 
 
 def _data_extent(ax, text, renderer):

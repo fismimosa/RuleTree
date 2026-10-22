@@ -106,6 +106,10 @@ options:
 - ``filled``: whether to color the leaves by class, cluster or predicted value;
 - ``fontsize``: the size of the text; by default, the largest with which the boxes do not
   overlap;
+- ``wrap``: the maximum number of characters per line. Long rules are split before their
+  comparison operator, then between words (``mean fractal dimension <= 0.062`` becomes
+  ``mean fractal`` / ``dimension`` / ``<= 0.062``), so that the boxes of trees with long feature
+  names are narrower and the text larger;
 - ``colors``: the colors of the boxes, of the arrows and of the classes, e.g. for a dark
   background (the figures of this documentation are drawn so);
 - ``scaler`` and ``float_precision``: as for ``get_rule``.

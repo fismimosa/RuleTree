@@ -1304,7 +1304,8 @@ class RuleTree(RuleTreeBase, ABC):
             dot.render(filename=filename)
 
     def plot_tree(self, ax=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
-                  max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None):
+                  max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None,
+                  wrap=None):
         """
         Draw the tree with matplotlib, as ``sklearn.tree.plot_tree`` (requires matplotlib).
 
@@ -1340,6 +1341,10 @@ class RuleTree(RuleTreeBase, ABC):
             Colors replacing the ones of ``RuleTree.utils.plotting.DEFAULT_COLORS`` (e.g. for a dark
             background): ``text``, ``split``, ``split_edge``, ``leaf``, ``leaf_edge``, ``edge``,
             ``classes`` (a list) and ``values`` (a colormap).
+        wrap : int, default=None
+            Maximum number of characters per line: longer rules are split before their comparison
+            operator, then between words, so that the boxes of trees with long feature names are
+            narrower. If None, one line per rule.
 
         Returns
         -------
@@ -1361,7 +1366,7 @@ class RuleTree(RuleTreeBase, ABC):
         """
         return self.root.plot_tree(ax, columns_names=columns_names, class_names=class_names, scaler=scaler,
                                    float_precision=float_precision, max_depth=max_depth, node_ids=node_ids,
-                                   samples=samples, filled=filled, fontsize=fontsize, colors=colors)
+                                   samples=samples, filled=filled, fontsize=fontsize, colors=colors, wrap=wrap)
 
     def get_predicates(self):
         """

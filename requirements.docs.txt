@@ -11,9 +11,9 @@ sphinx-last-updated-by-git>=0.3.5
 sphinx-togglebutton>=0.3.2
 
 # Optional dependencies of RuleTree imported by the API reference (shapelet modules) and by the
-# example notebooks (Graphviz source of a tree)
+# example notebooks (plot_tree and the other figures)
 numba
-graphviz
+matplotlib
 
 # The example notebooks, executed at every build (docs/examples)
 myst-nb>=1.1.0

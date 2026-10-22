@@ -241,3 +241,30 @@ def test_shapelets_drawn_in_their_nodes(make_stump, n_shapes, bumps_and_dips):
         box = next(text for text in ax.texts if text.get_gid() == node_id).get_bbox_patch().get_window_extent(renderer)
         plot = inset.get_window_extent(renderer)
         assert box.x0 <= plot.x0 and plot.x1 <= box.x1 and box.y0 <= plot.y0 and plot.y1 <= box.y1
+
+
+def test_wrap_splits_rules_before_the_operator_and_leaves_between_words():
+    from RuleTree.utils.plotting import _wrap
+
+    assert _wrap("mean fractal dimension <= 0.062", 12) == ["mean fractal", "dimension", "<= 0.062"]
+    assert _wrap("worst area > 718.65", 12) == ["worst area", "> 718.65"]
+    assert _wrap("class = malignant", 12, rule=False) == ["class =", "malignant"]
+    assert _wrap("petal width <= 0.8", None) == ["petal width <= 0.8"]
+    assert _wrap("short <= 1", 12) == ["short <= 1"]
+
+
+def test_wrap_makes_the_boxes_narrower(iris):
+    X, y = iris
+    names = ["sepal length", "sepal width", "petal length", "petal width"]
+    model = RuleTreeClassifier(max_depth=2, random_state=0).fit(X, y)
+
+    ax = model.plot_tree(columns_names=names, wrap=12, fontsize=10)
+
+    assert lines(ax, "R") == ["R", "petal width", "<= 0.8", "samples = 150"]
+    assert max(len(line) for text in ax.texts if text.get_gid() for line in text.get_text().split("\n")) <= 13
+
+
+def test_new_figure_has_no_margins(classifier):
+    ax = classifier.plot_tree()
+
+    assert tuple(ax.get_position().bounds) == (0, 0, 1, 1)

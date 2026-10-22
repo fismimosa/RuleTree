@@ -408,7 +408,8 @@ class RuleTreeNode:
         return graph
 
     def plot_tree(self, ax=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
-                  max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None):
+                  max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None,
+                  wrap=None):
         """
         Draw the subtree with matplotlib (requires matplotlib). See ``RuleTree.plot_tree``.
 
@@ -438,6 +439,10 @@ class RuleTreeNode:
             Colors replacing the ones of ``RuleTree.utils.plotting.DEFAULT_COLORS`` (e.g. for a dark
             background): ``text``, ``split``, ``split_edge``, ``leaf``, ``leaf_edge``, ``edge``,
             ``classes`` (a list) and ``values`` (a colormap).
+        wrap : int, default=None
+            Maximum number of characters per line: longer rules are split before their comparison
+            operator, then between words, so that the boxes of trees with long feature names are
+            narrower. If None, one line per rule.
 
         Returns
         -------
@@ -447,7 +452,7 @@ class RuleTreeNode:
 
         return plot_tree(self, ax, columns_names=columns_names, class_names=class_names, scaler=scaler,
                          float_precision=float_precision, max_depth=max_depth, node_ids=node_ids, samples=samples,
-                         filled=filled, fontsize=fontsize, colors=colors)
+                         filled=filled, fontsize=fontsize, colors=colors, wrap=wrap)
 
     def predict(self, data, idx:np.ndarray=None, prediction_step=np.inf, context=None, cache=None):
         """

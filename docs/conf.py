@@ -21,6 +21,8 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent / "_ext"))  # local extensions
 # the kernels that execute the example notebooks import RuleTree from the repository too
 os.environ["PYTHONPATH"] = os.pathsep.join(filter(None, [str(ROOT), os.environ.get("PYTHONPATH")]))
+# ... with the IPython profile of the documentation (figures as SVG)
+os.environ["IPYTHONDIR"] = str(Path(__file__).resolve().parent / "_ipython")
 
 def _release():
     """
@@ -107,6 +109,22 @@ autodoc_default_options = {
     'member-order': 'bysource',  # Keep original source order
     'private-members': False,  # Don't document _private members
 }
+
+
+
+def _skip_metadata_routing(app, what, name, obj, skip, options):
+    """
+    Hide the set_<method>_request methods: scikit-learn generates them on every estimator for its
+    metadata routing (e.g. of sample_weight), and RuleTree does not change them.
+    """
+    if name.startswith("set_") and name.endswith("_request"):
+        return True
+    return None
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", _skip_metadata_routing)
+
 
 # -- Options for Napoleon extension ------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html#configuration
