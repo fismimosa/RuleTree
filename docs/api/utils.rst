@@ -24,6 +24,23 @@ Optional dependencies
 
    import_optional
 
+Drawing
+-------
+
+``RuleTree.plot_tree`` and ``RuleTreeNode.plot_tree`` draw with this module; its default colors
+are ``DEFAULT_COLORS``.
+
+.. automodule:: RuleTree.utils.plotting
+   :no-members:
+
+.. currentmodule:: RuleTree.utils.plotting
+
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
+
+   plot_tree
+
 Constants
 ---------
 

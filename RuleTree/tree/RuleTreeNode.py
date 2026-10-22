@@ -407,6 +407,48 @@ class RuleTreeNode:
 
         return graph
 
+    def plot_tree(self, ax=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
+                  max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None):
+        """
+        Draw the subtree with matplotlib (requires matplotlib). See ``RuleTree.plot_tree``.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, default=None
+            Axes to draw on. If None, a new figure, sized on the number of leaves and the depth.
+        columns_names : list of str, default=None
+            Names of the tabular features.
+        class_names : list of str, default=None
+            Names of the classes, in the order of ``classes_`` (classification trees).
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the thresholds are shown in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the thresholds and of the predicted values.
+        max_depth : int, default=None
+            Maximum depth drawn: the subtrees below are shown as ``(...)``. If None, the whole tree.
+        node_ids : bool, default=True
+            Whether to show the id of each node.
+        samples : bool, default=True
+            Whether to show the number of training instances of each node.
+        filled : bool, default=True
+            Whether to color the leaves by class, cluster or predicted value.
+        fontsize : float, default=None
+            Size of the text. If None, the largest size with which the boxes do not overlap.
+        colors : dict, default=None
+            Colors replacing the ones of ``RuleTree.utils.plotting.DEFAULT_COLORS`` (e.g. for a dark
+            background): ``text``, ``split``, ``split_edge``, ``leaf``, ``leaf_edge``, ``edge``,
+            ``classes`` (a list) and ``values`` (a colormap).
+
+        Returns
+        -------
+        ax : matplotlib.axes.Axes
+        """
+        from RuleTree.utils.plotting import plot_tree
+
+        return plot_tree(self, ax, columns_names=columns_names, class_names=class_names, scaler=scaler,
+                         float_precision=float_precision, max_depth=max_depth, node_ids=node_ids, samples=samples,
+                         filled=filled, fontsize=fontsize, colors=colors)
+
     def predict(self, data, idx:np.ndarray=None, prediction_step=np.inf, context=None, cache=None):
         """
         Predictions, leaves and probabilities of the instances, traversing the subtree.

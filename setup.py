@@ -59,6 +59,7 @@ setup(
     long_description_content_type="text/markdown",
     extras_require={
         "shapelets": ["numba"],  # shapelet, proximity and partial pivot stumps
+        "plot": ["matplotlib"],  # plot_tree
         "graphviz": ["graphviz", "matplotlib"],  # export_graphviz (matplotlib: images of the shapelets)
         "kmedoids": ["scikit-learn-extra"],  # Shapelets(selection='cluster')
         "profiling": ["line-profiler-pycharm"],  # RuleTree.utils.profiling

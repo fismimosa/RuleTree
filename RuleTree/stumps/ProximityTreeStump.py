@@ -122,6 +122,29 @@ class ProximityTreeStump:
         return graphviz_shapelets(label, [self.st.shapelets[0, 0], self.st.shapelets[1, 0]],
                                   colors=list(PROXIMITY_COLORS))
 
+    def get_plot_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
+        """
+        What the node of the split shows in ``RuleTree.plot_tree``: the rule and, below it, the two
+        shapelets, green and red as in the rule.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Not used.
+        scaler : TransformerMixin, default=None
+            Not supported: must be None.
+        float_precision : int, default=3
+            Not used.
+
+        Returns
+        -------
+        rule : dict
+            ``label``, ``shapes`` (the two shapelets) and their ``colors``.
+        """
+        label = self.get_rule(columns_names, scaler, float_precision)["textual_rule"]
+        return {"label": label, "shapes": [self.st.shapelets[0, 0], self.st.shapelets[1, 0]],
+                "colors": list(PROXIMITY_COLORS)}
+
 
 class PartialProximityTreeStump:
     """

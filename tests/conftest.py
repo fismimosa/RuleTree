@@ -1,3 +1,7 @@
+import os
+
+os.environ.setdefault("MPLBACKEND", "Agg")  # the drawings of the tests and of the guides, without a display
+
 import numpy as np
 import pytest
 from sklearn.datasets import load_diabetes, load_iris, make_blobs

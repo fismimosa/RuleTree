@@ -68,8 +68,55 @@ left child and its negation; the children are in ``left_node`` and ``right_node`
 Drawing the tree
 ----------------
 
-``export_graphviz`` returns the tree as a Graphviz graph (it requires the ``graphviz`` extra).
-Its DOT source can be read or saved; rendering it to an image also requires the Graphviz
+``plot_tree`` draws the tree with matplotlib, as ``sklearn.tree.plot_tree`` does for the
+scikit-learn trees (it requires the ``plot`` extra). It returns the matplotlib axes of the
+drawing, which a notebook shows and ``savefig`` saves as PNG, SVG or PDF:
+
+.. code-block:: python
+
+   ax = model.plot_tree(columns_names=names, class_names=list(iris.target_names))
+   ax.figure.savefig("iris_tree.svg")
+
+   # the box of each node is a text whose gid is the id of the node
+   print([text.get_text().split("\n")[1] for text in ax.texts if text.get_gid() in ("R", "Rl")])
+
+.. code-block:: text
+   :caption: Output
+
+   ['petal width <= 0.8', 'class = setosa']
+
+.. themed-figure:: /_static/figures/plot_tree.svg
+   :alt: The tree of depth 3 on iris drawn by plot_tree: each internal node with its id, rule and
+         number of instances, each leaf with its class, colored by class.
+   :width: 100%
+
+   ``model.plot_tree(columns_names=names, class_names=list(iris.target_names))``. The arrow "true"
+   leads to the child that gets the instances for which the rule is true.
+
+Each internal node shows its id, its rule and its number of training instances; each leaf its
+prediction: the class, the value (one per target) or the cluster. The drawing works with every
+stump, since each stump says what its node shows (``get_plot_rule``): the rule, and for the
+shapelet and proximity stumps also the plot of their shapelets (see :doc:`multimodal`). Its
+options:
+
+- ``ax``: the axes to draw on, e.g. a subplot of a larger figure. By default, a new figure sized on
+  the number of leaves and on the depth;
+- ``max_depth``: the depth drawn; the subtrees below are shown as ``(...)``, as for large trees;
+- ``node_ids`` and ``samples``: whether to show the ids and the number of instances;
+- ``filled``: whether to color the leaves by class, cluster or predicted value;
+- ``fontsize``: the size of the text; by default, the largest with which the boxes do not
+  overlap;
+- ``colors``: the colors of the boxes, of the arrows and of the classes, e.g. for a dark
+  background (the figures of this documentation are drawn so);
+- ``scaler`` and ``float_precision``: as for ``get_rule``.
+
+``plot_tree`` is also a method of the nodes, to draw a subtree: ``model.get_node_by_id("Rr").plot_tree()``.
+
+Graphviz
+~~~~~~~~
+
+``export_graphviz`` returns the tree as a Graphviz graph instead (it requires the ``graphviz``
+extra). Its DOT source can be read or saved; rendering it to an image also requires the Graphviz
 programs:
 
 .. code-block:: python
@@ -86,7 +133,7 @@ programs:
 
    model.export_graphviz(columns_names=names, filename="iris_tree")   # writes iris_tree.pdf
 
-In the drawing, the left (green) edge of a node is followed when its condition is true.
+In the Graphviz drawing, the left (green) edge of a node is followed when its condition is true.
 
 
 Nodes

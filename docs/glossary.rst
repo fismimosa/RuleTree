@@ -71,5 +71,5 @@ Glossary
 
    extra
       A group of optional dependencies, installed with ``pip install "RuleTree[name]"``: e.g.
-      ``shapelets`` for the shapelet, proximity and partial pivot stumps, ``graphviz`` for the
-      drawings. See :doc:`guides/getting_started`.
+      ``shapelets`` for the shapelet, proximity and partial pivot stumps, ``plot`` for the
+      drawings with matplotlib. See :doc:`guides/getting_started`.

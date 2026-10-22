@@ -155,6 +155,31 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         return self.get_rule(columns_names=columns_names, scaler=scaler,
                              float_precision=float_precision)["graphviz_rule"]
 
+    def get_plot_rule(self, columns_names: list = None, scaler: TransformerMixin = None,
+                      float_precision: Optional[int] = 3) -> dict:
+        """
+        What the node of the split shows in ``RuleTree.plot_tree``. The default implementation is the
+        rule, ``get_rule(...)["textual_rule"]``; stumps that draw something in the node, such as the
+        shapelet stumps, add the shapes to plot below it.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Names of the tabular features.
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the thresholds are shown in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the threshold.
+
+        Returns
+        -------
+        rule : dict
+            ``label``, the text of the node, and optionally ``shapes``, a list of 1D arrays plotted
+            below it, with their ``colors``.
+        """
+        return {"label": self.get_rule(columns_names=columns_names, scaler=scaler,
+                                       float_precision=float_precision)["textual_rule"]}
+
     @abstractmethod
     def node_to_dict(self) -> dict:
         """

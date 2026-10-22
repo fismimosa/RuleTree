@@ -246,55 +246,14 @@ def figure_stump_components(output_dir):
 
 # --------------------------------------------------------------------------- nodes of a tree
 
-def _layout(node, depth=0, positions=None, leaves=None):
-    """x (order of the leaves) and depth of each node of a subtree."""
-    positions = {} if positions is None else positions
-    leaves = [0] if leaves is None else leaves
-    if node.is_leaf():
-        positions[node.node_id] = (leaves[0], depth)
-        leaves[0] += 1
-    else:
-        _layout(node.node_l, depth + 1, positions, leaves)
-        _layout(node.node_r, depth + 1, positions, leaves)
-        positions[node.node_id] = ((positions[node.node_l.node_id][0] + positions[node.node_r.node_id][0]) / 2,
-                                   depth)
-    return positions
-
-
-def draw_tree(ax, model, columns_names, class_names):
-    """Draw the nodes of a fitted RuleTreeClassifier: identifier, rule or prediction, number of instances."""
-    positions = _layout(model.root)
-    nodes = model.get_predicates() | model.get_leaf_nodes()
-    scale_x, scale_y = 2.4, 1.5
-    coordinates = {node_id: (x * scale_x, -depth * scale_y) for node_id, (x, depth) in positions.items()}
-
-    for node_id, node in nodes.items():
-        if node.is_leaf():
-            continue
-        for child, label in ((node.node_l, "true"), (node.node_r, "false")):
-            start, end = coordinates[node_id], coordinates[child.node_id]
-            arrow(ax, (start[0], start[1] - 0.35), (end[0], end[1] + 0.35), label,
-                  text_offset=(0.32 if child is node.node_r else -0.32, 0.05))
-
-    for node_id, node in nodes.items():
-        x, y = coordinates[node_id]
-        if node.is_leaf():
-            text = f"{node_id}\nclass {class_names[node.prediction]}\nsamples = {node.samples}"
-            color = CLASS_COLORS[int(node.prediction)]
-            box(ax, x, y, text, 1.9, 0.75, color=PANEL, edge=color)
-        else:
-            rule = node.stump.get_rule(columns_names=columns_names)["textual_rule"]
-            box(ax, x, y, f"{node_id}\n{rule}\nsamples = {node.samples}", 2.1, 0.75)
-
-    xs = [x for x, _ in coordinates.values()]
-    ys = [y for _, y in coordinates.values()]
-    ax.set_xlim(min(xs) - 1.2, max(xs) + 1.2)
-    ax.set_ylim(min(ys) - 0.6, max(ys) + 0.6)
-    ax.axis("off")
+def tree_colors():
+    """The colors of plot_tree for the current theme."""
+    return {"text": TEXT, "split": BOX_COLOR, "split_edge": BOX_EDGE, "leaf": PANEL, "leaf_edge": BOX_EDGE,
+            "edge": MUTED, "classes": CLASS_COLORS}
 
 
 def figure_node_ids(output_dir):
-    """The tree of the guides on iris: node identifiers, rules and leaves."""
+    """The tree of the guides on iris: node identifiers, rules and leaves, drawn by plot_tree."""
     from sklearn.datasets import load_iris
 
     from RuleTree import RuleTreeClassifier
@@ -303,12 +262,13 @@ def figure_node_ids(output_dir):
     model = RuleTreeClassifier(max_depth=2, random_state=0).fit(data.data, data.target)
 
     figure, ax = plt.subplots(figsize=(7, 3.6))
-    draw_tree(ax, model, list(data.feature_names), list(data.target_names))
+    model.plot_tree(ax, columns_names=list(data.feature_names), class_names=list(data.target_names),
+                    colors=tree_colors())
     save(figure, output_dir, "node_ids")
 
 
 def figure_first_tree(output_dir):
-    """The tree of the classification example of the getting started guide."""
+    """The tree of the classification example of the getting started guide, drawn by plot_tree."""
     from sklearn.datasets import load_iris
     from sklearn.model_selection import train_test_split
 
@@ -320,10 +280,45 @@ def figure_first_tree(output_dir):
                                               stratify=iris.target)
     model = RuleTreeClassifier(max_depth=3, random_state=42).fit(X_train, y_train)
 
-    names = [name.replace(" (cm)", "") for name in iris.feature_names]
     figure, ax = plt.subplots(figsize=(10, 4.6))
-    draw_tree(ax, model, names, list(iris.target_names))
+    model.plot_tree(ax, columns_names=list(iris.feature_names), class_names=list(iris.target_names),
+                    colors=tree_colors())
     save(figure, output_dir, "first_tree")
+
+
+def figure_plot_tree(output_dir):
+    """The tree of the inspecting guide, drawn by plot_tree as in the guide."""
+    from sklearn.datasets import load_iris
+
+    from RuleTree import RuleTreeClassifier
+
+    # the data and the tree of docs/guides/inspecting.rst
+    iris = load_iris()
+    names = ["sepal length", "sepal width", "petal length", "petal width"]
+    model = RuleTreeClassifier(max_depth=3, random_state=0).fit(iris.data, iris.target)
+
+    figure, ax = plt.subplots(figsize=(10, 4.6))
+    model.plot_tree(ax, columns_names=names, class_names=list(iris.target_names), colors=tree_colors())
+    save(figure, output_dir, "plot_tree")
+
+
+def figure_proximity_tree(output_dir):
+    """The proximity tree of the multimodal guide, drawn by plot_tree with its two shapelets."""
+    from RuleTree import RuleTreeClassifier
+    from RuleTree.stumps.classification import ProximityTreeStumpClassifier
+
+    # the data and the tree of docs/guides/multimodal.rst
+    rng_shape = np.random.default_rng(1)
+    y_shape = rng_shape.integers(0, 2, size=200)
+    X_shape = rng_shape.normal(scale=0.4, size=(200, 1, 50))
+    for i, start in enumerate(rng_shape.integers(5, 35, size=200)):
+        X_shape[i, 0, start:start + 10] += 1.0 if y_shape[i] == 0 else -1.0
+    proximity = ProximityTreeStumpClassifier(n_shapelets=6, sliding_window=10, selection="random")
+    model = RuleTreeClassifier(max_depth=1, base_stumps=proximity, random_state=0).fit(X_ts=X_shape, y=y_shape)
+
+    figure, ax = plt.subplots(figsize=(6.5, 3.6))
+    model.plot_tree(ax, colors=tree_colors())
+    save(figure, output_dir, "proximity_tree")
 
 
 # --------------------------------------------------------------------------- clustering
@@ -542,6 +537,8 @@ FIGURES = {
     "stump_components": figure_stump_components,
     "node_ids": figure_node_ids,
     "first_tree": figure_first_tree,
+    "plot_tree": figure_plot_tree,
+    "proximity_tree": figure_proximity_tree,
     "clustering": figure_clustering,
     "boosting": figure_boosting,
     "time_series": figure_time_series,

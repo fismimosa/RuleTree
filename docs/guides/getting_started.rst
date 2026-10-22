@@ -26,7 +26,8 @@ default: they are installed by the *extras* of RuleTree.
       .. code-block:: bash
 
          pip install "RuleTree[shapelets]"   # shapelet, proximity and partial pivot stumps (numba)
-         pip install "RuleTree[graphviz]"    # drawing the trees (also requires the Graphviz binaries)
+         pip install "RuleTree[plot]"        # drawing the trees with matplotlib (plot_tree)
+         pip install "RuleTree[graphviz]"    # Graphviz drawings (also requires the Graphviz binaries)
          pip install "RuleTree[kmedoids]"    # shapelets selected with k-medoids (scikit-learn-extra)
          pip install "RuleTree[all]"         # all of the above
 
@@ -303,7 +304,7 @@ Next steps
 - :doc:`concepts`: how a tree is built from stumps, and the objects it is made of.
 - :doc:`stumps`: the available stumps, which one to use and how to combine them.
 - :doc:`multimodal`: trees on time series and images, alone or together with tabular data.
-- :doc:`inspecting`: rules, Graphviz drawings, leaves and feature contributions.
+- :doc:`inspecting`: rules, drawings, leaves and feature contributions.
 - :doc:`lifecycle`: growing trees further and updating their statistics.
 - :doc:`saving`: saving trees to JSON and loading them back.
 - :doc:`ensembles`: gradient boosting and explainable boosting with RuleTrees.

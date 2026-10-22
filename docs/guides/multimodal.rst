@@ -91,8 +91,8 @@ where the bump is:
    accuracy: 1.0
    euclidean(TS, shp) <= 2.21
 
-The Graphviz drawing of a shapelet tree shows the plot of the shapelet in each node (it needs the
-``graphviz`` extra, see :doc:`inspecting`).
+``plot_tree`` draws a shapelet tree with the plot of the shapelet in each node (see
+:doc:`inspecting`).
 
 The proximity stumps compare two shapelets instead: the series closer to the first one than to the
 second one go left, with no threshold. They fit classes that differ in the kind of pattern rather
@@ -121,7 +121,15 @@ than in how close a series is to one of them, e.g. a bump against a dip:
    euclidean(TS, green_shp) <= euclidean(TS, red_shp)
 
 The two shapelets of the split are ``model.root.stump.st.shapelets``, the first one green and the
-second one red in the Graphviz drawing.
+second one red in the drawing of the tree:
+
+.. themed-figure:: /_static/figures/proximity_tree.svg
+   :alt: The proximity tree drawn by plot_tree: the root shows its rule and the two shapelets, a
+         bump in green and a dip in red; the two leaves predict class 0 and class 1.
+   :width: 70%
+
+   ``model.plot_tree()``: the rule of the root and its two shapelets, green and red as in the
+   rule.
 
 .. themed-figure:: /_static/figures/time_series.svg
    :alt: Some time series of the two classes, the shapelet of the root split of the shapelet tree,

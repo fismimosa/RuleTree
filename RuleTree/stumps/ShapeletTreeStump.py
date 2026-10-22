@@ -108,3 +108,25 @@ class ShapeletTreeStump:
         """
         label = self.get_rule(columns_names, scaler, float_precision)["graphviz_rule"]["label"]
         return graphviz_shapelets(label, [self.st.shapelets[self.feature_original, 0]])
+
+    def get_plot_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
+        """
+        What the node of the split shows in ``RuleTree.plot_tree``: the rule and, below it, the
+        shapelet.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Not used.
+        scaler : TransformerMixin, default=None
+            Not supported: must be None.
+        float_precision : int, default=3
+            Number of decimals of the threshold. If None, it is not rounded.
+
+        Returns
+        -------
+        rule : dict
+            ``label`` and ``shapes`` (the shapelet).
+        """
+        label = self.get_rule(columns_names, scaler, float_precision)["textual_rule"]
+        return {"label": label, "shapes": [self.st.shapelets[self.feature_original, 0]]}

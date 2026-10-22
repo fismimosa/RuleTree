@@ -8,7 +8,7 @@ from RuleTree.exceptions import MissingOptionalDependencyError
 OPTIONAL_DEPENDENCIES = {
     "numba": ("numba", "shapelets"),
     "graphviz": ("graphviz", "graphviz"),
-    "matplotlib": ("matplotlib", "graphviz"),
+    "matplotlib": ("matplotlib", "plot"),
     "sklearn_extra": ("scikit-learn-extra", "kmedoids"),
 }
 

@@ -1303,6 +1303,66 @@ class RuleTree(RuleTreeBase, ABC):
         else:
             dot.render(filename=filename)
 
+    def plot_tree(self, ax=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
+                  max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None):
+        """
+        Draw the tree with matplotlib, as ``sklearn.tree.plot_tree`` (requires matplotlib).
+
+        Each internal node shows its id, its rule (for the shapelet and proximity stumps, also a plot
+        of the shapelets) and its number of training instances; each leaf its prediction. The left
+        child of a node (arrow "true") gets the instances for which the rule is true. Unlike
+        ``export_graphviz``, it needs neither the Graphviz programs nor files: the drawing is a
+        matplotlib figure, shown in notebooks and saved with ``savefig``.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, default=None
+            Axes to draw on. If None, a new figure, sized on the number of leaves and the depth.
+        columns_names : list of str, default=None
+            Names of the tabular features.
+        class_names : list of str, default=None
+            Names of the classes, in the order of ``classes_`` (classification trees).
+        scaler : TransformerMixin, default=None
+            Scaler used to preprocess the data: the thresholds are shown in the original scale.
+        float_precision : int, default=3
+            Number of decimals of the thresholds and of the predicted values.
+        max_depth : int, default=None
+            Maximum depth drawn: the subtrees below are shown as ``(...)``. If None, the whole tree.
+        node_ids : bool, default=True
+            Whether to show the id of each node.
+        samples : bool, default=True
+            Whether to show the number of training instances of each node.
+        filled : bool, default=True
+            Whether to color the leaves by class, cluster or predicted value.
+        fontsize : float, default=None
+            Size of the text. If None, the largest size with which the boxes do not overlap.
+        colors : dict, default=None
+            Colors replacing the ones of ``RuleTree.utils.plotting.DEFAULT_COLORS`` (e.g. for a dark
+            background): ``text``, ``split``, ``split_edge``, ``leaf``, ``leaf_edge``, ``edge``,
+            ``classes`` (a list) and ``values`` (a colormap).
+
+        Returns
+        -------
+        ax : matplotlib.axes.Axes
+            The axes of the drawing. The box of each node is a text of ``ax.texts`` whose gid is the
+            id of the node.
+
+        Examples
+        --------
+        >>> import matplotlib
+        >>> matplotlib.use("Agg")
+        >>> from sklearn.datasets import load_iris
+        >>> from RuleTree import RuleTreeClassifier
+        >>> iris = load_iris()
+        >>> model = RuleTreeClassifier(max_depth=2, random_state=0).fit(iris.data, iris.target)
+        >>> ax = model.plot_tree(columns_names=iris.feature_names, class_names=list(iris.target_names))
+        >>> [text.get_text().split("\\n")[1] for text in ax.texts if text.get_gid() in ("R", "Rl")]
+        ['petal width (cm) <= 0.8', 'class = setosa']
+        """
+        return self.root.plot_tree(ax, columns_names=columns_names, class_names=class_names, scaler=scaler,
+                                   float_precision=float_precision, max_depth=max_depth, node_ids=node_ids,
+                                   samples=samples, filled=filled, fontsize=fontsize, colors=colors)
+
     def get_predicates(self):
         """
         Internal nodes (the ones with a split) in depth-first order.

@@ -381,8 +381,10 @@ belong to different stumps.
 
 The rule of a split is written by ``get_rule``, with the feature named by ``feature_id`` of the
 transformer. A stump with a rule of its own (e.g. ``P_<i> <= t`` for the pivots) overrides
-``get_rule``; a stump that draws something in its Graphviz node, like the plot of the shapelet,
-overrides ``get_graphviz_rule``, which ``export_graphviz`` calls instead of ``get_rule``.
+``get_rule``. What a node shows in the drawings comes from the stump too: ``get_plot_rule`` for
+``plot_tree`` (by default, the text of the rule) and ``get_graphviz_rule`` for
+``export_graphviz``. A stump that draws something in its node overrides them: the shapelet
+stumps add the plot of the shapelet, returning its values in ``shapes`` from ``get_plot_rule``.
 
 A component that needs a package that is not a dependency of RuleTree should import it with
 :func:`~RuleTree.utils.optional.import_optional` when it is used (e.g. in ``fit``), not at the top

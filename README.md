@@ -6,7 +6,7 @@ time series and images. Documentation: https://fismimosa.github.io/RuleTree/
 
 - Classification, regression (also with several targets) and clustering trees with the scikit-learn API.
 - Stumps for tabular data, time series and images, usable together in the same tree.
-- Rules as text or Graphviz drawings, feature contributions of each prediction.
+- Rules as text or drawings (matplotlib or Graphviz), feature contributions of each prediction.
 - Trees saved to and loaded from JSON, grown further with `partial_fit`.
 - Gradient boosting, XGBoost and explainable boosting machines of RuleTrees.
 - Metrics to evaluate the models: predictions, clusters, size of the trees and fairness.
@@ -19,7 +19,8 @@ RuleTree requires Python 3.10 or later:
 ```bash
 pip install RuleTree                # or, from the root of the repository: pip install .
 pip install "RuleTree[shapelets]"   # optional: shapelet, proximity and partial pivot stumps (numba)
-pip install "RuleTree[graphviz]"    # optional: drawing the trees (also requires the Graphviz binaries)
+pip install "RuleTree[plot]"        # optional: drawing the trees with matplotlib (plot_tree)
+pip install "RuleTree[graphviz]"    # optional: Graphviz drawings (also requires the Graphviz binaries)
 pip install "RuleTree[all]"         # all the optional features
 ```
 
