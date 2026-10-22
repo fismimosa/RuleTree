@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleTree.tree.RuleTreeCluster &#8212; RuleTree</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=64200178" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../../../_static/documentation_options.js?v=763032e8"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/RuleTree/tree/RuleTreeCluster';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.22 (ca1c2a1)" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo_navbar.png" class="logo__image only-light" alt="RuleTree"/>
+    <img src="../../../_static/logo_navbar_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree"/>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<span class="navbar-version" title="Version of this documentation">2026.10.22 (ca1c2a1)</span></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">RuleTree.tree.RuleTreeCluster</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for RuleTree.tree.RuleTreeCluster</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">RuleTreeCluster and its variants: RuleTrees for clustering, also used to classify or regress</span>
+<span class="sd">with clusters found without looking at the target.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">heapq</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClusterMixin</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">RegressorMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">r2_score</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.define</span><span class="w"> </span><span class="kn">import</span> <span class="n">MODEL_TYPE_REG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.base.RuleTreeBaseStump</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeBaseStump</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoSplitFoundWarning</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.regression.DecisionTreeStumpRegressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeStumpRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.tree.RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.tree.RuleTreeClassifier</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.tree.RuleTreeNode</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeNode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.tree.RuleTreeRegressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeRegressor</span><span class="p">,</span> <span class="n">check_target</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">bic</span><span class="p">,</span> <span class="n">light_famd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.define</span><span class="w"> </span><span class="kn">import</span> <span class="n">DATA_TYPE_TABULAR</span>
+
+
+<div class="viewcode-block" id="RuleTreeCluster">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RuleTreeCluster</span><span class="p">(</span><span class="n">ClusterMixin</span><span class="p">,</span> <span class="n">RuleTree</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    RuleTree for clustering: each leaf is a cluster described by the rules of its path.</span>
+
+<span class="sd">    To split a node, the instances are projected on their principal components (PCA, MCA or FAMD,</span>
+<span class="sd">    for numerical, categorical or mixed data); for each component, a regression stump is fitted to</span>
+<span class="sd">    predict it, and the best split is kept according to ``clus_impurity``. A node is split only if</span>
+<span class="sd">    the split decreases its BIC (see ``bic_eps``). The tree grows from the largest node. Only</span>
+<span class="sd">    tabular data are supported.</span>
+
+<span class="sd">    After fit, the nodes predict integer labels assigned in breadth-first order ('R' -&gt; 0,</span>
+<span class="sd">    'Rl' -&gt; 1, 'Rr' -&gt; 2, ...); ``predict`` returns the label of the leaf of each instance.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_components : int, default=2</span>
+<span class="sd">        Number of principal components predicted by the stumps of each node.</span>
+<span class="sd">    clus_impurity : {'r2', 'bic'}, default='r2'</span>
+<span class="sd">        Criterion to choose the split among the ones on the different components: the variance of the</span>
+<span class="sd">        component explained by the split ('r2') or the Bayesian Information Criterion of the two</span>
+<span class="sd">        clusters ('bic').</span>
+<span class="sd">    bic_eps : float, default=0.0</span>
+<span class="sd">        A split is kept only if it decreases the BIC of the node by more than bic_eps times its value.</span>
+<span class="sd">    max_leaf_nodes : int, default=inf</span>
+<span class="sd">        Maximum number of leaves.</span>
+<span class="sd">    min_samples_split : int, default=2</span>
+<span class="sd">        Minimum number of instances to split a node.</span>
+<span class="sd">    max_depth : int, default=inf</span>
+<span class="sd">        Maximum depth of the tree (the root has depth 0).</span>
+<span class="sd">    prune_useless_leaves : bool, default=False</span>
+<span class="sd">        Whether to merge, after fit, the sibling leaves with the same prediction.</span>
+<span class="sd">    base_stumps : RuleTreeBaseStump or list, default=None</span>
+<span class="sd">        Regression stumps used to split the nodes, fitted to predict a principal component. If None,</span>
+<span class="sd">        DecisionTreeStumpRegressor().</span>
+<span class="sd">    random_state : int, RandomState instance or None, default=None</span>
+<span class="sd">        Seed of the principal component analysis and of the random choice of the stumps, also given</span>
+<span class="sd">        to the stumps without a random_state.</span>
+<span class="sd">    component_split : {'best', 'joint'}, default='best'</span>
+<span class="sd">        How a node is split on its principal components. 'best' fits a stump on each component and</span>
+<span class="sd">        keeps the best split according to ``clus_impurity``. 'joint' fits one stump on all the</span>
+<span class="sd">        components together (a regression with several targets): the split is the one that most</span>
+<span class="sd">        decreases the sum of squared distances of the instances from the centers of the two</span>
+<span class="sd">        children, in the space of the components, as a k-means with two clusters whose border is a</span>
+<span class="sd">        rule; ``clus_impurity`` is not used. With 'joint', the base stumps must support several</span>
+<span class="sd">        targets (e.g. the decision tree, pivot and oblique stumps, not the fair stump).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    label_encoder : dict</span>
+<span class="sd">        Node id -&gt; integer label.</span>
+<span class="sd">    root : RuleTreeNode</span>
+<span class="sd">        Root of the fitted tree.</span>
+<span class="sd">    candidate_splits_ : list of tuple</span>
+<span class="sd">        ``(probability, stump, data_type)``: the stumps usable on the training data, with the</span>
+<span class="sd">        data type they are used on.</span>
+<span class="sd">    cache_ : dict</span>
+<span class="sd">        Values cached by the stumps during fit (see :meth:`get_cache`).</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    RuleTreeClusterClassifier, RuleTreeClusterRegressor : the clustering tree with leaves that predict</span>
+<span class="sd">        a target.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.datasets import make_blobs</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.metrics import adjusted_rand_score</span>
+<span class="sd">    &gt;&gt;&gt; from RuleTree import RuleTreeCluster</span>
+<span class="sd">    &gt;&gt;&gt; X, y = make_blobs(n_samples=300, centers=3, cluster_std=0.5, random_state=0)</span>
+<span class="sd">    &gt;&gt;&gt; labels = RuleTreeCluster(max_depth=3, random_state=0).fit_predict(X)</span>
+<span class="sd">    &gt;&gt;&gt; round(adjusted_rand_score(y, labels), 2)</span>
+<span class="sd">    0.95</span>
+<span class="sd">    """</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">n_components</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+                 <span class="n">clus_impurity</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'r2'</span><span class="p">,</span>
+                 <span class="n">bic_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">.0</span><span class="p">,</span>
+                 <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">'inf'</span><span class="p">),</span>
+                 <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">max_depth</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s1">'inf'</span><span class="p">),</span>
+                 <span class="n">prune_useless_leaves</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">base_stumps</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RegressorMixin</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">component_split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'best'</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Initialize the RuleTreeCluster; see the class documentation for the parameters."""</span>
+        <span class="k">if</span> <span class="n">base_stumps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_stumps</span> <span class="o">=</span> <span class="n">DecisionTreeStumpRegressor</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">max_leaf_nodes</span><span class="o">=</span><span class="n">max_leaf_nodes</span><span class="p">,</span>
+                         <span class="n">min_samples_split</span><span class="o">=</span><span class="n">min_samples_split</span><span class="p">,</span>
+                         <span class="n">max_depth</span><span class="o">=</span><span class="n">max_depth</span><span class="p">,</span>
+                         <span class="n">prune_useless_leaves</span><span class="o">=</span><span class="n">prune_useless_leaves</span><span class="p">,</span>
+                         <span class="n">base_stumps</span><span class="o">=</span><span class="n">base_stumps</span><span class="p">,</span>
+                         <span class="n">stump_selection</span><span class="o">=</span><span class="s1">'random'</span><span class="p">,</span>
+                         <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_components</span> <span class="o">=</span> <span class="n">n_components</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clus_impurity</span> <span class="o">=</span> <span class="n">clus_impurity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bic_eps</span> <span class="o">=</span> <span class="n">bic_eps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">component_split</span> <span class="o">=</span> <span class="n">component_split</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clus_impurity</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'bic'</span><span class="p">,</span> <span class="s1">'r2'</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Unknown clustering impurity measure </span><span class="si">%s</span><span class="s1">'</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">clus_impurity</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">component_split</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'best'</span><span class="p">,</span> <span class="s1">'joint'</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"component_split must be 'best' or 'joint', got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">component_split</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RuleTreeCluster.is_split_useless">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.is_split_useless">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_split_useless</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Whether a split is useless: all the instances go to the same child, or the BIC of the two</span>
+<span class="sd">        clusters is not lower than the BIC of the node (by bic_eps times its value).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict</span>
+<span class="sd">            Whole data set, as ``{data_type: array}``.</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances in the node.</span>
+<span class="sd">        labels : numpy.ndarray</span>
+<span class="sd">            Result of the split on idx (1 left, 2 right).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        useless : bool</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="c1"># CHECK BIC DECREASE</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">DATA_TYPE_TABULAR</span><span class="p">]</span>
+        <span class="n">bic_parent</span> <span class="o">=</span> <span class="n">bic</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+        <span class="n">bic_children</span> <span class="o">=</span> <span class="n">bic</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">bic_parent</span> <span class="o">&lt;</span> <span class="n">bic_children</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">bic_eps</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">bic_parent</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_candidate_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Candidate splits, as in RuleTree; clustering supports only tabular data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict</span>
+<span class="sd">            Whole data set, as ``{data_type: array}``.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If data other than tabular are provided.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="p">{</span><span class="n">DATA_TYPE_TABULAR</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> supports only tabular data (X), got </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_candidate_splits</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RuleTreeCluster.fit_predict">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.fit_predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Fit the tree and return the cluster label of each instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy.ndarray of shape (n_samples, n_features)</span>
+<span class="sd">            Tabular data.</span>
+<span class="sd">        y : None</span>
+<span class="sd">            Not used, present for API consistency.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Arguments passed to fit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        labels : numpy.ndarray of shape (n_samples,)</span>
+<span class="sd">            Cluster labels.</span>
+<span class="sd">        """</span>
+        <span class="c1"># non-optimized default implementation; override when a better</span>
+        <span class="c1"># method is possible for a given clustering algorithm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeCluster.queue_push">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.queue_push">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">queue_push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">RuleTreeNode</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Push a node into the queue, with priority to the nodes with more instances.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">            The node.</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances reaching the node.</span>
+<span class="sd">        """</span>
+        <span class="n">heapq</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiebreaker</span><span class="p">),</span> <span class="n">idx</span><span class="p">,</span> <span class="n">node</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeCluster.make_split">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.make_split">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">node_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuleTreeBaseStump</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Split a node on its principal components: the instances are projected with PCA, MCA or FAMD</span>
+<span class="sd">        (numerical, categorical or mixed data); with ``component_split='best'``, a stump is fitted to</span>
+<span class="sd">        predict each component, and the best split according to ``clus_impurity`` is kept; with</span>
+<span class="sd">        ``'joint'``, one stump is fitted to predict all the components.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict</span>
+<span class="sd">            Whole data set, as ``{data_type: array}`` (only tabular data).</span>
+<span class="sd">        y : numpy.ndarray or None</span>
+<span class="sd">            Not used by the split (the stumps predict the components).</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances in the node.</span>
+<span class="sd">        sample_weight : None</span>
+<span class="sd">            Not used, present for API consistency.</span>
+<span class="sd">        node_id : str, default=None</span>
+<span class="sd">            Identifier of the node, passed to the stumps.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        stump : RuleTreeBaseStump</span>
+<span class="sd">            The best stump.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NoSplitFoundWarning</span>
+<span class="sd">            If no component can be split.</span>
+<span class="sd">        """</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">DATA_TYPE_TABULAR</span><span class="p">]</span>
+        <span class="n">n_components_split</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_components</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">))</span>
+
+        <span class="n">dtypes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">infer_objects</span><span class="p">()</span><span class="o">.</span><span class="n">dtypes</span>
+        <span class="n">numerical</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dtypes</span><span class="p">)</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)]</span>
+        <span class="n">categorical</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dtypes</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">is_numeric_dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">categorical</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># all continuous</span>
+            <span class="n">principal_transform</span> <span class="o">=</span> <span class="n">light_famd</span><span class="o">.</span><span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components_split</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">numerical</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># all categorical</span>
+            <span class="n">principal_transform</span> <span class="o">=</span> <span class="n">light_famd</span><span class="o">.</span><span class="n">MCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components_split</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># mixed</span>
+            <span class="n">principal_transform</span> <span class="o">=</span> <span class="n">light_famd</span><span class="o">.</span><span class="n">FAMD</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components_split</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
+
+        <span class="n">y_pca</span> <span class="o">=</span> <span class="n">principal_transform</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">y_pca_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_pca</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">y_pca_all</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_pca</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">component_split</span> <span class="o">==</span> <span class="s1">'joint'</span><span class="p">:</span>  <span class="c1"># one stump for all the components, as targets</span>
+            <span class="n">clf</span><span class="p">,</span> <span class="n">data_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_random_split</span><span class="p">()</span>
+            <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">y_pca_all</span> <span class="k">if</span> <span class="n">n_components_split</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">y_pca_all</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">data_type</span><span class="p">,</span>
+                    <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stump_cache</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">clf</span>
+
+        <span class="n">best_clf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">best_score</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'inf'</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_components_split</span><span class="p">):</span>
+            <span class="n">clf</span><span class="p">,</span> <span class="n">data_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_random_split</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">y_pca_all</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">data_type</span><span class="p">,</span>
+                        <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stump_cache</span><span class="p">())</span>
+            <span class="k">except</span> <span class="n">NoSplitFoundWarning</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stump_cache</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clus_impurity</span> <span class="o">==</span> <span class="s1">'r2'</span><span class="p">:</span>
+                <span class="c1"># fraction of the variance of the i-th component explained by the split</span>
+                <span class="n">component</span> <span class="o">=</span> <span class="n">y_pca</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+                <span class="n">component_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+                    <span class="n">component_pred</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">component</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">score</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">r2_score</span><span class="p">(</span><span class="n">component</span><span class="p">,</span> <span class="n">component_pred</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">score</span> <span class="o">=</span> <span class="n">bic</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="p">(</span><span class="n">labels</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="n">score</span> <span class="o">&lt;</span> <span class="n">best_score</span><span class="p">:</span>
+                <span class="n">best_score</span> <span class="o">=</span> <span class="n">score</span>
+                <span class="n">best_clf</span> <span class="o">=</span> <span class="n">clf</span>
+
+        <span class="k">if</span> <span class="n">best_clf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoSplitFoundWarning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No split found on any of the </span><span class="si">{</span><span class="n">n_components_split</span><span class="si">}</span><span class="s2"> components"</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">best_clf</span></div>
+
+
+
+<div class="viewcode-block" id="RuleTreeCluster.prepare_node">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.prepare_node">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RuleTreeNode</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuleTreeNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create a node (or update ``node``) whose prediction is its node id, replaced by an integer label</span>
+<span class="sd">        in :meth:`_post_fit_fix`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        y : numpy.ndarray or None</span>
+<span class="sd">            Not used.</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances reaching the node.</span>
+<span class="sd">        node_id : str</span>
+<span class="sd">            Identifier of the node.</span>
+<span class="sd">        node : RuleTreeNode, default=None</span>
+<span class="sd">            Existing node to update instead of creating a new one.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">prediction</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">node_id</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">node</span>
+
+        <span class="k">return</span> <span class="n">RuleTreeNode</span><span class="p">(</span>
+            <span class="n">node_id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span>
+            <span class="n">prediction</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span>
+            <span class="n">prediction_probability</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">loss</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="n">classes</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="s1">'NA'</span><span class="p">]),</span>
+            <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">stump</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">node_l</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">node_r</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">samples</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span>
+            <span class="n">log_odds</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_node_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Only the number of instances: the predictions of the nodes are the cluster labels.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">            The node.</span>
+<span class="sd">        data : dict</span>
+<span class="sd">            Not used.</span>
+<span class="sd">        y : numpy.ndarray or None</span>
+<span class="sd">            Not used.</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances reaching the node.</span>
+<span class="sd">        """</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_post_fit_fix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Replace the node ids used as cluster labels during fit with integer labels, assigned in</span>
+<span class="sd">        breadth-first order ('R' -&gt; 0, 'Rl' -&gt; 1, 'Rr' -&gt; 2, ...). Labels are recomputed from the node</span>
+<span class="sd">        ids, so calling this method more than once is safe.</span>
+<span class="sd">        """</span>
+        <span class="n">node_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">get_predicates</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">get_leaf_nodes</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_encoder</span> <span class="o">=</span> <span class="p">{</span><span class="n">node_id</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">node_ids</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x</span><span class="p">)))}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labels_to_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_labels_to_int</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">RuleTreeNode</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Replace recursively the prediction of each node with its integer label.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">            Root of the subtree.</span>
+<span class="sd">        """</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_encoder</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labels_to_int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node_l</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labels_to_int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node_r</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_stumps_task</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Task of the stumps of the tree: they predict the principal components.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        task : str</span>
+<span class="sd">            MODEL_TYPE_REG.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">MODEL_TYPE_REG</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_prediction_probas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_node</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">probas</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Not implemented for clustering.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NotImplementedError</span>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="RuleTreeClusterClassifier">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeClusterClassifier.html#RuleTree.RuleTreeClusterClassifier">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RuleTreeClusterClassifier</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">RuleTreeCluster</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    RuleTreeCluster whose leaves predict a class: the tree is built as in RuleTreeCluster, without</span>
+<span class="sd">    looking at the target, and each node predicts the majority class of its instances, as in</span>
+<span class="sd">    RuleTreeClassifier.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_components : int, default=2</span>
+<span class="sd">        Number of principal components predicted by the stumps of each node.</span>
+<span class="sd">    clus_impurity : {'r2', 'bic'}, default='r2'</span>
+<span class="sd">        Criterion to choose the split among the ones on the different components: the variance of the</span>
+<span class="sd">        component explained by the split ('r2') or the Bayesian Information Criterion of the two</span>
+<span class="sd">        clusters ('bic').</span>
+<span class="sd">    bic_eps : float, default=0.0</span>
+<span class="sd">        A split is kept only if it decreases the BIC of the node by more than bic_eps times its value.</span>
+<span class="sd">    max_leaf_nodes : int, default=inf</span>
+<span class="sd">        Maximum number of leaves.</span>
+<span class="sd">    min_samples_split : int, default=2</span>
+<span class="sd">        Minimum number of instances to split a node.</span>
+<span class="sd">    max_depth : int, default=inf</span>
+<span class="sd">        Maximum depth of the tree (the root has depth 0).</span>
+<span class="sd">    prune_useless_leaves : bool, default=False</span>
+<span class="sd">        Whether to merge, after fit, the sibling leaves with the same prediction.</span>
+<span class="sd">    base_stumps : RuleTreeBaseStump or list, default=None</span>
+<span class="sd">        Regression stumps used to split the nodes, fitted to predict a principal component. If None,</span>
+<span class="sd">        DecisionTreeStumpRegressor().</span>
+<span class="sd">    random_state : int, RandomState instance or None, default=None</span>
+<span class="sd">        Seed of the principal component analysis and of the random choice of the stumps, also given</span>
+<span class="sd">        to the stumps without a random_state.</span>
+<span class="sd">    component_split : {'best', 'joint'}, default='best'</span>
+<span class="sd">        How a node is split on its principal components. 'best' fits a stump on each component and</span>
+<span class="sd">        keeps the best split according to ``clus_impurity``. 'joint' fits one stump on all the</span>
+<span class="sd">        components together (a regression with several targets): the split is the one that most</span>
+<span class="sd">        decreases the sum of squared distances of the instances from the centers of the two</span>
+<span class="sd">        children, in the space of the components, as a k-means with two clusters whose border is a</span>
+<span class="sd">        rule; ``clus_impurity`` is not used. With 'joint', the base stumps must support several</span>
+<span class="sd">        targets (e.g. the decision tree, pivot and oblique stumps, not the fair stump).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    classes_ : numpy.ndarray</span>
+<span class="sd">        Classes of the target.</span>
+<span class="sd">    n_classes_ : int</span>
+<span class="sd">        Number of classes.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    RuleTreeCluster : the clustering tree.</span>
+<span class="sd">    RuleTreeClassifier : a tree whose splits are chosen with the target.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.datasets import make_blobs</span>
+<span class="sd">    &gt;&gt;&gt; from RuleTree.tree.RuleTreeCluster import RuleTreeClusterClassifier</span>
+<span class="sd">    &gt;&gt;&gt; X, y = make_blobs(n_samples=300, centers=3, cluster_std=0.5, random_state=0)</span>
+<span class="sd">    &gt;&gt;&gt; model = RuleTreeClusterClassifier(max_depth=2, random_state=0).fit(X, y)</span>
+<span class="sd">    &gt;&gt;&gt; round(model.score(X, y), 2)</span>
+<span class="sd">    0.99</span>
+<span class="sd">    """</span>
+<div class="viewcode-block" id="RuleTreeClusterClassifier.prepare_node">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeClusterClassifier.html#RuleTree.RuleTreeClusterClassifier.prepare_node">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RuleTreeNode</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuleTreeNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create a node (or update ``node``) with the statistics of classification, as in RuleTreeClassifier.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        y : numpy.ndarray</span>
+<span class="sd">            Target of the whole data set.</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances reaching the node.</span>
+<span class="sd">        node_id : str</span>
+<span class="sd">            Identifier of the node.</span>
+<span class="sd">        node : RuleTreeNode, default=None</span>
+<span class="sd">            Existing node to update instead of creating a new one.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">RuleTreeClassifier</span><span class="o">.</span><span class="n">prepare_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_post_fit_fix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Nothing to do: the nodes already predict class labels."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_node_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Statistics of classification, as in RuleTreeClassifier.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">            The node.</span>
+<span class="sd">        data : dict</span>
+<span class="sd">            Whole data set, as ``{data_type: array}``.</span>
+<span class="sd">        y : numpy.ndarray</span>
+<span class="sd">            Target of the whole data set.</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances reaching the node.</span>
+<span class="sd">        """</span>
+        <span class="n">RuleTree</span><span class="o">.</span><span class="n">_update_node_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RuleTreeClusterClassifier.predict_proba">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeClusterClassifier.html#RuleTree.RuleTreeClusterClassifier.predict_proba">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">X_ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_img</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X_txt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Class probabilities of each instance: the ones of the leaf it reaches.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy.ndarray of shape (n_samples, n_features), default=None</span>
+<span class="sd">            Tabular data.</span>
+<span class="sd">        X_ts, X_img, X_txt : default=None</span>
+<span class="sd">            Not supported by clustering, present for API consistency.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        proba : numpy.ndarray of shape (n_samples, n_classes)</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">RuleTreeClassifier</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">X_ts</span><span class="o">=</span><span class="n">X_ts</span><span class="p">,</span> <span class="n">X_img</span><span class="o">=</span><span class="n">X_img</span><span class="p">,</span> <span class="n">X_txt</span><span class="o">=</span><span class="n">X_txt</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RuleTreeClusterRegressor">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeClusterRegressor.html#RuleTree.RuleTreeClusterRegressor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RuleTreeClusterRegressor</span><span class="p">(</span><span class="n">RegressorMixin</span><span class="p">,</span> <span class="n">RuleTreeCluster</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    RuleTreeCluster whose leaves predict a value: the tree is built as in RuleTreeCluster, without</span>
+<span class="sd">    looking at the target, and each node predicts the mean of the target of its instances, as in</span>
+<span class="sd">    RuleTreeRegressor.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_components : int, default=2</span>
+<span class="sd">        Number of principal components predicted by the stumps of each node.</span>
+<span class="sd">    clus_impurity : {'r2', 'bic'}, default='r2'</span>
+<span class="sd">        Criterion to choose the split among the ones on the different components: the variance of the</span>
+<span class="sd">        component explained by the split ('r2') or the Bayesian Information Criterion of the two</span>
+<span class="sd">        clusters ('bic').</span>
+<span class="sd">    bic_eps : float, default=0.0</span>
+<span class="sd">        A split is kept only if it decreases the BIC of the node by more than bic_eps times its value.</span>
+<span class="sd">    max_leaf_nodes : int, default=inf</span>
+<span class="sd">        Maximum number of leaves.</span>
+<span class="sd">    min_samples_split : int, default=2</span>
+<span class="sd">        Minimum number of instances to split a node.</span>
+<span class="sd">    max_depth : int, default=inf</span>
+<span class="sd">        Maximum depth of the tree (the root has depth 0).</span>
+<span class="sd">    prune_useless_leaves : bool, default=False</span>
+<span class="sd">        Whether to merge, after fit, the sibling leaves with the same prediction.</span>
+<span class="sd">    base_stumps : RuleTreeBaseStump or list, default=None</span>
+<span class="sd">        Regression stumps used to split the nodes, fitted to predict a principal component. If None,</span>
+<span class="sd">        DecisionTreeStumpRegressor().</span>
+<span class="sd">    random_state : int, RandomState instance or None, default=None</span>
+<span class="sd">        Seed of the principal component analysis and of the random choice of the stumps, also given</span>
+<span class="sd">        to the stumps without a random_state.</span>
+<span class="sd">    component_split : {'best', 'joint'}, default='best'</span>
+<span class="sd">        How a node is split on its principal components. 'best' fits a stump on each component and</span>
+<span class="sd">        keeps the best split according to ``clus_impurity``. 'joint' fits one stump on all the</span>
+<span class="sd">        components together (a regression with several targets): the split is the one that most</span>
+<span class="sd">        decreases the sum of squared distances of the instances from the centers of the two</span>
+<span class="sd">        children, in the space of the components, as a k-means with two clusters whose border is a</span>
+<span class="sd">        rule; ``clus_impurity`` is not used. With 'joint', the base stumps must support several</span>
+<span class="sd">        targets (e.g. the decision tree, pivot and oblique stumps, not the fair stump).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    root : RuleTreeNode</span>
+<span class="sd">        Root of the fitted tree.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    RuleTreeCluster : the clustering tree.</span>
+<span class="sd">    RuleTreeRegressor : a tree whose splits are chosen with the target.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.datasets import load_diabetes</span>
+<span class="sd">    &gt;&gt;&gt; from RuleTree.tree.RuleTreeCluster import RuleTreeClusterRegressor</span>
+<span class="sd">    &gt;&gt;&gt; X, y = load_diabetes(return_X_y=True)</span>
+<span class="sd">    &gt;&gt;&gt; model = RuleTreeClusterRegressor(max_depth=2, random_state=0).fit(X, y)</span>
+<span class="sd">    &gt;&gt;&gt; model.predict(X[:2]).round(1)</span>
+<span class="sd">    array([177.6, 111.8])</span>
+<span class="sd">    """</span>
+<div class="viewcode-block" id="RuleTreeClusterRegressor.prepare_node">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.RuleTreeClusterRegressor.html#RuleTree.RuleTreeClusterRegressor.prepare_node">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RuleTreeNode</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuleTreeNode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create a node (or update ``node``) with the statistics of regression, as in RuleTreeRegressor.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        y : numpy.ndarray</span>
+<span class="sd">            Target of the whole data set.</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances reaching the node.</span>
+<span class="sd">        node_id : str</span>
+<span class="sd">            Identifier of the node.</span>
+<span class="sd">        node : RuleTreeNode, default=None</span>
+<span class="sd">            Existing node to update instead of creating a new one.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">RuleTreeRegressor</span><span class="o">.</span><span class="n">prepare_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The target as an array of shape (n_samples,) or (n_samples, n_targets) (see check_target)."""</span>
+        <span class="k">return</span> <span class="n">check_target</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_post_fit_fix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Nothing to do: the nodes already predict the mean of the target."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_node_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Statistics of regression, as in RuleTreeRegressor.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node : RuleTreeNode</span>
+<span class="sd">            The node.</span>
+<span class="sd">        data : dict</span>
+<span class="sd">            Whole data set, as ``{data_type: array}``.</span>
+<span class="sd">        y : numpy.ndarray</span>
+<span class="sd">            Target of the whole data set.</span>
+<span class="sd">        idx : numpy.ndarray</span>
+<span class="sd">            Indices of the instances reaching the node.</span>
+<span class="sd">        """</span>
+        <span class="n">RuleTreeRegressor</span><span class="o">.</span><span class="n">_update_node_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025-2026, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

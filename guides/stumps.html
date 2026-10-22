@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../_static/icon.png" sizes="254x256" rel="icon" type="image/png">
+    <title>Choosing the splits: stumps &#8212; RuleTree</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=64200178" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=763032e8"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guides/stumps';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tabular data, time series and images" href="multimodal.html" />
+    <link rel="prev" title="How RuleTree works" href="concepts.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.22 (ca1c2a1)" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo_navbar.png" class="logo__image only-light" alt="RuleTree"/>
+    <img src="../_static/logo_navbar_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree"/>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<span class="navbar-version" title="Version of this documentation">2026.10.22 (ca1c2a1)</span></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="concepts.html">How RuleTree works</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Choosing the splits: stumps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multimodal.html">Tabular data, time series and images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspecting.html">Reading the tree</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lifecycle.html">Growing and updating trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saving.html">Saving and loading trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ensembles.html">Ensembles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="evaluating.html">Evaluating the models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extending.html">Extending the library</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Choosing the splits: stumps</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="choosing-the-splits-stumps">
+<h1>Choosing the splits: stumps<a class="headerlink" href="#choosing-the-splits-stumps" title="Link to this heading">#</a></h1>
+<p>A <em>stump</em> is the split of a node: it sends each instance of the node to the left or to the right
+child. The <code class="docutils literal notranslate"><span class="pre">base_stumps</span></code> parameter of a tree lists the stumps it can use; at each node, the tree
+fits one of them (or all of them, and keeps the best) on the instances of the node.</p>
+<p>Different stumps split the same instances in different ways. Here, the root split of four of them
+on two classes separated by a diagonal; the shaded regions are the two children:</p>
+<figure class="align-default" id="id1">
+<a class="only-light reference internal image-reference" href="../_images/splits.svg"><img alt="The root split of four stumps on the same two-dimensional data: a vertical line, a diagonal line, a circle around a pivot and the line equidistant from two pivots." class="only-light" src="../_images/splits.svg" style="width: 100%;" />
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/splits_dark.svg"><img alt="The root split of four stumps on the same two-dimensional data: a vertical line, a diagonal line, a circle around a pivot and the line equidistant from two pivots." class="only-dark" src="../_images/splits_dark.svg" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">A threshold on one feature, on a combination of features (oblique), on the distance from a pivot
+(an instance of the training set, marked by a star), and the comparison of the distances from two
+pivots. The rule of each split is in the bottom left corner.</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<section id="available-stumps">
+<h2>Available stumps<a class="headerlink" href="#available-stumps" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 44.0%" />
+<col style="width: 18.0%" />
+<col style="width: 11.0%" />
+<col style="width: 11.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Stump</p></th>
+<th class="head"><p>Split</p></th>
+<th class="head"><p>Data</p></th>
+<th class="head"><p>Classification</p></th>
+<th class="head"><p>Regression</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Decision tree</strong></p></td>
+<td><p>threshold on a feature, <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">&lt;=</span> <span class="pre">t</span></code>, or value of a categorical feature, <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">v</span></code></p></td>
+<td><p>tabular, time series, images</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.DecisionTreeStumpClassifier.html#RuleTree.stumps.classification.DecisionTreeStumpClassifier" title="RuleTree.stumps.classification.DecisionTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.DecisionTreeStumpRegressor.html#RuleTree.stumps.regression.DecisionTreeStumpRegressor" title="RuleTree.stumps.regression.DecisionTreeStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">regressor</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Oblique</strong></p></td>
+<td><p>threshold on a combination of a few features, <code class="docutils literal notranslate"><span class="pre">0.8</span> <span class="pre">*</span> <span class="pre">X_2</span> <span class="pre">-</span> <span class="pre">0.6</span> <span class="pre">*</span> <span class="pre">X_3</span> <span class="pre">&lt;=</span> <span class="pre">t</span></code></p></td>
+<td><p>tabular</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier.html#RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier" title="RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.html#RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor" title="RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">regressor</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Pivot</strong></p></td>
+<td><p>distance from a <a class="reference internal" href="../glossary.html#term-pivot"><span class="xref std std-term">pivot</span></a>, an instance of the training set: <code class="docutils literal notranslate"><span class="pre">P_12</span> <span class="pre">&lt;=</span> <span class="pre">t</span></code></p></td>
+<td><p>tabular</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.PivotTreeStumpClassifier.html#RuleTree.stumps.classification.PivotTreeStumpClassifier" title="RuleTree.stumps.classification.PivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.PivotTreeStumpRegressor.html#RuleTree.stumps.regression.PivotTreeStumpRegressor" title="RuleTree.stumps.regression.PivotTreeStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">regressor</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Multiple pivot</strong></p></td>
+<td><p>closer to one pivot than to another: <code class="docutils literal notranslate"><span class="pre">P_12</span> <span class="pre">&lt;=</span> <span class="pre">P_40</span></code></p></td>
+<td><p>tabular</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.html#RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier" title="RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>Oblique pivot</strong></p></td>
+<td><p>threshold on a combination of the distances from a few pivots</p></td>
+<td><p>tabular</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.html#RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier" title="RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Multiple oblique pivot</strong></p></td>
+<td><p>closer to one pivot than to another, among the discriminative pivots of the oblique pivot stump</p></td>
+<td><p>tabular</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.html#RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier" title="RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>Partial pivot</strong></p></td>
+<td><p>distance from a <a class="reference internal" href="../glossary.html#term-partial-pivot"><span class="xref std std-term">partial pivot</span></a>, a pivot restricted to a few features</p></td>
+<td><p>tabular</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier" title="RuleTree.stumps.classification.PartialPivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Partial proximity</strong></p></td>
+<td><p>closer to one partial pivot than to another</p></td>
+<td><p>tabular</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.html#RuleTree.stumps.classification.PartialProximityTreeStumpClassifier" title="RuleTree.stumps.classification.PartialProximityTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>Shapelet</strong></p></td>
+<td><p>distance from a <a class="reference internal" href="../glossary.html#term-shapelet"><span class="xref std std-term">shapelet</span></a>, a subsequence of a training series</p></td>
+<td><p>time series</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.ShapeletTreeStumpClassifier.html#RuleTree.stumps.classification.ShapeletTreeStumpClassifier" title="RuleTree.stumps.classification.ShapeletTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.ShapeletTreeStumpRegressor.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor" title="RuleTree.stumps.regression.ShapeletTreeStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">regressor</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Proximity</strong></p></td>
+<td><p>closer to one shapelet than to another</p></td>
+<td><p>time series</p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.ProximityTreeStumpClassifier.html#RuleTree.stumps.classification.ProximityTreeStumpClassifier" title="RuleTree.stumps.classification.ProximityTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">classifier</span></code></a></p></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.ProximityTreeStumpRegressor.html#RuleTree.stumps.regression.ProximityTreeStumpRegressor" title="RuleTree.stumps.regression.ProximityTreeStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">regressor</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Fair</strong></p></td>
+<td><p>threshold on a feature, under a fairness constraint on a sensitive attribute (<a class="reference internal" href="#fair-splits">Fair splits</a>)</p></td>
+<td><p>tabular</p></td>
+<td></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.FairTreeStumpRegressor.html#RuleTree.stumps.regression.FairTreeStumpRegressor" title="RuleTree.stumps.regression.FairTreeStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">regressor</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>XGBoost</strong></p></td>
+<td><p>threshold maximizing the XGBoost gain (<a class="reference internal" href="ensembles.html"><span class="doc">Ensembles</span></a>)</p></td>
+<td><p>tabular, time series, images</p></td>
+<td></td>
+<td><p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.XGBoostStumpRegressor.html#RuleTree.stumps.regression.XGBoostStumpRegressor" title="RuleTree.stumps.regression.XGBoostStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">regressor</span></code></a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The decision tree and XGBoost stumps flatten the time series and the images into one feature per
+value. The fair stump also works in the clustering trees.</p>
+<p>A tree accepts only the stumps of its task: classification stumps for
+<a class="reference internal" href="../api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier" title="RuleTree.RuleTreeClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeClassifier</span></code></a>, regression stumps for
+<a class="reference internal" href="../api/generated/RuleTree.RuleTreeRegressor.html#RuleTree.RuleTreeRegressor" title="RuleTree.RuleTreeRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeRegressor</span></code></a> and for the clustering trees, whose
+stumps predict the principal components of the data. By default, the trees use the decision tree
+stump of their task.</p>
+</section>
+<section id="which-stump-to-use">
+<h2>Which stump to use<a class="headerlink" href="#which-stump-to-use" title="Link to this heading">#</a></h2>
+<p>The best stump depends on the data and on the kind of rule that is easy to read for whoever uses
+the tree. A starting point:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 45.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>If</p></th>
+<th class="head"><p>Try</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>the features are meaningful one by one, and the rules should be as simple as possible</p></td>
+<td><p>the decision tree stump (the default): <code class="docutils literal notranslate"><span class="pre">petal</span> <span class="pre">width</span> <span class="pre">&lt;=</span> <span class="pre">0.8</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>the classes are separated by combinations of features (e.g. along a diagonal)</p></td>
+<td><p>the oblique stumps, on standardized data (<a class="reference internal" href="#oblique-stumps">Oblique stumps</a>)</p></td>
+</tr>
+<tr class="row-even"><td><p>the instances are better described by their similarity to some examples than by single
+features, e.g. many features or embeddings</p></td>
+<td><p>the pivot stumps (<a class="reference internal" href="#pivot-stumps">Pivot stumps</a>); the multiple pivot stumps to compare two examples; the
+partial pivot stumps for shorter rules</p></td>
+</tr>
+<tr class="row-odd"><td><p>time series whose pattern can occur at any time</p></td>
+<td><p>the shapelet stumps (<a class="reference internal" href="multimodal.html"><span class="doc">Tabular data, time series and images</span></a>)</p></td>
+</tr>
+<tr class="row-even"><td><p>time series whose classes differ by the shape of the pattern (a bump against a dip)</p></td>
+<td><p>the proximity stumps (<a class="reference internal" href="multimodal.html"><span class="doc">Tabular data, time series and images</span></a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p>time series aligned in time, or images, where single values matter</p></td>
+<td><p>the decision tree stump, on one feature per time step or pixel</p></td>
+</tr>
+<tr class="row-even"><td><p>images or texts, by similarity</p></td>
+<td><p>the pivot stumps on embeddings (e.g. from a pre-trained network) given as tabular data</p></td>
+</tr>
+<tr class="row-odd"><td><p>the splits must respect a sensitive attribute</p></td>
+<td><p>the fair stump, in regression and clustering trees (<a class="reference internal" href="#fair-splits">Fair splits</a>)</p></td>
+</tr>
+<tr class="row-even"><td><p>several of the above may work</p></td>
+<td><p>all of them, with <code class="docutils literal notranslate"><span class="pre">stump_selection=&quot;best&quot;</span></code> (<a class="reference internal" href="#combining-stumps">Combining stumps</a>): each node takes the
+best one</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="parameters-of-the-stumps">
+<h2>Parameters of the stumps<a class="headerlink" href="#parameters-of-the-stumps" title="Link to this heading">#</a></h2>
+<p>The stumps are scikit-learn estimators: their parameters are set in the constructor and shown by
+<code class="docutils literal notranslate"><span class="pre">get_params</span></code>. The decision tree stumps take the parameters of a scikit-learn decision tree that
+make sense for a single split:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_breast_cancer</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeStumpClassifier</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_breast_cancer</span><span class="p">()</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">target</span>
+
+<span class="n">stump</span> <span class="o">=</span> <span class="n">DecisionTreeStumpClassifier</span><span class="p">(</span><span class="n">criterion</span><span class="o">=</span><span class="s2">"entropy"</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="s2">"balanced"</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">base_stumps</span><span class="o">=</span><span class="n">stump</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">stump</span><span class="o">.</span><span class="n">get_params</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"leaves:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_leaf_nodes</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{'class_weight': 'balanced', 'criterion': 'entropy', 'max_features': None, 'min_impurity_decrease': 0.0, 'min_samples_leaf': 20, 'min_weight_fraction_leaf': 0.0, 'random_state': None}
+leaves: 7
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The stump passed to the tree is a template: the tree fits a copy of it at each node, so
+<code class="docutils literal notranslate"><span class="pre">stump</span></code> itself stays unfitted.</p>
+</div>
+</section>
+<section id="combining-stumps">
+<h2>Combining stumps<a class="headerlink" href="#combining-stumps" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">base_stumps</span></code> can be:</p>
+<ul class="simple">
+<li><p>a stump;</p></li>
+<li><p>a list of stumps;</p></li>
+<li><p>a list of tuples <code class="docutils literal notranslate"><span class="pre">(probability,</span> <span class="pre">stump)</span></code>, with probabilities summing to 1;</p></li>
+<li><p>a list of tuples <code class="docutils literal notranslate"><span class="pre">(probability,</span> <span class="pre">stump,</span> <span class="pre">data_types)</span></code>, to use a stump only on some data types
+(see <a class="reference internal" href="multimodal.html"><span class="doc">Tabular data, time series and images</span></a>).</p></li>
+</ul>
+<p>With <code class="docutils literal notranslate"><span class="pre">stump_selection=&quot;random&quot;</span></code> (the default), each node is split by a stump drawn according
+to the probabilities (equal, for a list of stumps). With <code class="docutils literal notranslate"><span class="pre">stump_selection=&quot;best&quot;</span></code>, all the
+stumps are fitted and the one with the highest gain is kept:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">PivotTreeStumpClassifier</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stump_selection</span><span class="o">=</span><span class="s2">"best"</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                           <span class="n">base_stumps</span><span class="o">=</span><span class="p">[</span><span class="n">DecisionTreeStumpClassifier</span><span class="p">(),</span> <span class="n">PivotTreeStumpClassifier</span><span class="p">()])</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">splits</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">stump</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_predicates</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[('DecisionTreeStumpClassifier', 6), ('PivotTreeStumpClassifier', 1)]
+</pre></div>
+</div>
+</div>
+<p>A random choice gives more diverse trees, e.g. for ensembles; <code class="docutils literal notranslate"><span class="pre">random_state</span></code> makes the choice
+reproducible:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                           <span class="n">base_stumps</span><span class="o">=</span><span class="p">[(</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">DecisionTreeStumpClassifier</span><span class="p">()),</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">PivotTreeStumpClassifier</span><span class="p">())])</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">splits</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">stump</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_predicates</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">splits</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[('DecisionTreeStumpClassifier', 4), ('PivotTreeStumpClassifier', 3)]
+</pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">random_state</span></code> of the tree is also given to the stumps whose <code class="docutils literal notranslate"><span class="pre">random_state</span></code> is None, so
+that they do not break ties between equally good features at random.</p>
+</section>
+<section id="pivot-stumps">
+<h2>Pivot stumps<a class="headerlink" href="#pivot-stumps" title="Link to this heading">#</a></h2>
+<p>A pivot stump splits on the distance from an instance of the training set, the <em>pivot</em>: the
+instances closer than a threshold go left. The candidate pivots of a node are, for each class,
+its medoid (descriptive pivot) and the instance whose distance best separates the classes
+(discriminative pivot). Distances are computed on the standardized numerical features, with any
+metric of <code class="docutils literal notranslate"><span class="pre">sklearn.metrics.pairwise_distances</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pivot_tree</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                <span class="n">base_stumps</span><span class="o">=</span><span class="n">PivotTreeStumpClassifier</span><span class="p">(</span><span class="n">distance_measure</span><span class="o">=</span><span class="s2">"cosine"</span><span class="p">))</span>
+<span class="n">pivot_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">pivot_tree</span><span class="o">.</span><span class="n">print_rules</span><span class="p">(</span><span class="n">pivot_tree</span><span class="o">.</span><span class="n">get_rules</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"pivot of the root:"</span><span class="p">,</span> <span class="n">pivot_tree</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">feature_original</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id5" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>|--- P_461 &lt;= 1.052
+|   |--- P_368 &lt;= 1.011
+|   |    output: 0
+|   |--- P_368 &gt; 1.011
+|   |    output: 0
+|--- P_461 &gt; 1.052
+|   |--- P_199 &lt;= 0.546
+|   |    output: 0
+|   |--- P_199 &gt; 0.546
+|   |    output: 1
+pivot of the root: 461
+</pre></div>
+</div>
+</div>
+<p>In the rules, <code class="docutils literal notranslate"><span class="pre">P_&lt;i&gt;</span></code> is the distance from the training instance <code class="docutils literal notranslate"><span class="pre">i</span></code>. The distance matrix of
+the training set is computed once and cached in the tree (see <a class="reference internal" href="lifecycle.html"><span class="doc">Growing and updating trees</span></a>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">get_pivots</span></code> returns the pivots of a node: the descriptive and discriminative ones, all the
+candidates and the one used by the split. For the whole tree:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">pivot_tree</span><span class="o">.</span><span class="n">get_predicates</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node_id</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">get_pivots</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id6" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>R {'descriptives': [167, 249], 'discriminatives': [461, 140], 'candidates': [167, 249, 461, 140], 'used': 461}
+Rl {'descriptives': [167, 421], 'discriminatives': [368, 191], 'candidates': [167, 421, 368, 191], 'used': 368}
+Rr {'descriptives': [40, 415], 'discriminatives': [199, 71], 'candidates': [40, 415, 199, 71], 'used': 199}
+</pre></div>
+</div>
+</div>
+<p>Three variants use the same candidate pivots in other ways:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.html#RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier" title="RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiplePivotTreeStumpClassifier</span></code></a>
+compares two pivots of different classes: <code class="docutils literal notranslate"><span class="pre">P_a</span> <span class="pre">&lt;=</span> <span class="pre">P_b</span></code> sends left the instances closer to the
+training instance <code class="docutils literal notranslate"><span class="pre">a</span></code> than to <code class="docutils literal notranslate"><span class="pre">b</span></code>, with no threshold;</p></li>
+<li><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.html#RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier" title="RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObliquePivotTreeStumpClassifier</span></code></a>
+splits on a linear combination of the distances from a few pivots (see <a class="reference internal" href="#oblique-stumps">Oblique stumps</a>), and
+finds the discriminative pivots of each class with an oblique split on the distances;</p></li>
+<li><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.html#RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier" title="RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultipleObliquePivotTreeStumpClassifier</span></code></a>
+compares two pivots, as the first one, with the discriminative pivots of the second one.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.classification</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">MultipleObliquePivotTreeStumpClassifier</span><span class="p">,</span> <span class="n">MultiplePivotTreeStumpClassifier</span><span class="p">,</span>
+                                            <span class="n">ObliquePivotTreeStumpClassifier</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">stump</span> <span class="ow">in</span> <span class="p">[</span><span class="n">MultiplePivotTreeStumpClassifier</span><span class="p">(),</span> <span class="n">ObliquePivotTreeStumpClassifier</span><span class="p">(),</span>
+              <span class="n">MultipleObliquePivotTreeStumpClassifier</span><span class="p">()]:</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">base_stumps</span><span class="o">=</span><span class="n">stump</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">stump</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">tree</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">get_rule</span><span class="p">()[</span><span class="s1">'textual_rule'</span><span class="p">]</span><span class="si">}</span><span class="s2">, accuracy </span><span class="si">{</span><span class="n">tree</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id7" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>MultiplePivotTreeStumpClassifier: P_441 &lt;= P_480, accuracy 0.930
+ObliquePivotTreeStumpClassifier: 0.633 * P_480 - 0.443 * P_461 &lt;= -5.801, accuracy 0.954
+MultipleObliquePivotTreeStumpClassifier: P_441 &lt;= P_480, accuracy 0.933
+</pre></div>
+</div>
+</div>
+<p>Their <code class="docutils literal notranslate"><span class="pre">get_pivots</span></code> returns all the pivots used by the split in <code class="docutils literal notranslate"><span class="pre">used</span></code>.</p>
+</section>
+<section id="oblique-stumps">
+<h2>Oblique stumps<a class="headerlink" href="#oblique-stumps" title="Link to this heading">#</a></h2>
+<p>An oblique stump splits on a linear combination of a few features, e.g.
+<code class="docutils literal notranslate"><span class="pre">0.95</span> <span class="pre">*</span> <span class="pre">worst</span> <span class="pre">perimeter</span> <span class="pre">+</span> <span class="pre">0.31</span> <span class="pre">*</span> <span class="pre">worst</span> <span class="pre">smoothness</span> <span class="pre">&lt;=</span> <span class="pre">0.13</span></code>: a hyperplane that is not parallel to
+the axes, which can separate with one split classes that an axis-parallel tree needs many splits
+for. The directions are chosen at each node in one of two ways (<code class="docutils literal notranslate"><span class="pre">oblique_split_type</span></code>):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;householder&quot;</span></code> (the default): the axes reflected by the Householder reflection that maps the
+principal component of the node onto an axis; each direction combines at most
+<code class="docutils literal notranslate"><span class="pre">max_oblique_features</span></code> features;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;bivariate&quot;</span></code>: <code class="docutils literal notranslate"><span class="pre">n_orientations</span></code> rotations of the pair of features that best splits the node.</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The combinations use the features as they are, so the data should be on comparable scales,
+e.g. standardized as below.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObliqueDecisionTreeStumpClassifier</span>
+
+<span class="n">X_scaled</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>  <span class="c1"># the combinations use the features as they are</span>
+
+<span class="n">oblique_tree</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">base_stumps</span><span class="o">=</span><span class="n">ObliqueDecisionTreeStumpClassifier</span><span class="p">(</span><span class="s2">"bivariate"</span><span class="p">))</span>
+<span class="n">oblique_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">oblique_tree</span><span class="o">.</span><span class="n">print_rules</span><span class="p">(</span><span class="n">oblique_tree</span><span class="o">.</span><span class="n">get_rules</span><span class="p">(</span><span class="n">columns_names</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">feature_names</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"accuracy:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">oblique_tree</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"axis-parallel:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_scaled</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id8" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>|--- 0.951 * worst perimeter + 0.309 * worst smoothness &lt;= 0.127
+|   |--- 0.951 * area error + 0.309 * worst concave points &lt;= -0.132
+|   |    output: 1
+|   |--- 0.951 * area error + 0.309 * worst concave points &gt; -0.132
+|   |    output: 1
+|--- 0.951 * worst perimeter + 0.309 * worst smoothness &gt; 0.127
+|   |--- 0.809 * worst radius + 0.588 * worst concave points &lt;= 0.129
+|   |    output: 1
+|   |--- 0.809 * worst radius + 0.588 * worst concave points &gt; 0.129
+|   |    output: 0
+accuracy: 0.968
+axis-parallel: 0.942
+</pre></div>
+</div>
+</div>
+<p>The stump stores the columns and the coefficients of its combination in <code class="docutils literal notranslate"><span class="pre">feature_original</span></code> and
+<code class="docutils literal notranslate"><span class="pre">coefficients</span></code>. The regression stump,
+<a class="reference internal" href="../api/generated/RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.html#RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor" title="RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObliqueDecisionTreeStumpRegressor</span></code></a>,
+can also be used by the clustering trees.</p>
+</section>
+<section id="fair-splits">
+<h2>Fair splits<a class="headerlink" href="#fair-splits" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.FairTreeStumpRegressor.html#RuleTree.stumps.regression.FairTreeStumpRegressor" title="RuleTree.stumps.regression.FairTreeStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FairTreeStumpRegressor</span></code></a> chooses the
+split under a constraint on a sensitive attribute, a column of the data that the splits never
+use:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">penalty=&quot;balance&quot;</span></code>: the groups of the sensitive attribute should be represented in each
+child as in the node;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">penalty=&quot;mfc&quot;</span></code>: the distribution of the groups should be close to <code class="docutils literal notranslate"><span class="pre">ideal_distribution</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">penalty=&quot;privacy&quot;</span></code>: the children should satisfy k-anonymity, l-diversity and t-closeness.</p></li>
+</ul>
+<p>As a regression stump, it can be used by the clustering trees to find fair clusters. Here the
+sensitive attribute (column 2) is strongly related to the clusters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_blobs</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeCluster</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.regression</span><span class="w"> </span><span class="kn">import</span> <span class="n">FairTreeStumpRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.fairness_metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">balance_metric</span>
+
+<span class="n">points</span><span class="p">,</span> <span class="n">groups</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">cluster_std</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">sensitive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">groups</span> <span class="o">%</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">groups</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">points</span><span class="p">,</span> <span class="n">sensitive</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">stump</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">"standard"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">"fair"</span><span class="p">,</span> <span class="n">FairTreeStumpRegressor</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="s2">"balance"</span><span class="p">,</span> <span class="n">sensible_attribute</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">))]:</span>
+    <span class="n">clustering</span> <span class="o">=</span> <span class="n">RuleTreeCluster</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">base_stumps</span><span class="o">=</span><span class="n">stump</span><span class="p">)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">clustering</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span><span class="si">}</span><span class="s2"> clusters, balance </span><span class="si">{</span><span class="n">balance_metric</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span><span class="w"> </span><span class="n">sensitive</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id9" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>standard: 4 clusters, balance 0.00
+fair: 4 clusters, balance 0.44
+</pre></div>
+</div>
+</div>
+<p>The balance is 1 when every cluster has the same proportion of each group as the whole data set.
+The fair stump supports a single target, so it splits one principal component at a time: it is
+used with <code class="docutils literal notranslate"><span class="pre">component_split=&quot;best&quot;</span></code> (the default), not with <code class="docutils literal notranslate"><span class="pre">&quot;joint&quot;</span></code>.</p>
+</section>
+<section id="other-stumps">
+<h2>Other stumps<a class="headerlink" href="#other-stumps" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/generated/RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier" title="RuleTree.stumps.classification.PartialPivotTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartialPivotTreeStumpClassifier</span></code></a>
+restricts the pivots to a few features, so that the rules are shorter.
+<a class="reference internal" href="../api/generated/RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.html#RuleTree.stumps.classification.PartialProximityTreeStumpClassifier" title="RuleTree.stumps.classification.PartialProximityTreeStumpClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">PartialProximityTreeStumpClassifier</span></code></a>
+compares two of them: the instances closer to the first one go left.</p></li>
+<li><p>The shapelet and proximity stumps work on time series: see <a class="reference internal" href="multimodal.html"><span class="doc">Tabular data, time series and images</span></a>.</p></li>
+<li><p>The shapelet, proximity and partial pivot stumps need the <code class="docutils literal notranslate"><span class="pre">shapelets</span></code> extra (see
+<a class="reference internal" href="getting_started.html"><span class="doc">Getting started</span></a>).</p></li>
+<li><p><a class="reference internal" href="../api/generated/RuleTree.stumps.regression.XGBoostStumpRegressor.html#RuleTree.stumps.regression.XGBoostStumpRegressor" title="RuleTree.stumps.regression.XGBoostStumpRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">XGBoostStumpRegressor</span></code></a> is the stump of
+the XGBoost trees: see <a class="reference internal" href="ensembles.html"><span class="doc">Ensembles</span></a>.</p></li>
+<li><p>New stumps can be written by combining a <em>transformer</em> and a <em>splitter</em>: see <a class="reference internal" href="extending.html"><span class="doc">Extending the library</span></a>.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="concepts.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">How RuleTree works</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="multimodal.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Tabular data, time series and images</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-stumps">Available stumps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#which-stump-to-use">Which stump to use</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parameters-of-the-stumps">Parameters of the stumps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#combining-stumps">Combining stumps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pivot-stumps">Pivot stumps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#oblique-stumps">Oblique stumps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fair-splits">Fair splits</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-stumps">Other stumps</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/fismimosa/RuleTree/edit/main/docs/guides/stumps.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/guides/stumps.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025-2026, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

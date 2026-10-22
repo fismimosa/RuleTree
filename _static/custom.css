@@ -1,0 +1,137 @@
+/*
+ * RuleTree: the yellow of the logo as accent, and the blue and orange of the figures
+ * (docs/make_figures.py) as primary and secondary colors, in the light and dark themes.
+ */
+
+html[data-theme="light"] {
+  --pst-color-primary: #2f6db3;
+  --pst-color-secondary: #c26412;
+  --rt-accent: #e6d91e;
+  --rt-card-border: #e1e5ea;
+  --rt-output-background: #fafaf5;
+}
+
+html[data-theme="dark"] {
+  --pst-color-primary: #6ea8ec;
+  --pst-color-secondary: #f2a35e;
+  --rt-accent: #f2e933;
+  --rt-card-border: #2e353e;
+  --rt-output-background: #1a1d21;
+}
+
+/* Homepage --------------------------------------------------------------- */
+
+.hero-lead {
+  font-size: 1.3rem;
+  line-height: 1.5;
+  margin: 0.5rem 0 1.2rem;
+  padding-left: 0.9rem;
+  border-left: 4px solid var(--rt-accent);
+}
+
+.feature-grid .sd-card {
+  border-top: 3px solid var(--rt-accent);
+}
+
+/* Cards ------------------------------------------------------------------ */
+
+.sd-card {
+  border-color: var(--rt-card-border);
+  border-radius: 0.5rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sd-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--pst-color-primary);
+}
+
+.sd-card-title {
+  font-weight: 600;
+}
+
+.sd-card-title .sd-octicon {
+  color: var(--pst-color-primary);
+  margin-right: 0.3rem;
+}
+
+/* Code and output -------------------------------------------------------- */
+
+/* the printed output of the examples are the text blocks */
+div.highlight-text pre {
+  background-color: var(--rt-output-background);
+  border-left: 3px solid var(--rt-accent);
+}
+
+div.code-block-caption {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pst-color-text-muted);
+  padding: 0.2rem 0;
+}
+
+/* Figures and tables ----------------------------------------------------- */
+
+figure img {
+  border-radius: 0.4rem;
+}
+
+figure figcaption {
+  font-size: 0.9rem;
+  color: var(--pst-color-text-muted);
+}
+
+table.table td,
+table.docutils td {
+  vertical-align: top;
+}
+
+/* the "classifier" and "regressor" links of the table of the stumps */
+table.docutils td a.reference code,
+table.table td a.reference code {
+  white-space: nowrap;
+}
+
+/* Tabs ------------------------------------------------------------------- */
+
+.sd-tab-set > input:checked + label {
+  color: var(--pst-color-primary);
+  border-color: var(--pst-color-primary);
+}
+
+.sd-tab-set > label {
+  color: var(--pst-color-text-muted);
+}
+
+/* Navbar ----------------------------------------------------------------- */
+
+.navbar-version {
+  align-self: center;
+  margin-left: 0.6rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--pst-color-text-muted);
+  border: 1px solid var(--rt-card-border);
+  border-radius: 1rem;
+}
+
+.navbar-header-items__start .navbar-item {
+  display: flex;
+}
+
+html[data-theme="light"] .bd-header-announcement {
+  background-color: #fbf6c4;
+}
+
+html[data-theme="dark"] .bd-header-announcement {
+  background-color: #3b3712;
+}
+
+/* long method names in the table of contents of the API pages */
+.toc-entry a > code,
+.toc-entry a > code span.pre {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

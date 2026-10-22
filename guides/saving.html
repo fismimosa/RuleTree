@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../_static/icon.png" sizes="254x256" rel="icon" type="image/png">
+    <title>Saving and loading trees &#8212; RuleTree</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=64200178" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=763032e8"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guides/saving';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Ensembles" href="ensembles.html" />
+    <link rel="prev" title="Growing and updating trees" href="lifecycle.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.22 (ca1c2a1)" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo_navbar.png" class="logo__image only-light" alt="RuleTree"/>
+    <img src="../_static/logo_navbar_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree"/>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<span class="navbar-version" title="Version of this documentation">2026.10.22 (ca1c2a1)</span></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button type="button" id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar">
+  <svg class="pst-icon" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="concepts.html">How RuleTree works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stumps.html">Choosing the splits: stumps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="multimodal.html">Tabular data, time series and images</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inspecting.html">Reading the tree</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lifecycle.html">Growing and updating trees</a></li>
+<li class="toctree-l1 current active"><a aria-current="page" class="current reference internal" href="#">Saving and loading trees</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ensembles.html">Ensembles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="evaluating.html">Evaluating the models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extending.html">Extending the library</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">User guide</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Saving and loading trees</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="saving-and-loading-trees">
+<h1>Saving and loading trees<a class="headerlink" href="#saving-and-loading-trees" title="Link to this heading">#</a></h1>
+<p>A fitted tree is saved with <a class="reference internal" href="../api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.to_dict" title="RuleTree.tree.RuleTree.RuleTree.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_dict()</span></code></a>, which turns it into a
+dictionary of plain values (numbers, strings, lists) that can be written as JSON, and loaded with
+<a class="reference internal" href="../api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.from_dict" title="RuleTree.tree.RuleTree.RuleTree.from_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_dict()</span></code></a>, which rebuilds a tree of the same class that
+makes the same predictions. This guide describes what is saved, how the tree is rebuilt, and what
+a new stump needs to be saved.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_iris</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.tree.RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTree</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">"tree.json"</span><span class="p">)</span>
+<span class="n">loaded</span> <span class="o">=</span> <span class="n">RuleTree</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="s2">"tree.json"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">loaded</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="p">(</span><span class="n">loaded</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>RuleTreeClassifier True
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">from_dict</span></code> is called on <a class="reference internal" href="../api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree" title="RuleTree.tree.RuleTree.RuleTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTree</span></code></a>, the base class: the class of
+the tree is read from the dictionary (calling it on the concrete class, e.g.
+<code class="docutils literal notranslate"><span class="pre">RuleTreeClassifier.from_dict</span></code>, gives the same result).</p>
+<section id="files-and-dictionaries">
+<h2>Files and dictionaries<a class="headerlink" href="#files-and-dictionaries" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">to_dict()</span></code> returns the dictionary; <code class="docutils literal notranslate"><span class="pre">to_dict(filename=...)</span></code> also writes it to a JSON file.
+<code class="docutils literal notranslate"><span class="pre">from_dict</span></code> accepts either a dictionary or the name of a file. The dictionary can contain NumPy
+numbers (e.g. the thresholds of the splits), which the <code class="docutils literal notranslate"><span class="pre">json</span></code> module does not write by itself:
+to write it in another way (a string, a database, a compressed file), use the encoder of the
+library, which turns them into Python numbers and lists:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.data_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">json_numpy_encoder</span>
+
+<span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">=</span><span class="n">json_numpy_encoder</span><span class="p">)</span>
+<span class="n">loaded</span> <span class="o">=</span> <span class="n">RuleTree</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">((</span><span class="n">loaded</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+<p>The numbers are saved without rounding, so the loaded tree splits exactly as the original one.
+The JSON may contain <code class="docutils literal notranslate"><span class="pre">Infinity</span></code> (e.g. the default <code class="docutils literal notranslate"><span class="pre">max_depth</span></code> and <code class="docutils literal notranslate"><span class="pre">max_leaf_nodes</span></code>) and
+<code class="docutils literal notranslate"><span class="pre">NaN</span></code> (e.g. the features not used by a partial pivot, or the prediction of a node that no
+instance reaches after <code class="docutils literal notranslate"><span class="pre">update_statistics</span></code>): they are read by the <code class="docutils literal notranslate"><span class="pre">json</span></code> module of Python,
+but they are not part of the JSON standard, and other languages may need an option to accept them.</p>
+</section>
+<section id="what-the-dictionary-contains">
+<h2>What the dictionary contains<a class="headerlink" href="#what-the-dictionary-contains" title="Link to this heading">#</a></h2>
+<p>The dictionary has the class of the tree, its parameters, the classes of the target (only for
+classification trees) and the nodes:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Content</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tree_type</span></code>, <code class="docutils literal notranslate"><span class="pre">tree_class</span></code></p></td>
+<td><p>module and name of the class of the tree, e.g. <code class="docutils literal notranslate"><span class="pre">RuleTree.tree.RuleTreeClassifier</span></code> and
+<code class="docutils literal notranslate"><span class="pre">RuleTreeClassifier</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">args</span></code></p></td>
+<td><p>the parameters of the constructor of the tree (<code class="docutils literal notranslate"><span class="pre">get_params</span></code>), with the base stumps saved
+as dictionaries</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">classes_</span></code>, <code class="docutils literal notranslate"><span class="pre">n_classes_</span></code></p></td>
+<td><p>the classes of the target (classification trees only)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">nodes</span></code></p></td>
+<td><p>one dictionary for each node of the tree</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="parameters-and-base-stumps">
+<h3>Parameters and base stumps<a class="headerlink" href="#parameters-and-base-stumps" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">args[&quot;base_stumps&quot;]</span></code> is the list of the base stumps in the form
+<code class="docutils literal notranslate"><span class="pre">[probability,</span> <span class="pre">stump,</span> <span class="pre">data_types]</span></code>, whatever the form given to the tree (see <a class="reference internal" href="stumps.html"><span class="doc">Choosing the splits: stumps</span></a>):
+the probabilities are explicit, and <code class="docutils literal notranslate"><span class="pre">data_types</span></code> is None when the stump is used on all the data
+types it supports. Each stump, not fitted, is saved as its module (<code class="docutils literal notranslate"><span class="pre">stump_type</span></code>), its class
+(<code class="docutils literal notranslate"><span class="pre">stump_class</span></code>) and its parameters (<code class="docutils literal notranslate"><span class="pre">args</span></code>). The parameters that are estimators, such as the
+transformer and the splitter of a <a class="reference internal" href="../api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump" title="RuleTree.stumps.Stump.Stump"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stump</span></code></a>, are saved as their class
+(<code class="docutils literal notranslate"><span class="pre">__estimator__</span></code>) and their own parameters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.Stump</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stump</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.splitters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassificationSplitter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">MatrixTransformer</span>
+
+<span class="n">composed</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                              <span class="n">base_stumps</span><span class="o">=</span><span class="n">Stump</span><span class="p">(</span><span class="n">MatrixTransformer</span><span class="p">(),</span> <span class="n">ClassificationSplitter</span><span class="p">(</span><span class="n">criterion</span><span class="o">=</span><span class="s2">"entropy"</span><span class="p">)))</span>
+<span class="n">dictionary</span> <span class="o">=</span> <span class="n">composed</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s2">"tree_type"</span><span class="p">],</span> <span class="n">dictionary</span><span class="p">[</span><span class="s2">"tree_class"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="p">[</span><span class="s2">"args"</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">"base_stumps"</span><span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s2">"args"</span><span class="p">][</span><span class="s2">"base_stumps"</span><span class="p">],</span> <span class="n">indent</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">Output: the parameters and the base stumps in the dictionary</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id3" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>RuleTree.tree.RuleTreeClassifier RuleTreeClassifier
+{'max_depth': 2, 'max_leaf_nodes': inf, 'min_samples_split': 2, 'prune_useless_leaves': False, 'random_state': 0, 'stump_selection': 'random'}
+[
+ [
+  1.0,
+  {
+   "stump_type": "RuleTree.stumps.Stump",
+   "stump_class": "Stump",
+   "args": {
+    "splitter": {
+     "__estimator__": "RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter",
+     "params": {
+      "class_weight": null,
+      "criterion": "entropy",
+      "max_features": null,
+      "min_impurity_decrease": 0.0,
+      "min_samples_leaf": 1,
+      "min_weight_fraction_leaf": 0.0,
+      "random_state": null
+     }
+    },
+    "transformer": {
+     "__estimator__": "RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer",
+     "params": {}
+    }
+   }
+  },
+  null
+ ]
+]
+</pre></div>
+</div>
+</div>
+</div>
+</details></section>
+<section id="nodes">
+<h3>Nodes<a class="headerlink" href="#nodes" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">nodes</span></code> is a flat list: each node refers to its children by their identifier (<code class="docutils literal notranslate"><span class="pre">left_node</span></code> and
+<code class="docutils literal notranslate"><span class="pre">right_node</span></code>, None for a leaf), so the order of the list does not matter. Every node has:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">node_id</span></code>: its path from the root (<code class="docutils literal notranslate"><span class="pre">&quot;R&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Rl&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Rlr&quot;</span></code>, …);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_leaf</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prediction</span></code>, <code class="docutils literal notranslate"><span class="pre">prediction_probability</span></code> and <code class="docutils literal notranslate"><span class="pre">log_odds</span></code>: the class (or value, or cluster) it
+predicts, the class probabilities (the standard deviation of the target, for regression) and
+their log-odds;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prediction_classes_</span></code>: the classes of <code class="docutils literal notranslate"><span class="pre">prediction_probability</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">samples</span></code>: the number of training instances that reach it;</p></li>
+<li><p>for the internal nodes, <code class="docutils literal notranslate"><span class="pre">balance_score</span></code> and <code class="docutils literal notranslate"><span class="pre">balance_score_global</span></code>: the fraction of the
+training set in the smaller side of the split (see <code class="docutils literal notranslate"><span class="pre">get_balanced_stumps</span></code>).</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">dictionary</span><span class="p">[</span><span class="s2">"nodes"</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">"node_id"</span><span class="p">],</span> <span class="n">node</span><span class="p">[</span><span class="s2">"is_leaf"</span><span class="p">],</span> <span class="n">node</span><span class="p">[</span><span class="s2">"samples"</span><span class="p">],</span> <span class="n">node</span><span class="p">[</span><span class="s2">"prediction"</span><span class="p">],</span>
+          <span class="n">node</span><span class="p">[</span><span class="s2">"left_node"</span><span class="p">],</span> <span class="n">node</span><span class="p">[</span><span class="s2">"right_node"</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>R False 150 0 Rl Rr
+Rr False 100 1 Rrl Rrr
+Rrr True 46 2 None None
+Rrl True 54 1 None None
+Rl True 50 0 None None
+</pre></div>
+</div>
+</div>
+<p>The internal nodes also contain their fitted stump. Besides the module, the class and the
+parameters, as in <code class="docutils literal notranslate"><span class="pre">base_stumps</span></code>, the dictionary of a fitted stump has:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">data_type</span></code>: the type of data the stump was fitted on (see <a class="reference internal" href="multimodal.html"><span class="doc">Tabular data, time series and images</span></a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transformer</span></code> and <code class="docutils literal notranslate"><span class="pre">splitter</span></code>: the fitted state of the two components, needed to apply the
+split (see <a class="reference internal" href="#what-the-stumps-save">What the stumps save</a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">impurity</span></code>: the impurity of the node and of the two children;</p></li>
+<li><p>the rule of the split, as returned by <code class="docutils literal notranslate"><span class="pre">get_rule</span></code> without rounding (<code class="docutils literal notranslate"><span class="pre">textual_rule</span></code>,
+<code class="docutils literal notranslate"><span class="pre">threshold</span></code>, <code class="docutils literal notranslate"><span class="pre">feature_idx</span></code>, …). The rule is saved to be read without loading the tree:
+<code class="docutils literal notranslate"><span class="pre">from_dict</span></code> does not use it.</p></li>
+</ul>
+<p>The stump has no identifier of its own in the dictionary: when the tree is loaded, it gets the
+<code class="docutils literal notranslate"><span class="pre">node_id</span></code> of its node back in <code class="docutils literal notranslate"><span class="pre">node_id_</span></code> (see <a class="reference internal" href="extending.html"><span class="doc">Extending the library</span></a>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">root</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s2">"nodes"</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">root</span><span class="p">[</span><span class="s2">"stump_class"</span><span class="p">],</span> <span class="n">root</span><span class="p">[</span><span class="s2">"data_type"</span><span class="p">],</span> <span class="n">root</span><span class="p">[</span><span class="s2">"textual_rule"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">"transformer"</span><span class="p">:</span> <span class="n">root</span><span class="p">[</span><span class="s2">"transformer"</span><span class="p">],</span> <span class="s2">"splitter"</span><span class="p">:</span> <span class="n">root</span><span class="p">[</span><span class="s2">"splitter"</span><span class="p">]},</span>
+                 <span class="bp">cls</span><span class="o">=</span><span class="n">json_numpy_encoder</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id5" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Stump tabular X_3 &lt;= 0.800000011920929
+{"transformer": {}, "splitter": {"feature_": 3, "threshold_": 0.800000011920929, "is_categorical_": false, "gain_": 0.9182958340544897, "impurity_": [1.584962500721156, 0.0, 1.0]}}
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="how-a-tree-is-rebuilt">
+<h2>How a tree is rebuilt<a class="headerlink" href="#how-a-tree-is-rebuilt" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">from_dict</span></code>:</p>
+<ol class="arabic simple">
+<li><p>imports the module <code class="docutils literal notranslate"><span class="pre">tree_type</span></code> and takes the class <code class="docutils literal notranslate"><span class="pre">tree_class</span></code> from it;</p></li>
+<li><p>rebuilds the base stumps: for each of them, it imports its class (<code class="docutils literal notranslate"><span class="pre">stump_type</span></code> and
+<code class="docutils literal notranslate"><span class="pre">stump_class</span></code>) and calls its <code class="docutils literal notranslate"><span class="pre">dict_to_node</span></code>, which creates the stump from <code class="docutils literal notranslate"><span class="pre">args</span></code>;</p></li>
+<li><p>creates the tree with the saved parameters, <code class="docutils literal notranslate"><span class="pre">tree_class(**args)</span></code>, and sets <code class="docutils literal notranslate"><span class="pre">classes_</span></code>;</p></li>
+<li><p>rebuilds each node with <a class="reference internal" href="../api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.dict_to_node" title="RuleTree.tree.RuleTreeNode.RuleTreeNode.dict_to_node"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dict_to_node()</span></code></a>, and
+the stump of each internal node with the <code class="docutils literal notranslate"><span class="pre">dict_to_node</span></code> of its class. For a
+<a class="reference internal" href="../api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump" title="RuleTree.stumps.Stump.Stump"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stump</span></code></a>, this creates the stump from its parameters, then new
+components (<code class="docutils literal notranslate"><span class="pre">_make_transformer</span></code> and <code class="docutils literal notranslate"><span class="pre">_make_splitter</span></code>) whose fitted state is restored with
+<code class="docutils literal notranslate"><span class="pre">set_state</span></code>;</p></li>
+<li><p>links the nodes through <code class="docutils literal notranslate"><span class="pre">left_node</span></code> and <code class="docutils literal notranslate"><span class="pre">right_node</span></code>, and takes <code class="docutils literal notranslate"><span class="pre">&quot;R&quot;</span></code> as the root.</p></li>
+</ol>
+<figure class="align-default" id="id6">
+<a class="only-light reference internal image-reference" href="../_images/saved_tree.svg"><img alt="The flat list of the saved nodes, each with its id and the ids of its children, and the tree rebuilt from it." class="only-light" src="../_images/saved_tree.svg" style="width: 100%;" />
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/saved_tree_dark.svg"><img alt="The flat list of the saved nodes, each with its id and the ids of its children, and the tree rebuilt from it." class="only-dark" src="../_images/saved_tree_dark.svg" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The nodes are saved as a flat list, in any order; the tree is rebuilt from the ids of the
+children.</span><a class="headerlink" href="#id6" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<section id="what-is-not-saved">
+<h3>What is not saved<a class="headerlink" href="#what-is-not-saved" title="Link to this heading">#</a></h3>
+<p>The dictionary contains what the tree needs to predict and to be described, not what was used
+only to build it:</p>
+<ul class="simple">
+<li><p>the training data: the pivot and shapelet stumps save only their pivots and shapelets (see
+below), and the distance matrix of the pivot stumps is not saved;</p></li>
+<li><p>the cache of the stumps (<code class="docutils literal notranslate"><span class="pre">cache_</span></code>, see <a class="reference internal" href="lifecycle.html"><span class="doc">Growing and updating trees</span></a>) and the candidate splits
+(<code class="docutils literal notranslate"><span class="pre">candidate_splits_</span></code>), which are computed again at the next <code class="docutils literal notranslate"><span class="pre">fit</span></code> or <code class="docutils literal notranslate"><span class="pre">partial_fit</span></code>;</p></li>
+<li><p>the state of the random generator of the tree.</p></li>
+</ul>
+<p>So a loaded tree predicts, describes its rules (<code class="docutils literal notranslate"><span class="pre">get_rules</span></code>, <code class="docutils literal notranslate"><span class="pre">export_graphviz</span></code>,
+<code class="docutils literal notranslate"><span class="pre">get_pivots</span></code>, …) and recomputes its statistics (<code class="docutils literal notranslate"><span class="pre">update_statistics</span></code>) as the original one,
+and it can be grown further with <code class="docutils literal notranslate"><span class="pre">partial_fit</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">loaded</span><span class="p">,</span> <span class="s2">"cache_"</span><span class="p">),</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">loaded</span><span class="p">,</span> <span class="s2">"candidate_splits_"</span><span class="p">))</span>
+
+<span class="n">loaded</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">partial_fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"leaves after partial_fit:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">loaded</span><span class="o">.</span><span class="n">get_leaf_nodes</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id7" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>False False
+leaves after partial_fit: 5
+</pre></div>
+</div>
+</div>
+<p>Since the random generator is not saved, a loaded tree that chooses its stumps at random among
+several ones (<code class="docutils literal notranslate"><span class="pre">stump_selection=&quot;random&quot;</span></code>) can choose differently, in <code class="docutils literal notranslate"><span class="pre">partial_fit</span></code>, from the
+original tree.</p>
+</section>
+</section>
+<section id="what-the-stumps-save">
+<h2>What the stumps save<a class="headerlink" href="#what-the-stumps-save" title="Link to this heading">#</a></h2>
+<p>Each stump saves only the fitted state needed to apply its split:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Stumps</p></th>
+<th class="head"><p>Fitted state</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>decision tree, XGBoost and fair stumps</p></td>
+<td><p>the feature, the threshold (or the value of a categorical split), the gain and the impurity
+(the XGBoost splitter also its similarity scores)</p></td>
+</tr>
+<tr class="row-odd"><td><p>pivot stumps</p></td>
+<td><p>the pivot (an instance of the training set, on the standardized numerical features), its
+index, the pivots of the node and the scaler of the numerical features</p></td>
+</tr>
+<tr class="row-even"><td><p>multiple pivot stumps</p></td>
+<td><p>the two pivots of the split and their indices, the pivots of the node, the scaler</p></td>
+</tr>
+<tr class="row-odd"><td><p>oblique pivot stumps</p></td>
+<td><p>all the candidate pivots of the node, the scaler and the coefficients of the combination</p></td>
+</tr>
+<tr class="row-even"><td><p>oblique stumps</p></td>
+<td><p>the numerical features and the coefficients of the combination</p></td>
+</tr>
+<tr class="row-odd"><td><p>shapelet and proximity stumps</p></td>
+<td><p>the shapelets (subsequences of the training series): all the selected ones for the shapelet
+stumps, the two of the split for the proximity stumps</p></td>
+</tr>
+<tr class="row-even"><td><p>partial pivot and partial proximity stumps</p></td>
+<td><p>the partial pivots (values of some features of training instances)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The pivots and the shapelets are pieces of the training data. With sensitive data, a saved
+tree should be treated as the data it was trained on:</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">PivotTreeStumpClassifier</span>
+
+<span class="n">pivot_tree</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">base_stumps</span><span class="o">=</span><span class="n">PivotTreeStumpClassifier</span><span class="p">())</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">pivot_tree</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s2">"nodes"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">"transformer"</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"pivot:"</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="s2">"pivot_name"</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">"X_split_instance"</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id8" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>pivot: 112 [1.16, -0.13, 0.99, 1.19]
+</pre></div>
+</div>
+</div>
+<p>The pivot is saved standardized, but the scaler (<code class="docutils literal notranslate"><span class="pre">state[&quot;scaler&quot;]</span></code>) is saved too, so its
+original values can be recovered.</p>
+</section>
+<section id="saving-new-stumps">
+<h2>Saving new stumps<a class="headerlink" href="#saving-new-stumps" title="Link to this heading">#</a></h2>
+<p>A stump written as a <a class="reference internal" href="../api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump" title="RuleTree.stumps.Stump.Stump"><code class="xref py py-class docutils literal notranslate"><span class="pre">Stump</span></code></a> (see <a class="reference internal" href="extending.html"><span class="doc">Extending the library</span></a>) is saved with
+no extra code, provided that:</p>
+<ul class="simple">
+<li><p>its parameters, and the ones of its components, are numbers, strings, lists, dictionaries or
+estimators with such parameters;</p></li>
+<li><p>the transformer saves its fitted state with <code class="docutils literal notranslate"><span class="pre">get_state</span></code>, as a dictionary of plain values,
+and restores it with <code class="docutils literal notranslate"><span class="pre">set_state</span></code>. A transformer without fitted state does not need them;</p></li>
+<li><p>the splitter keeps its fitted state in the attributes listed in <code class="docutils literal notranslate"><span class="pre">_state</span></code>
+(<code class="docutils literal notranslate"><span class="pre">feature_</span></code>, <code class="docutils literal notranslate"><span class="pre">threshold_</span></code>, <code class="docutils literal notranslate"><span class="pre">is_categorical_</span></code>, <code class="docutils literal notranslate"><span class="pre">gain_</span></code>, <code class="docutils literal notranslate"><span class="pre">impurity_</span></code>). A splitter with
+other fitted attributes adds them to <code class="docutils literal notranslate"><span class="pre">_state</span></code>, as
+<a class="reference internal" href="../api/generated/RuleTree.stumps.splitters.XGBoostSplitter.html#RuleTree.stumps.splitters.XGBoostSplitter" title="RuleTree.stumps.splitters.XGBoostSplitter"><code class="xref py py-class docutils literal notranslate"><span class="pre">XGBoostSplitter</span></code></a> does;</p></li>
+<li><p>the classes are importable from their module. The saved tree records the module of each class,
+so the classes defined in a script run as <code class="docutils literal notranslate"><span class="pre">__main__</span></code> or in a notebook can be loaded only in
+that same script or notebook.</p></li>
+</ul>
+<p>A stump that derives directly from
+<a class="reference internal" href="../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump" title="RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeBaseStump</span></code></a> implements <code class="docutils literal notranslate"><span class="pre">node_to_dict</span></code>, which
+returns a dictionary with at least <code class="docutils literal notranslate"><span class="pre">stump_type</span></code> (the module) and <code class="docutils literal notranslate"><span class="pre">stump_class</span></code> (the class),
+and the class method <code class="docutils literal notranslate"><span class="pre">dict_to_node</span></code>, which rebuilds the stump from it.</p>
+<p>The quickest check of a new stump is a round trip through JSON, which also catches the values
+that JSON cannot represent:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.stumps.classification</span><span class="w"> </span><span class="kn">import</span> <span class="n">ObliqueDecisionTreeStumpClassifier</span>
+
+<span class="n">stump</span> <span class="o">=</span> <span class="n">ObliqueDecisionTreeStumpClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">copy</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">stump</span><span class="p">)</span><span class="o">.</span><span class="n">dict_to_node</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">stump</span><span class="o">.</span><span class="n">node_to_dict</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">=</span><span class="n">json_numpy_encoder</span><span class="p">)))</span>
+
+<span class="nb">print</span><span class="p">((</span><span class="n">copy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="n">stump</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">X</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">copy</span><span class="o">.</span><span class="n">get_rule</span><span class="p">()[</span><span class="s2">"textual_rule"</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id9" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>True -0.085 * X_1 + 0.857 * X_2 &lt;= 1.85
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">tests/test_stumps.py</span></code> runs this check on every stump of the library: adding a new stump to its
+list <code class="docutils literal notranslate"><span class="pre">STUMPS</span></code> tests its saving.</p>
+</section>
+<section id="limits">
+<h2>Limits<a class="headerlink" href="#limits" title="Link to this heading">#</a></h2>
+<p>The ensembles (<a class="reference internal" href="ensembles.html"><span class="doc">Ensembles</span></a>) have no <code class="docutils literal notranslate"><span class="pre">to_dict</span></code>. They, like the trees, can be saved with
+<code class="docutils literal notranslate"><span class="pre">pickle</span></code> or <code class="docutils literal notranslate"><span class="pre">joblib</span></code>, which save the whole Python object.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>A pickle file must come from a trusted source, and is loaded only with compatible versions of
+RuleTree and of its dependencies.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_diabetes</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeRegressor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.ensemble.GBoostRegressor</span><span class="w"> </span><span class="kn">import</span> <span class="n">GBoostRegressor</span>
+
+<span class="n">X_reg</span><span class="p">,</span> <span class="n">y_reg</span> <span class="o">=</span> <span class="n">load_diabetes</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">boosting</span> <span class="o">=</span> <span class="n">GBoostRegressor</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">RuleTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                           <span class="n">n_estimators</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_reg</span><span class="p">,</span> <span class="n">y_reg</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"boosting.pkl"</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">boosting</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"boosting.pkl"</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">loaded_boosting</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">loaded_boosting</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_reg</span><span class="p">),</span> <span class="n">boosting</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_reg</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id10" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+<p>Moreover:</p>
+<ul class="simple">
+<li><p>the dictionary has no version number: a tree saved by a different version of RuleTree may not
+load, or may load with different defaults for the parameters added in between;</p></li>
+<li><p>an unfitted tree cannot be saved: <code class="docutils literal notranslate"><span class="pre">to_dict</span></code> raises <code class="docutils literal notranslate"><span class="pre">NotFittedError</span></code>.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="lifecycle.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Growing and updating trees</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="ensembles.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Ensembles</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#files-and-dictionaries">Files and dictionaries</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-the-dictionary-contains">What the dictionary contains</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parameters-and-base-stumps">Parameters and base stumps</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nodes">Nodes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-a-tree-is-rebuilt">How a tree is rebuilt</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-not-saved">What is not saved</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-the-stumps-save">What the stumps save</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-new-stumps">Saving new stumps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#limits">Limits</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/fismimosa/RuleTree/edit/main/docs/guides/saving.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/guides/saving.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025-2026, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
