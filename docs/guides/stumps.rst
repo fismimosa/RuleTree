@@ -23,68 +23,80 @@ Available stumps
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 15 20 35
+   :widths: 16 44 18 11 11
 
    * - Stump
-     - Task
-     - Data types
      - Split
-   * - :class:`~RuleTree.stumps.classification.DecisionTreeStumpClassifier.DecisionTreeStumpClassifier`,
-       :class:`~RuleTree.stumps.regression.DecisionTreeStumpRegressor.DecisionTreeStumpRegressor`
-     - classification, regression
+     - Data
+     - Classification
+     - Regression
+   * - **Decision tree**
+     - threshold on a feature, ``x <= t``, or value of a categorical feature, ``x = v``
      - tabular, time series, images
-     - threshold on a feature (``x <= t``) or value of a categorical feature (``x = v``); time
-       series and images are flattened into one feature per value
-   * - :class:`~RuleTree.stumps.classification.PivotTreeStumpClassifier.PivotTreeStumpClassifier`,
-       :class:`~RuleTree.stumps.regression.PivotTreeStumpRegressor.PivotTreeStumpRegressor`
-     - classification, regression
+     - :class:`classifier <RuleTree.stumps.classification.DecisionTreeStumpClassifier>`
+     - :class:`regressor <RuleTree.stumps.regression.DecisionTreeStumpRegressor>`
+   * - **Oblique**
+     - threshold on a combination of a few features, ``0.8 * X_2 - 0.6 * X_3 <= t``
      - tabular
-     - distance from a *pivot*, an instance of the node that represents a class or separates the
-       classes
-   * - :class:`~RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.MultiplePivotTreeStumpClassifier`,
-       :class:`~RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.MultipleObliquePivotTreeStumpClassifier`
-     - classification
+     - :class:`classifier <RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier>`
+     - :class:`regressor <RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor>`
+   * - **Pivot**
+     - distance from a :term:`pivot`, an instance of the training set: ``P_12 <= t``
      - tabular
-     - closer to one pivot than to another one
-   * - :class:`~RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.ObliquePivotTreeStumpClassifier`
-     - classification
+     - :class:`classifier <RuleTree.stumps.classification.PivotTreeStumpClassifier>`
+     - :class:`regressor <RuleTree.stumps.regression.PivotTreeStumpRegressor>`
+   * - **Multiple pivot**
+     - closer to one pivot than to another: ``P_12 <= P_40``
      - tabular
-     - threshold on a linear combination of the distances from a few pivots
-   * - :class:`~RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier`
-     - classification
+     - :class:`classifier <RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier>`
+     -
+   * - **Oblique pivot**
+     - threshold on a combination of the distances from a few pivots
      - tabular
-     - distance from a *partial pivot*, an instance restricted to a few features
-   * - :class:`~RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier.ObliqueDecisionTreeStumpClassifier`,
-       :class:`~RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.ObliqueDecisionTreeStumpRegressor`
-     - classification, regression
+     - :class:`classifier <RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier>`
+     -
+   * - **Multiple oblique pivot**
+     - closer to one pivot than to another, among the discriminative pivots of the oblique pivot stump
      - tabular
-     - threshold on a linear combination of a few features (``0.8 * X_2 - 0.6 * X_3 <= t``)
-   * - :class:`~RuleTree.stumps.classification.ShapeletTreeStumpClassifier.ShapeletTreeStumpClassifier`,
-       :class:`~RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor`
-     - classification, regression
+     - :class:`classifier <RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier>`
+     -
+   * - **Partial pivot**
+     - distance from a :term:`partial pivot`, a pivot restricted to a few features
+     - tabular
+     - :class:`classifier <RuleTree.stumps.classification.PartialPivotTreeStumpClassifier>`
+     -
+   * - **Partial proximity**
+     - closer to one partial pivot than to another
+     - tabular
+     - :class:`classifier <RuleTree.stumps.classification.PartialProximityTreeStumpClassifier>`
+     -
+   * - **Shapelet**
+     - distance from a :term:`shapelet`, a subsequence of a training series
      - time series
-     - distance from a *shapelet*, a subsequence of a time series
-   * - :class:`~RuleTree.stumps.classification.ProximityTreeStumpClassifier.ProximityTreeStumpClassifier`,
-       :class:`~RuleTree.stumps.regression.ProximityTreeStumpRegressor.ProximityTreeStumpRegressor`
-     - classification, regression
+     - :class:`classifier <RuleTree.stumps.classification.ShapeletTreeStumpClassifier>`
+     - :class:`regressor <RuleTree.stumps.regression.ShapeletTreeStumpRegressor>`
+   * - **Proximity**
+     - closer to one shapelet than to another
      - time series
-     - closer to one shapelet than to another one (see :doc:`multimodal`)
-   * - :class:`~RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.PartialProximityTreeStumpClassifier`
-     - classification
+     - :class:`classifier <RuleTree.stumps.classification.ProximityTreeStumpClassifier>`
+     - :class:`regressor <RuleTree.stumps.regression.ProximityTreeStumpRegressor>`
+   * - **Fair**
+     - threshold on a feature, under a fairness constraint on a sensitive attribute (`Fair splits`_)
      - tabular
-     - closer to one partial pivot than to another one
-   * - :class:`~RuleTree.stumps.regression.FairTreeStumpRegressor.FairTreeStumpRegressor`
-     - regression (and clustering)
-     - tabular
-     - threshold on a feature, under a fairness constraint on a sensitive attribute
-   * - :class:`~RuleTree.stumps.regression.XGBoostStumpRegressor.XGBoostStumpRegressor`
-     - regression
+     -
+     - :class:`regressor <RuleTree.stumps.regression.FairTreeStumpRegressor>`
+   * - **XGBoost**
+     - threshold maximizing the XGBoost gain (:doc:`ensembles`)
      - tabular, time series, images
-     - threshold maximizing the XGBoost gain (see :doc:`ensembles`)
+     -
+     - :class:`regressor <RuleTree.stumps.regression.XGBoostStumpRegressor>`
+
+The decision tree and XGBoost stumps flatten the time series and the images into one feature per
+value. The fair stump also works in the clustering trees.
 
 A tree accepts only the stumps of its task: classification stumps for
-:class:`~RuleTree.tree.RuleTreeClassifier.RuleTreeClassifier`, regression stumps for
-:class:`~RuleTree.tree.RuleTreeRegressor.RuleTreeRegressor` and for the clustering trees, whose
+:class:`~RuleTree.RuleTreeClassifier`, regression stumps for
+:class:`~RuleTree.RuleTreeRegressor` and for the clustering trees, whose
 stumps predict the principal components of the data. By default, the trees use the decision tree
 stump of their task.
 
@@ -153,8 +165,10 @@ make sense for a single split:
    {'class_weight': 'balanced', 'criterion': 'entropy', 'max_features': None, 'min_impurity_decrease': 0.0, 'min_samples_leaf': 20, 'min_weight_fraction_leaf': 0.0, 'random_state': None}
    leaves: 7
 
-The stump passed to the tree is a template: the tree fits a copy of it at each node, so ``stump``
-itself stays unfitted.
+.. note::
+
+   The stump passed to the tree is a template: the tree fits a copy of it at each node, so
+   ``stump`` itself stays unfitted.
 
 
 Combining stumps
@@ -264,13 +278,13 @@ candidates and the one used by the split. For the whole tree:
 
 Three variants use the same candidate pivots in other ways:
 
-- :class:`~RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.MultiplePivotTreeStumpClassifier`
+- :class:`~RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier`
   compares two pivots of different classes: ``P_a <= P_b`` sends left the instances closer to the
   training instance ``a`` than to ``b``, with no threshold;
-- :class:`~RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.ObliquePivotTreeStumpClassifier`
+- :class:`~RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier`
   splits on a linear combination of the distances from a few pivots (see `Oblique stumps`_), and
   finds the discriminative pivots of each class with an oblique split on the distances;
-- :class:`~RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.MultipleObliquePivotTreeStumpClassifier`
+- :class:`~RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier`
   compares two pivots, as the first one, with the discriminative pivots of the second one.
 
 .. code-block:: python
@@ -306,7 +320,10 @@ for. The directions are chosen at each node in one of two ways (``oblique_split_
   ``max_oblique_features`` features;
 - ``"bivariate"``: ``n_orientations`` rotations of the pair of features that best splits the node.
 
-The combinations use the features as they are, so the data should be on comparable scales:
+.. important::
+
+   The combinations use the features as they are, so the data should be on comparable scales,
+   e.g. standardized as below.
 
 .. code-block:: python
 
@@ -342,14 +359,14 @@ The combinations use the features as they are, so the data should be on comparab
 
 The stump stores the columns and the coefficients of its combination in ``feature_original`` and
 ``coefficients``. The regression stump,
-:class:`~RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.ObliqueDecisionTreeStumpRegressor`,
+:class:`~RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor`,
 can also be used by the clustering trees.
 
 
 Fair splits
 -----------
 
-:class:`~RuleTree.stumps.regression.FairTreeStumpRegressor.FairTreeStumpRegressor` chooses the
+:class:`~RuleTree.stumps.regression.FairTreeStumpRegressor` chooses the
 split under a constraint on a sensitive attribute, a column of the data that the splits never
 use:
 
@@ -395,13 +412,13 @@ used with ``component_split="best"`` (the default), not with ``"joint"``.
 Other stumps
 ------------
 
-- :class:`~RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.PartialPivotTreeStumpClassifier`
+- :class:`~RuleTree.stumps.classification.PartialPivotTreeStumpClassifier`
   restricts the pivots to a few features, so that the rules are shorter.
-  :class:`~RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.PartialProximityTreeStumpClassifier`
+  :class:`~RuleTree.stumps.classification.PartialProximityTreeStumpClassifier`
   compares two of them: the instances closer to the first one go left.
 - The shapelet and proximity stumps work on time series: see :doc:`multimodal`.
 - The shapelet, proximity and partial pivot stumps need the ``shapelets`` extra (see
   :doc:`getting_started`).
-- :class:`~RuleTree.stumps.regression.XGBoostStumpRegressor.XGBoostStumpRegressor` is the stump of
+- :class:`~RuleTree.stumps.regression.XGBoostStumpRegressor` is the stump of
   the XGBoost trees: see :doc:`ensembles`.
 - New stumps can be written by combining a *transformer* and a *splitter*: see :doc:`extending`.

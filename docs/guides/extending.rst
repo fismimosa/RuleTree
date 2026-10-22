@@ -49,33 +49,33 @@ The library provides these components:
 
    * - Transformer
      - Features
-   * - :class:`~RuleTree.stumps.transformers.MatrixTransformer.MatrixTransformer`
+   * - :class:`~RuleTree.stumps.transformers.MatrixTransformer`
      - the columns of the data (time series and images are flattened)
-   * - :class:`~RuleTree.stumps.transformers.PivotTransformer.PivotTransformer`
+   * - :class:`~RuleTree.stumps.transformers.PivotTransformer`
      - the distances from the pivots of the node
-   * - :class:`~RuleTree.stumps.transformers.PartialPivotTransformer.PartialPivotTransformer`
+   * - :class:`~RuleTree.stumps.transformers.PartialPivotTransformer`
      - the distances from partial pivots, restricted to a few features
-   * - :class:`~RuleTree.stumps.transformers.ShapeletTransformer.ShapeletTransformer`
+   * - :class:`~RuleTree.stumps.transformers.ShapeletTransformer`
      - the distances from shapelets
-   * - :class:`~RuleTree.stumps.transformers.HouseholderTransformer.HouseholderTransformer`,
-       :class:`~RuleTree.stumps.transformers.BivariateTransformer.BivariateTransformer`
+   * - :class:`~RuleTree.stumps.transformers.HouseholderTransformer`,
+       :class:`~RuleTree.stumps.transformers.BivariateTransformer`
      - linear combinations of a few features (oblique directions); both derive from
-       :class:`~RuleTree.stumps.transformers.ObliqueTransformer.ObliqueTransformer`
-   * - :class:`~RuleTree.stumps.transformers.ProximityTransformer.ProximityTransformer`,
-       :class:`~RuleTree.stumps.transformers.PartialProximityTransformer.PartialProximityTransformer`
+       :class:`~RuleTree.stumps.transformers.ObliqueTransformer`
+   * - :class:`~RuleTree.stumps.transformers.ProximityTransformer`,
+       :class:`~RuleTree.stumps.transformers.PartialProximityTransformer`
      - for each pair of shapelets (partial pivots), whether the instance is closer to the second one
-   * - :class:`~RuleTree.stumps.transformers.MultiplePivotTransformer.MultiplePivotTransformer`
+   * - :class:`~RuleTree.stumps.transformers.MultiplePivotTransformer`
      - for each pair of pivots, whether the instance is closer to the second one
-   * - :class:`~RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer`
+   * - :class:`~RuleTree.stumps.transformers.ObliquePivotTransformer`
      - linear combinations of the distances from the pivots of the node
    * - **Splitter**
      - **Split**
-   * - :class:`~RuleTree.stumps.splitters.ClassificationSplitter.ClassificationSplitter`,
-       :class:`~RuleTree.stumps.splitters.RegressionSplitter.RegressionSplitter`
+   * - :class:`~RuleTree.stumps.splitters.ClassificationSplitter`,
+       :class:`~RuleTree.stumps.splitters.RegressionSplitter`
      - the split of a scikit-learn decision tree of depth 1
-   * - :class:`~RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter`
+   * - :class:`~RuleTree.stumps.splitters.XGBoostSplitter`
      - the split with the highest XGBoost gain
-   * - :class:`~RuleTree.stumps.splitters.FairSplitter.FairSplitter`
+   * - :class:`~RuleTree.stumps.splitters.FairSplitter`
      - the best split whose children are fair with respect to some sensitive features
 
 A new stump therefore needs only the component that is new: a transformer, to split on new

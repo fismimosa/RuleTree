@@ -258,7 +258,10 @@ feature is the sex of the patients:
 
    8 leaves: {'balance': 0.592, 'max_fairness_cost': 0.195}
 
-To build trees that take a sensitive attribute into account, see the fair stumps in :doc:`stumps`.
+.. seealso::
+
+   To build trees that take a sensitive attribute into account, see the fair stumps in
+   :doc:`stumps`.
 
 
 Size of the trees

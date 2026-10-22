@@ -1,11 +1,8 @@
 # RuleTree
 
-RuleTree builds interpretable decision trees one node at a time. Each node is split by a *stump*:
-a threshold on a feature or on a combination of a few features (oblique split), the distance from
-an instance of the training set (a *pivot*), the distance of a time series from a *shapelet*, which
-of two pivots or shapelets is closer, a fair split, ... The same tree can mix different kinds of
-stumps and different types of data (tabular data, time series, images), and its rules can be read,
-drawn and saved.
+Interpretable decision trees whose nodes can be split in different ways (a threshold on a feature,
+the distance from an example, the distance of a time series from a pattern, ...), on tabular data,
+time series and images. Documentation: https://fismimosa.github.io/RuleTree/
 
 - Classification, regression (also with several targets) and clustering trees with the scikit-learn API.
 - Stumps for tabular data, time series and images, usable together in the same tree.

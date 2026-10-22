@@ -6,11 +6,14 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import datetime
+import importlib
+import importlib.metadata
 import os
 import re
 import shutil
+import subprocess
 import sys
-import importlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -18,10 +21,28 @@ sys.path.insert(0, str(ROOT))
 # the kernels that execute the example notebooks import RuleTree from the repository too
 os.environ["PYTHONPATH"] = os.pathsep.join(filter(None, [str(ROOT), os.environ.get("PYTHONPATH")]))
 
+def _release():
+    """
+    The version documented: the packages on PyPI are numbered by the date of their build
+    (.github/workflows/pypi.yml), which follows each commit on main, so the docs show the date of the
+    last commit (in UTC, as the build) and its hash. Without git, the version of the installed package.
+    """
+    try:
+        date, commit = subprocess.check_output(
+            ["git", "log", "-1", "--format=%cd %h", "--date=format-local:%Y.%m.%d"],
+            cwd=ROOT, text=True, env={**os.environ, "TZ": "UTC"}, stderr=subprocess.DEVNULL).split()
+        return f"{date} ({commit})"
+    except (OSError, subprocess.CalledProcessError, ValueError):
+        try:
+            return importlib.metadata.version("RuleTree")
+        except importlib.metadata.PackageNotFoundError:
+            return "dev"
+
+
 project = 'RuleTree'
-copyright = '2025, Cristiano Landi, Alessio Cascione, Riccardo Guidotti'
 author = 'Cristiano Landi, Alessio Cascione, Riccardo Guidotti'
-release = '0.0.1'
+copyright = f'2025-{datetime.date.today().year}, {author}'
+release = version = _release()
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

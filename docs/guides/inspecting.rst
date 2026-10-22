@@ -58,8 +58,11 @@ left child and its negation; the children are in ``left_node`` and ``right_node`
    0 [0.33 0.33 0.33]
    True 0
 
-The thresholds are in the scale of the training data. If the data were standardized, pass the
-scaler to ``get_rule`` of the stumps (or to ``export_graphviz``) to see them in the original scale.
+.. tip::
+
+   The thresholds are in the scale of the training data. If the data were standardized, pass the
+   scaler to ``get_rule`` of the stumps (or to ``export_graphviz``) to see them in the original
+   scale.
 
 
 Drawing the tree

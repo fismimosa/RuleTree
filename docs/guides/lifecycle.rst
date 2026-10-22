@@ -99,8 +99,12 @@ stumps:
    ['feature_types', 'pivot']
 
 The cache is emptied by ``fit`` and kept by ``partial_fit``, so that growing a tree does not
-recompute it. When ``partial_fit`` receives data different from the ones of ``fit``, empty it
-first, since it refers to the training instances:
+recompute it.
+
+.. warning::
+
+   The cache refers to the training instances: when ``partial_fit`` receives data different from
+   the ones of ``fit``, empty it first with ``clear_cache``:
 
 .. code-block:: python
 

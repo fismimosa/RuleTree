@@ -64,8 +64,10 @@ a threshold on the value at a given time:
    accuracy: 0.81
    X_19 <= 0.556
 
-``score`` follows the scikit-learn signature ``score(X, y)``, so it works only with tabular
-data: with other data types, the predictions are compared with the target explicitly, as above.
+.. note::
+
+   ``score`` follows the scikit-learn signature ``score(X, y)``, so it works only with tabular
+   data: with other data types, compare the predictions with the target explicitly, as above.
 
 Since the bump moves, no single time step separates the classes well. The shapelet stumps (which
 need the ``shapelets`` extra, see :doc:`getting_started`) split
@@ -179,10 +181,12 @@ data types. To use a stump only on some types, give them as third element of the
    Rl ShapeletTreeStumpClassifier ts
    Rr ShapeletTreeStumpClassifier ts
 
-The data type used by a fitted stump is stored in ``data_type_``. ``predict`` must receive the same
-types given to ``fit``.
+The data type used by a fitted stump is stored in ``data_type_``.
 
-The clustering trees support only tabular data.
+.. important::
+
+   ``predict`` must receive the same data types given to ``fit``. The clustering trees support
+   only tabular data.
 
 
 Unsupported data

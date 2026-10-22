@@ -1,13 +1,10 @@
 Getting started
 ===============
 
-RuleTree builds interpretable decision trees one node at a time. Each node is split by a *stump*:
-a single split, such as a threshold on a feature (``petal length <= 2.45``), the distance from an
-instance of the training set, or the distance of a time series from a shapelet. The same tree can
-mix different kinds of stumps and different types of data.
-
-The trees follow the scikit-learn API: ``fit``, ``predict``, ``predict_proba``, ``get_params``,
-``set_params``, and they work with the scikit-learn tools for model selection.
+This guide installs RuleTree and trains a first tree for each task: classification, regression
+(also with several targets) and clustering. The trees follow the scikit-learn API (``fit``,
+``predict``, ``predict_proba``, ``get_params``, ``set_params``) and work with the scikit-learn
+tools for model selection. How the trees are built is described in :doc:`concepts`.
 
 
 Installation
@@ -31,14 +28,16 @@ Some features need packages that are not installed by default. They are installe
    pip install "RuleTree[all]"         # all of the above
    pip install "RuleTree[test]"        # running the tests
 
-Without them, the rest of the library works, and the features that need them raise a
-:class:`~RuleTree.exceptions.MissingOptionalDependencyError` with the command to run.
+.. note::
+
+   Without the extras, the rest of the library works, and the features that need them raise a
+   :class:`~RuleTree.exceptions.MissingOptionalDependencyError` with the command to run.
 
 
 Classification
 --------------
 
-:class:`~RuleTree.tree.RuleTreeClassifier.RuleTreeClassifier` grows the tree breadth-first until
+:class:`~RuleTree.RuleTreeClassifier` grows the tree breadth-first until
 the nodes are pure or a limit is reached (``max_depth``, ``max_leaf_nodes``,
 ``min_samples_split``). Each leaf predicts the majority class of its training instances.
 
@@ -100,7 +99,7 @@ See :doc:`inspecting` for the other ways to read a tree.
 Regression
 ----------
 
-:class:`~RuleTree.tree.RuleTreeRegressor.RuleTreeRegressor` works in the same way; each leaf
+:class:`~RuleTree.RuleTreeRegressor` works in the same way; each leaf
 predicts the mean of the target of its training instances.
 
 .. code-block:: python
@@ -171,16 +170,18 @@ smaller:
 With ``"balanced"``, the splits give up a little on the disease progression to predict the body
 mass index better. The predictions are always in the original scale of the targets.
 
-Some components work with a single target, and raise an error with several: the XGBoost and fair
-stumps, the shapelet and proximity stumps, and ``local_interpretation``. The XGBoost boosting
-uses the XGBoost stumps; the other boostings (:doc:`ensembles`) and
-:class:`~RuleTree.tree.RuleTreeCluster.RuleTreeClusterRegressor` support several targets.
+.. note::
+
+   Some components work with a single target, and raise an error with several: the XGBoost and
+   fair stumps, the shapelet and proximity stumps, and ``local_interpretation``. The XGBoost
+   boosting uses the XGBoost stumps; the other boostings (:doc:`ensembles`) and
+   :class:`~RuleTree.RuleTreeClusterRegressor` support several targets.
 
 
 Clustering
 ----------
 
-:class:`~RuleTree.tree.RuleTreeCluster.RuleTreeCluster` finds clusters described by rules, without
+:class:`~RuleTree.RuleTreeCluster` finds clusters described by rules, without
 a target. To split a node, it projects its instances on their principal components and splits
 the component that is best separated; a node is split only if the split improves the Bayesian
 Information Criterion of the clustering (``bic_eps`` makes this stricter).
@@ -209,8 +210,8 @@ Information Criterion of the clustering (``bic_eps`` makes this stricter).
 The labels identify the leaves, numbered in breadth-first order (the root is 0). Here the tree
 splits two of the three groups once more, so there are five clusters; the agreement with the
 groups stays high because each cluster lies within a single group.
-:class:`~RuleTree.tree.RuleTreeCluster.RuleTreeClusterClassifier` and
-:class:`~RuleTree.tree.RuleTreeCluster.RuleTreeClusterRegressor` build the tree in the same way,
+:class:`~RuleTree.RuleTreeClusterClassifier` and
+:class:`~RuleTree.RuleTreeClusterRegressor` build the tree in the same way,
 without looking at the target, and then predict the majority class or the mean target of each
 cluster.
 

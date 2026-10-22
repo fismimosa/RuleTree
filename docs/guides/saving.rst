@@ -293,8 +293,10 @@ Each stump saves only the fitted state needed to apply its split:
    * - partial pivot and partial proximity stumps
      - the partial pivots (values of some features of training instances)
 
-The pivots and the shapelets are pieces of the training data. With sensitive data, a saved tree
-should be treated as the data it was trained on:
+.. warning::
+
+   The pivots and the shapelets are pieces of the training data. With sensitive data, a saved
+   tree should be treated as the data it was trained on:
 
 .. code-block:: python
 
@@ -329,7 +331,7 @@ no extra code, provided that:
 - the splitter keeps its fitted state in the attributes listed in ``_state``
   (``feature_``, ``threshold_``, ``is_categorical_``, ``gain_``, ``impurity_``). A splitter with
   other fitted attributes adds them to ``_state``, as
-  :class:`~RuleTree.stumps.splitters.XGBoostSplitter.XGBoostSplitter` does;
+  :class:`~RuleTree.stumps.splitters.XGBoostSplitter` does;
 - the classes are importable from their module. The saved tree records the module of each class,
   so the classes defined in a script run as ``__main__`` or in a notebook can be loaded only in
   that same script or notebook.
@@ -364,8 +366,12 @@ Limits
 ------
 
 The ensembles (:doc:`ensembles`) have no ``to_dict``. They, like the trees, can be saved with
-``pickle`` or ``joblib``, which save the whole Python object; a pickle file must come from a
-trusted source, and is loaded only with compatible versions of RuleTree and of its dependencies:
+``pickle`` or ``joblib``, which save the whole Python object.
+
+.. warning::
+
+   A pickle file must come from a trusted source, and is loaded only with compatible versions of
+   RuleTree and of its dependencies.
 
 .. code-block:: python
 

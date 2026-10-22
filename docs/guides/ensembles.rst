@@ -72,8 +72,11 @@ in parallel processes (``n_jobs``):
 
    accuracy on the test set: 0.947
 
-``GBoostClassifier.predict`` returns the right classes only when they are ``0, ..., n_classes - 1``:
-encode other labels first, e.g. with ``sklearn.preprocessing.LabelEncoder``.
+.. warning::
+
+   ``GBoostClassifier.predict`` returns the right classes only when they are
+   ``0, ..., n_classes - 1``: encode other labels first, e.g. with
+   ``sklearn.preprocessing.LabelEncoder``.
 
 
 XGBoost
