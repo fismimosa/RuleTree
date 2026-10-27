@@ -1,4 +1,6 @@
+import copy
 import json
+import pickle
 
 import numpy as np
 import pytest
@@ -28,6 +30,26 @@ def test_dict_round_trip(model_class, kwargs, dataset, supervised, request):
     assert type(loaded) is model_class
     assert loaded.get_params(deep=False).keys() == model.get_params(deep=False).keys()
     assert np.array_equal(loaded.predict(X), model.predict(X))
+
+
+@pytest.mark.parametrize("model_class, kwargs, dataset, supervised", MODELS, ids=[m[0].__name__ for m in MODELS])
+def test_copy_and_pickle(model_class, kwargs, dataset, supervised, request):
+    """Unfitted and fitted trees can be copied and pickled (the ensembles copy the base estimator), and
+    the copies grow further as the original."""
+    X, y = request.getfixturevalue(dataset)
+    target = y if supervised else None
+    kwargs = kwargs | {"random_state": 0}  # the same tree at every fit
+    unfitted = model_class(**kwargs)
+
+    for clone in (copy.deepcopy(unfitted), pickle.loads(pickle.dumps(unfitted))):
+        assert np.array_equal(clone.fit(X, target).predict(X), model_class(**kwargs).fit(X, target).predict(X))
+
+    model = model_class(**kwargs).fit(X, target)
+    clones = [copy.deepcopy(model), pickle.loads(pickle.dumps(model))]
+    grown = model.set_params(max_depth=5).partial_fit(X, target).predict(X)
+    for clone in clones:
+        assert clone.get_params()["max_depth"] == kwargs["max_depth"]  # a copy, not the same object
+        assert np.array_equal(clone.set_params(max_depth=5).partial_fit(X, target).predict(X), grown)
 
 
 @pytest.mark.parametrize("model_class, kwargs, dataset, supervised", MODELS, ids=[m[0].__name__ for m in MODELS])

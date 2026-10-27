@@ -13,7 +13,6 @@ import traceback
 import warnings
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from itertools import count
 from typing import Optional
 
 import numpy as np
@@ -97,7 +96,7 @@ class RuleTree(RuleTreeBase, ABC):
                  exceptions='raise'
                  ):
         """Initialize the RuleTree; see the class documentation for the parameters."""
-        self.tiebreaker = count()
+        self.tiebreaker = 0
         self.root:Optional[RuleTreeNode] = None
         self.queue = []
 
@@ -343,7 +342,7 @@ class RuleTree(RuleTreeBase, ABC):
         data = self._validate_inputs(X=X, y=y, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
 
         self.clear_cache()
-        self.tiebreaker = count()
+        self.tiebreaker = 0
         self.queue = []
         self._seed = self._stumps_seed()
         self._random = random.Random(self._seed)
@@ -853,6 +852,19 @@ class RuleTree(RuleTreeBase, ABC):
         """
         pass
 
+    def _next_tiebreaker(self) -> int:
+        """
+        Increasing number of the nodes pushed into the queue: among the nodes with the same priority,
+        the first one pushed is split first. It is a plain int, not an itertools.count, so that the
+        tree can be copied and pickled (itertools.count cannot be since Python 3.14).
+
+        Returns
+        -------
+        tiebreaker : int
+        """
+        self.tiebreaker += 1
+        return self.tiebreaker
+
     def queue_push(self, node: RuleTreeNode, idx: np.ndarray):
         """
         Push a node to split into the queue: the priority defines the order in which the tree grows. By
@@ -865,7 +877,7 @@ class RuleTree(RuleTreeBase, ABC):
         idx : numpy.ndarray
             Indices of the instances reaching the node.
         """
-        heapq.heappush(self.queue, (len(node.node_id), next(self.tiebreaker), idx, node))
+        heapq.heappush(self.queue, (len(node.node_id), self._next_tiebreaker(), idx, node))
 
     @abstractmethod
     def _get_stumps_task(self) -> str:

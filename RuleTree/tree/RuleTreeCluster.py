@@ -210,7 +210,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         idx : numpy.ndarray
             Indices of the instances reaching the node.
         """
-        heapq.heappush(self.queue, (-len(idx), next(self.tiebreaker), idx, node))
+        heapq.heappush(self.queue, (-len(idx), self._next_tiebreaker(), idx, node))
 
     def make_split(self, data: dict, y, idx: np.ndarray, sample_weight=None,
                    node_id: Optional[str] = None) -> RuleTreeBaseStump:
