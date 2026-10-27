@@ -5,6 +5,10 @@ The :mod:`RuleTree.ensemble` module combines RuleTrees by boosting. The ensemble
 (``fit(X, y)``, ``predict(X)``) and stop early when the error on a validation set, taken from the
 training set (``val_size``), does not improve for ``patience`` iterations.
 
+The ``random_state`` of an ensemble sets the validation set and makes the ensemble reproducible:
+each tree whose base estimator has no ``random_state`` gets a different seed drawn from it, while a
+``random_state`` given to the base estimator is kept for all the trees.
+
 .. code-block:: python
 
    from sklearn.datasets import load_diabetes

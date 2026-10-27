@@ -1,6 +1,5 @@
 """EBMRegressor: explainable boosting machine for regression."""
 
-import copy
 from itertools import combinations
 
 import numpy as np
@@ -9,7 +8,7 @@ from sklearn.base import RegressorMixin
 from RuleTree import RuleTreeRegressor
 from RuleTree.tree.RuleTreeRegressor import check_target
 from RuleTree.base.RuleTreeBase import RuleTreeBase
-from RuleTree.ensemble._boosting import EarlyStopping, validation_split
+from RuleTree.ensemble._boosting import EarlyStopping, seeded_copy, validation_split
 
 
 class EBMRegressor(RegressorMixin, RuleTreeBase):
@@ -37,7 +36,8 @@ class EBMRegressor(RegressorMixin, RuleTreeBase):
     n_jobs : int, default=1
         Not used.
     random_state : int, default=42
-        Seed of the split between training and validation.
+        Seed of the split between training and validation, and of the trees whose base estimator has no
+        random_state (each tree gets a different seed drawn from it).
 
     Attributes
     ----------
@@ -115,10 +115,11 @@ class EBMRegressor(RegressorMixin, RuleTreeBase):
         pairs = list(combinations(range(X.shape[1]), 2))
         self.estimators_ = {idx: [] for idx in list(range(X.shape[1])) + pairs}
 
+        rng = np.random.RandomState(self.random_state)
         stopping = EarlyStopping(self.patience)
         for _ in range(self.n_iterations):
             for feature_idx in self.estimators_.keys():
-                est = copy.deepcopy(self.base_estimator)
+                est = seeded_copy(self.base_estimator, rng)
                 est.fit(X_train[:, feature_idx].reshape(X_train.shape[0], -1), residuals)
 
                 res_delta = self.learning_rate * est.predict(X_train[:, feature_idx].reshape(X_train.shape[0], -1))

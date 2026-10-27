@@ -79,7 +79,7 @@ def test_gboost_classifier_early_stopping_keeps_only_the_estimators_that_improve
     X, y = iris
     base_log_odds = np.log((y == 1).sum() / (y != 1).sum())
     args = (1, 1, X, y, RuleTreeRegressor(max_depth=3, random_state=0), expit(base_log_odds), base_log_odds, 2.,
-            200, .15, patience, 0)
+            200, .15, patience, 0, 0)
     _, estimators = _train_one_class(args)
 
     _, X_val, _, y_val = train_test_split(X, y, test_size=.15, random_state=0, stratify=y)

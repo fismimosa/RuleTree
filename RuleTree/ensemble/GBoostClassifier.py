@@ -1,6 +1,5 @@
 """GBoostClassifier: gradient boosting of RuleTrees for classification."""
 
-import copy
 from concurrent.futures import ProcessPoolExecutor
 from os import cpu_count
 
@@ -12,7 +11,7 @@ from sklearn.model_selection import train_test_split
 
 from RuleTree import RuleTreeRegressor
 from RuleTree.base.RuleTreeBase import RuleTreeBase
-from RuleTree.ensemble._boosting import EarlyStopping
+from RuleTree.ensemble._boosting import EarlyStopping, seeded_copy
 
 
 class GBoostClassifier(ClassifierMixin, RuleTreeBase):
@@ -42,7 +41,8 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
         Number of processes (at most one per class); with 1, the classes are fitted in the current
         process.
     random_state : int, default=42
-        Seed of the split between training and validation.
+        Seed of the split between training and validation, and of the trees whose base estimator has no
+        random_state (each tree gets a different seed drawn from it).
 
     Attributes
     ----------
@@ -108,6 +108,8 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
             self.base_prediction_[i] = expit(self.base_log_odds[i])
 
         self.estimators_ = [[] for _ in self.classes_]
+        # one seed per class for the trees without random_state, the same whatever the number of processes
+        class_seeds = np.random.RandomState(self.random_state).randint(np.iinfo(np.int32).max, size=n_classes)
 
         args = [
             (
@@ -122,7 +124,8 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
                 self.n_estimators,
                 self.val_size,
                 self.patience,
-                self.random_state
+                self.random_state,
+                int(class_seeds[i]),
             )
             for i, classe in enumerate(self.classes_)
         ]
@@ -172,7 +175,8 @@ def _train_one_class(args):
     ----------
     args : tuple
         (index of the class, class, X, y, base estimator, initial probability, initial log-odds,
-        learning rate, number of estimators, validation size, patience, random state).
+        learning rate, number of estimators, validation size, patience, random state, seed of the trees
+        without random_state).
 
     Returns
     -------
@@ -181,7 +185,9 @@ def _train_one_class(args):
     estimators : list of tuple
         The fitted estimators with the value of each of their leaves.
     """
-    i, classe, X, y, base_estimator, base_pred, base_log_odds, lr, n_estimators, val_size, patience, random_state = args
+    (i, classe, X, y, base_estimator, base_pred, base_log_odds, lr, n_estimators, val_size, patience, random_state,
+     trees_seed) = args
+    rng = np.random.RandomState(trees_seed)
 
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=val_size,
                                                       random_state=random_state, stratify=y)
@@ -198,7 +204,7 @@ def _train_one_class(args):
 
     stopping = EarlyStopping(patience, strict=True, previous=np.mean(np.abs(y_val_bool - prediction_val)))
     for _ in range(n_estimators):
-        est = copy.deepcopy(base_estimator)
+        est = seeded_copy(base_estimator, rng)
         est.fit(X_train, residuals)
 
         leafs = est.apply(X_train)

@@ -1,6 +1,5 @@
 """GBoostRegressor: gradient boosting of RuleTrees for regression."""
 
-import copy
 
 import numpy as np
 from sklearn.base import RegressorMixin
@@ -8,7 +7,7 @@ from sklearn.base import RegressorMixin
 from RuleTree import RuleTreeRegressor
 from RuleTree.tree.RuleTreeRegressor import check_target
 from RuleTree.base.RuleTreeBase import RuleTreeBase
-from RuleTree.ensemble._boosting import EarlyStopping, validation_split
+from RuleTree.ensemble._boosting import EarlyStopping, seeded_copy, validation_split
 
 
 class GBoostRegressor(RegressorMixin, RuleTreeBase):
@@ -33,7 +32,8 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
     val_size : float, default=0.15
         Fraction of the training set used for validation.
     random_state : int, default=42
-        Seed of the split between training and validation.
+        Seed of the split between training and validation, and of the trees whose base estimator has no
+        random_state (each tree gets a different seed drawn from it).
 
     Attributes
     ----------
@@ -122,9 +122,10 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
         residuals_val = y_val - self.base_prediction_
 
         base_estimator = self._get_base_estimator()
+        rng = np.random.RandomState(self.random_state)
         stopping = EarlyStopping(self.patience)
         for _ in range(self.n_estimators):
-            est = copy.deepcopy(base_estimator)
+            est = seeded_copy(base_estimator, rng)
             est.fit(X_train, residuals)
 
             res_delta = self.learning_rate * est.predict(X_train)
