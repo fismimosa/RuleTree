@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; RuleTree</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=64200178" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="_static/documentation_options.js?v=7b32d3fb"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.27 (d32f083)" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo_navbar.png" class="logo__image only-light" alt="RuleTree"/>
+    <img src="_static/logo_navbar_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree"/>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<span class="navbar-version" title="Version of this documentation">2026.10.27 (d32f083)</span></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="guides/getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="guides/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="guides/getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="guides/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#X"><strong>X</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.apply">apply() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.apply">(RuleTreeBaseSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.apply">(RuleTreeBaseStump method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.utils.fairness_metrics.balance_metric.html#RuleTree.utils.fairness_metrics.balance_metric">balance_metric() (in module RuleTree.utils.fairness_metrics)</a>
+</li>
+      <li><a href="glossary.html#term-base-stumps"><strong>base stumps</strong></a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.utils.bic_estimator.bic.html#RuleTree.utils.bic_estimator.bic">bic() (in module RuleTree.utils.bic_estimator)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.BivariateTransformer.html#RuleTree.stumps.transformers.BivariateTransformer">BivariateTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.utils.light_famd.CA.html#RuleTree.utils.light_famd.CA">CA (class in RuleTree.utils.light_famd)</a>
+</li>
+      <li><a href="glossary.html#term-cache"><strong>cache</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.cache_namespace">cache_namespace() (RuleTreeBaseStump method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.cache_namespace">(RuleTreeBaseTransformer method)</a>
+</li>
+      </ul></li>
+      <li><a href="glossary.html#term-candidate-splits"><strong>candidate splits</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.html#RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.candidate_thresholds">candidate_thresholds() (RuleTreeBaseGainSplitter method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.check_additional_halting_condition">check_additional_halting_condition() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier.check_additional_halting_condition">(RuleTreeClassifier method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.splitters.ClassificationSplitter.html#RuleTree.stumps.splitters.ClassificationSplitter">ClassificationSplitter (class in RuleTree.stumps.splitters)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.clear_cache">clear_cache() (RuleTree method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.html#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.coefficients">coefficients (ObliquePivotTreeStump property)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.html#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.coefficients">(ObliqueTreeStump property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.MFA.html#RuleTree.utils.light_famd.MFA.column_correlation">column_correlation() (MFA method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.utils.light_famd.PCA.html#RuleTree.utils.light_famd.PCA.column_correlation">(PCA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.ObliquePivotTransformer.html#RuleTree.stumps.transformers.ObliquePivotTransformer.combination">combination() (ObliquePivotTransformer method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.combination">(ObliqueTransformer method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier.complete_tree">complete_tree() (RuleTreeClassifier class method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="glossary.html#term-data-type"><strong>data type</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.splitters.DecisionTreeSplitter.DecisionTreeSplitter.html#RuleTree.stumps.splitters.DecisionTreeSplitter.DecisionTreeSplitter">DecisionTreeSplitter (class in RuleTree.stumps.splitters.DecisionTreeSplitter)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.DecisionTreeStump.DecisionTreeStump.html#RuleTree.stumps.DecisionTreeStump.DecisionTreeStump">DecisionTreeStump (class in RuleTree.stumps.DecisionTreeStump)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.DecisionTreeStumpClassifier.html#RuleTree.stumps.classification.DecisionTreeStumpClassifier">DecisionTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.regression.DecisionTreeStumpRegressor.html#RuleTree.stumps.regression.DecisionTreeStumpRegressor">DecisionTreeStumpRegressor (class in RuleTree.stumps.regression)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.data_utils.json_numpy_encoder.html#RuleTree.utils.data_utils.json_numpy_encoder.default">default() (json_numpy_encoder method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.dict_to_node">dict_to_node() (RuleTreeBaseStump class method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.dict_to_node">(RuleTreeNode class method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.dict_to_node">(Stump class method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.ensemble.EBMRegressor.EBMRegressor.html#RuleTree.ensemble.EBMRegressor.EBMRegressor">EBMRegressor (class in RuleTree.ensemble.EBMRegressor)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.encode_node">encode_node() (RuleTreeNode method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.eval_contributions">eval_contributions() (RuleTree method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.evaluation.evaluate_classification.html#RuleTree.evaluation.evaluate_classification">evaluate_classification() (in module RuleTree.evaluation)</a>
+</li>
+      <li><a href="api/generated/RuleTree.evaluation.evaluate_clustering.html#RuleTree.evaluation.evaluate_clustering">evaluate_clustering() (in module RuleTree.evaluation)</a>
+</li>
+      <li><a href="api/generated/RuleTree.evaluation.evaluate_clustering_internal.html#RuleTree.evaluation.evaluate_clustering_internal">evaluate_clustering_internal() (in module RuleTree.evaluation)</a>
+</li>
+      <li><a href="api/generated/RuleTree.evaluation.evaluate_fairness.html#RuleTree.evaluation.evaluate_fairness">evaluate_fairness() (in module RuleTree.evaluation)</a>
+</li>
+      <li><a href="api/generated/RuleTree.evaluation.evaluate_interpretability.html#RuleTree.evaluation.evaluate_interpretability">evaluate_interpretability() (in module RuleTree.evaluation)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.evaluation.evaluate_regression.html#RuleTree.evaluation.evaluate_regression">evaluate_regression() (in module RuleTree.evaluation)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.CA.html#RuleTree.utils.light_famd.CA.explained_variance_">explained_variance_ (CA property)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.utils.light_famd.PCA.html#RuleTree.utils.light_famd.PCA.explained_variance_">(PCA property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.CA.html#RuleTree.utils.light_famd.CA.explained_variance_ratio_">explained_variance_ratio_ (CA property)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.utils.light_famd.PCA.html#RuleTree.utils.light_famd.PCA.explained_variance_ratio_">(PCA property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.export_graphviz">export_graphviz() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.export_graphviz">(RuleTreeNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="glossary.html#term-extra"><strong>extra</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.splitters.FairSplitter.html#RuleTree.stumps.splitters.FairSplitter">FairSplitter (class in RuleTree.stumps.splitters)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.regression.FairTreeStumpRegressor.html#RuleTree.stumps.regression.FairTreeStumpRegressor">FairTreeStumpRegressor (class in RuleTree.stumps.regression)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.FAMD.html#RuleTree.utils.light_famd.FAMD">FAMD (class in RuleTree.utils.light_famd)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.MultiplePivotTransformer.html#RuleTree.stumps.transformers.MultiplePivotTransformer.feature_id">feature_id() (MultiplePivotTransformer method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliquePivotTransformer.html#RuleTree.stumps.transformers.ObliquePivotTransformer.feature_id">(ObliquePivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.feature_id">(ObliqueTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PivotTransformer.html#RuleTree.stumps.transformers.PivotTransformer.feature_id">(PivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.feature_id">(RuleTreeBaseTransformer method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.feature_original">feature_original (Stump property)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.CA.html#RuleTree.utils.light_famd.CA.fit">fit() (CA method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.splitters.DecisionTreeSplitter.DecisionTreeSplitter.html#RuleTree.stumps.splitters.DecisionTreeSplitter.DecisionTreeSplitter.fit">(DecisionTreeSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.ensemble.EBMRegressor.EBMRegressor.html#RuleTree.ensemble.EBMRegressor.EBMRegressor.fit">(EBMRegressor method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.splitters.FairSplitter.html#RuleTree.stumps.splitters.FairSplitter.fit">(FairSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.light_famd.FAMD.html#RuleTree.utils.light_famd.FAMD.fit">(FAMD method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.ensemble.GBoostClassifier.GBoostClassifier.html#RuleTree.ensemble.GBoostClassifier.GBoostClassifier.fit">(GBoostClassifier method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.ensemble.GBoostRegressor.GBoostRegressor.html#RuleTree.ensemble.GBoostRegressor.GBoostRegressor.fit">(GBoostRegressor method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.MatrixTransformer.html#RuleTree.stumps.transformers.MatrixTransformer.fit">(MatrixTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.light_famd.MCA.html#RuleTree.utils.light_famd.MCA.fit">(MCA method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.light_famd.MFA.html#RuleTree.utils.light_famd.MFA.fit">(MFA method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.MultiplePivotTransformer.html#RuleTree.stumps.transformers.MultiplePivotTransformer.fit">(MultiplePivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliquePivotTransformer.html#RuleTree.stumps.transformers.ObliquePivotTransformer.fit">(ObliquePivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.fit">(ObliqueTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PartialPivotTransformer.html#RuleTree.stumps.transformers.PartialPivotTransformer.fit">(PartialPivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PartialProximityTransformer.html#RuleTree.stumps.transformers.PartialProximityTransformer.fit">(PartialProximityTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.light_famd.PCA.html#RuleTree.utils.light_famd.PCA.fit">(PCA method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PivotTransformer.html#RuleTree.stumps.transformers.PivotTransformer.fit">(PivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ProximityTransformer.html#RuleTree.stumps.transformers.ProximityTransformer.fit">(ProximityTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.fit">(RuleTree method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html#RuleTree.base.RuleTreeBase.RuleTreeBase.fit">(RuleTreeBase method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.html#RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.fit">(RuleTreeBaseGainSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.fit">(RuleTreeBaseSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.fit">(RuleTreeBaseStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.fit">(RuleTreeBaseTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.RuleTreeRegressor.html#RuleTree.RuleTreeRegressor.fit">(RuleTreeRegressor method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeXGBoostRegressor.RuleTreeXGBoostRegressor.html#RuleTree.tree.RuleTreeXGBoostRegressor.RuleTreeXGBoostRegressor.fit">(RuleTreeXGBoostRegressor method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.shapelet_transform.Shapelets.Shapelets.html#RuleTree.utils.shapelet_transform.Shapelets.Shapelets.fit">(Shapelets method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ShapeletTransformer.html#RuleTree.stumps.transformers.ShapeletTransformer.fit">(ShapeletTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.fit">(Stump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.shapelet_transform.TabularShapelets.TabularShapelets.html#RuleTree.utils.shapelet_transform.TabularShapelets.TabularShapelets.fit">(TabularShapelets method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.splitters.XGBoostSplitter.html#RuleTree.stumps.splitters.XGBoostSplitter.fit">(XGBoostSplitter method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.fit_predict">fit_predict() (RuleTreeCluster method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.FAMD.html#RuleTree.utils.light_famd.FAMD.fit_transform">fit_transform() (FAMD method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.utils.light_famd.MFA.html#RuleTree.utils.light_famd.MFA.fit_transform">(MFA method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.light_famd.PCA.html#RuleTree.utils.light_famd.PCA.fit_transform">(PCA method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.from_dict">from_dict() (RuleTree class method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="glossary.html#term-gain"><strong>gain</strong></a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.regression.XGBoostStumpRegressor.html#RuleTree.stumps.regression.XGBoostStumpRegressor.gain">(XGBoostStumpRegressor property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.html#RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.gain">gain() (RuleTreeBaseGainSplitter method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.gain_">gain_ (Stump property)</a>
+</li>
+      <li><a href="api/generated/RuleTree.ensemble.GBoostClassifier.GBoostClassifier.html#RuleTree.ensemble.GBoostClassifier.GBoostClassifier">GBoostClassifier (class in RuleTree.ensemble.GBoostClassifier)</a>
+</li>
+      <li><a href="api/generated/RuleTree.ensemble.GBoostRegressor.GBoostRegressor.html#RuleTree.ensemble.GBoostRegressor.GBoostRegressor">GBoostRegressor (class in RuleTree.ensemble.GBoostRegressor)</a>
+</li>
+      <li><a href="api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier.get_balanced_stumps">get_balanced_stumps() (RuleTreeClassifier method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.get_cache">get_cache() (RuleTree method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_depth">get_depth() (RuleTreeNode method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.html#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_graphviz_rule">get_graphviz_rule() (ProximityTreeStump method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.get_graphviz_rule">(RuleTreeBaseStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.html#RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.get_graphviz_rule">(ShapeletTreeStump method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.get_leaf_nodes">get_leaf_nodes() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_leaf_nodes">(RuleTreeNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.get_node_by_id">get_node_by_id() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_node_by_id">(RuleTreeNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.html#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_pivots">get_pivots() (MultiplePivotTreeStump method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.html#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_pivots">(ObliquePivotTreeStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.PivotTreeStump.html#RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_pivots">(PivotTreeStump method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.html#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_plot_rule">get_plot_rule() (ProximityTreeStump method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.get_plot_rule">(RuleTreeBaseStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.html#RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.get_plot_rule">(ShapeletTreeStump method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_possible_outputs">get_possible_outputs() (RuleTreeNode method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.get_predicates">get_predicates() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_predicates">(RuleTreeNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.html#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.get_rule">get_rule() (MultiplePivotTreeStump method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.html#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.get_rule">(ObliquePivotTreeStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.html#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.get_rule">(ObliqueTreeStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.get_rule">(PartialPivotTreeStumpClassifier method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump.html#RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump.get_rule">(PartialProximityTreeStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.PivotTreeStump.html#RuleTree.stumps.PivotTreeStump.PivotTreeStump.get_rule">(PivotTreeStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.html#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.get_rule">(ProximityTreeStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.get_rule">(RuleTreeBaseStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.get_rule">(RuleTreeNode method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.html#RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.get_rule">(ShapeletTreeStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.get_rule">(Stump method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.get_rules">get_rules() (RuleTree method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.MultiplePivotTransformer.html#RuleTree.stumps.transformers.MultiplePivotTransformer.get_state">get_state() (MultiplePivotTransformer method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliquePivotTransformer.html#RuleTree.stumps.transformers.ObliquePivotTransformer.get_state">(ObliquePivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.get_state">(ObliqueTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PartialPivotTransformer.html#RuleTree.stumps.transformers.PartialPivotTransformer.get_state">(PartialPivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PivotTransformer.html#RuleTree.stumps.transformers.PivotTransformer.get_state">(PivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.get_state">(RuleTreeBaseSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.get_state">(RuleTreeBaseTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ShapeletTransformer.html#RuleTree.stumps.transformers.ShapeletTransformer.get_state">(ShapeletTransformer method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.splitters.XGBoostSplitter.html#RuleTree.stumps.splitters.XGBoostSplitter.get_threshold_values">get_threshold_values() (XGBoostSplitter method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.transformers.HouseholderTransformer.html#RuleTree.stumps.transformers.HouseholderTransformer">HouseholderTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.utils.optional.import_optional.html#RuleTree.utils.optional.import_optional">import_optional() (in module RuleTree.utils.optional)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.impurity">impurity (Stump property)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.PCA.html#RuleTree.utils.light_famd.PCA.invert_transform">invert_transform() (PCA method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.is_categorical">is_categorical (Stump property)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.is_leaf">is_leaf() (RuleTreeNode method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.is_split_useless">is_split_useless() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.is_split_useless">(RuleTreeCluster method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.utils.data_utils.json_numpy_encoder.html#RuleTree.utils.data_utils.json_numpy_encoder">json_numpy_encoder (class in RuleTree.utils.data_utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.local_interpretation">local_interpretation() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier.local_interpretation">(RuleTreeClassifier method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.RuleTreeRegressor.html#RuleTree.RuleTreeRegressor.local_interpretation">(RuleTreeRegressor method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.make_leaf">make_leaf() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.make_leaf">(RuleTreeNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.make_split">make_split() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.make_split">(RuleTreeCluster method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.MatrixTransformer.html#RuleTree.stumps.transformers.MatrixTransformer">MatrixTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.fairness_metrics.max_fairness_cost.html#RuleTree.utils.fairness_metrics.max_fairness_cost">max_fairness_cost() (in module RuleTree.utils.fairness_metrics)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.MCA.html#RuleTree.utils.light_famd.MCA">MCA (class in RuleTree.utils.light_famd)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.MFA.html#RuleTree.utils.light_famd.MFA">MFA (class in RuleTree.utils.light_famd)</a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.html#RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.min_samples_leaf">min_samples_leaf (RuleTreeBaseGainSplitter attribute)</a>
+</li>
+      <li><a href="api/generated/RuleTree.exceptions.MissingOptionalDependencyError.html#RuleTree.exceptions.MissingOptionalDependencyError">MissingOptionalDependencyError</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    module
+
+      <ul>
+        <li><a href="api/base.html#module-RuleTree.base">RuleTree.base</a>
+</li>
+        <li><a href="api/ensemble.html#module-RuleTree.ensemble">RuleTree.ensemble</a>
+</li>
+        <li><a href="api/evaluation.html#module-RuleTree.evaluation">RuleTree.evaluation</a>
+</li>
+        <li><a href="api/utils.html#module-RuleTree.utils.define">RuleTree.utils.define</a>
+</li>
+        <li><a href="api/utils.html#module-RuleTree.utils.plotting">RuleTree.utils.plotting</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier.html#RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier">MultipleObliquePivotTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.MultiplePivotTransformer.html#RuleTree.stumps.transformers.MultiplePivotTransformer">MultiplePivotTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump.html#RuleTree.stumps.PivotTreeStump.MultiplePivotTreeStump">MultiplePivotTreeStump (class in RuleTree.stumps.PivotTreeStump)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.html#RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier">MultiplePivotTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="glossary.html#term-node-id"><strong>node id</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.node_id_">node_id_ (RuleTreeBaseStump attribute)</a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.node_to_dict">node_to_dict() (RuleTreeBaseStump method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.node_to_dict">(RuleTreeNode method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.node_to_dict">(Stump method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.exceptions.NoSplitFoundWarning.html#RuleTree.exceptions.NoSplitFoundWarning">NoSplitFoundWarning</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="glossary.html#term-oblique-split"><strong>oblique split</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.oblique_features">oblique_features() (ObliqueTransformer method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier.html#RuleTree.stumps.classification.ObliqueDecisionTreeStumpClassifier">ObliqueDecisionTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor.html#RuleTree.stumps.regression.ObliqueDecisionTreeStumpRegressor">ObliqueDecisionTreeStumpRegressor (class in RuleTree.stumps.regression)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.transformers.ObliquePivotTransformer.html#RuleTree.stumps.transformers.ObliquePivotTransformer">ObliquePivotTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump.html#RuleTree.stumps.PivotTreeStump.ObliquePivotTreeStump">ObliquePivotTreeStump (class in RuleTree.stumps.PivotTreeStump)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier.html#RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier">ObliquePivotTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer">ObliqueTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump.html#RuleTree.stumps.ObliqueTreeStump.ObliqueTreeStump">ObliqueTreeStump (class in RuleTree.stumps.ObliqueTreeStump)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="glossary.html#term-partial-pivot"><strong>partial pivot</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.partial_fit">partial_fit() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.RuleTreeRegressor.html#RuleTree.RuleTreeRegressor.partial_fit">(RuleTreeRegressor method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.PartialPivotTransformer.html#RuleTree.stumps.transformers.PartialPivotTransformer">PartialPivotTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier">PartialPivotTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.PartialProximityTransformer.html#RuleTree.stumps.transformers.PartialProximityTransformer">PartialProximityTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump.html#RuleTree.stumps.ProximityTreeStump.PartialProximityTreeStump">PartialProximityTreeStump (class in RuleTree.stumps.ProximityTreeStump)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.PartialProximityTreeStumpClassifier.html#RuleTree.stumps.classification.PartialProximityTreeStumpClassifier">PartialProximityTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.PCA.html#RuleTree.utils.light_famd.PCA">PCA (class in RuleTree.utils.light_famd)</a>
+</li>
+      <li><a href="glossary.html#term-pivot"><strong>pivot</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.PivotTransformer.html#RuleTree.stumps.transformers.PivotTransformer">PivotTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.PivotTreeStump.html#RuleTree.stumps.PivotTreeStump.PivotTreeStump">PivotTreeStump (class in RuleTree.stumps.PivotTreeStump)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.PivotTreeStumpClassifier.html#RuleTree.stumps.classification.PivotTreeStumpClassifier">PivotTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.regression.PivotTreeStumpRegressor.html#RuleTree.stumps.regression.PivotTreeStumpRegressor">PivotTreeStumpRegressor (class in RuleTree.stumps.regression)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.plotting.plot_tree.html#RuleTree.utils.plotting.plot_tree">plot_tree() (in module RuleTree.utils.plotting)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.plot_tree">(RuleTree method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.plot_tree">(RuleTreeNode method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.ensemble.EBMRegressor.EBMRegressor.html#RuleTree.ensemble.EBMRegressor.EBMRegressor.predict">predict() (EBMRegressor method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.ensemble.GBoostClassifier.GBoostClassifier.html#RuleTree.ensemble.GBoostClassifier.GBoostClassifier.predict">(GBoostClassifier method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.ensemble.GBoostRegressor.GBoostRegressor.html#RuleTree.ensemble.GBoostRegressor.GBoostRegressor.predict">(GBoostRegressor method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.predict">(RuleTree method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html#RuleTree.base.RuleTreeBase.RuleTreeBase.predict">(RuleTreeBase method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.predict">(RuleTreeNode method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier.predict_proba">predict_proba() (RuleTreeClassifier method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.RuleTreeClusterClassifier.html#RuleTree.RuleTreeClusterClassifier.predict_proba">(RuleTreeClusterClassifier method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.prepare_node">prepare_node() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier.prepare_node">(RuleTreeClassifier method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.prepare_node">(RuleTreeCluster method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.RuleTreeClusterClassifier.html#RuleTree.RuleTreeClusterClassifier.prepare_node">(RuleTreeClusterClassifier method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.RuleTreeClusterRegressor.html#RuleTree.RuleTreeClusterRegressor.prepare_node">(RuleTreeClusterRegressor method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.RuleTreeRegressor.html#RuleTree.RuleTreeRegressor.prepare_node">(RuleTreeRegressor method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.print_rules">print_rules() (RuleTree class method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.fairness_metrics.privacy_metric.html#RuleTree.utils.fairness_metrics.privacy_metric">privacy_metric() (in module RuleTree.utils.fairness_metrics)</a>
+</li>
+      <li><a href="glossary.html#term-proximity-split"><strong>proximity split</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.ProximityTransformer.html#RuleTree.stumps.transformers.ProximityTransformer">ProximityTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.ProximityTreeStump.ProximityTreeStump.html#RuleTree.stumps.ProximityTreeStump.ProximityTreeStump">ProximityTreeStump (class in RuleTree.stumps.ProximityTreeStump)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.ProximityTreeStumpClassifier.html#RuleTree.stumps.classification.ProximityTreeStumpClassifier">ProximityTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.regression.ProximityTreeStumpRegressor.html#RuleTree.stumps.regression.ProximityTreeStumpRegressor">ProximityTreeStumpRegressor (class in RuleTree.stumps.regression)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.queue_pop">queue_pop() (RuleTree method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.queue_push">queue_push() (RuleTree method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster.queue_push">(RuleTreeCluster method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.transformers.PartialPivotTransformer.html#RuleTree.stumps.transformers.PartialPivotTransformer.refit_after_select">refit_after_select (PartialPivotTransformer attribute)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.refit_after_select">(RuleTreeBaseTransformer attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.splitters.RegressionSplitter.html#RuleTree.stumps.splitters.RegressionSplitter">RegressionSplitter (class in RuleTree.stumps.splitters)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree">RuleTree (class in RuleTree.tree.RuleTree)</a>
+</li>
+      <li>
+    RuleTree.base
+
+      <ul>
+        <li><a href="api/base.html#module-RuleTree.base">module</a>
+</li>
+      </ul></li>
+      <li>
+    RuleTree.ensemble
+
+      <ul>
+        <li><a href="api/ensemble.html#module-RuleTree.ensemble">module</a>
+</li>
+      </ul></li>
+      <li>
+    RuleTree.evaluation
+
+      <ul>
+        <li><a href="api/evaluation.html#module-RuleTree.evaluation">module</a>
+</li>
+      </ul></li>
+      <li>
+    RuleTree.utils.define
+
+      <ul>
+        <li><a href="api/utils.html#module-RuleTree.utils.define">module</a>
+</li>
+      </ul></li>
+      <li>
+    RuleTree.utils.plotting
+
+      <ul>
+        <li><a href="api/utils.html#module-RuleTree.utils.plotting">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBase.RuleTreeBase.html#RuleTree.base.RuleTreeBase.RuleTreeBase">RuleTreeBase (class in RuleTree.base.RuleTreeBase)</a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter.html#RuleTree.base.RuleTreeBaseGainSplitter.RuleTreeBaseGainSplitter">RuleTreeBaseGainSplitter (class in RuleTree.base.RuleTreeBaseGainSplitter)</a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter">RuleTreeBaseSplitter (class in RuleTree.base.RuleTreeBaseSplitter)</a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump">RuleTreeBaseStump (class in RuleTree.base.RuleTreeBaseStump)</a>
+</li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer">RuleTreeBaseTransformer (class in RuleTree.base.RuleTreeBaseTransformer)</a>
+</li>
+      <li><a href="api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier">RuleTreeClassifier (class in RuleTree)</a>
+</li>
+      <li><a href="api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster">RuleTreeCluster (class in RuleTree)</a>
+</li>
+      <li><a href="api/generated/RuleTree.RuleTreeClusterClassifier.html#RuleTree.RuleTreeClusterClassifier">RuleTreeClusterClassifier (class in RuleTree)</a>
+</li>
+      <li><a href="api/generated/RuleTree.RuleTreeClusterRegressor.html#RuleTree.RuleTreeClusterRegressor">RuleTreeClusterRegressor (class in RuleTree)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode">RuleTreeNode (class in RuleTree.tree.RuleTreeNode)</a>
+</li>
+      <li><a href="api/generated/RuleTree.RuleTreeRegressor.html#RuleTree.RuleTreeRegressor">RuleTreeRegressor (class in RuleTree)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTreeXGBoostRegressor.RuleTreeXGBoostRegressor.html#RuleTree.tree.RuleTreeXGBoostRegressor.RuleTreeXGBoostRegressor">RuleTreeXGBoostRegressor (class in RuleTree.tree.RuleTreeXGBoostRegressor)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.transformers.MultiplePivotTransformer.html#RuleTree.stumps.transformers.MultiplePivotTransformer.select">select() (MultiplePivotTransformer method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliquePivotTransformer.html#RuleTree.stumps.transformers.ObliquePivotTransformer.select">(ObliquePivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.select">(ObliqueTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PartialPivotTransformer.html#RuleTree.stumps.transformers.PartialPivotTransformer.select">(PartialPivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PivotTransformer.html#RuleTree.stumps.transformers.PivotTransformer.select">(PivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.select">(RuleTreeBaseTransformer method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.MultiplePivotTransformer.html#RuleTree.stumps.transformers.MultiplePivotTransformer.set_state">set_state() (MultiplePivotTransformer method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliquePivotTransformer.html#RuleTree.stumps.transformers.ObliquePivotTransformer.set_state">(ObliquePivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.set_state">(ObliqueTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PartialPivotTransformer.html#RuleTree.stumps.transformers.PartialPivotTransformer.set_state">(PartialPivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PivotTransformer.html#RuleTree.stumps.transformers.PivotTransformer.set_state">(PivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.set_state">(RuleTreeBaseSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.set_state">(RuleTreeBaseTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ShapeletTransformer.html#RuleTree.stumps.transformers.ShapeletTransformer.set_state">(ShapeletTransformer method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.set_stump">set_stump() (RuleTreeNode method)</a>
+</li>
+      <li><a href="glossary.html#term-shapelet"><strong>shapelet</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.shapelet_transform.Shapelets.Shapelets.html#RuleTree.utils.shapelet_transform.Shapelets.Shapelets">Shapelets (class in RuleTree.utils.shapelet_transform.Shapelets)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.transformers.ShapeletTransformer.html#RuleTree.stumps.transformers.ShapeletTransformer">ShapeletTransformer (class in RuleTree.stumps.transformers)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.html#RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump">ShapeletTreeStump (class in RuleTree.stumps.ShapeletTreeStump)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.classification.ShapeletTreeStumpClassifier.html#RuleTree.stumps.classification.ShapeletTreeStumpClassifier">ShapeletTreeStumpClassifier (class in RuleTree.stumps.classification)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.regression.ShapeletTreeStumpRegressor.html#RuleTree.stumps.regression.ShapeletTreeStumpRegressor">ShapeletTreeStumpRegressor (class in RuleTree.stumps.regression)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.simplify">simplify() (RuleTreeNode method)</a>
+</li>
+      <li><a href="glossary.html#term-splitter"><strong>splitter</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.html#RuleTree.stumps.classification.PartialPivotTreeStumpClassifier.st">st (PartialPivotTreeStumpClassifier property)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.html#RuleTree.stumps.ShapeletTreeStump.ShapeletTreeStump.st">(ShapeletTreeStump property)</a>
+</li>
+      </ul></li>
+      <li><a href="glossary.html#term-stump"><strong>stump</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump">Stump (class in RuleTree.stumps.Stump)</a>
+</li>
+      <li><a href="glossary.html#term-stump-selection"><strong>stump selection</strong></a>
+</li>
+      <li><a href="api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier.stumps_to_trees">stumps_to_trees() (RuleTreeClassifier method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.regression.FairTreeStumpRegressor.html#RuleTree.stumps.regression.FairTreeStumpRegressor.supported_data_types">supported_data_types (FairTreeStumpRegressor attribute)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.transformers.MatrixTransformer.html#RuleTree.stumps.transformers.MatrixTransformer.supported_data_types">(MatrixTransformer attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.supported_data_types">(ObliqueTransformer attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PartialPivotTransformer.html#RuleTree.stumps.transformers.PartialPivotTransformer.supported_data_types">(PartialPivotTransformer attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.supported_data_types">(RuleTreeBaseStump attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.supported_data_types">(RuleTreeBaseTransformer attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ShapeletTransformer.html#RuleTree.stumps.transformers.ShapeletTransformer.supported_data_types">(ShapeletTransformer attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.supported_data_types">(Stump property)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.supports">supports() (RuleTreeBaseStump method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.utils.shapelet_transform.TabularShapelets.TabularShapelets.html#RuleTree.utils.shapelet_transform.TabularShapelets.TabularShapelets">TabularShapelets (class in RuleTree.utils.shapelet_transform.TabularShapelets)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.splitters.ClassificationSplitter.html#RuleTree.stumps.splitters.ClassificationSplitter.task">task (ClassificationSplitter attribute)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.splitters.FairSplitter.html#RuleTree.stumps.splitters.FairSplitter.task">(FairSplitter attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.splitters.RegressionSplitter.html#RuleTree.stumps.splitters.RegressionSplitter.task">(RegressionSplitter attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.task">(RuleTreeBaseSplitter attribute)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.task">(RuleTreeBaseStump property)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.task">(Stump property)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.splitters.XGBoostSplitter.html#RuleTree.stumps.splitters.XGBoostSplitter.task">(XGBoostSplitter attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/generated/RuleTree.stumps.Stump.Stump.html#RuleTree.stumps.Stump.Stump.threshold_original">threshold_original (Stump property)</a>
+</li>
+      <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.to_dict">to_dict() (RuleTree method)</a>
+</li>
+      <li><a href="api/generated/RuleTree.utils.light_famd.CA.html#RuleTree.utils.light_famd.CA.transform">transform() (CA method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.transformers.MatrixTransformer.html#RuleTree.stumps.transformers.MatrixTransformer.transform">(MatrixTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.light_famd.MCA.html#RuleTree.utils.light_famd.MCA.transform">(MCA method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.light_famd.MFA.html#RuleTree.utils.light_famd.MFA.transform">(MFA method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.MultiplePivotTransformer.html#RuleTree.stumps.transformers.MultiplePivotTransformer.transform">(MultiplePivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliquePivotTransformer.html#RuleTree.stumps.transformers.ObliquePivotTransformer.transform">(ObliquePivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ObliqueTransformer.html#RuleTree.stumps.transformers.ObliqueTransformer.transform">(ObliqueTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PartialPivotTransformer.html#RuleTree.stumps.transformers.PartialPivotTransformer.transform">(PartialPivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.light_famd.PCA.html#RuleTree.utils.light_famd.PCA.transform">(PCA method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.PivotTransformer.html#RuleTree.stumps.transformers.PivotTransformer.transform">(PivotTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.html#RuleTree.base.RuleTreeBaseTransformer.RuleTreeBaseTransformer.transform">(RuleTreeBaseTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.shapelet_transform.Shapelets.Shapelets.html#RuleTree.utils.shapelet_transform.Shapelets.Shapelets.transform">(Shapelets method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.transformers.ShapeletTransformer.html#RuleTree.stumps.transformers.ShapeletTransformer.transform">(ShapeletTransformer method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.utils.shapelet_transform.TabularShapelets.TabularShapelets.html#RuleTree.utils.shapelet_transform.TabularShapelets.TabularShapelets.transform">(TabularShapelets method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="glossary.html#term-transformer"><strong>transformer</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.splitters.DecisionTreeSplitter.DecisionTreeSplitter.html#RuleTree.stumps.splitters.DecisionTreeSplitter.DecisionTreeSplitter.update_statistics">update_statistics() (DecisionTreeSplitter method)</a>
+
+      <ul>
+        <li><a href="api/generated/RuleTree.stumps.splitters.FairSplitter.html#RuleTree.stumps.splitters.FairSplitter.update_statistics">(FairSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.tree.RuleTree.RuleTree.html#RuleTree.tree.RuleTree.RuleTree.update_statistics">(RuleTree method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.html#RuleTree.base.RuleTreeBaseSplitter.RuleTreeBaseSplitter.update_statistics">(RuleTreeBaseSplitter method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.update_statistics">(RuleTreeBaseStump method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.tree.RuleTreeNode.RuleTreeNode.html#RuleTree.tree.RuleTreeNode.RuleTreeNode.update_statistics">(RuleTreeNode method)</a>
+</li>
+        <li><a href="api/generated/RuleTree.stumps.splitters.XGBoostSplitter.html#RuleTree.stumps.splitters.XGBoostSplitter.update_statistics">(XGBoostSplitter method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="X">X</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.PivotTreeStump.PivotTreeStump.html#RuleTree.stumps.PivotTreeStump.PivotTreeStump.X_split_instance">X_split_instance (PivotTreeStump property)</a>
+</li>
+      <li><a href="api/generated/RuleTree.ensemble.XGBoostRegressor.XGBoostRegressor.html#RuleTree.ensemble.XGBoostRegressor.XGBoostRegressor">XGBoostRegressor (class in RuleTree.ensemble.XGBoostRegressor)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/RuleTree.stumps.splitters.XGBoostSplitter.html#RuleTree.stumps.splitters.XGBoostSplitter">XGBoostSplitter (class in RuleTree.stumps.splitters)</a>
+</li>
+      <li><a href="api/generated/RuleTree.stumps.regression.XGBoostStumpRegressor.html#RuleTree.stumps.regression.XGBoostStumpRegressor">XGBoostStumpRegressor (class in RuleTree.stumps.regression)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025-2026, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

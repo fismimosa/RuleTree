@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../_static/icon.png" sizes="254x256" rel="icon" type="image/png">
+    <title>Getting started &#8212; RuleTree</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=64200178" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../_static/documentation_options.js?v=7b32d3fb"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guides/getting_started';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="User guide" href="index.html" />
+    <link rel="prev" title="RuleTree" href="../index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.27 (d32f083)" />
+  
+    
+    <script src="../_static/searchtools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script src="../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo_navbar.png" class="logo__image only-light" alt="RuleTree"/>
+    <img src="../_static/logo_navbar_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree"/>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<span class="navbar-version" title="Version of this documentation">2026.10.27 (d32f083)</span></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#" aria-current="page">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#" aria-current="page">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Getting started</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="getting-started">
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading">#</a></h1>
+<p>This guide installs RuleTree and trains a first tree for each task: classification, regression
+(also with several targets) and clustering. The trees follow the scikit-learn API (<code class="docutils literal notranslate"><span class="pre">fit</span></code>,
+<code class="docutils literal notranslate"><span class="pre">predict</span></code>, <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code>, <code class="docutils literal notranslate"><span class="pre">get_params</span></code>, <code class="docutils literal notranslate"><span class="pre">set_params</span></code>) and work with the scikit-learn
+tools for model selection. How the trees are built is described in <a class="reference internal" href="concepts.html"><span class="doc">How RuleTree works</span></a>.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<p>RuleTree requires Python 3.10 or later. Some features need packages that are not installed by
+default: they are installed by the <em>extras</em> of RuleTree.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-0">
+PyPI</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>RuleTree
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-1">
+With the extras</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"RuleTree[shapelets]"</span><span class="w">   </span><span class="c1"># shapelet, proximity and partial pivot stumps (numba)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"RuleTree[plot]"</span><span class="w">        </span><span class="c1"># drawing the trees with matplotlib (plot_tree)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"RuleTree[graphviz]"</span><span class="w">    </span><span class="c1"># Graphviz drawings (also requires the Graphviz binaries)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"RuleTree[kmedoids]"</span><span class="w">    </span><span class="c1"># shapelets selected with k-medoids (scikit-learn-extra)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"RuleTree[all]"</span><span class="w">         </span><span class="c1"># all of the above</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" for="sd-tab-item-2">
+From the repository</label><div class="sd-tab-content docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/fismimosa/RuleTree.git
+<span class="nb">cd</span><span class="w"> </span>RuleTree
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">".[all]"</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">".[test]"</span><span class="w">               </span><span class="c1"># running the tests</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Without the extras, the rest of the library works, and the features that need them raise a
+<a class="reference internal" href="../api/generated/RuleTree.exceptions.MissingOptionalDependencyError.html#RuleTree.exceptions.MissingOptionalDependencyError" title="RuleTree.exceptions.MissingOptionalDependencyError"><code class="xref py py-class docutils literal notranslate"><span class="pre">MissingOptionalDependencyError</span></code></a> with the command to run.</p>
+</div>
+</section>
+<section id="classification">
+<h2>Classification<a class="headerlink" href="#classification" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/generated/RuleTree.RuleTreeClassifier.html#RuleTree.RuleTreeClassifier" title="RuleTree.RuleTreeClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeClassifier</span></code></a> grows the tree breadth-first until
+the nodes are pure or a limit is reached (<code class="docutils literal notranslate"><span class="pre">max_depth</span></code>, <code class="docutils literal notranslate"><span class="pre">max_leaf_nodes</span></code>,
+<code class="docutils literal notranslate"><span class="pre">min_samples_split</span></code>). Each leaf predicts the majority class of its training instances.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeClassifier</span>
+
+<span class="n">iris</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+                                                    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">iris</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"accuracy:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">[:</span><span class="mi">5</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>accuracy: 0.933
+[2 1 2 1 2]
+[[0.   0.03 0.97]
+ [0.   1.   0.  ]]
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">random_state</span></code> makes the tree reproducible: when two features split a node equally well, the
+choice between them is not random.</p>
+<p>The rules of the tree can be printed with the names of the features:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">print_rules</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_rules</span><span class="p">(</span><span class="n">columns_names</span><span class="o">=</span><span class="n">iris</span><span class="o">.</span><span class="n">feature_names</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id2" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>|--- petal length (cm) &lt;= 2.45
+|    output: 0
+|--- petal length (cm) &gt; 2.45
+|   |--- petal width (cm) &lt;= 1.55
+|   |   |--- petal length (cm) &lt;= 4.95
+|   |   |    output: 1
+|   |   |--- petal length (cm) &gt; 4.95
+|   |   |    output: 2
+|   |--- petal width (cm) &gt; 1.55
+|   |   |--- petal length (cm) &lt;= 4.85
+|   |   |    output: 1
+|   |   |--- petal length (cm) &gt; 4.85
+|   |   |    output: 2
+</pre></div>
+</div>
+</div>
+<figure class="align-default" id="id3">
+<a class="only-light reference internal image-reference" href="../_images/first_tree.svg"><img alt="The tree above drawn as boxes: the root splits on petal length at 2.45, then petal width at 1.55 and petal length at 4.95 and 4.85; the leaves predict setosa, versicolor or virginica." class="only-light" src="../_images/first_tree.svg" style="width: 100%;" />
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/first_tree_dark.svg"><img alt="The tree above drawn as boxes: the root splits on petal length at 2.45, then petal width at 1.55 and petal length at 4.95 and 4.85; the leaves predict setosa, versicolor or virginica." class="only-dark" src="../_images/first_tree_dark.svg" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The same tree, with the class and the number of training instances of each leaf. The left child
+of a node gets the instances for which its rule is true.</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>See <a class="reference internal" href="inspecting.html"><span class="doc">Reading the tree</span></a> for the other ways to read a tree.</p>
+</section>
+<section id="regression">
+<h2>Regression<a class="headerlink" href="#regression" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/generated/RuleTree.RuleTreeRegressor.html#RuleTree.RuleTreeRegressor" title="RuleTree.RuleTreeRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeRegressor</span></code></a> works in the same way; each leaf
+predicts the mean of the target of its training instances.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_diabetes</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">r2_score</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeRegressor</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_diabetes</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">regressor</span> <span class="o">=</span> <span class="n">RuleTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"R2 on the training set:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">r2_score</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">regressor</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)),</span> <span class="mi">3</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"leaves:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">regressor</span><span class="o">.</span><span class="n">get_leaf_nodes</span><span class="p">()))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id4" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>R2 on the training set: 0.501
+leaves: 8
+</pre></div>
+</div>
+</div>
+<p>The prediction of the leaves is set by <code class="docutils literal notranslate"><span class="pre">leaf_prediction</span></code>: <code class="docutils literal notranslate"><span class="pre">&quot;mean&quot;</span></code> (the default),
+<code class="docutils literal notranslate"><span class="pre">&quot;median&quot;</span></code>, or a function of the target of the instances of the leaf.</p>
+<section id="several-targets">
+<h3>Several targets<a class="headerlink" href="#several-targets" title="Link to this heading">#</a></h3>
+<p>With a target of shape (n_samples, n_targets), the regressor builds one tree for all the targets:
+the splits are shared, and each node predicts one value per target. This is how the multi-output
+trees of scikit-learn and the predictive clustering trees work: one set of rules instead of one
+tree per target, and splits that use what the targets have in common.</p>
+<p>A split is chosen by the average of the squared errors of the targets, so a target with large
+values counts more than one with small values. <code class="docutils literal notranslate"><span class="pre">target_weights</span></code> changes the weight of each
+target: <code class="docutils literal notranslate"><span class="pre">&quot;balanced&quot;</span></code> divides each target by its standard deviation on the training set, so that
+all the targets count the same (as the predictive clustering trees do); an array gives one weight
+to each target. Here the targets are the disease progression of the diabetes data and the body
+mass index of the patients (removed from the features), whose values are a thousand times
+smaller:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.evaluation</span><span class="w"> </span><span class="kn">import</span> <span class="n">evaluate_regression</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_diabetes</span><span class="p">()</span>
+<span class="n">X_two</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]])</span>  <span class="c1"># disease progression, body mass index</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"standard deviations:"</span><span class="p">,</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">std</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">std</span> <span class="ow">in</span> <span class="n">Y</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)])</span>
+
+<span class="k">for</span> <span class="n">target_weights</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s2">"balanced"</span><span class="p">]:</span>
+    <span class="n">two_targets</span> <span class="o">=</span> <span class="n">RuleTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">target_weights</span><span class="o">=</span><span class="n">target_weights</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_two</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="n">r2</span> <span class="o">=</span> <span class="n">evaluate_regression</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">two_targets</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_two</span><span class="p">),</span> <span class="n">multioutput</span><span class="o">=</span><span class="s2">"raw_values"</span><span class="p">)[</span><span class="s2">"r2"</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"target_weights=</span><span class="si">{</span><span class="n">target_weights</span><span class="si">}</span><span class="s2">: R2 of the two targets </span><span class="si">{</span><span class="n">r2</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"predictions of two patients:"</span><span class="p">,</span> <span class="n">two_targets</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_two</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id5" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>standard deviations: [77.006, 0.048]
+target_weights=None: R2 of the two targets [0.435 0.277]
+target_weights=balanced: R2 of the two targets [0.418 0.326]
+predictions of two patients: [[159.871, -0.003], [87.018, -0.044]]
+</pre></div>
+</div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">&quot;balanced&quot;</span></code>, the splits give up a little on the disease progression to predict the body
+mass index better. The predictions are always in the original scale of the targets.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some components work with a single target, and raise an error with several: the XGBoost and
+fair stumps, the shapelet and proximity stumps, and <code class="docutils literal notranslate"><span class="pre">local_interpretation</span></code>. The XGBoost
+boosting uses the XGBoost stumps; the other boostings (<a class="reference internal" href="ensembles.html"><span class="doc">Ensembles</span></a>) and
+<a class="reference internal" href="../api/generated/RuleTree.RuleTreeClusterRegressor.html#RuleTree.RuleTreeClusterRegressor" title="RuleTree.RuleTreeClusterRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeClusterRegressor</span></code></a> support several targets.</p>
+</div>
+</section>
+</section>
+<section id="clustering">
+<h2>Clustering<a class="headerlink" href="#clustering" title="Link to this heading">#</a></h2>
+<p><a class="reference internal" href="../api/generated/RuleTree.RuleTreeCluster.html#RuleTree.RuleTreeCluster" title="RuleTree.RuleTreeCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeCluster</span></code></a> finds clusters described by rules, without
+a target. To split a node, it projects its instances on their principal components and splits
+the component that is best separated; a node is split only if the split improves the Bayesian
+Information Criterion of the clustering (<code class="docutils literal notranslate"><span class="pre">bic_eps</span></code> makes this stricter).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_blobs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adjusted_rand_score</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuleTreeCluster</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">groups</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cluster_std</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">clustering</span> <span class="o">=</span> <span class="n">RuleTreeCluster</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">clustering</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"clusters:"</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">())))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"agreement with the true groups (ARI):"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">adjusted_rand_score</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="n">labels</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id6" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>clusters: [4, 5, 6, 7, 8]
+agreement with the true groups (ARI): 0.95
+</pre></div>
+</div>
+</div>
+<p>The labels identify the leaves, numbered in breadth-first order (the root is 0). Here the tree
+splits two of the three groups once more, so there are five clusters; the agreement with the
+groups stays high because each cluster lies within a single group.</p>
+<figure class="align-default" id="id7">
+<a class="only-light reference internal image-reference" href="../_images/clustering.svg"><img alt="The three blobs coloured by cluster, with the regions of the five leaves of the tree: three large regions, one per blob, and two small ones with a few points." class="only-light" src="../_images/clustering.svg" style="width: 75%;" />
+</a>
+<a class="only-dark reference internal image-reference" href="../_images/clustering_dark.svg"><img alt="The three blobs coloured by cluster, with the regions of the five leaves of the tree: three large regions, one per blob, and two small ones with a few points." class="only-dark" src="../_images/clustering_dark.svg" style="width: 75%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">The clusters of the tree above: each leaf is a region bounded by the rules of its path.</span><a class="headerlink" href="#id7" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><a class="reference internal" href="../api/generated/RuleTree.RuleTreeClusterClassifier.html#RuleTree.RuleTreeClusterClassifier" title="RuleTree.RuleTreeClusterClassifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeClusterClassifier</span></code></a> and
+<a class="reference internal" href="../api/generated/RuleTree.RuleTreeClusterRegressor.html#RuleTree.RuleTreeClusterRegressor" title="RuleTree.RuleTreeClusterRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuleTreeClusterRegressor</span></code></a> build the tree in the same way,
+without looking at the target, and then predict the majority class or the mean target of each
+cluster.</p>
+<p><code class="docutils literal notranslate"><span class="pre">component_split</span></code> sets how the principal components are used. With <code class="docutils literal notranslate"><span class="pre">&quot;best&quot;</span></code> (the default),
+a stump is fitted on each component and the best split according to <code class="docutils literal notranslate"><span class="pre">clus_impurity</span></code> is kept:
+each split looks at one component. With <code class="docutils literal notranslate"><span class="pre">&quot;joint&quot;</span></code>, one stump is fitted on all the components
+together (a regression with several targets, see <a class="reference internal" href="#several-targets">Several targets</a>): the split is the one that
+most decreases the squared distances of the instances from the centers of the two children, as a
+k-means with two clusters whose border is a rule. Neither is better in general; the joint split
+helps when the clusters are spread over several components, as four groups at the corners of a
+square:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">corners</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+<span class="n">square_groups</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">integers</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="n">X_square</span> <span class="o">=</span> <span class="n">corners</span><span class="p">[</span><span class="n">square_groups</span><span class="p">]</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">component_split</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"best"</span><span class="p">,</span> <span class="s2">"joint"</span><span class="p">]:</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">RuleTreeCluster</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">component_split</span><span class="o">=</span><span class="n">component_split</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X_square</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">component_split</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span><span class="si">}</span><span class="s2"> clusters, "</span>
+          <span class="sa">f</span><span class="s2">"ARI </span><span class="si">{</span><span class="n">adjusted_rand_score</span><span class="p">(</span><span class="n">square_groups</span><span class="p">,</span><span class="w"> </span><span class="n">labels</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id8" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>best: 4 clusters, ARI 0.72
+joint: 4 clusters, ARI 0.90
+</pre></div>
+</div>
+</div>
+<p>With <code class="docutils literal notranslate"><span class="pre">&quot;joint&quot;</span></code>, the base stumps must support several targets (the decision tree, pivot and
+oblique stumps do; the fair stump does not).</p>
+</section>
+<section id="working-with-scikit-learn">
+<h2>Working with scikit-learn<a class="headerlink" href="#working-with-scikit-learn" title="Link to this heading">#</a></h2>
+<p>The trees are scikit-learn estimators, so they can be used in pipelines, cross-validation and
+hyper-parameter searches:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">GridSearchCV</span><span class="p">,</span> <span class="n">cross_val_score</span>
+
+<span class="n">scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"cross-validated accuracy:"</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="n">search</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">RuleTreeClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="p">{</span><span class="s2">"max_depth"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]},</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">search</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"best max_depth:"</span><span class="p">,</span> <span class="n">search</span><span class="o">.</span><span class="n">best_params_</span><span class="p">[</span><span class="s2">"max_depth"</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">Output</span><a class="headerlink" href="#id9" title="Link to this code">#</a></div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>cross-validated accuracy: 0.973
+best max_depth: 3
+</pre></div>
+</div>
+</div>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="concepts.html"><span class="doc">How RuleTree works</span></a>: how a tree is built from stumps, and the objects it is made of.</p></li>
+<li><p><a class="reference internal" href="stumps.html"><span class="doc">Choosing the splits: stumps</span></a>: the available stumps, which one to use and how to combine them.</p></li>
+<li><p><a class="reference internal" href="multimodal.html"><span class="doc">Tabular data, time series and images</span></a>: trees on time series and images, alone or together with tabular data.</p></li>
+<li><p><a class="reference internal" href="inspecting.html"><span class="doc">Reading the tree</span></a>: rules, drawings, leaves and feature contributions.</p></li>
+<li><p><a class="reference internal" href="lifecycle.html"><span class="doc">Growing and updating trees</span></a>: growing trees further and updating their statistics.</p></li>
+<li><p><a class="reference internal" href="saving.html"><span class="doc">Saving and loading trees</span></a>: saving trees to JSON and loading them back.</p></li>
+<li><p><a class="reference internal" href="ensembles.html"><span class="doc">Ensembles</span></a>: gradient boosting and explainable boosting with RuleTrees.</p></li>
+<li><p><a class="reference internal" href="evaluating.html"><span class="doc">Evaluating the models</span></a>: metrics of the predictions, of the clusters and of the size of the trees.</p></li>
+<li><p><a class="reference internal" href="extending.html"><span class="doc">Extending the library</span></a>: writing new stumps.</p></li>
+<li><p><a class="reference internal" href="../examples/index.html"><span class="doc">Examples</span></a>: notebooks that train a tree end to end.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">RuleTree</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">User guide</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classification">Classification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#regression">Regression</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#several-targets">Several targets</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clustering">Clustering</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#working-with-scikit-learn">Working with scikit-learn</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next steps</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/fismimosa/RuleTree/edit/main/docs/guides/getting_started.rst">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../_sources/guides/getting_started.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025-2026, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

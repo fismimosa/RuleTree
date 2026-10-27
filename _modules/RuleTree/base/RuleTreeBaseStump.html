@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleTree.base.RuleTreeBaseStump &#8212; RuleTree</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=64200178" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../../../_static/documentation_options.js?v=7b32d3fb"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/RuleTree/base/RuleTreeBaseStump';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.10.27 (d32f083)" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo_navbar.png" class="logo__image only-light" alt="RuleTree"/>
+    <img src="../../../_static/logo_navbar_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree"/>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<span class="navbar-version" title="Version of this documentation">2026.10.27 (d32f083)</span></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">RuleTree.base.RuleTreeBaseStump</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for RuleTree.base.RuleTreeBaseStump</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Abstract base class of the stumps: the single splits that make up the nodes of a RuleTree."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.define</span><span class="w"> </span><span class="kn">import</span> <span class="n">DATA_TYPE_TABULAR</span>
+
+
+<div class="viewcode-block" id="RuleTreeBaseStump">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RuleTreeBaseStump</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Abstract base class of the stumps, the splits of the nodes of a RuleTree.</span>
+
+<span class="sd">    A stump divides the instances of a node into two children: ``apply`` returns 1 for the</span>
+<span class="sd">    instances that go to the left child and 2 for the ones that go to the right child.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Stumps receive the whole data set as a dictionary ``data = {data_type: array}`` (see</span>
+<span class="sd">    :data:`RuleTree.utils.define.DATA_INPUT_TYPES`) together with ``idx``, the indices of the</span>
+<span class="sd">    instances reaching the node. A fitted stump works on a single data type, chosen by the tree</span>
+<span class="sd">    among ``supported_data_types`` and stored in ``data_type_``. For convenience, ``data`` can</span>
+<span class="sd">    also be a single array, interpreted as data of the stump's data type.</span>
+
+<span class="sd">    The tree passes its cache to every stump, transformer and splitter (``cache``, a dictionary</span>
+<span class="sd">    namespace -&gt; dictionary of values that lives until the next ``fit`` or ``clear_cache()``),</span>
+<span class="sd">    where they can store anything that can be shared among splits, e.g. embeddings computed on the</span>
+<span class="sd">    whole data set. The code of each component decides whether and how to use it: the ones of the</span>
+<span class="sd">    library keep their values under their own namespace, ``self._get_cache(cache)``</span>
+<span class="sd">    (:meth:`cache_namespace`: the class and the hyperparameters). Everything needed by ``apply``</span>
+<span class="sd">    must be stored in the stump itself.</span>
+
+<span class="sd">    The tree also passes ``node_id``, the identifier of the node being split (``"R"``, ``"Rl"``,</span>
+<span class="sd">    ...): with ``context.get_node_by_id(node_id)`` the stump reaches the node, and from it its</span>
+<span class="sd">    ancestors and their stumps. The node is a leaf while its stump is fitted; its ancestors are</span>
+<span class="sd">    already split. ``context``, ``node_id`` and ``cache`` are required in ``fit`` and</span>
+<span class="sd">    ``update_statistics`` (None outside a tree), optional in ``apply``.</span>
+
+<span class="sd">    Subclasses that work on a 2D matrix can implement ``_transform`` (data of the stump's data</span>
+<span class="sd">    type -&gt; matrix) and ``_apply_matrix`` (matrix -&gt; 1/2 labels) and reuse :meth:`apply` and</span>
+<span class="sd">    :meth:`update_statistics`. The stumps of the library are made of a transformer and a splitter</span>
+<span class="sd">    (see :class:`RuleTree.stumps.Stump.Stump`), which is the simplest way to write a new stump.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    supported_data_types : tuple of str</span>
+<span class="sd">        Data types the stump can be fitted on.</span>
+<span class="sd">    task : str</span>
+<span class="sd">        Kind of target, MODEL_TYPE_CLF (classification) or MODEL_TYPE_REG (regression).</span>
+<span class="sd">    data_type_ : str</span>
+<span class="sd">        Data type the stump has been fitted on.</span>
+<span class="sd">    node_id_ : str or None</span>
+<span class="sd">        Identifier of the node of the stump in its tree (set by ``fit`` and by RuleTreeNode.set_stump),</span>
+<span class="sd">        None for a stump outside a tree.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    RuleTree.stumps.Stump.Stump : a stump made of a transformer and a splitter, the simplest way to</span>
+<span class="sd">        write a new stump (see :doc:`/guides/extending`).</span>
+<span class="sd">    """</span>
+
+    <span class="n">supported_data_types</span> <span class="o">=</span> <span class="p">(</span><span class="n">DATA_TYPE_TABULAR</span><span class="p">,)</span>
+
+    <span class="c1"># identifier of the node of the stump in its tree, None outside a tree</span>
+    <span class="n">node_id_</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RuleTreeBaseStump.fit">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.fit">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Fit the stump on the instances ``idx`` of ``data``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict or numpy.ndarray</span>
+<span class="sd">            Whole data set, as ``{data_type: array}``.</span>
+<span class="sd">        y : numpy.ndarray</span>
+<span class="sd">            Target of the whole data set.</span>
+<span class="sd">        idx : numpy.ndarray, default=None</span>
+<span class="sd">            Indices of the instances reaching the node. If None, all the instances.</span>
+<span class="sd">        data_type : str, default=None</span>
+<span class="sd">            Data type to use. If None, the first supported data type available in ``data``.</span>
+<span class="sd">        sample_weight : numpy.ndarray, default=None</span>
+<span class="sd">            Sample weights of the whole data set.</span>
+<span class="sd">        check_input : bool, default=True</span>
+<span class="sd">            Whether to check the input data.</span>
+<span class="sd">        context : RuleTree or None</span>
+<span class="sd">            Tree being built, None outside a tree: it holds the cache shared among the splits, and it is</span>
+<span class="sd">            passed to the transformer and the splitter.</span>
+<span class="sd">        node_id : str or None</span>
+<span class="sd">            Identifier of the node being split, stored in ``node_id_``. None outside a tree.</span>
+<span class="sd">        cache : dict or None</span>
+<span class="sd">            Cache of the tree (namespace -&gt; dictionary of values), None outside a tree: the component</span>
+<span class="sd">            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : RuleTreeBaseStump</span>
+<span class="sd">            The fitted stump.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        NoSplitFoundWarning</span>
+<span class="sd">            If the instances cannot be split.</span>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"The fit method must be implemented in subclasses."</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeBaseStump.get_rule">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.get_rule">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span><span class="p">:</span><span class="n">TransformerMixin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Human-readable representation of the split.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        columns_names : list of str, default=None</span>
+<span class="sd">            Names of the features, used instead of their indices.</span>
+<span class="sd">        scaler : TransformerMixin, default=None</span>
+<span class="sd">            Scaler used to preprocess the data: the thresholds are shown in the original scale.</span>
+<span class="sd">        float_precision : int, default=3</span>
+<span class="sd">            Number of decimals of the thresholds. If None, they are not rounded.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rule : dict</span>
+<span class="sd">            The rule, with at least the keys ``textual_rule`` and ``not_textual_rule`` (the condition</span>
+<span class="sd">            of the left child and its negation), ``blob_rule``, ``not_blob_rule``, ``graphviz_rule`` and</span>
+<span class="sd">            ``not_graphviz_rule`` (attributes of the Graphviz node).</span>
+<span class="sd">        """</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeBaseStump.get_graphviz_rule">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.get_graphviz_rule">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_graphviz_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span><span class="p">:</span> <span class="n">TransformerMixin</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">float_precision</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Attributes of the Graphviz node of the split (see RuleTree.export_graphviz). The default</span>
+<span class="sd">        implementation is ``get_rule(...)["graphviz_rule"]``; stumps that draw something in the node,</span>
+<span class="sd">        such as the shapelet stumps, override it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        columns_names : list of str, default=None</span>
+<span class="sd">            Names of the tabular features.</span>
+<span class="sd">        scaler : TransformerMixin, default=None</span>
+<span class="sd">            Scaler used to preprocess the data: the thresholds are shown in the original scale.</span>
+<span class="sd">        float_precision : int, default=3</span>
+<span class="sd">            Number of decimals of the threshold.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        attributes : dict</span>
+<span class="sd">            Attributes of the Graphviz node, e.g. ``label``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rule</span><span class="p">(</span><span class="n">columns_names</span><span class="o">=</span><span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="n">scaler</span><span class="p">,</span>
+                             <span class="n">float_precision</span><span class="o">=</span><span class="n">float_precision</span><span class="p">)[</span><span class="s2">"graphviz_rule"</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeBaseStump.get_plot_rule">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.get_plot_rule">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_plot_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span><span class="p">:</span> <span class="n">TransformerMixin</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                      <span class="n">float_precision</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        What the node of the split shows in ``RuleTree.plot_tree``. The default implementation is the</span>
+<span class="sd">        rule, ``get_rule(...)["textual_rule"]``; stumps that draw something in the node, such as the</span>
+<span class="sd">        shapelet stumps, add the shapes to plot below it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        columns_names : list of str, default=None</span>
+<span class="sd">            Names of the tabular features.</span>
+<span class="sd">        scaler : TransformerMixin, default=None</span>
+<span class="sd">            Scaler used to preprocess the data: the thresholds are shown in the original scale.</span>
+<span class="sd">        float_precision : int, default=3</span>
+<span class="sd">            Number of decimals of the threshold.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rule : dict</span>
+<span class="sd">            ``label``, the text of the node, and optionally ``shapes``, a list of 1D arrays plotted</span>
+<span class="sd">            below it, with their ``colors``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rule</span><span class="p">(</span><span class="n">columns_names</span><span class="o">=</span><span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="n">scaler</span><span class="p">,</span>
+                                       <span class="n">float_precision</span><span class="o">=</span><span class="n">float_precision</span><span class="p">)[</span><span class="s2">"textual_rule"</span><span class="p">]}</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeBaseStump.node_to_dict">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.node_to_dict">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">node_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Dictionary representation of the stump, used to save the tree (see RuleTree.to_dict).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        node_dict : dict</span>
+<span class="sd">            JSON-friendly dictionary with the key ``stump_type`` (module of the stump class) and all</span>
+<span class="sd">            that is needed by :meth:`dict_to_node` to rebuild the stump.</span>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"The node_to_dict method must be implemented in subclasses."</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeBaseStump.dict_to_node">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.dict_to_node">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dict_to_node</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">node_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'RuleTreeBaseStump'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Create a stump from a dictionary created by :meth:`node_to_dict`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node_dict : dict</span>
+<span class="sd">            Dictionary representation of the stump.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        stump : RuleTreeBaseStump</span>
+<span class="sd">            The stump, fitted if it was fitted when saved.</span>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"The dict_to_node method must be implemented in subclasses."</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">task</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Kind of target of the stump: MODEL_TYPE_CLF (classification) or MODEL_TYPE_REG (regression).</span>
+<span class="sd">        A tree accepts only stumps of its task (see RuleTree._get_stumps_task).</span>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must define its task."</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RuleTreeBaseStump.supports">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.supports">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">supports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_type</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Whether the stump can be fitted on a data type.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data_type : str</span>
+<span class="sd">            A data type, e.g. ``"tabular"`` (see :data:`RuleTree.utils.define.DATA_INPUT_TYPES`).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        supported : bool</span>
+<span class="sd">            True if ``data_type`` is in ``supported_data_types``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">data_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_data_types</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeBaseStump.apply">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.apply">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Apply the split to the instances ``idx`` of ``data``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict or numpy.ndarray</span>
+<span class="sd">            Data set, as ``{data_type: array}`` or a single array of the stump's data type.</span>
+<span class="sd">        idx : numpy.ndarray, default=None</span>
+<span class="sd">            Indices of the instances to split. If None, all the instances.</span>
+<span class="sd">        context : RuleTree, default=None</span>
+<span class="sd">            The tree, when called by it (fit, predictions); None otherwise.</span>
+<span class="sd">        node_id : str, default=None</span>
+<span class="sd">            Identifier of the node of the stump, when called by the tree; None otherwise.</span>
+<span class="sd">        cache : dict, default=None</span>
+<span class="sd">            Cache of the tree, when called by it; None otherwise.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        labels : numpy.ndarray of int</span>
+<span class="sd">            For each instance in ``idx``, 1 if it goes to the left child, 2 otherwise.</span>
+<span class="sd">        """</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+                                  <span class="n">node_id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RuleTreeBaseStump.update_statistics">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.update_statistics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Recompute the statistics of the split (e.g. impurity) on the instances ``idx`` of ``data``,</span>
+<span class="sd">        without changing the split.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict or numpy.ndarray</span>
+<span class="sd">            Whole data set, as ``{data_type: array}``.</span>
+<span class="sd">        y : numpy.ndarray</span>
+<span class="sd">            Target of the whole data set.</span>
+<span class="sd">        idx : numpy.ndarray, default=None</span>
+<span class="sd">            Indices of the instances reaching the node. If None, all the instances.</span>
+<span class="sd">        sample_weight : numpy.ndarray, default=None</span>
+<span class="sd">            Sample weights of the whole data set.</span>
+<span class="sd">        check_input : bool, default=True</span>
+<span class="sd">            Not used, kept for symmetry with :meth:`fit`.</span>
+<span class="sd">        context : RuleTree or None</span>
+<span class="sd">            The tree, None outside a tree.</span>
+<span class="sd">        node_id : str or None</span>
+<span class="sd">            Identifier of the node, None outside a tree.</span>
+<span class="sd">        cache : dict or None</span>
+<span class="sd">            Cache of the tree (namespace -&gt; dictionary of values), None outside a tree: the component</span>
+<span class="sd">            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_data</span><span class="p">(</span><span class="n">data</span><span class="p">)[</span><span class="n">idx</span><span class="p">],</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_statistics_matrix</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">sample_weight</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">sample_weight</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                                       <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Turn data of the stump's data type into the matrix the split is applied on.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy.ndarray</span>
+<span class="sd">            Data of the stump's data type.</span>
+<span class="sd">        context : RuleTree, default=None</span>
+<span class="sd">            The tree, when called by it (fit, predictions); None otherwise.</span>
+<span class="sd">        node_id : str, default=None</span>
+<span class="sd">            Identifier of the node of the stump, when called by the tree; None otherwise.</span>
+<span class="sd">        cache : dict, default=None</span>
+<span class="sd">            Cache of the tree, when called by it; None otherwise.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X_transformed : numpy.ndarray of shape (n_samples, n_features)</span>
+<span class="sd">            Feature matrix. The default implementation returns X.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Apply the split to the matrix returned by :meth:`_transform`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy.ndarray of shape (n_samples, n_features)</span>
+<span class="sd">            Feature matrix.</span>
+<span class="sd">        context : RuleTree, default=None</span>
+<span class="sd">            The tree, when called by it (fit, predictions); None otherwise.</span>
+<span class="sd">        node_id : str, default=None</span>
+<span class="sd">            Identifier of the node of the stump, when called by the tree; None otherwise.</span>
+<span class="sd">        cache : dict, default=None</span>
+<span class="sd">            Cache of the tree, when called by it; None otherwise.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        labels : numpy.ndarray of int</span>
+<span class="sd">            1 for the rows that go to the left child, 2 otherwise.</span>
+<span class="sd">        """</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> must implement apply or _apply_matrix."</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_statistics_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Recompute the split statistics on the matrix returned by :meth:`_transform`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : numpy.ndarray of shape (n_samples, n_features)</span>
+<span class="sd">            Feature matrix of the instances in the node.</span>
+<span class="sd">        y : numpy.ndarray</span>
+<span class="sd">            Target of the instances in the node.</span>
+<span class="sd">        sample_weight : numpy.ndarray, default=None</span>
+<span class="sd">            Sample weights of the instances in the node.</span>
+<span class="sd">        context : RuleTree or None</span>
+<span class="sd">            The tree, None outside a tree.</span>
+<span class="sd">        node_id : str or None</span>
+<span class="sd">            Identifier of the node, e.g. ``"Rl"`` (``context.get_node_by_id(node_id)``), None outside a tree.</span>
+<span class="sd">        cache : dict or None</span>
+<span class="sd">            Cache of the tree (namespace -&gt; dictionary of values), None outside a tree: the component</span>
+<span class="sd">            decides whether and how to use it (the ones of the library use ``self._get_cache(cache)``).</span>
+<span class="sd">        """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_fit_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Select the data to fit on and store its type in ``data_type_``.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict or numpy.ndarray</span>
+<span class="sd">            Data set, as ``{data_type: array}`` or a single array.</span>
+<span class="sd">        data_type : str, default=None</span>
+<span class="sd">            Data type to use. If None, the first supported data type available in ``data``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X : numpy.ndarray</span>
+<span class="sd">            Data of the selected type (all the instances).</span>
+<span class="sd">        data_type : str</span>
+<span class="sd">            The selected data type.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the data type is not supported or not available in ``data``.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">data_type</span> <span class="k">if</span> <span class="n">data_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_data_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">data</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">data_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">available</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">supported_data_types</span> <span class="k">if</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">available</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> supports </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supported_data_types</span><span class="p">)</span><span class="si">}</span><span class="s2"> data, "</span>
+                                 <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+            <span class="n">data_type</span> <span class="o">=</span> <span class="n">available</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">supports</span><span class="p">(</span><span class="n">data_type</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not support </span><span class="si">{</span><span class="n">data_type</span><span class="si">}</span><span class="s2"> data."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No </span><span class="si">{</span><span class="n">data_type</span><span class="si">}</span><span class="s2"> data provided."</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_type_</span> <span class="o">=</span> <span class="n">data_type</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">data_type</span><span class="p">]),</span> <span class="n">data_type</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Data of the type the stump has been fitted on.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : dict or numpy.ndarray</span>
+<span class="sd">            Data set, as ``{data_type: array}`` or a single array of the stump's data type.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        X : numpy.ndarray</span>
+<span class="sd">            Data of the type ``data_type_``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_type_</span><span class="p">])</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RuleTreeBaseStump.cache_namespace">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.html#RuleTree.base.RuleTreeBaseStump.RuleTreeBaseStump.cache_namespace">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cache_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Name of the cache of the stump in the tree (see RuleTree.get_cache): the class name and a hash</span>
+<span class="sd">        of the hyperparameters, also of the components (e.g. the transformer of a Stump). Stumps of</span>
+<span class="sd">        the same class with different hyperparameters do not share cached values.</span>
+
+<span class="sd">        The tree gives its ``random_state`` to the stumps without one, so the namespace of a stump</span>
+<span class="sd">        used by a tree is the one of its copy in ``candidate_splits_``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        namespace : str</span>
+<span class="sd">            E.g. ``"PivotTreeStumpClassifier-1a2b3c4d"``.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from RuleTree.stumps.classification import DecisionTreeStumpClassifier</span>
+<span class="sd">        &gt;&gt;&gt; a, b = DecisionTreeStumpClassifier(), DecisionTreeStumpClassifier(criterion="entropy")</span>
+<span class="sd">        &gt;&gt;&gt; a.cache_namespace().startswith("DecisionTreeStumpClassifier-")</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; a.cache_namespace() == DecisionTreeStumpClassifier().cache_namespace() != b.cache_namespace()</span>
+<span class="sd">        True</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">estimator_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Values of the stump in the cache of the tree, under :meth:`cache_namespace`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cache : dict or None</span>
+<span class="sd">            Cache of the tree, as received by ``fit`` (namespace -&gt; dictionary of values).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        values : dict</span>
+<span class="sd">            The cache of the stump; without a cache, an empty dictionary that is not kept.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">cache</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cache_namespace</span><span class="p">(),</span> <span class="p">{})</span> <span class="k">if</span> <span class="n">cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">rule_dict</span><span class="p">(</span><span class="n">condition</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">negation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">attributes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Dictionary of a rule as returned by the ``get_rule`` of the stumps: the condition of the left child</span>
+<span class="sd">    and its negation, as text (``textual_rule``, ``blob_rule``) and as Graphviz label (``graphviz_rule``),</span>
+<span class="sd">    after the given attributes of the split.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    condition : str</span>
+<span class="sd">        Condition of the left child, e.g. ``"X_3 &lt;= 0.8"``.</span>
+<span class="sd">    negation : str</span>
+<span class="sd">        Its negation, the condition of the right child, e.g. ``"X_3 &gt; 0.8"``.</span>
+<span class="sd">    **attributes : dict</span>
+<span class="sd">        Other keys of the rule, e.g. ``feature_idx``, ``threshold``, ``is_categorical``,</span>
+<span class="sd">        ``feature_name``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rule : dict</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from RuleTree.base.RuleTreeBaseStump import rule_dict</span>
+<span class="sd">    &gt;&gt;&gt; rule = rule_dict("X_3 &lt;= 0.8", "X_3 &gt; 0.8", feature_idx=3, threshold=0.8)</span>
+<span class="sd">    &gt;&gt;&gt; rule["textual_rule"], rule["not_graphviz_rule"]</span>
+<span class="sd">    ('X_3 &lt;= 0.8', {'label': 'X_3 &gt; 0.8'})</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">attributes</span> <span class="o">|</span> <span class="p">{</span>
+        <span class="s2">"textual_rule"</span><span class="p">:</span> <span class="n">condition</span><span class="p">,</span>
+        <span class="s2">"blob_rule"</span><span class="p">:</span> <span class="n">condition</span><span class="p">,</span>
+        <span class="s2">"graphviz_rule"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="n">condition</span><span class="p">},</span>
+        <span class="s2">"not_textual_rule"</span><span class="p">:</span> <span class="n">negation</span><span class="p">,</span>
+        <span class="s2">"not_blob_rule"</span><span class="p">:</span> <span class="n">negation</span><span class="p">,</span>
+        <span class="s2">"not_graphviz_rule"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"label"</span><span class="p">:</span> <span class="n">negation</span><span class="p">},</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">numerical_rule</span><span class="p">(</span><span class="n">feature_idx</span><span class="p">,</span> <span class="n">feature_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">float_precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">attributes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Dictionary of a numerical rule, ``feature_name &lt;= threshold`` (see rule_dict).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    feature_idx : object</span>
+<span class="sd">        Identifier of the feature, stored in ``feature_idx``.</span>
+<span class="sd">    feature_name : str</span>
+<span class="sd">        Text of the feature in the rule, e.g. ``"X_3"`` or ``"P_12"``.</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Threshold of the split.</span>
+<span class="sd">    float_precision : int, default=3</span>
+<span class="sd">        Number of decimals of the threshold in the text; None for no rounding.</span>
+<span class="sd">    **attributes : dict</span>
+<span class="sd">        Other keys of the rule.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rule : dict</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from RuleTree.base.RuleTreeBaseStump import numerical_rule</span>
+<span class="sd">    &gt;&gt;&gt; numerical_rule(112, "P_112", 3.69187, float_precision=2)["not_textual_rule"]</span>
+<span class="sd">    'P_112 &gt; 3.69'</span>
+<span class="sd">    """</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span> <span class="k">if</span> <span class="n">float_precision</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">round</span><span class="p">(</span><span class="n">threshold</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rule_dict</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">feature_name</span><span class="si">}</span><span class="s2"> &lt;= </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">feature_name</span><span class="si">}</span><span class="s2"> &gt; </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">feature_idx</span><span class="o">=</span><span class="n">feature_idx</span><span class="p">,</span>
+                     <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">is_categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="n">feature_name</span><span class="p">,</span> <span class="o">**</span><span class="n">attributes</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">estimator_namespace</span><span class="p">(</span><span class="n">estimator</span><span class="p">:</span> <span class="n">BaseEstimator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Name of the cache of an estimator (a stump or a transformer) in a tree: its class name and a hash</span>
+<span class="sd">    of its hyperparameters, also of its components.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    estimator : BaseEstimator</span>
+<span class="sd">        The stump or the transformer.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    namespace : str</span>
+<span class="sd">        E.g. ``"PivotTransformer-1a2b3c4d"``.</span>
+<span class="sd">    """</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s2">&gt;"</span>
+              <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
+              <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">estimator</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">repr</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">estimator</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">digest</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025-2026, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
