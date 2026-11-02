@@ -7,13 +7,17 @@ from RuleTree.exceptions import NoSplitFoundWarning
 
 
 class BaseMatrix(RuleTreeBaseStump, ABC):
-    def __init__(self, min_samples_leaf=1, random_state=42, criterion=None, batch_size=None, n_bins=None):
+    def __init__(self, min_samples_leaf=1, random_state=42, criterion=None, batch_size=None, n_bins=None, protected_attribute_idx=None, fairness_weight=1.0):
         self.is_categorical = False
         self.feature = None
         self.threshold = None
         self.categorical = None
         self.numerical = None
         self.bin_edges = {}
+        self.protected_attribute_idx = protected_attribute_idx
+        self.fairness_weight = fairness_weight
+        self.protected_attribute = None
+        self.ideal = None
 
         self.batch_size = batch_size
         self.n_bins = n_bins if n_bins is not None and n_bins > 0 else None
@@ -25,7 +29,9 @@ class BaseMatrix(RuleTreeBaseStump, ABC):
             'criterion': criterion,
             'min_samples_leaf': min_samples_leaf,
             'batch_size': batch_size,
-            'n_bins': n_bins
+            'n_bins': n_bins,
+            'protected_attribute_idx': protected_attribute_idx,
+            'fairness_weight': fairness_weight
         }
 
         self.impurity = [0.0, 0.0, 0.0]  # padre, sx, dx
@@ -64,15 +70,22 @@ class BaseMatrix(RuleTreeBaseStump, ABC):
         m = X.shape[1]  # Numero di features
         batch_size = self.batch_size or m  # Dimensione del batch oppure m stesso se non specificato
 
+        if self.protected_attribute_idx is not None:
+            self.protected_attribute = X[:, self.protected_attribute_idx].astype(int)
+            self.ideal = np.bincount(self.protected_attribute) / n_samples
+
         if self.n_bins is not None:
             X = self._apply_binning(X)
+
 
         return {
             "X": X,
             "y": y,
             "n_samples": n_samples,
             "m": m,
-            "batch_size": batch_size
+            "batch_size": batch_size,
+            "protected_attribute": self.protected_attribute,
+            "ideal": self.ideal
         }
 
     def _finalize_fit(self, X, y, best_feature, best_threshold):

@@ -7,8 +7,8 @@ from RuleTree.stumps.utils.ClassificationImpurity import ClassificationImpurity
 
 class ClassifierBaseMatrix(BaseMatrix, DecisionTreeStumpClassifier):
     def __init__(self, min_samples_leaf=1, class_weight=None, random_state=42, criterion=None, batch_size=None,
-                 n_bins=None):
-        super().__init__(min_samples_leaf, random_state, criterion, batch_size, n_bins)
+                 n_bins=None, protected_attribute_idx=None, fairness_weight=1.0):
+        super().__init__(min_samples_leaf, random_state, criterion, batch_size, n_bins, protected_attribute_idx, fairness_weight)
         self.kwargs['class_weight'] = class_weight
         self.class_weight = class_weight
 
@@ -48,6 +48,9 @@ class ClassifierBaseMatrix(BaseMatrix, DecisionTreeStumpClassifier):
         n_samples = data["n_samples"]
         m = data["m"]
         batch_size = data["batch_size"]
+        protected_attribute = data["protected_attribute"]
+        ideal = data["ideal"]
+
 
         y = np.asarray(y).ravel()
         class_weight = None
@@ -64,12 +67,17 @@ class ClassifierBaseMatrix(BaseMatrix, DecisionTreeStumpClassifier):
             "y_onehot": y_onehot,
             "n_samples": n_samples,
             "m": m,
-            "batch_size": batch_size
+            "batch_size": batch_size,
+            "protected_attribute": protected_attribute,
+            "ideal": ideal
         }
 
     def _calculate_gain(self, sx_mask, data):
         return ClassificationImpurity.calculate_gain(
             sx_mask,
             data["y_onehot"],
-            self.impurity_fun
+            self.impurity_fun,
+            protected_attribute=self.protected_attribute,
+            ideal=self.ideal,
+            fairness_weight=self.fairness_weight
         )

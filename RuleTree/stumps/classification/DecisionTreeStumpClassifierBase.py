@@ -25,7 +25,7 @@ class DecisionTreeStumpClassifierBase(DecisionTreeStumpClassifier):
         impurity_fun (function): Function used to calculate impurity (gini, entropy, etc.).
     """
 
-    def __init__(self, min_samples_leaf=1, class_weight=None, random_state=42, criterion=None):
+    def __init__(self, min_samples_leaf=1, class_weight=None, random_state=42, criterion=None, protected_attribute_idx=None, fairness_weight=1.0):
         """
         Initializes the DecisionTreeStumpClassifier.
 
@@ -48,11 +48,17 @@ class DecisionTreeStumpClassifierBase(DecisionTreeStumpClassifier):
         self.class_weight = class_weight
         self.min_samples_leaf = min_samples_leaf
         self.random_state = random_state
+        self.protected_attribute_idx = protected_attribute_idx
+        self.fairness_weight = fairness_weight
+        self.protected_attribute = None
+        self.ideal = None
         self.kwargs = {
             'class_weight': class_weight,
             'random_state': random_state,
             'criterion': criterion,
-            'min_samples_leaf': min_samples_leaf
+            'min_samples_leaf': min_samples_leaf,
+            'protected_attribute_idx': protected_attribute_idx,
+            'fairness_weight': fairness_weight
         }
 
         self.impurity = [0.0, 0.0, 0.0]  # padre, sx, dx
@@ -103,6 +109,14 @@ class DecisionTreeStumpClassifierBase(DecisionTreeStumpClassifier):
             context.categorical = self.categorical
             context.numerical = self.numerical
 
+        if self.protected_attribute_idx is not None:
+            self.protected_attribute = X[:, self.protected_attribute_idx].astype(int)
+
+            self.ideal = (
+                    np.bincount(self.protected_attribute)
+                    / len(self.protected_attribute)
+            )
+
         best_info_gain = -np.inf  # Inizializzo gain a -infty
 
         # Calcolo impurità del padre una volta sola
@@ -118,16 +132,55 @@ class DecisionTreeStumpClassifierBase(DecisionTreeStumpClassifier):
                     dx_mask = X[:, feature] > threshold  # Maschera booleana per figlio dx
 
                 # Calcolo impurità per figlio sx e dx
-                self.impurity[1] = self.impurity_fun(y[sx_mask], None, class_weight)
-                self.impurity[2] = self.impurity_fun(y[dx_mask], None, class_weight)
+                # Calcolo impurità per figlio
+                imp_left = self.impurity_fun(
+                    y[sx_mask], None, class_weight
+                )
 
-                # Sommo #features andate a sx e dx
+                imp_right = self.impurity_fun(
+                    y[dx_mask], None, class_weight
+                )
+
                 sx_n = np.sum(sx_mask)
                 dx_n = np.sum(dx_mask)
 
-                # Calcolo gain
-                weighted_children = (sx_n / len_y) * self.impurity[1] + (dx_n / len_y) * self.impurity[2]
-                current_info_gain = self.impurity[0] - weighted_children
+                # Fairness
+                if self.protected_attribute is not None and self.ideal is not None:
+                    protected_left = self.protected_attribute[sx_mask]
+                    protected_right = self.protected_attribute[dx_mask]
+
+                    protected_prob_left = (
+                            np.bincount(protected_left, minlength=len(self.ideal))
+                            / len(protected_left)
+                    )
+
+                    protected_prob_right = (
+                            np.bincount(protected_right, minlength=len(self.ideal))
+                            / len(protected_right)
+                    )
+
+                    mfc_left = np.mean(
+                        np.abs(protected_prob_left - self.ideal)
+                    )
+
+                    mfc_right = np.mean(
+                        np.abs(protected_prob_right - self.ideal)
+                    )
+
+                    # Fairness penalty sui due figli
+                    imp_left += self.fairness_weight * mfc_left * imp_left
+                    imp_right += self.fairness_weight * mfc_right * imp_left
+
+                # Gain
+                weighted_children = (
+                        (sx_n / len_y) * imp_left
+                        + (dx_n / len_y) * imp_right
+                )
+
+                current_info_gain = (
+                        self.impurity[0]
+                        - weighted_children
+                )
 
                 if best_info_gain < current_info_gain:
                     best_info_gain = current_info_gain
@@ -135,9 +188,12 @@ class DecisionTreeStumpClassifierBase(DecisionTreeStumpClassifier):
                     self.feature = feature
                     self.is_categorical = feature in self.categorical
 
-            # no split
-            if self.feature is None:
-                raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
+                    self.impurity[1] = imp_left
+                    self.impurity[2] = imp_right
+
+        # no split
+        if self.feature is None:
+            raise NoSplitFoundWarning(f"No split found for X {X.shape} and y {np.unique(y)}")
 
         return self
 
