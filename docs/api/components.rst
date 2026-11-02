@@ -39,4 +39,7 @@ Splitters
    RegressionSplitter
    XGBoostSplitter
    FairSplitter
+   FlatMatrixClassificationSplitter
+   FlatMatrixRegressionSplitter
    ~DecisionTreeSplitter.DecisionTreeSplitter
+   ~FlatMatrixSplitter.FlatMatrixSplitter

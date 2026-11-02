@@ -77,6 +77,10 @@ The library provides these components:
      - the split with the highest XGBoost gain
    * - :class:`~RuleTree.stumps.splitters.FairSplitter`
      - the best split whose children are fair with respect to some sensitive features
+   * - :class:`~RuleTree.stumps.splitters.FlatMatrixClassificationSplitter`,
+       :class:`~RuleTree.stumps.splitters.FlatMatrixRegressionSplitter`
+     - the best split among all the candidates evaluated together with matrix operations, for the
+       splitters that penalize the impurity of the children
 
 A new stump therefore needs only the component that is new: a transformer, to split on new
 features; a splitter, to choose the splits in a new way.
