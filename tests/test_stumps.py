@@ -22,7 +22,7 @@ from RuleTree.stumps.splitters import FairSplitter, RegressionSplitter
 from RuleTree.stumps.transformers import MatrixTransformer, PivotTransformer
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.utils.data_utils import json_numpy_encoder
-from RuleTree.utils.define import DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_REG
+from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_REG
 
 
 def shapelet_kwargs():
@@ -92,9 +92,9 @@ def test_stump_contract(make_stump, data_type, dataset, continuous, request):
 def test_stump_rejects_unsupported_data(time_series):
     X, y = time_series
 
-    with pytest.raises(ValueError, match="does not support"):
-        PivotTreeStumpClassifier().fit({DATA_TYPE_TS: X}, y, data_type=DATA_TYPE_TS,
-                                       context=None, node_id=None, cache=None)
+    with pytest.raises(ValueError, match="does not support"):  # oblique splits on tabular data only
+        ObliqueDecisionTreeStumpClassifier().fit({DATA_TYPE_TS: X}, y, data_type=DATA_TYPE_TS,
+                                                 context=None, node_id=None, cache=None)
 
 
 def test_pivot_classifier(iris):
@@ -184,7 +184,7 @@ def test_composed_stump(diabetes):
     stump = Stump(PivotTransformer(MODEL_TYPE_REG, tree_params={"random_state": 0}),
                   FairSplitter(penalty="balance", sensible_attribute=0, n_jobs=1))
     assert stump.task == MODEL_TYPE_REG
-    assert stump.supported_data_types == (DATA_TYPE_TABULAR,)
+    assert stump.supported_data_types == (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)  # the ones of the pivots
 
     model = RuleTreeRegressor(max_depth=2, base_stumps=stump).fit(X, y)
     loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))

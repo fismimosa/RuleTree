@@ -12,8 +12,9 @@ from RuleTree.utils.define import MODEL_TYPE_CLF
 
 class ObliquePivotTransformer(PivotTransformer):
     """
-    Transformer of tabular data into oblique directions on the distances from the candidate pivots,
-    e.g. ``0.7 * P_12 - 0.3 * P_57`` where ``P_i`` is the distance from the training instance ``i``.
+    Transformer of tabular data, time series and images into oblique directions on the distances from
+    the candidate pivots, e.g. ``0.7 * P_12 - 0.3 * P_57`` where ``P_i`` is the distance from the
+    training instance ``i``.
 
     The candidate pivots are selected as in
     :class:`~RuleTree.stumps.transformers.PivotTransformer.PivotTransformer`, but the discriminative
@@ -117,7 +118,7 @@ class ObliquePivotTransformer(PivotTransformer):
         Parameters
         ----------
         X : numpy.ndarray
-            Tabular data, all the instances.
+            Data of the transformer's type, all the instances.
         y : numpy.ndarray
             Target, all the instances.
         idx : numpy.ndarray, default=None
@@ -164,7 +165,7 @@ class ObliquePivotTransformer(PivotTransformer):
         Parameters
         ----------
         X : numpy.ndarray
-            Tabular data.
+            Data of the transformer's type (time series and images are flattened).
         context : RuleTree, default=None
             The tree, None outside a tree.
         node_id : str, default=None

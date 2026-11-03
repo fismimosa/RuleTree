@@ -7,9 +7,9 @@ from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionT
 
 class ObliqueProximityPivotTreeStumpClassifier(ProximityPivotTreeStump, DecisionTreeStumpClassifier):
     """
-    Oblique proximity pivot stump for classification of tabular data: as
-    :class:`~RuleTree.stumps.classification.ProximityPivotTreeStumpClassifier.ProximityPivotTreeStumpClassifier`
-    (the instances closer to one pivot than to another one go left, ``P_a <= P_b``), but the
+    Oblique proximity pivot stump for classification of tabular data, time series and images: as :class:
+    `~RuleTree.stumps.classification.ProximityPivotTreeStumpClassifier.ProximityPivotTreeStumpClassifier
+    ` (the instances closer to one pivot than to another one go left, ``P_a <= P_b``), but the
     discriminative pivots of each class are the instances combined by an oblique direction on the
     distances (``oblique_split_type``), instead of the root split of a decision tree: up to
     ``max_oblique_features`` (Householder) or two (bivariate) for each class.

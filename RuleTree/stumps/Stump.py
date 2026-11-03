@@ -56,7 +56,7 @@ class Stump(RuleTreeBaseStump):
     >>> X, y = load_diabetes(return_X_y=True)
     >>> stump = Stump(PivotTransformer(MODEL_TYPE_REG), RegressionSplitter())
     >>> stump.task, stump.supported_data_types
-    ('reg', ('tabular',))
+    ('reg', ('tabular', 'ts', 'image'))
     >>> model = RuleTreeRegressor(max_depth=2, base_stumps=stump).fit(X[:100], y[:100])
     """
 

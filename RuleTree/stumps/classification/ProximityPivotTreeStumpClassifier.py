@@ -6,9 +6,9 @@ from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionT
 
 class ProximityPivotTreeStumpClassifier(ProximityPivotTreeStump, DecisionTreeStumpClassifier):
     """
-    Proximity pivot stump for classification of tabular data: the instances closer to one *pivot* than
-    to another one go left (``P_a <= P_b``, where ``P_i`` is the distance from the training instance
-    ``i``).
+    Proximity pivot stump for classification of tabular data, time series and images: the instances
+    closer to one *pivot* than to another one go left (``P_a <= P_b``, where ``P_i`` is the distance
+    from the training instance ``i``).
 
     At each node, the candidate pivots are selected as in
     :class:`~RuleTree.stumps.classification.PivotTreeStumpClassifier.PivotTreeStumpClassifier` (for each

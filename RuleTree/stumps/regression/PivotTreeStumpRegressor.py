@@ -18,7 +18,7 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
     instance ``i``.
 
     It is a :class:`~RuleTree.stumps.Stump.Stump` made of a PivotTransformer and a
-    RegressionSplitter; it supports only tabular data.
+    RegressionSplitter; it supports tabular data, time series and images (flattened).
 
     Parameters
     ----------

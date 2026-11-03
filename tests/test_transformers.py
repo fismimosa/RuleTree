@@ -155,15 +155,15 @@ def test_partial_pivot_transformer(iris):
 
 @pytest.mark.parametrize("transformer, data_types", [
     (MatrixTransformer(), {"tabular", "ts", "image"}),
-    (PivotTransformer(), {"tabular"}),
+    (PivotTransformer(), {"tabular", "ts", "image"}),
     (PartialPivotTransformer(), {"tabular"}),
     (ShapeletTransformer(), {"ts"}),
     (HouseholderTransformer(), {"tabular"}),
     (BivariateTransformer(), {"tabular"}),
     (ProximityTransformer(), {"ts"}),
     (PartialProximityTransformer(), {"tabular"}),
-    (ProximityPivotTransformer(), {"tabular"}),
-    (ObliquePivotTransformer(), {"tabular"}),
+    (ProximityPivotTransformer(), {"tabular", "ts", "image"}),
+    (ObliquePivotTransformer(), {"tabular", "ts", "image"}),
 ], ids=["Matrix", "Pivot", "PartialPivot", "Shapelet", "Householder", "Bivariate", "Proximity", "PartialProximity",
         "ProximityPivot", "ObliquePivot"])
 def test_supported_data_types(transformer, data_types):

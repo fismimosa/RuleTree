@@ -7,9 +7,9 @@ from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionT
 
 class ObliquePivotTreeStumpClassifier(ObliquePivotTreeStump, DecisionTreeStumpClassifier):
     """
-    Oblique pivot stump for classification of tabular data: a threshold on a linear combination of the
-    distances from a few pivots (``0.7 * P_12 - 0.3 * P_57 <= t`` goes left, where ``P_i`` is the
-    distance from the training instance ``i``).
+    Oblique pivot stump for classification of tabular data, time series and images: a threshold on a
+    linear combination of the distances from a few pivots (``0.7 * P_12 - 0.3 * P_57 <= t`` goes left,
+    where ``P_i`` is the distance from the training instance ``i``).
 
     At each node, the candidate pivots are, for each class, its medoid and the instances combined by an
     oblique direction on the distances (``oblique_split_type``); then the distances of the instances

@@ -135,3 +135,22 @@ def test_old_transformer_in_a_saved_stump(iris):
     with pytest.warns(FutureWarning, match="ProximityPivotTransformer"):
         loaded = RuleTree.from_dict(json.loads(saved))
     assert np.array_equal(loaded.predict(X), model.predict(X))
+
+
+@pytest.mark.parametrize("stump", [PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier,
+                                   ObliquePivotTreeStumpClassifier, ObliqueProximityPivotTreeStumpClassifier])
+def test_pivot_stumps_on_images_and_time_series(stump):
+    """Images and time series are flattened: the same tree as on the flattened data, saved and loaded."""
+    from sklearn.datasets import load_digits
+
+    digits = load_digits()
+    images, y = digits.images[:300], digits.target[:300] % 3
+    series = images.reshape(len(images), 1, -1)
+    flat = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=stump()).fit(images.reshape(len(y), -1), y)
+
+    for argument, data in [("X_img", images), ("X_ts", series)]:
+        model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=stump()).fit(y=y, **{argument: data})
+        loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))
+
+        assert np.array_equal(model.predict(**{argument: data}), flat.predict(images.reshape(len(y), -1)))
+        assert np.array_equal(loaded.predict(**{argument: data}), model.predict(**{argument: data}))

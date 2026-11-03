@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer, get_feature_types
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.transformers._pivot_selection import PivotSelection
-from RuleTree.utils.define import MODEL_TYPE_CLF
+from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_CLF
 
 
 class PivotTransformer(RuleTreeBaseTransformer):
@@ -15,6 +15,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
     Transformer into the distances from candidate pivots, instances of the node that describe a
     class (medoids) or separate the classes.
 
+    Time series and images are flattened into one feature per value, so a tree can have pivot stumps
+    on each of its data types (e.g. with ``base_stumps`` as tuples with the data types of each stump).
     The candidates are selected among the instances of the node. The distances are computed on the
     numerical features and on the one-hot encoding of the categorical ones, all standardized (z-score);
     the encoding, the scaler and the distance matrix of the whole data set are computed once and cached
@@ -80,6 +82,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
     >>> model = model.fit(X, y)
     """
 
+    supported_data_types = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
+
     def __init__(self, ml_task=MODEL_TYPE_CLF, distance_measure='euclidean', k=None, reg_contrast_lambda=.2,
                  reg_max_thresholds=None, tree_params=None):
         """Initialize the PivotTransformer; see the class documentation for the parameters."""
@@ -126,6 +130,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         """
         if idx is None:
             idx = np.arange(len(X))
+        X = _flatten(X)
         self.num_pre_transformed_, self.cat_pre_transformed_ = get_feature_types(X, self._get_cache(cache), data_type)
 
         if len(self.num_pre_transformed_) + len(self.cat_pre_transformed_) == 0:
@@ -157,7 +162,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         Parameters
         ----------
         X : numpy.ndarray
-            Tabular data.
+            Data of the transformer's type (time series and images are flattened).
         context : RuleTree, default=None
             The tree, None outside a tree.
         node_id : str, default=None
@@ -178,13 +183,13 @@ class PivotTransformer(RuleTreeBaseTransformer):
         Parameters
         ----------
         X : numpy.ndarray
-            Tabular data.
+            Data of the transformer's type (time series and images are flattened).
 
         Returns
         -------
         X_encoded : numpy.ndarray of shape (n_samples, n_encoded_features)
         """
-        return self.scaler_.transform(_one_hot(X, self.num_pre_transformed_, self.cat_pre_transformed_,
+        return self.scaler_.transform(_one_hot(_flatten(X), self.num_pre_transformed_, self.cat_pre_transformed_,
                                                self.categories_))
 
     def select(self, feature):
@@ -314,6 +319,12 @@ def scaler_from_state(state: dict) -> StandardScaler:
     scaler.var_ = np.array(state['var_'])
     scaler.n_samples_seen_ = state['n_samples_seen_']
     return scaler
+
+
+def _flatten(X) -> np.ndarray:
+    """Tabular data as they are; time series and images flattened into one feature per value."""
+    X = np.asarray(X)
+    return X if X.ndim <= 2 else X.reshape(X.shape[0], -1)
 
 
 def categories_state(categories: list) -> list:

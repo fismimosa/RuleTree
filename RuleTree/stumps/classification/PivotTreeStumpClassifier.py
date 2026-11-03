@@ -17,7 +17,7 @@ class PivotTreeStumpClassifier(PivotTreeStump, DecisionTreeStumpClassifier):
     ``P_<i>`` is the distance from the training instance ``i``.
 
     It is a :class:`~RuleTree.stumps.Stump.Stump` made of a PivotTransformer and a
-    ClassificationSplitter; it supports only tabular data.
+    ClassificationSplitter; it supports tabular data, time series and images (flattened).
 
     Parameters
     ----------
