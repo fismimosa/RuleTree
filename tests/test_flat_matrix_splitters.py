@@ -7,7 +7,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from RuleTree import RuleTreeClassifier, RuleTreeRegressor
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.stumps.Stump import Stump
+from RuleTree.stumps.Stump import Stump, _params_from_dict, _params_to_dict
 from RuleTree.stumps.splitters import (FlatMatrixClassificationSplitter, FlatMatrixRegressionSplitter, candidate_mask,
                                        information_gain)
 from RuleTree.stumps.transformers import MatrixTransformer
@@ -239,6 +239,26 @@ def test_candidate_mask():
     assert np.array_equal(left[:, 0], X[:, 1] <= 5)
     assert np.array_equal(left[:, 1], X[:, 2] == "a")
     assert np.array_equal(left[:, 2], X[:, 2] == "b")
+
+
+def test_save_a_tree_with_a_gain_function(tmp_path, iris):
+    """The function is saved by name, in the JSON file, and the tree predicts the same after loading it."""
+    X_iris, y = iris
+    model = RuleTreeClassifier(max_depth=2, random_state=0,
+                               base_stumps=Stump(MatrixTransformer(),
+                                                 FlatMatrixClassificationSplitter(gain_function=balanced_gain)))
+    model.fit(X_iris, y)
+
+    model.to_dict(tmp_path / "tree.json")
+    loaded = RuleTreeClassifier.from_dict(tmp_path / "tree.json")
+
+    assert np.array_equal(loaded.predict(X_iris), model.predict(X_iris))
+    assert _params_from_dict(_params_to_dict({"gain_function": balanced_gain}))["gain_function"] is balanced_gain
+
+
+def test_lambda_cannot_be_saved():
+    with pytest.raises(ValueError, match="cannot be saved"):
+        _params_to_dict({"gain_function": lambda *args: 0})
 
 
 def test_update_statistics():

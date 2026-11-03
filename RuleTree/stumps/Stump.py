@@ -5,6 +5,7 @@ The stump made of a transformer (how the data are represented, see RuleTreeBaseT
 a splitter (how the split is chosen, see RuleTreeBaseSplitter).
 """
 import importlib
+import inspect
 
 import numpy as np
 import sklearn
@@ -351,9 +352,31 @@ class Stump(RuleTreeBaseStump):
 
 
 def _params_to_dict(params: dict) -> dict:
-    """Constructor parameters as a JSON-friendly dictionary: estimators (e.g. components) by type and parameters."""
-    return {name: _estimator_to_dict(value) if isinstance(value, BaseEstimator) else value
-            for name, value in params.items()}
+    """
+    Constructor parameters as a JSON-friendly dictionary: estimators (e.g. components) by type and parameters,
+    functions by name.
+
+    Parameters
+    ----------
+    params : dict
+        Parameters.
+
+    Returns
+    -------
+    params : dict
+        Saved parameters.
+
+    Raises
+    ------
+    ValueError
+        If a parameter is a function that cannot be imported, such as a lambda.
+    """
+    def to_dict(value):
+        if isinstance(value, BaseEstimator):
+            return _estimator_to_dict(value)
+        return _function_to_dict(value) if inspect.isfunction(value) else value
+
+    return {name: to_dict(value) for name, value in params.items()}
 
 
 def _params_from_dict(params: dict) -> dict:
@@ -368,10 +391,57 @@ def _params_from_dict(params: dict) -> dict:
     Returns
     -------
     params : dict
-        Parameters, with the estimators rebuilt.
+        Parameters, with the estimators and the functions rebuilt.
     """
-    return {name: _estimator_from_dict(value) if isinstance(value, dict) and "__estimator__" in value else value
-            for name, value in params.items()}
+    def from_dict(value):
+        if isinstance(value, dict) and "__estimator__" in value:
+            return _estimator_from_dict(value)
+        return _function_from_dict(value) if isinstance(value, dict) and "__function__" in value else value
+
+    return {name: from_dict(value) for name, value in params.items()}
+
+
+def _function_to_dict(function) -> dict:
+    """
+    JSON-friendly representation of a function: its module and its name.
+
+    Parameters
+    ----------
+    function : callable
+        The function.
+
+    Returns
+    -------
+    dictionary : dict
+        ``{"__function__": "module.name"}``.
+
+    Raises
+    ------
+    ValueError
+        If the function cannot be imported, such as a lambda or a function defined inside another one.
+    """
+    if "<" in function.__qualname__:
+        raise ValueError(f"{function.__qualname__} cannot be saved: use a function defined at the top of a module")
+
+    return {"__function__": f"{function.__module__}.{function.__qualname__}"}
+
+
+def _function_from_dict(dictionary: dict):
+    """
+    Function from a dictionary created by _function_to_dict. It must be importable from its module (e.g. not
+    defined in a notebook or in ``__main__`` of another script).
+
+    Parameters
+    ----------
+    dictionary : dict
+        Representation of the function.
+
+    Returns
+    -------
+    function : callable
+    """
+    module, name = dictionary["__function__"].rsplit(".", 1)
+    return getattr(importlib.import_module(module), name)
 
 
 def _estimator_to_dict(estimator: BaseEstimator) -> dict:
