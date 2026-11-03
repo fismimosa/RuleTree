@@ -24,7 +24,8 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
     It does not replace ClassificationSplitter and RegressionSplitter, which are faster: it is meant for
     the choice of the split that a scikit-learn tree does not allow, through ``gain_function``.
 
-    A subclass defines ``task``, :meth:`_statistics`, :meth:`_impurity` and :meth:`_weight`.
+    A subclass defines ``task``, :meth:`_statistics`, :meth:`_impurity` and :meth:`_weight`, and, if some
+    children are not allowed, :meth:`_valid_children`.
 
     Parameters
     ----------
@@ -125,6 +126,21 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         -------
         weight : numpy.ndarray of shape (...)
         """
+
+    def _valid_children(self, statistics_left, statistics_right) -> np.ndarray:
+        """
+        Candidates whose children are allowed by the criterion: all of them by default.
+
+        Parameters
+        ----------
+        statistics_left, statistics_right : numpy.ndarray of shape (n_statistics, n_candidates)
+            Statistics of the children of each candidate.
+
+        Returns
+        -------
+        valid : numpy.ndarray of bool of shape (n_candidates,)
+        """
+        return np.ones(statistics_left.shape[1], dtype=bool)
 
     @staticmethod
     def _numerical_candidates(x, statistics) -> tuple:
@@ -303,9 +319,16 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         if not valid.any():
             raise NoSplitFoundWarning(f"No split with at least {self.min_samples_leaf} instances per side")
 
-        features, thresholds, is_categorical = features[valid], thresholds[valid], is_categorical[valid]
         statistics_left = statistics_left[valid].T
         statistics_right = statistics_node[:, None] - statistics_left
+        features, thresholds, is_categorical = features[valid], thresholds[valid], is_categorical[valid]
+
+        valid = self._valid_children(statistics_left, statistics_right)
+        if not valid.any():
+            raise NoSplitFoundWarning(f"No split allowed by the criterion {self.criterion!r}")
+
+        statistics_left, statistics_right = statistics_left[:, valid], statistics_right[:, valid]
+        features, thresholds, is_categorical = features[valid], thresholds[valid], is_categorical[valid]
         impurity_left, impurity_right = self._impurity(statistics_left), self._impurity(statistics_right)
         weight_left, weight_right = self._weight(statistics_left), self._weight(statistics_right)
 

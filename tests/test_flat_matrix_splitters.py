@@ -298,16 +298,17 @@ def test_classification_tree(iris):
     assert model.score(X_iris, y) == pytest.approx(reference.score(X_iris, y))
 
 
+@pytest.mark.parametrize("criterion", ["squared_error", "poisson"])
 @pytest.mark.parametrize("params", [{}, {"min_samples_leaf": 10}], ids=["default", "min_samples_leaf"])
 @pytest.mark.parametrize("weighted", [False, True], ids=["unweighted", "sample_weight"])
-def test_regression_as_scikit_learn(diabetes, params, weighted):
+def test_regression_as_scikit_learn(diabetes, criterion, params, weighted):
     """Same gain and impurity of the node as the split of a scikit-learn tree."""
     X_diabetes, y = diabetes
     sample_weight = np.random.default_rng(0).uniform(0.5, 2, len(y)) if weighted else None
 
-    flat = FlatMatrixRegressionSplitter(**params)
+    flat = FlatMatrixRegressionSplitter(criterion=criterion, **params)
     flat.fit(X_diabetes, y, list(range(X_diabetes.shape[1])), [], sample_weight, **FIT)
-    reference = DecisionTreeRegressor(max_depth=1, random_state=0, **params)
+    reference = DecisionTreeRegressor(max_depth=1, criterion=criterion, random_state=0, **params)
     reference.fit(X_diabetes, y, sample_weight=sample_weight)
 
     assert flat.gain_ == pytest.approx(get_info_gain(reference))
@@ -316,7 +317,21 @@ def test_regression_as_scikit_learn(diabetes, params, weighted):
 
 def test_regression_unknown_criterion():
     with pytest.raises(ValueError, match="criterion"):
-        FlatMatrixRegressionSplitter(criterion="poisson").fit(X, y_reg, NUMERICAL, [], **FIT)
+        FlatMatrixRegressionSplitter(criterion="unknown").fit(X, y_reg, NUMERICAL, [], **FIT)
+
+
+def test_poisson_children():
+    """A child whose target sums to 0 is not allowed, and a negative target is an error."""
+    X_counts = np.array([[1.0], [2.0], [3.0], [4.0]])
+    splitter = FlatMatrixRegressionSplitter(criterion="poisson")
+
+    splitter.fit(X_counts, np.array([0.0, 0.0, 1.0, 5.0]), [0], [], **FIT)
+    assert splitter.threshold_ == 3.5
+
+    with pytest.raises(NoSplitFoundWarning):
+        splitter.fit(X_counts, np.array([0.0, 0.0, 0.0, 5.0]), [0], [], **FIT)
+    with pytest.raises(ValueError, match="negative"):
+        splitter.fit(X_counts, np.array([-1.0, 0.0, 0.0, 5.0]), [0], [], **FIT)
 
 
 def test_regression_tree(diabetes):
