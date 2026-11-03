@@ -17,6 +17,8 @@ class FlatMatrixRegressionSplitter(FlatMatrixSplitter):
         Impurity measure.
     min_samples_leaf : int or float, default=1
         Minimum number of instances in each child (a fraction of the instances of the node if float).
+    gain_function : callable, default=None
+        Gain of all the candidates of a node, instead of the information gain (see FlatMatrixSplitter).
 
     Attributes
     ----------
@@ -27,7 +29,7 @@ class FlatMatrixRegressionSplitter(FlatMatrixSplitter):
     is_categorical_ : bool
         Whether the split is categorical.
     gain_ : float
-        Decrease of impurity of the split.
+        Gain of the split: the decrease of impurity, or the value of ``gain_function``.
     impurity_ : list of float
         Impurity of the node, of the left child and of the right child.
 
@@ -48,9 +50,9 @@ class FlatMatrixRegressionSplitter(FlatMatrixSplitter):
 
     task = MODEL_TYPE_REG
 
-    def __init__(self, criterion='squared_error', min_samples_leaf=1):
+    def __init__(self, criterion='squared_error', min_samples_leaf=1, gain_function=None):
         """Initialize the FlatMatrixRegressionSplitter; see the class documentation for the parameters."""
-        super().__init__(criterion, min_samples_leaf)
+        super().__init__(criterion, min_samples_leaf, gain_function)
 
     def _statistics(self, y, sample_weight=None) -> np.ndarray:
         """

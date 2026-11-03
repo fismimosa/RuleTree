@@ -22,7 +22,7 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
     sorted numerical feature, sums by value along each categorical feature.
 
     It does not replace ClassificationSplitter and RegressionSplitter, which are faster: it is meant for
-    the choice of the split that a scikit-learn tree does not allow.
+    the choice of the split that a scikit-learn tree does not allow, through ``gain_function``.
 
     A subclass defines ``task``, :meth:`_statistics`, :meth:`_impurity` and :meth:`_weight`.
 
@@ -32,6 +32,15 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         Impurity measure (see the subclasses).
     min_samples_leaf : int or float, default=1
         Minimum number of instances in each child (a fraction of the instances of the node if float).
+    gain_function : callable, default=None
+        Gain of all the candidates of a node, called once per node with their impurities, the data of the
+        node and the conditions of the splits; None for :func:`information_gain`. The signature is
+        ``f(impurity, impurity_left, impurity_right, weight_left, weight_right, X, y, features, thresholds,
+        is_categorical, sample_weight=None) -> gains``: the arrays have one value per candidate, and X, y
+        and sample_weight are the ones of the node. X is the matrix of the transformer of the stump, so
+        with a transformer other than MatrixTransformer it may not contain the original columns.
+        A gain of -inf or nan discards a candidate. :func:`candidate_mask` builds the mask of the candidates,
+        for the functions that need it. To save a tree, the function must be importable, not a lambda.
 
     Attributes
     ----------
@@ -42,15 +51,33 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
     is_categorical_ : bool
         Whether the split is categorical.
     gain_ : float
-        Gain of the split.
+        Gain of the split, as returned by ``gain_function``.
     impurity_ : list of float
-        Impurity of the node, of the left child and of the right child.
+        Impurity of the node, of the left child and of the right child, not changed by ``gain_function``.
+
+    Examples
+    --------
+    A gain that prefers the splits with children of similar size:
+
+    >>> from sklearn.datasets import load_iris
+    >>> from RuleTree.stumps.splitters import FlatMatrixClassificationSplitter, candidate_mask, information_gain
+    >>> def balanced_gain(impurity, impurity_left, impurity_right, weight_left, weight_right, X, y, features,
+    ...                   thresholds, is_categorical, sample_weight=None):
+    ...     left_fraction = candidate_mask(X, features, thresholds, is_categorical).mean(axis=0)
+    ...     gains = information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right)
+    ...     return gains - abs(left_fraction - 0.5)
+    >>> X, y = load_iris(return_X_y=True)
+    >>> splitter = FlatMatrixClassificationSplitter(gain_function=balanced_gain)
+    >>> splitter = splitter.fit(X, y, numerical=[0, 1, 2, 3], categorical=[], context=None, node_id=None, cache=None)
+    >>> splitter.feature_, round(splitter.threshold_, 2)
+    (2, 4.35)
     """
 
-    def __init__(self, criterion, min_samples_leaf=1):
+    def __init__(self, criterion, min_samples_leaf=1, gain_function=None):
         """Initialize the splitter; see the class documentation for the parameters."""
         self.criterion = criterion
         self.min_samples_leaf = min_samples_leaf
+        self.gain_function = gain_function
 
     @abstractmethod
     def _statistics(self, y: np.ndarray, sample_weight=None) -> np.ndarray:
@@ -253,9 +280,10 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         Raises
         ------
         NoSplitFoundWarning
-            If the node is pure, or no candidate has at least min_samples_leaf instances on each side.
+            If the node is pure, no candidate has at least min_samples_leaf instances on each side, or
+            gain_function discards all the candidates.
         ValueError
-            If y has several targets.
+            If y has several targets, or gain_function does not return one gain per candidate.
         """
         check_one_target(y, self.__class__.__name__)
         y = np.asarray(y).ravel()
@@ -281,9 +309,20 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         impurity_left, impurity_right = self._impurity(statistics_left), self._impurity(statistics_right)
         weight_left, weight_right = self._weight(statistics_left), self._weight(statistics_right)
 
-        gains = information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right)
+        if self.gain_function is None:
+            gains = information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right)
+        else:
+            gains = np.asarray(self.gain_function(impurity, impurity_left, impurity_right, weight_left, weight_right,
+                                                  X, y, features, thresholds, is_categorical, sample_weight),
+                               dtype=float)
+            if gains.shape != features.shape:
+                raise ValueError(f"gain_function returned the shape {gains.shape} instead of {features.shape}")
+            gains = np.where(np.isnan(gains), -np.inf, gains)
 
         best = int(np.argmax(gains))
+        if gains[best] == -np.inf:
+            raise NoSplitFoundWarning("gain_function discarded all the candidate splits")
+
         self.feature_ = int(features[best])
         self.threshold_ = thresholds[best]
         self.is_categorical_ = bool(is_categorical[best])
@@ -337,3 +376,35 @@ def information_gain(impurity, impurity_left, impurity_right, weight_left, weigh
     gains : numpy.ndarray of shape (n_candidates,)
     """
     return impurity - (weight_left * impurity_left + weight_right * impurity_right) / (weight_left + weight_right)
+
+
+def candidate_mask(X, features, thresholds, is_categorical) -> np.ndarray:
+    """
+    Instances that go to the left child of each candidate split. It uses n_samples * n_candidates bytes; a
+    function can pass subsets of the candidates to process them in blocks.
+
+    Parameters
+    ----------
+    X : numpy.ndarray of shape (n_samples, n_features)
+        Feature matrix.
+    features : numpy.ndarray of int of shape (n_candidates,)
+        Column of each candidate.
+    thresholds : numpy.ndarray of shape (n_candidates,)
+        Threshold or value of each candidate.
+    is_categorical : numpy.ndarray of bool of shape (n_candidates,)
+        Whether each candidate is categorical.
+
+    Returns
+    -------
+    left : numpy.ndarray of bool of shape (n_samples, n_candidates)
+    """
+    left = np.empty((len(X), len(features)), dtype=bool)
+    for categorical in (False, True):
+        for feature in np.unique(features[is_categorical == categorical]):
+            columns = np.flatnonzero((features == feature) & (is_categorical == categorical))
+            if categorical:
+                left[:, columns] = X[:, feature, None] == thresholds[columns]
+            else:
+                left[:, columns] = X[:, feature, None].astype(float) <= thresholds[columns].astype(float)
+
+    return left

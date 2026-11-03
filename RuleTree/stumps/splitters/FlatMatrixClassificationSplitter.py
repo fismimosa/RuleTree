@@ -19,6 +19,8 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
         Minimum number of instances in each child (a fraction of the instances of the node if float).
     class_weight : dict, 'balanced' or None, default=None
         Weights of the classes in the impurity; 'balanced' weighs them inversely to their frequency.
+    gain_function : callable, default=None
+        Gain of all the candidates of a node, instead of the information gain (see FlatMatrixSplitter).
 
     Attributes
     ----------
@@ -29,7 +31,7 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
     is_categorical_ : bool
         Whether the split is categorical.
     gain_ : float
-        Information gain of the split.
+        Gain of the split: the information gain, or the value of ``gain_function``.
     impurity_ : list of float
         Impurity of the node, of the left child and of the right child.
 
@@ -52,9 +54,9 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
 
     task = MODEL_TYPE_CLF
 
-    def __init__(self, criterion='gini', min_samples_leaf=1, class_weight=None):
+    def __init__(self, criterion='gini', min_samples_leaf=1, class_weight=None, gain_function=None):
         """Initialize the FlatMatrixClassificationSplitter; see the class documentation for the parameters."""
-        super().__init__(criterion, min_samples_leaf)
+        super().__init__(criterion, min_samples_leaf, gain_function)
         self.class_weight = class_weight
 
     def _impurity_fun(self):

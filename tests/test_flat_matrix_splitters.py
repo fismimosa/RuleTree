@@ -8,7 +8,8 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from RuleTree import RuleTreeClassifier, RuleTreeRegressor
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.Stump import Stump
-from RuleTree.stumps.splitters import FlatMatrixClassificationSplitter, FlatMatrixRegressionSplitter
+from RuleTree.stumps.splitters import (FlatMatrixClassificationSplitter, FlatMatrixRegressionSplitter, candidate_mask,
+                                       information_gain)
 from RuleTree.stumps.transformers import MatrixTransformer
 from RuleTree.utils.data_utils import get_info_gain, json_numpy_encoder
 
@@ -20,6 +21,28 @@ X = np.array([[0.3, 1, "b"], [0.9, 2, "b"], [0.1, 3, "b"], [0.7, 4, "b"],
 y_clf = np.array([0, 0, 0, 0, 1, 1, 1, 1])
 y_reg = np.array([1.0, 1.1, 0.9, 1.0, 5.0, 5.2, 4.8, 5.0])
 NUMERICAL, CATEGORICAL = [0, 1], [2]
+
+
+def not_on_column_1(impurity, impurity_left, impurity_right, weight_left, weight_right, X, y, features, thresholds,
+                    is_categorical, sample_weight=None):
+    """Discards the candidates on the column 1, the best one for the data above."""
+    gains = information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right)
+    return np.where(features == 1, -np.inf, gains)
+
+
+def discard_all(impurity, impurity_left, *args):
+    return np.full(len(impurity_left), np.nan)
+
+
+def wrong_shape(*args):
+    return np.zeros(1)
+
+
+def balanced_gain(impurity, impurity_left, impurity_right, weight_left, weight_right, X, y, features, thresholds,
+                  is_categorical, sample_weight=None):
+    """Penalizes the children of different size, from the mask of the candidates."""
+    left_fraction = candidate_mask(X, features, thresholds, is_categorical).mean(axis=0)
+    return information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right) - abs(left_fraction - 0.5)
 
 
 @pytest.mark.parametrize("splitter, y", [(FlatMatrixClassificationSplitter(), y_clf),
@@ -176,6 +199,46 @@ def test_threshold_between_adjacent_values(splitter):
     splitter.fit(X_adjacent, y, [0], [], **FIT)
 
     assert np.array_equal(splitter.apply(X_adjacent), [1, 1, 2, 2])
+
+
+@pytest.mark.parametrize("splitter, y", [(FlatMatrixClassificationSplitter, y_clf),
+                                         (FlatMatrixRegressionSplitter, y_reg)], ids=["clf", "reg"])
+def test_gain_function_changes_the_split(splitter, y):
+    """gain_ is the value of the function; impurity_ is the one of the split."""
+    fitted = splitter(gain_function=not_on_column_1).fit(X, y, NUMERICAL, CATEGORICAL, **FIT)
+    best = splitter().fit(X, y, NUMERICAL, CATEGORICAL, **FIT)
+
+    assert best.feature_ == 1 and fitted.feature_ != 1
+    assert fitted.gain_ < best.gain_
+
+
+def test_gain_function_with_the_mask(iris):
+    X_iris, y = iris
+
+    fitted = FlatMatrixClassificationSplitter(gain_function=balanced_gain).fit(X_iris, y, [0, 1, 2, 3], [], **FIT)
+    left = fitted.apply(X_iris) == 1
+
+    assert abs(left.mean() - 0.5) < abs((X_iris[:, 2] <= 2.45).mean() - 0.5)
+
+
+@pytest.mark.parametrize("splitter, y", [(FlatMatrixClassificationSplitter, y_clf),
+                                         (FlatMatrixRegressionSplitter, y_reg)], ids=["clf", "reg"])
+def test_gain_function_errors(splitter, y):
+    with pytest.raises(NoSplitFoundWarning):
+        splitter(gain_function=discard_all).fit(X, y, NUMERICAL, CATEGORICAL, **FIT)
+    with pytest.raises(ValueError, match="shape"):
+        splitter(gain_function=wrong_shape).fit(X, y, NUMERICAL, CATEGORICAL, **FIT)
+
+
+def test_candidate_mask():
+    features = np.array([1, 2, 2])
+    thresholds = np.array([5.0, "a", "b"], dtype=object)
+
+    left = candidate_mask(X, features, thresholds, np.array([False, True, True]))
+
+    assert np.array_equal(left[:, 0], X[:, 1] <= 5)
+    assert np.array_equal(left[:, 1], X[:, 2] == "a")
+    assert np.array_equal(left[:, 2], X[:, 2] == "b")
 
 
 def test_update_statistics():
