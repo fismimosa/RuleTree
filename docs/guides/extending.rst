@@ -64,7 +64,7 @@ The library provides these components:
    * - :class:`~RuleTree.stumps.transformers.ProximityTransformer`,
        :class:`~RuleTree.stumps.transformers.PartialProximityTransformer`
      - for each pair of shapelets (partial pivots), whether the instance is closer to the second one
-   * - :class:`~RuleTree.stumps.transformers.MultiplePivotTransformer`
+   * - :class:`~RuleTree.stumps.transformers.ProximityPivotTransformer`
      - for each pair of pivots, whether the instance is closer to the second one
    * - :class:`~RuleTree.stumps.transformers.ObliquePivotTransformer`
      - linear combinations of the distances from the pivots of the node

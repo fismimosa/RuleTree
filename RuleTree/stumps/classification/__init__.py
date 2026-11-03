@@ -5,9 +5,9 @@ from .PartialPivotTreeStumpClassifier import PartialPivotTreeStumpClassifier
 from .ObliqueDecisionTreeStumpClassifier import ObliqueDecisionTreeStumpClassifier
 from .ProximityTreeStumpClassifier import ProximityTreeStumpClassifier
 from .PartialProximityTreeStumpClassifier import PartialProximityTreeStumpClassifier
-from .MultiplePivotTreeStumpClassifier import MultiplePivotTreeStumpClassifier
+from .ProximityPivotTreeStumpClassifier import ProximityPivotTreeStumpClassifier
 from .ObliquePivotTreeStumpClassifier import ObliquePivotTreeStumpClassifier
-from .MultipleObliquePivotTreeStumpClassifier import MultipleObliquePivotTreeStumpClassifier
+from .ObliqueProximityPivotTreeStumpClassifier import ObliqueProximityPivotTreeStumpClassifier
 
 __all__ = [
     "DecisionTreeStumpClassifier",
@@ -17,7 +17,13 @@ __all__ = [
     "ObliqueDecisionTreeStumpClassifier",
     "ProximityTreeStumpClassifier",
     "PartialProximityTreeStumpClassifier",
-    "MultiplePivotTreeStumpClassifier",
+    "ProximityPivotTreeStumpClassifier",
     "ObliquePivotTreeStumpClassifier",
-    "MultipleObliquePivotTreeStumpClassifier",
+    "ObliqueProximityPivotTreeStumpClassifier",
 ]
+
+from RuleTree.utils.deprecation import deprecated_aliases  # noqa: E402
+
+__getattr__ = deprecated_aliases(__name__, {"MultiplePivotTreeStumpClassifier": ProximityPivotTreeStumpClassifier,
+                                            "MultipleObliquePivotTreeStumpClassifier":
+                                                ObliqueProximityPivotTreeStumpClassifier})

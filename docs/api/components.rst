@@ -17,7 +17,7 @@ Transformers
    MatrixTransformer
    PivotTransformer
    PartialPivotTransformer
-   MultiplePivotTransformer
+   ProximityPivotTransformer
    ObliquePivotTransformer
    ObliqueTransformer
    HouseholderTransformer

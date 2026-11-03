@@ -1,12 +1,12 @@
-"""MultiplePivotTreeStumpClassifier: which of two pivots is closer to the instance, for classification."""
+"""ProximityPivotTreeStumpClassifier: which of two pivots is closer to the instance, for classification."""
 
-from RuleTree.stumps.PivotTreeStump import MultiplePivotTreeStump
+from RuleTree.stumps.PivotTreeStump import ProximityPivotTreeStump
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 
-class MultiplePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTreeStumpClassifier):
+class ProximityPivotTreeStumpClassifier(ProximityPivotTreeStump, DecisionTreeStumpClassifier):
     """
-    Multiple pivot stump for classification of tabular data: the instances closer to one *pivot* than
+    Proximity pivot stump for classification of tabular data: the instances closer to one *pivot* than
     to another one go left (``P_a <= P_b``, where ``P_i`` is the distance from the training instance
     ``i``).
 
@@ -17,7 +17,7 @@ class MultiplePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTreeStump
     standardized features (categorical ones one-hot encoded); the distance matrix of the training set is
     computed once and cached in the tree.
 
-    It is a :class:`~RuleTree.stumps.Stump.Stump` made of a MultiplePivotTransformer and a
+    It is a :class:`~RuleTree.stumps.Stump.Stump` made of a ProximityPivotTransformer and a
     ClassificationSplitter.
 
     Parameters
@@ -45,7 +45,7 @@ class MultiplePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTreeStump
 
     Attributes
     ----------
-    transformer_ : MultiplePivotTransformer
+    transformer_ : ProximityPivotTransformer
         The fitted transformer.
     splitter_ : ClassificationSplitter
         The fitted splitter (feature, threshold, gain and impurity of the split).
@@ -57,24 +57,24 @@ class MultiplePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTreeStump
     See Also
     --------
     PivotTreeStumpClassifier : a threshold on the distance from a single pivot.
-    MultipleObliquePivotTreeStumpClassifier : the same comparison, with pivots found by oblique splits.
+    ObliqueProximityPivotTreeStumpClassifier : the same comparison, with pivots found by oblique splits.
 
     Examples
     --------
     >>> from sklearn.datasets import load_iris
     >>> from RuleTree import RuleTreeClassifier
-    >>> from RuleTree.stumps.classification import MultiplePivotTreeStumpClassifier
+    >>> from RuleTree.stumps.classification import ProximityPivotTreeStumpClassifier
     >>> X, y = load_iris(return_X_y=True)
-    >>> stump = MultiplePivotTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None, cache=None)
+    >>> stump = ProximityPivotTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None, cache=None)
     >>> stump.get_rule()["textual_rule"]  # closer to the training instance a than to b
     'P_27 <= P_76'
-    >>> model = RuleTreeClassifier(max_depth=2, base_stumps=MultiplePivotTreeStumpClassifier()).fit(X, y)
+    >>> model = RuleTreeClassifier(max_depth=2, base_stumps=ProximityPivotTreeStumpClassifier()).fit(X, y)
     """
 
     def __init__(self, distance_measure='euclidean',
                  criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
                  random_state=None, min_impurity_decrease=0.0, class_weight=None):
-        """Initialize the MultiplePivotTreeStumpClassifier; see the class documentation for the parameters."""
+        """Initialize the ProximityPivotTreeStumpClassifier; see the class documentation for the parameters."""
         self.distance_measure = distance_measure
         self.criterion = criterion
         self.min_samples_leaf = min_samples_leaf

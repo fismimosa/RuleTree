@@ -3,7 +3,7 @@ import pytest
 from sklearn.pipeline import make_pipeline
 
 from RuleTree import RuleTreeClassifier
-from RuleTree.stumps.classification import MultiplePivotTreeStumpClassifier, PivotTreeStumpClassifier
+from RuleTree.stumps.classification import PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier
 from RuleTree.utils.embeddings import ImageEmbedder, TextEmbedder
 
 pytest.importorskip("torch")
@@ -52,7 +52,7 @@ def test_image_embedder_without_linear_layer():
         ImageEmbedder("squeezenet1_0", weights=None, device="cpu").fit()  # a convolutional classifier
 
 
-@pytest.mark.parametrize("stump", [PivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier])
+@pytest.mark.parametrize("stump", [PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier])
 def test_pivot_tree_on_embedded_images(stump):
     rng = np.random.default_rng(0)
     y = np.repeat([0, 1], 20)

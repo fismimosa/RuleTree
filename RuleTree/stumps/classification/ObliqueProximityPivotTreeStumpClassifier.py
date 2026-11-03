@@ -1,20 +1,20 @@
-"""MultipleObliquePivotTreeStumpClassifier: which of two pivots, found by oblique splits, is closer."""
+"""ObliqueProximityPivotTreeStumpClassifier: which of two pivots, found by oblique splits, is closer."""
 
 from RuleTree.stumps.ObliqueTreeStump import check_oblique_split_type
-from RuleTree.stumps.PivotTreeStump import MultiplePivotTreeStump
+from RuleTree.stumps.PivotTreeStump import ProximityPivotTreeStump
 from RuleTree.stumps.classification.DecisionTreeStumpClassifier import DecisionTreeStumpClassifier
 
 
-class MultipleObliquePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTreeStumpClassifier):
+class ObliqueProximityPivotTreeStumpClassifier(ProximityPivotTreeStump, DecisionTreeStumpClassifier):
     """
-    Multiple oblique pivot stump for classification of tabular data: as
-    :class:`~RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier.MultiplePivotTreeStumpClassifier`
+    Oblique proximity pivot stump for classification of tabular data: as
+    :class:`~RuleTree.stumps.classification.ProximityPivotTreeStumpClassifier.ProximityPivotTreeStumpClassifier`
     (the instances closer to one pivot than to another one go left, ``P_a <= P_b``), but the
     discriminative pivots of each class are the instances combined by an oblique direction on the
     distances (``oblique_split_type``), instead of the root split of a decision tree: up to
     ``max_oblique_features`` (Householder) or two (bivariate) for each class.
 
-    It is a :class:`~RuleTree.stumps.Stump.Stump` made of a MultiplePivotTransformer and a
+    It is a :class:`~RuleTree.stumps.Stump.Stump` made of a ProximityPivotTransformer and a
     ClassificationSplitter.
 
     Parameters
@@ -52,7 +52,7 @@ class MultipleObliquePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTr
 
     Attributes
     ----------
-    transformer_ : MultiplePivotTransformer
+    transformer_ : ProximityPivotTransformer
         The fitted transformer.
     splitter_ : ClassificationSplitter
         The fitted splitter (feature, threshold, gain and impurity of the split).
@@ -63,27 +63,27 @@ class MultipleObliquePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTr
 
     See Also
     --------
-    MultiplePivotTreeStumpClassifier : the discriminative pivots found by a decision tree.
+    ProximityPivotTreeStumpClassifier : the discriminative pivots found by a decision tree.
     ObliquePivotTreeStumpClassifier : an oblique split on the distances from the pivots.
 
     Examples
     --------
     >>> from sklearn.datasets import load_iris
     >>> from RuleTree import RuleTreeClassifier
-    >>> from RuleTree.stumps.classification import MultipleObliquePivotTreeStumpClassifier
+    >>> from RuleTree.stumps.classification import ObliqueProximityPivotTreeStumpClassifier
     >>> X, y = load_iris(return_X_y=True)
-    >>> stump = MultipleObliquePivotTreeStumpClassifier(random_state=0)
+    >>> stump = ObliqueProximityPivotTreeStumpClassifier(random_state=0)
     >>> stump = stump.fit(X, y, context=None, node_id=None, cache=None)
     >>> stump.get_pivots()["discriminatives"]  # up to 2 for each class
     [22, 41, 57, 72, 106, 118]
-    >>> model = RuleTreeClassifier(max_depth=2, base_stumps=MultipleObliquePivotTreeStumpClassifier()).fit(X, y)
+    >>> model = RuleTreeClassifier(max_depth=2, base_stumps=ObliqueProximityPivotTreeStumpClassifier()).fit(X, y)
     """
 
     def __init__(self, distance_measure='euclidean', oblique_split_type='householder', max_oblique_features=2,
                  tau=1e-4, n_orientations=10,
                  criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
                  random_state=None, min_impurity_decrease=0.0, class_weight=None):
-        """Initialize the MultipleObliquePivotTreeStumpClassifier; see the class documentation for the parameters."""
+        """Initialize the ObliqueProximityPivotTreeStumpClassifier; see the class documentation for the parameters."""
         check_oblique_split_type(oblique_split_type)
 
         self.distance_measure = distance_measure

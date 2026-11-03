@@ -103,8 +103,8 @@ def arrow(ax, start, end, text=None, style="-|>", color=None, linestyle="-", tex
 
 def figure_splits(output_dir):
     """The root split of four kinds of stumps on the same two-dimensional data."""
-    from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, MultiplePivotTreeStumpClassifier,
-                                                ObliqueDecisionTreeStumpClassifier, PivotTreeStumpClassifier)
+    from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier,
+                                                PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier)
 
     # two classes on the two sides of a diagonal, elongated along it
     rng = np.random.default_rng(3)
@@ -118,7 +118,7 @@ def figure_splits(output_dir):
         ("ObliqueDecisionTreeStumpClassifier", ObliqueDecisionTreeStumpClassifier("bivariate", random_state=0),
          "threshold on a combination of features"),
         ("PivotTreeStumpClassifier", PivotTreeStumpClassifier(random_state=0), "distance from a pivot"),
-        ("MultiplePivotTreeStumpClassifier", MultiplePivotTreeStumpClassifier(random_state=0),
+        ("ProximityPivotTreeStumpClassifier", ProximityPivotTreeStumpClassifier(random_state=0),
          "closer to one pivot than to another"),
     ]
 

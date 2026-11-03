@@ -15,10 +15,10 @@ from RuleTree.ensemble.EBMRegressor import EBMRegressor
 from RuleTree.ensemble.GBoostClassifier import GBoostClassifier
 from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
 from RuleTree.ensemble.XGBoostRegressor import XGBoostRegressor
-from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, MultipleObliquePivotTreeStumpClassifier,
-                                            MultiplePivotTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier,
-                                            ObliquePivotTreeStumpClassifier, PartialPivotTreeStumpClassifier,
-                                            PartialProximityTreeStumpClassifier, PivotTreeStumpClassifier,
+from RuleTree.stumps.classification import (DecisionTreeStumpClassifier, ObliqueDecisionTreeStumpClassifier,
+                                            ObliquePivotTreeStumpClassifier, ObliqueProximityPivotTreeStumpClassifier,
+                                            PartialPivotTreeStumpClassifier, PartialProximityTreeStumpClassifier,
+                                            PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier,
                                             ProximityTreeStumpClassifier, ShapeletTreeStumpClassifier)
 from RuleTree.stumps.regression import (DecisionTreeStumpRegressor, FairTreeStumpRegressor,
                                         ObliqueDecisionTreeStumpRegressor, PivotTreeStumpRegressor,
@@ -122,12 +122,12 @@ CASES = {
     "clf_oblique_bivariate": (lambda: RuleTreeClassifier(
         max_depth=3, base_stumps=ObliqueDecisionTreeStumpClassifier("bivariate", random_state=0)),
                               "iris", "iris_y", True),
-    "clf_multiple_pivot": (lambda: RuleTreeClassifier(
-        max_depth=3, base_stumps=MultiplePivotTreeStumpClassifier(random_state=0)), "iris", "iris_y", True),
+    "clf_proximity_pivot": (lambda: RuleTreeClassifier(
+        max_depth=3, base_stumps=ProximityPivotTreeStumpClassifier(random_state=0)), "iris", "iris_y", True),
     "clf_oblique_pivot": (lambda: RuleTreeClassifier(
         max_depth=3, base_stumps=ObliquePivotTreeStumpClassifier(random_state=0)), "iris", "iris_y", True),
-    "clf_multiple_oblique_pivot": (lambda: RuleTreeClassifier(
-        max_depth=3, base_stumps=MultipleObliquePivotTreeStumpClassifier(oblique_split_type="bivariate",
+    "clf_oblique_proximity_pivot": (lambda: RuleTreeClassifier(
+        max_depth=3, base_stumps=ObliqueProximityPivotTreeStumpClassifier(oblique_split_type="bivariate",
                                                                          random_state=0)), "iris", "iris_y", True),
     "clf_partial_proximity": (lambda: RuleTreeClassifier(
         max_depth=2, base_stumps=PartialProximityTreeStumpClassifier(random_state=0)), "iris", "iris_y", True),

@@ -45,20 +45,20 @@ Available stumps
      - tabular
      - :class:`classifier <RuleTree.stumps.classification.PivotTreeStumpClassifier>`
      - :class:`regressor <RuleTree.stumps.regression.PivotTreeStumpRegressor>`
-   * - **Multiple pivot**
+   * - **Proximity pivot**
      - closer to one pivot than to another: ``P_12 <= P_40``
      - tabular
-     - :class:`classifier <RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier>`
+     - :class:`classifier <RuleTree.stumps.classification.ProximityPivotTreeStumpClassifier>`
      -
    * - **Oblique pivot**
      - threshold on a combination of the distances from a few pivots
      - tabular
      - :class:`classifier <RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier>`
      -
-   * - **Multiple oblique pivot**
+   * - **Oblique proximity pivot**
      - closer to one pivot than to another, among the discriminative pivots of the oblique pivot stump
      - tabular
-     - :class:`classifier <RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier>`
+     - :class:`classifier <RuleTree.stumps.classification.ObliqueProximityPivotTreeStumpClassifier>`
      -
    * - **Partial pivot**
      - distance from a :term:`partial pivot`, a pivot restricted to a few features
@@ -119,7 +119,7 @@ the tree. A starting point:
      - the oblique stumps, on standardized data (`Oblique stumps`_)
    * - the instances are better described by their similarity to some examples than by single
        features, e.g. many features or embeddings
-     - the pivot stumps (`Pivot stumps`_); the multiple pivot stumps to compare two examples; the
+     - the pivot stumps (`Pivot stumps`_); the proximity pivot stumps to compare two examples; the
        partial pivot stumps for shorter rules
    * - time series whose pattern can occur at any time
      - the shapelet stumps (:doc:`multimodal`)
@@ -279,31 +279,32 @@ candidates and the one used by the split. For the whole tree:
 
 Three variants use the same candidate pivots in other ways:
 
-- :class:`~RuleTree.stumps.classification.MultiplePivotTreeStumpClassifier`
+- :class:`~RuleTree.stumps.classification.ProximityPivotTreeStumpClassifier`
   compares two pivots of different classes: ``P_a <= P_b`` sends left the instances closer to the
   training instance ``a`` than to ``b``, with no threshold;
 - :class:`~RuleTree.stumps.classification.ObliquePivotTreeStumpClassifier`
   splits on a linear combination of the distances from a few pivots (see `Oblique stumps`_), and
   finds the discriminative pivots of each class with an oblique split on the distances;
-- :class:`~RuleTree.stumps.classification.MultipleObliquePivotTreeStumpClassifier`
+- :class:`~RuleTree.stumps.classification.ObliqueProximityPivotTreeStumpClassifier`
   compares two pivots, as the first one, with the discriminative pivots of the second one.
 
 .. code-block:: python
 
-   from RuleTree.stumps.classification import (MultipleObliquePivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier,
-                                               ObliquePivotTreeStumpClassifier)
+   from RuleTree.stumps.classification import (ObliquePivotTreeStumpClassifier,
+                                               ObliqueProximityPivotTreeStumpClassifier,
+                                               ProximityPivotTreeStumpClassifier)
 
-   for stump in [MultiplePivotTreeStumpClassifier(), ObliquePivotTreeStumpClassifier(),
-                 MultipleObliquePivotTreeStumpClassifier()]:
+   for stump in [ProximityPivotTreeStumpClassifier(), ObliquePivotTreeStumpClassifier(),
+                 ObliqueProximityPivotTreeStumpClassifier()]:
        tree = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=stump).fit(X, y)
        print(f"{type(stump).__name__}: {tree.root.stump.get_rule()['textual_rule']}, accuracy {tree.score(X, y):.3f}")
 
 .. code-block:: text
    :caption: Output
 
-   MultiplePivotTreeStumpClassifier: P_408 <= P_79, accuracy 0.938
+   ProximityPivotTreeStumpClassifier: P_408 <= P_79, accuracy 0.938
    ObliquePivotTreeStumpClassifier: 0.715 * P_152 + 0.576 * P_428 <= 18.307, accuracy 0.907
-   MultipleObliquePivotTreeStumpClassifier: P_282 <= P_428, accuracy 0.933
+   ObliqueProximityPivotTreeStumpClassifier: P_282 <= P_428, accuracy 0.933
 
 Their ``get_pivots`` returns all the pivots used by the split in ``used``.
 

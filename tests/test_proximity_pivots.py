@@ -6,20 +6,20 @@ from sklearn.datasets import load_wine
 from sklearn.metrics import pairwise_distances
 
 from RuleTree import RuleTreeClassifier
-from RuleTree.stumps.classification import (MultipleObliquePivotTreeStumpClassifier, MultiplePivotTreeStumpClassifier,
-                                            ObliquePivotTreeStumpClassifier, PivotTreeStumpClassifier)
+from RuleTree.stumps.classification import (ObliquePivotTreeStumpClassifier, ObliqueProximityPivotTreeStumpClassifier,
+                                            PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier)
 from RuleTree.tree.RuleTree import RuleTree
 from RuleTree.utils.data_utils import json_numpy_encoder
 
 STUMPS = [
-    MultiplePivotTreeStumpClassifier,
+    ProximityPivotTreeStumpClassifier,
     ObliquePivotTreeStumpClassifier,
     lambda **kwargs: ObliquePivotTreeStumpClassifier(oblique_split_type="bivariate", **kwargs),
-    MultipleObliquePivotTreeStumpClassifier,
-    lambda **kwargs: MultipleObliquePivotTreeStumpClassifier(oblique_split_type="bivariate", **kwargs),
+    ObliqueProximityPivotTreeStumpClassifier,
+    lambda **kwargs: ObliqueProximityPivotTreeStumpClassifier(oblique_split_type="bivariate", **kwargs),
 ]
-IDS = ["MultiplePivot", "ObliquePivot-householder", "ObliquePivot-bivariate", "MultipleObliquePivot-householder",
-       "MultipleObliquePivot-bivariate"]
+IDS = ["ProximityPivot", "ObliquePivot-householder", "ObliquePivot-bivariate", "ObliqueProximityPivot-householder",
+       "ObliqueProximityPivot-bivariate"]
 
 
 def json_round_trip(dictionary):
@@ -32,8 +32,8 @@ def distances_from(stump, X, pivots):
     return pairwise_distances(X_scaled, X_scaled[list(pivots)], metric=stump.distance_measure)
 
 
-@pytest.mark.parametrize("stump_class", [MultiplePivotTreeStumpClassifier, MultipleObliquePivotTreeStumpClassifier])
-def test_multiple_pivot_rule_is_the_split(stump_class, iris):
+@pytest.mark.parametrize("stump_class", [ProximityPivotTreeStumpClassifier, ObliqueProximityPivotTreeStumpClassifier])
+def test_proximity_pivot_rule_is_the_split(stump_class, iris):
     """P_a <= P_b: the instances closer to the training instance a than to b go left."""
     X, y = iris
     stump = stump_class(random_state=0).fit(X, y, context=None, node_id=None, cache=None)
@@ -76,7 +76,7 @@ def test_pivots_of_the_split(make_stump, iris):
 
 
 def test_invalid_oblique_split_type():
-    for stump_class in (ObliquePivotTreeStumpClassifier, MultipleObliquePivotTreeStumpClassifier):
+    for stump_class in (ObliquePivotTreeStumpClassifier, ObliqueProximityPivotTreeStumpClassifier):
         with pytest.raises(ValueError, match="oblique_split_type"):
             stump_class(oblique_split_type="diagonal")
 
@@ -85,7 +85,7 @@ def test_pivot_stumps_together():
     """All the pivot stumps in the same tree, chosen by gain: on wine, more than one kind is chosen."""
     X, y = load_wine(return_X_y=True)
     model = RuleTreeClassifier(max_depth=3, stump_selection="best", random_state=0,
-                               base_stumps=[PivotTreeStumpClassifier(), MultiplePivotTreeStumpClassifier(),
+                               base_stumps=[PivotTreeStumpClassifier(), ProximityPivotTreeStumpClassifier(),
                                             ObliquePivotTreeStumpClassifier()])
 
     model.fit(X, y)
@@ -93,4 +93,45 @@ def test_pivot_stumps_together():
     assert model.score(X, y) >= 0.9
     assert len({type(node.stump) for node in model.get_predicates().values()}) > 1
     loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))
+    assert np.array_equal(loaded.predict(X), model.predict(X))
+
+
+@pytest.mark.parametrize("old, new", [("MultiplePivotTreeStumpClassifier", ProximityPivotTreeStumpClassifier),
+                                      ("MultipleObliquePivotTreeStumpClassifier",
+                                       ObliqueProximityPivotTreeStumpClassifier)])
+def test_old_names(old, new, iris):
+    """The names before the renaming still work, with a warning, also for the trees saved with them."""
+    import RuleTree.stumps.classification as classification
+
+    with pytest.warns(FutureWarning, match=new.__name__):
+        assert getattr(classification, old) is new
+
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=new()).fit(X, y)
+    saved = json.dumps(model.to_dict(), cls=json_numpy_encoder).replace(new.__name__, old)  # as saved before
+    with pytest.warns(FutureWarning):
+        loaded = RuleTree.from_dict(json.loads(saved))
+    assert np.array_equal(loaded.predict(X), model.predict(X))
+
+
+def test_old_transformer_name():
+    import RuleTree.stumps.transformers as transformers
+    from RuleTree.stumps.transformers import ProximityPivotTransformer
+
+    with pytest.warns(FutureWarning, match="ProximityPivotTransformer"):
+        assert transformers.MultiplePivotTransformer is ProximityPivotTransformer
+
+
+def test_old_transformer_in_a_saved_stump(iris):
+    from RuleTree.stumps.Stump import Stump
+    from RuleTree.stumps.splitters import ClassificationSplitter
+    from RuleTree.stumps.transformers import ProximityPivotTransformer
+
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=2, random_state=0,
+                               base_stumps=Stump(ProximityPivotTransformer(), ClassificationSplitter())).fit(X, y)
+    saved = json.dumps(model.to_dict(), cls=json_numpy_encoder).replace("ProximityPivotTransformer",
+                                                                         "MultiplePivotTransformer")
+    with pytest.warns(FutureWarning, match="ProximityPivotTransformer"):
+        loaded = RuleTree.from_dict(json.loads(saved))
     assert np.array_equal(loaded.predict(X), model.predict(X))

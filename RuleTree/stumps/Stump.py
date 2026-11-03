@@ -12,6 +12,7 @@ import sklearn
 from sklearn.base import BaseEstimator
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump, rule_dict
+from RuleTree.utils.deprecation import import_class
 
 
 class Stump(RuleTreeBaseStump):
@@ -478,4 +479,4 @@ def _estimator_from_dict(dictionary: dict) -> BaseEstimator:
         A new, unfitted estimator.
     """
     module, class_name = dictionary["__estimator__"].rsplit(".", 1)
-    return getattr(importlib.import_module(module), class_name)(**_params_from_dict(dictionary["params"]))
+    return import_class(module, class_name)(**_params_from_dict(dictionary["params"]))

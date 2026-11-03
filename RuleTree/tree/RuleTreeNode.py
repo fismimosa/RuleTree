@@ -1,6 +1,5 @@
 """RuleTreeNode: a node of a RuleTree."""
 
-import importlib
 from typing import Union, Optional
 
 import numpy as np
@@ -9,6 +8,7 @@ from sklearn.base import TransformerMixin
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.data_utils import log_odds
 from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
+from RuleTree.utils.deprecation import import_class
 from RuleTree.utils.optional import import_optional
 
 # statistics set during fit (see RuleTree._grow), saved by node_to_dict when present
@@ -616,4 +616,4 @@ def stump_class(stump_dict: dict) -> type:
     -------
     stump_class : type
     """
-    return getattr(importlib.import_module(stump_dict['stump_type']), stump_dict['stump_class'])
+    return import_class(stump_dict['stump_type'], stump_dict['stump_class'])

@@ -17,9 +17,9 @@ Classification
    DecisionTreeStumpClassifier
    ObliqueDecisionTreeStumpClassifier
    PivotTreeStumpClassifier
-   MultiplePivotTreeStumpClassifier
+   ProximityPivotTreeStumpClassifier
    ObliquePivotTreeStumpClassifier
-   MultipleObliquePivotTreeStumpClassifier
+   ObliqueProximityPivotTreeStumpClassifier
    PartialPivotTreeStumpClassifier
    PartialProximityTreeStumpClassifier
    ShapeletTreeStumpClassifier
@@ -59,7 +59,7 @@ stump have in common. See :doc:`/guides/extending`.
    ~DecisionTreeStump.DecisionTreeStump
    ~ObliqueTreeStump.ObliqueTreeStump
    ~PivotTreeStump.PivotTreeStump
-   ~PivotTreeStump.MultiplePivotTreeStump
+   ~PivotTreeStump.ProximityPivotTreeStump
    ~PivotTreeStump.ObliquePivotTreeStump
    ~ShapeletTreeStump.ShapeletTreeStump
    ~ProximityTreeStump.ProximityTreeStump

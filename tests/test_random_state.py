@@ -55,7 +55,7 @@ def test_every_stump(make_stump, data_type, dataset, continuous, request):
 
 def several_stumps():
     return [clf.DecisionTreeStumpClassifier(), clf.PivotTreeStumpClassifier(),
-            clf.ObliqueDecisionTreeStumpClassifier(), clf.MultiplePivotTreeStumpClassifier()]
+            clf.ObliqueDecisionTreeStumpClassifier(), clf.ProximityPivotTreeStumpClassifier()]
 
 
 @pytest.mark.parametrize("stump_selection", ["random", "best"])

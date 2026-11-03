@@ -9,8 +9,8 @@ from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.Stump import Stump
 from RuleTree.stumps.splitters import ClassificationSplitter
 from RuleTree.stumps.transformers import (BivariateTransformer, HouseholderTransformer, MatrixTransformer,
-                                          MultiplePivotTransformer, ObliquePivotTransformer, PartialPivotTransformer,
-                                          PartialProximityTransformer, PivotTransformer, ProximityTransformer,
+                                          ObliquePivotTransformer, PartialPivotTransformer, PartialProximityTransformer,
+                                          PivotTransformer, ProximityPivotTransformer, ProximityTransformer,
                                           ShapeletTransformer)
 from RuleTree.stumps.transformers._pivot_selection import PivotSelection
 from RuleTree.utils.data_utils import json_numpy_encoder
@@ -72,7 +72,7 @@ def test_pivot_transformer(iris):
     assert loaded.feature_id(0) == name
 
 
-@pytest.mark.parametrize("transformer_class", [PivotTransformer, MultiplePivotTransformer, ObliquePivotTransformer])
+@pytest.mark.parametrize("transformer_class", [PivotTransformer, ProximityPivotTransformer, ObliquePivotTransformer])
 def test_pivot_transformers_use_the_categorical_features(transformer_class):
     """The categorical features are one-hot encoded: a pivot separates the classes of a color."""
     rng = np.random.default_rng(0)
@@ -162,10 +162,10 @@ def test_partial_pivot_transformer(iris):
     (BivariateTransformer(), {"tabular"}),
     (ProximityTransformer(), {"ts"}),
     (PartialProximityTransformer(), {"tabular"}),
-    (MultiplePivotTransformer(), {"tabular"}),
+    (ProximityPivotTransformer(), {"tabular"}),
     (ObliquePivotTransformer(), {"tabular"}),
 ], ids=["Matrix", "Pivot", "PartialPivot", "Shapelet", "Householder", "Bivariate", "Proximity", "PartialProximity",
-        "MultiplePivot", "ObliquePivot"])
+        "ProximityPivot", "ObliquePivot"])
 def test_supported_data_types(transformer, data_types):
     assert set(transformer.supported_data_types) == data_types
     assert sklearn.clone(transformer).get_params() == transformer.get_params()
@@ -286,11 +286,11 @@ def test_pivot_selection_unknown_discriminative(iris):
 
 
 @pytest.mark.parametrize("ml_task", [MODEL_TYPE_CLF, MODEL_TYPE_REG])
-def test_multiple_pivot_transformer(ml_task, iris):
+def test_proximity_pivot_transformer(ml_task, iris):
     X, y = iris
     target = y if ml_task == MODEL_TYPE_CLF else X[:, 3]
 
-    transformer = MultiplePivotTransformer(ml_task, tree_params={"random_state": 0})
+    transformer = ProximityPivotTransformer(ml_task, tree_params={"random_state": 0})
     transformer = transformer.fit(X, target, context=None, node_id=None, cache=None)
 
     labels = dict(zip(transformer.candidate_names_, transformer.candidate_labels_))

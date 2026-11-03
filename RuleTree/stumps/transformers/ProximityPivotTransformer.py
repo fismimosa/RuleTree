@@ -1,4 +1,4 @@
-"""MultiplePivotTransformer: which of two pivots is closer to each instance."""
+"""ProximityPivotTransformer: which of two pivots is closer to each instance."""
 
 import itertools
 
@@ -12,7 +12,7 @@ from RuleTree.stumps.transformers._pivot_selection import PivotSelection
 from RuleTree.utils.define import MODEL_TYPE_CLF
 
 
-class MultiplePivotTransformer(PivotTransformer):
+class ProximityPivotTransformer(PivotTransformer):
     """
     Transformer of tabular data into pivot comparisons: for each pair of candidate pivots, whether the
     instance is closer to the second one than to the first.
@@ -64,14 +64,14 @@ class MultiplePivotTransformer(PivotTransformer):
 
     See Also
     --------
-    MultiplePivotTreeStumpClassifier, MultipleObliquePivotTreeStumpClassifier : the stumps that use it.
+    ProximityPivotTreeStumpClassifier, ObliqueProximityPivotTreeStumpClassifier : the stumps that use it.
 
     Examples
     --------
     >>> from sklearn.datasets import load_iris
-    >>> from RuleTree.stumps.transformers import MultiplePivotTransformer
+    >>> from RuleTree.stumps.transformers import ProximityPivotTransformer
     >>> X, y = load_iris(return_X_y=True)
-    >>> transformer = MultiplePivotTransformer(tree_params={"random_state": 0})
+    >>> transformer = ProximityPivotTransformer(tree_params={"random_state": 0})
     >>> transformer = transformer.fit(X, y, context=None, node_id=None, cache=None)
     >>> len(transformer.candidate_names_), len(transformer.pairs_)  # pairs of pivots of different classes
     (6, 12)
@@ -80,7 +80,7 @@ class MultiplePivotTransformer(PivotTransformer):
     def __init__(self, ml_task=MODEL_TYPE_CLF, distance_measure='euclidean', k=None, reg_contrast_lambda=.2,
                  reg_max_thresholds=None, tree_params=None, discriminative='tree', max_oblique_features=2, tau=1e-4,
                  n_orientations=10):
-        """Initialize the MultiplePivotTransformer; see the class documentation for the parameters."""
+        """Initialize the ProximityPivotTransformer; see the class documentation for the parameters."""
         super().__init__(ml_task=ml_task, distance_measure=distance_measure, k=k,
                          reg_contrast_lambda=reg_contrast_lambda, reg_max_thresholds=reg_max_thresholds,
                          tree_params=tree_params)
@@ -122,7 +122,7 @@ class MultiplePivotTransformer(PivotTransformer):
 
         Returns
         -------
-        self : MultiplePivotTransformer
+        self : ProximityPivotTransformer
 
         Raises
         ------
@@ -233,7 +233,7 @@ class MultiplePivotTransformer(PivotTransformer):
 
         Returns
         -------
-        self : MultiplePivotTransformer
+        self : ProximityPivotTransformer
         """
         self.num_pre_transformed_ = state['num_pre_transformed']
         self.cat_pre_transformed_ = state['cat_pre_transformed']

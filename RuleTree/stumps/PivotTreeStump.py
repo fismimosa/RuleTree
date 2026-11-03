@@ -1,14 +1,15 @@
 """
-PivotTreeStump, MultiplePivotTreeStump and ObliquePivotTreeStump: what the pivot stumps have in
+PivotTreeStump, ProximityPivotTreeStump and ObliquePivotTreeStump: what the pivot stumps have in
 common.
 """
 
 from RuleTree.base.RuleTreeBaseStump import numerical_rule
 from RuleTree.stumps.ObliqueTreeStump import combination_rule
 from RuleTree.stumps.ProximityTreeStump import proximity_rule
-from RuleTree.stumps.transformers.MultiplePivotTransformer import MultiplePivotTransformer
 from RuleTree.stumps.transformers.ObliquePivotTransformer import ObliquePivotTransformer
 from RuleTree.stumps.transformers.PivotTransformer import PivotTransformer
+from RuleTree.stumps.transformers.ProximityPivotTransformer import ProximityPivotTransformer
+from RuleTree.utils.deprecation import deprecated_aliases
 
 
 class PivotTreeStump:
@@ -89,10 +90,10 @@ class PivotTreeStump:
                               float_precision)
 
 
-class MultiplePivotTreeStump:
+class ProximityPivotTreeStump:
     """
-    Mixin of the multiple pivot stumps (MultiplePivotTreeStumpClassifier and
-    MultipleObliquePivotTreeStumpClassifier): the MultiplePivotTransformer built from the parameters
+    Mixin of the proximity pivot stumps (ProximityPivotTreeStumpClassifier and
+    ObliqueProximityPivotTreeStumpClassifier): the ProximityPivotTransformer built from the parameters
     of the stump, the pivots of the split and its rule, ``P_<a> <= P_<b>`` (closer to the training
     instance ``a`` than to ``b``).
     """
@@ -103,14 +104,14 @@ class MultiplePivotTreeStump:
 
     def _make_transformer(self):
         """
-        A new, unfitted MultiplePivotTransformer with the parameters of the stump; its decision trees use
+        A new, unfitted ProximityPivotTransformer with the parameters of the stump; its decision trees use
         the parameters of the splitter.
 
         Returns
         -------
-        transformer : MultiplePivotTransformer
+        transformer : ProximityPivotTransformer
         """
-        return MultiplePivotTransformer(ml_task=self.task, distance_measure=self.distance_measure,
+        return ProximityPivotTransformer(ml_task=self.task, distance_measure=self.distance_measure,
                                         tree_params=self._splitter_params(), **self._selection_params())
 
     def get_pivots(self):
@@ -213,3 +214,6 @@ class ObliquePivotTreeStump:
         pivots, coefficients = self.transformer_.combination(self.splitter_.feature_)
         return combination_rule(tuple(pivots), [f"P_{p}" for p in pivots], coefficients, self.threshold_original,
                                 float_precision)
+
+
+__getattr__ = deprecated_aliases(__name__, {"MultiplePivotTreeStump": ProximityPivotTreeStump})
