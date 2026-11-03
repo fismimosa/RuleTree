@@ -98,43 +98,59 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
             return counts.sum() / (len(classes) * counts)
         return np.array([self.class_weight.get(class_label, 1.0) for class_label in classes])
 
-    def _split_impurities(self, y, left, sample_weight=None) -> tuple:
+    def _statistics(self, y, sample_weight=None) -> np.ndarray:
         """
-        Impurity of the node and of the children of all the candidate splits, from the weights of the
-        classes in the left children.
+        Weight of each instance in the column of its class.
 
         Parameters
         ----------
         y : numpy.ndarray of shape (n_samples,)
             Target of the instances in the node.
-        left : numpy.ndarray of bool of shape (n_samples, n_candidates)
-            For each candidate split, the instances that go to the left child.
         sample_weight : numpy.ndarray of shape (n_samples,), default=None
             Sample weights of the instances in the node.
 
         Returns
         -------
-        impurity : float
-            Impurity of the node.
-        impurity_left, impurity_right : numpy.ndarray of shape (n_candidates,)
-            Impurity of the children of each candidate.
-        weight_left, weight_right : numpy.ndarray of shape (n_candidates,)
-            Total weight of the children of each candidate.
+        statistics : numpy.ndarray of shape (n_samples, n_classes)
         """
-        impurity_fun = self._impurity_fun()
         classes, y_idx, counts = np.unique(y, return_inverse=True, return_counts=True)
 
-        y_onehot = np.zeros((len(y), len(classes)))
-        y_onehot[np.arange(len(y)), y_idx] = self._class_weights(classes, counts)[y_idx]
+        statistics = np.zeros((len(y), len(classes)))
+        statistics[np.arange(len(y)), y_idx] = self._class_weights(classes, counts)[y_idx]
         if sample_weight is not None:
-            y_onehot[np.arange(len(y)), y_idx] *= sample_weight
+            statistics[np.arange(len(y)), y_idx] *= sample_weight
 
-        weights = y_onehot.sum(axis=0)
-        weights_left = y_onehot.T @ left
-        weights_right = np.maximum(weights[:, None] - weights_left, 0)  # no negative rounding errors
+        return statistics
 
-        return (impurity_fun(weights), impurity_fun(weights_left), impurity_fun(weights_right),
-                weights_left.sum(axis=0), weights_right.sum(axis=0))
+    def _impurity(self, statistics) -> np.ndarray:
+        """
+        Impurity from the weights of the classes.
+
+        Parameters
+        ----------
+        statistics : numpy.ndarray of shape (n_classes, ...)
+            Weight of each class.
+
+        Returns
+        -------
+        impurity : numpy.ndarray of shape (...)
+        """
+        return self._impurity_fun()(np.maximum(statistics, 0))  # no negative rounding errors
+
+    def _weight(self, statistics) -> np.ndarray:
+        """
+        Total weight from the weights of the classes.
+
+        Parameters
+        ----------
+        statistics : numpy.ndarray of shape (n_classes, ...)
+            Weight of each class.
+
+        Returns
+        -------
+        weight : numpy.ndarray of shape (...)
+        """
+        return np.maximum(statistics, 0).sum(axis=0)
 
 
 def _probabilities(weights: np.ndarray) -> np.ndarray:

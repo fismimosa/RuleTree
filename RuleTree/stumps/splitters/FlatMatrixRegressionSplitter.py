@@ -52,28 +52,40 @@ class FlatMatrixRegressionSplitter(FlatMatrixSplitter):
         """Initialize the FlatMatrixRegressionSplitter; see the class documentation for the parameters."""
         super().__init__(criterion, min_samples_leaf)
 
-    def _split_impurities(self, y, left, sample_weight=None) -> tuple:
+    def _statistics(self, y, sample_weight=None) -> np.ndarray:
         """
-        Impurity of the node and of the children of all the candidate splits, from the weighted sums of
-        the target and of its square in the left children.
+        Weight of each instance, and its product with the target and with the square of the target. The
+        target is centered, for smaller rounding errors.
 
         Parameters
         ----------
         y : numpy.ndarray of shape (n_samples,)
             Target of the instances in the node.
-        left : numpy.ndarray of bool of shape (n_samples, n_candidates)
-            For each candidate split, the instances that go to the left child.
         sample_weight : numpy.ndarray of shape (n_samples,), default=None
             Sample weights of the instances in the node.
 
         Returns
         -------
-        impurity : float
-            Impurity of the node.
-        impurity_left, impurity_right : numpy.ndarray of shape (n_candidates,)
-            Impurity of the children of each candidate.
-        weight_left, weight_right : numpy.ndarray of shape (n_candidates,)
-            Total weight of the children of each candidate.
+        statistics : numpy.ndarray of shape (n_samples, 3)
+        """
+        weights = np.ones(len(y)) if sample_weight is None else np.asarray(sample_weight, dtype=float)
+        y = np.asarray(y, dtype=float)
+        y = y - weights @ y / max(weights.sum(), np.finfo(float).tiny)
+
+        return np.column_stack([weights, weights * y, weights * y ** 2])
+
+    def _impurity(self, statistics) -> np.ndarray:
+        """
+        Impurity from the weight and the sums of the target and of its square.
+
+        Parameters
+        ----------
+        statistics : numpy.ndarray of shape (3, ...)
+            Total weight, weighted sum of the target and weighted sum of its square.
+
+        Returns
+        -------
+        impurity : numpy.ndarray of shape (...)
 
         Raises
         ------
@@ -83,20 +95,22 @@ class FlatMatrixRegressionSplitter(FlatMatrixSplitter):
         if self.criterion != "squared_error":
             raise ValueError(f"Unknown criterion {self.criterion!r}: use 'squared_error'")
 
-        weights = np.ones(len(y)) if sample_weight is None else np.asarray(sample_weight, dtype=float)
-        y = np.asarray(y, dtype=float)
-        y = y - weights @ y / max(weights.sum(), np.finfo(float).tiny)  # centered: smaller rounding errors
+        return _squared_error(self._weight(statistics), statistics[1], statistics[2])
 
-        weight, weight_left = weights.sum(), weights @ left
-        y_sum, y_sum_left = weights @ y, (weights * y) @ left
-        y_squared, y_squared_left = weights @ y ** 2, (weights * y ** 2) @ left
+    def _weight(self, statistics) -> np.ndarray:
+        """
+        Total weight from the statistics.
 
-        weight_right = np.maximum(weight - weight_left, 0)
+        Parameters
+        ----------
+        statistics : numpy.ndarray of shape (3, ...)
+            Total weight, weighted sum of the target and weighted sum of its square.
 
-        return (_squared_error(weight, y_sum, y_squared),
-                _squared_error(weight_left, y_sum_left, y_squared_left),
-                _squared_error(weight_right, y_sum - y_sum_left, y_squared - y_squared_left),
-                weight_left, weight_right)
+        Returns
+        -------
+        weight : numpy.ndarray of shape (...)
+        """
+        return np.maximum(statistics[0], 0)  # no negative rounding errors
 
 
 def _squared_error(weight, y_sum, y_squared) -> np.ndarray:

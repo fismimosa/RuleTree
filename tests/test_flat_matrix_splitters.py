@@ -22,14 +22,6 @@ y_reg = np.array([1.0, 1.1, 0.9, 1.0, 5.0, 5.2, 4.8, 5.0])
 NUMERICAL, CATEGORICAL = [0, 1], [2]
 
 
-class WorstFirstSplitter(FlatMatrixClassificationSplitter):
-    """Penalizes the children of the splits on the column 1, the best one for the data above."""
-
-    def _penalize_impurity(self, X, y, left, impurity_left, impurity_right, sample_weight=None):
-        penalty = (left == (X[:, 1:2].astype(float) <= 5)).all(axis=0)
-        return impurity_left + penalty, impurity_right + penalty
-
-
 @pytest.mark.parametrize("splitter, y", [(FlatMatrixClassificationSplitter(), y_clf),
                                          (FlatMatrixRegressionSplitter(), y_reg)], ids=["clf", "reg"])
 def test_numerical_split(splitter, y):
@@ -125,19 +117,13 @@ def test_classification_as_scikit_learn(iris, criterion, params, weighted):
 
 
 def test_classification_impurities_as_definition():
-    """Empty left child and class without instances in a child give impurity 0, not nan or 1."""
-    left = np.array([[True, False], [True, False], [False, False], [False, False]])
-    y = np.array([0, 0, 1, 1])
-
+    """A child without instances or with a pure class has impurity 0, not nan or 1."""
     for criterion, node in [("gini", 0.5), ("entropy", 1.0)]:
-        impurity, impurity_left, impurity_right, weight_left, weight_right = (
-            FlatMatrixClassificationSplitter(criterion=criterion)._split_impurities(y, left))
+        splitter = FlatMatrixClassificationSplitter(criterion=criterion)
+        statistics = np.array([[2.0, 0.0, 2.0], [2.0, 0.0, 0.0]])
 
-        assert impurity == pytest.approx(node)
-        assert impurity_left == pytest.approx([0, 0])
-        assert impurity_right == pytest.approx([0, node])
-        assert weight_left == pytest.approx([2, 0])
-        assert weight_right == pytest.approx([2, 4])
+        assert splitter._impurity(statistics) == pytest.approx([node, 0, 0])
+        assert splitter._weight(statistics) == pytest.approx([4, 0, 2])
 
 
 def test_unknown_criterion():
@@ -145,12 +131,51 @@ def test_unknown_criterion():
         FlatMatrixClassificationSplitter(criterion="unknown").fit(X, y_clf, NUMERICAL, [], **FIT)
 
 
-def test_penalized_impurity_changes_the_split():
-    """The gain uses the penalized impurity; impurity_ is the one of the data."""
-    splitter = WorstFirstSplitter().fit(X, y_clf, NUMERICAL, CATEGORICAL, **FIT)
+@pytest.mark.parametrize("splitter", [FlatMatrixClassificationSplitter, FlatMatrixRegressionSplitter],
+                         ids=["clf", "reg"])
+def test_candidates_as_the_definition(splitter):
+    """The statistics of the left children are the sums over the instances that a mask sends left."""
+    rng = np.random.default_rng(0)
+    X_mixed = np.empty((200, 3), dtype=object)
+    X_mixed[:, 0], X_mixed[:, 1] = rng.integers(0, 5, 200).astype(float), rng.normal(size=200)
+    X_mixed[:, 2] = rng.choice(list("abc"), 200)
+    y = rng.integers(0, 3, 200)
+    sample_weight = rng.uniform(0.5, 2, 200)
 
-    assert not np.array_equal(splitter.apply(X), np.where(X[:, 1] <= 5, 1, 2))
-    assert splitter.gain_ < FlatMatrixClassificationSplitter().fit(X, y_clf, NUMERICAL, CATEGORICAL, **FIT).gain_
+    fitted = splitter()
+    statistics = fitted._statistics(y, sample_weight)
+    features, thresholds, is_categorical, statistics_left, n_left = fitted._candidate_splits(X_mixed, statistics,
+                                                                                             [0, 1], [2])
+
+    assert list(is_categorical) == sorted(is_categorical)
+    for i, (feature, threshold) in enumerate(zip(features, thresholds)):
+        left = X_mixed[:, feature] == threshold if is_categorical[i] else X_mixed[:, feature] <= threshold
+        assert statistics_left[i] == pytest.approx(statistics[left].sum(axis=0))
+        assert n_left[i] == left.sum()
+
+
+@pytest.mark.parametrize("splitter, y", [(FlatMatrixClassificationSplitter(), y_clf),
+                                         (FlatMatrixRegressionSplitter(), y_reg)], ids=["clf", "reg"])
+def test_missing_values_go_right(splitter, y):
+    X_missing = np.array([1, 2, 3, 4, 6, 7, 8, np.nan])[:, None]
+
+    splitter.fit(X_missing, y, [0], [], **FIT)
+
+    assert splitter.threshold_ == 5
+    assert np.array_equal(splitter.apply(X_missing), np.where(X_missing[:, 0] <= 5, 1, 2))
+
+
+@pytest.mark.parametrize("splitter", [FlatMatrixClassificationSplitter(), FlatMatrixRegressionSplitter()],
+                         ids=["clf", "reg"])
+def test_threshold_between_adjacent_values(splitter):
+    """The midpoint of two adjacent floats is rounded to one of them: the upper one must stay on the right."""
+    lower, upper = 1.0, np.nextafter(1.0, 2.0)
+    X_adjacent = np.array([[lower], [lower], [upper], [upper]])
+    y = np.array([0.0, 0.0, 1.0, 1.0])
+
+    splitter.fit(X_adjacent, y, [0], [], **FIT)
+
+    assert np.array_equal(splitter.apply(X_adjacent), [1, 1, 2, 2])
 
 
 def test_update_statistics():
