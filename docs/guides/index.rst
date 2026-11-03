@@ -56,6 +56,12 @@ a first tree, start from :doc:`getting_started`.
 
       Metrics of predictions, clusters, size of the trees and fairness.
 
+   .. grid-item-card:: :octicon:`sliders;1.2em` Splits with a custom gain
+      :link: flat_matrix
+      :link-type: doc
+
+      Evaluating all the candidate splits together and changing their gain.
+
    .. grid-item-card:: :octicon:`tools;1.2em` Extending the library
       :link: extending
       :link-type: doc
@@ -74,4 +80,5 @@ a first tree, start from :doc:`getting_started`.
    saving
    ensembles
    evaluating
+   flat_matrix
    extending

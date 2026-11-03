@@ -305,7 +305,8 @@ that memory. This one prefers the splits with children of similar size:
    X_2 <= 4.35
 
 To save the tree with :meth:`~RuleTree.tree.RuleTree.RuleTree.to_dict`, the function must be importable
-from its module: a lambda raises a ``ValueError``.
+from its module: a lambda raises a ``ValueError``. :doc:`flat_matrix` explains how these splitters
+work.
 
 
 A splitter from scratch
