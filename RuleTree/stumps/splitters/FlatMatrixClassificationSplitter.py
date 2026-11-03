@@ -13,8 +13,9 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
 
     Parameters
     ----------
-    criterion : {'gini', 'entropy'}, default='gini'
-        Impurity measure.
+    criterion : {'gini', 'entropy', 'log_loss', 'misclassification'}, default='gini'
+        Impurity measure; 'log_loss' is the same as 'entropy', 'misclassification' is the fraction of the
+        instances outside the majority class.
     min_samples_leaf : int or float, default=1
         Minimum number of instances in each child (a fraction of the instances of the node if float).
     class_weight : dict, 'balanced' or None, default=None
@@ -71,13 +72,16 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
         Raises
         ------
         ValueError
-            If the criterion is not 'gini' or 'entropy'.
+            If the criterion is unknown.
         """
         if self.criterion == "gini":
             return _gini
-        elif self.criterion == "entropy":
+        elif self.criterion in ("entropy", "log_loss"):
             return _entropy
-        raise ValueError(f"Unknown criterion {self.criterion!r}: use 'gini' or 'entropy'")
+        elif self.criterion == "misclassification":
+            return _misclassification
+        raise ValueError(f"Unknown criterion {self.criterion!r}: use 'gini', 'entropy', 'log_loss' or "
+                         "'misclassification'")
 
     def _class_weights(self, classes, counts) -> np.ndarray:
         """
@@ -204,3 +208,19 @@ def _entropy(weights: np.ndarray) -> np.ndarray:
     probabilities = _probabilities(weights)
     log_probabilities = np.log2(probabilities, out=np.zeros_like(probabilities), where=probabilities > 0)
     return -np.sum(probabilities * log_probabilities, axis=0)
+
+
+def _misclassification(weights: np.ndarray) -> np.ndarray:
+    """
+    Fraction of the weight outside the majority class, 0 without instances.
+
+    Parameters
+    ----------
+    weights : numpy.ndarray of shape (n_classes, ...)
+        Weight of each class.
+
+    Returns
+    -------
+    impurity : numpy.ndarray of shape (...)
+    """
+    return np.where(weights.sum(axis=0) > 0, 1 - _probabilities(weights).max(axis=0), 0.0)

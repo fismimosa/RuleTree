@@ -119,7 +119,7 @@ def test_several_targets(splitter, y):
         splitter.fit(X, np.column_stack([y, y]), NUMERICAL, CATEGORICAL, **FIT)
 
 
-@pytest.mark.parametrize("criterion", ["gini", "entropy"])
+@pytest.mark.parametrize("criterion", ["gini", "entropy", "log_loss"])
 @pytest.mark.parametrize("params", [{}, {"min_samples_leaf": 10}, {"class_weight": "balanced"},
                                     {"class_weight": {0: 5.0, 1: 1.0}}],
                          ids=["default", "min_samples_leaf", "balanced", "dict"])
@@ -147,6 +147,24 @@ def test_classification_impurities_as_definition():
 
         assert splitter._impurity(statistics) == pytest.approx([node, 0, 0])
         assert splitter._weight(statistics) == pytest.approx([4, 0, 2])
+
+
+def test_misclassification():
+    """Maximizes the decrease of the errors of the majority classes, on an exhaustive search."""
+    rng = np.random.default_rng(0)
+    x = rng.normal(size=100)
+    y = rng.integers(0, 3, 100)
+    X_random = x[:, None]
+
+    fitted = FlatMatrixClassificationSplitter(criterion="misclassification").fit(X_random, y, [0], [], **FIT)
+
+    def errors(labels):
+        return len(labels) - np.bincount(labels).max()
+
+    values = np.unique(x)
+    expected = max(errors(y) - errors(y[x <= t]) - errors(y[x > t]) for t in (values[:-1] + values[1:]) / 2)
+    assert fitted.gain_ == pytest.approx(expected / len(y))
+    assert fitted.impurity_[0] == pytest.approx(errors(y) / len(y))
 
 
 def test_unknown_criterion():
