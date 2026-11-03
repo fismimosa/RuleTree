@@ -21,9 +21,3 @@ __all__ = [
     "ObliquePivotTreeStumpClassifier",
     "ObliqueProximityPivotTreeStumpClassifier",
 ]
-
-from RuleTree.utils.deprecation import deprecated_aliases  # noqa: E402
-
-__getattr__ = deprecated_aliases(__name__, {"MultiplePivotTreeStumpClassifier": ProximityPivotTreeStumpClassifier,
-                                            "MultipleObliquePivotTreeStumpClassifier":
-                                                ObliqueProximityPivotTreeStumpClassifier})

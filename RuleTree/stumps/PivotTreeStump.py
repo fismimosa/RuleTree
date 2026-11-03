@@ -10,7 +10,6 @@ from RuleTree.stumps.transformers.ObliquePivotTransformer import ObliquePivotTra
 from RuleTree.stumps.transformers.PivotTransformer import PivotTransformer
 from RuleTree.stumps.transformers.ProximityPivotTransformer import ProximityPivotTransformer
 from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TEXT, DATA_TYPE_TS
-from RuleTree.utils.deprecation import deprecated_aliases
 
 # how the pivots of each data type are drawn by plot_tree (tabular pivots are not drawn)
 MEDIA_KINDS = {DATA_TYPE_TS: "series", DATA_TYPE_IMAGE: "image", DATA_TYPE_TEXT: "text"}
@@ -315,5 +314,3 @@ class ObliquePivotTreeStump:
         return pivot_media(self, [int(p) for p in self.feature_original],
                            label=self.get_rule(float_precision=float_precision)["textual_rule"])
 
-
-__getattr__ = deprecated_aliases(__name__, {"MultiplePivotTreeStump": ProximityPivotTreeStump})

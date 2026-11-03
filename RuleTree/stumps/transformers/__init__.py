@@ -14,7 +14,3 @@ __all__ = ["MatrixTransformer", "PivotTransformer", "ShapeletTransformer", "Part
            "ObliqueTransformer", "HouseholderTransformer", "BivariateTransformer",
            "ProximityTransformer", "PartialProximityTransformer",
            "ProximityPivotTransformer", "ObliquePivotTransformer"]
-
-from RuleTree.utils.deprecation import deprecated_aliases  # noqa: E402
-
-__getattr__ = deprecated_aliases(__name__, {"MultiplePivotTransformer": ProximityPivotTransformer})

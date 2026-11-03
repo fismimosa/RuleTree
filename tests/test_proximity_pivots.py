@@ -96,46 +96,6 @@ def test_pivot_stumps_together():
     assert np.array_equal(loaded.predict(X), model.predict(X))
 
 
-@pytest.mark.parametrize("old, new", [("MultiplePivotTreeStumpClassifier", ProximityPivotTreeStumpClassifier),
-                                      ("MultipleObliquePivotTreeStumpClassifier",
-                                       ObliqueProximityPivotTreeStumpClassifier)])
-def test_old_names(old, new, iris):
-    """The names before the renaming still work, with a warning, also for the trees saved with them."""
-    import RuleTree.stumps.classification as classification
-
-    with pytest.warns(FutureWarning, match=new.__name__):
-        assert getattr(classification, old) is new
-
-    X, y = iris
-    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=new()).fit(X, y)
-    saved = json.dumps(model.to_dict(), cls=json_numpy_encoder).replace(new.__name__, old)  # as saved before
-    with pytest.warns(FutureWarning):
-        loaded = RuleTree.from_dict(json.loads(saved))
-    assert np.array_equal(loaded.predict(X), model.predict(X))
-
-
-def test_old_transformer_name():
-    import RuleTree.stumps.transformers as transformers
-    from RuleTree.stumps.transformers import ProximityPivotTransformer
-
-    with pytest.warns(FutureWarning, match="ProximityPivotTransformer"):
-        assert transformers.MultiplePivotTransformer is ProximityPivotTransformer
-
-
-def test_old_transformer_in_a_saved_stump(iris):
-    from RuleTree.stumps.Stump import Stump
-    from RuleTree.stumps.splitters import ClassificationSplitter
-    from RuleTree.stumps.transformers import ProximityPivotTransformer
-
-    X, y = iris
-    model = RuleTreeClassifier(max_depth=2, random_state=0,
-                               base_stumps=Stump(ProximityPivotTransformer(), ClassificationSplitter())).fit(X, y)
-    saved = json.dumps(model.to_dict(), cls=json_numpy_encoder).replace("ProximityPivotTransformer",
-                                                                         "MultiplePivotTransformer")
-    with pytest.warns(FutureWarning, match="ProximityPivotTransformer"):
-        loaded = RuleTree.from_dict(json.loads(saved))
-    assert np.array_equal(loaded.predict(X), model.predict(X))
-
 
 @pytest.mark.parametrize("stump", [PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier,
                                    ObliquePivotTreeStumpClassifier, ObliqueProximityPivotTreeStumpClassifier])
