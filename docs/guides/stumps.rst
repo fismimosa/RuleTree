@@ -307,6 +307,16 @@ Three variants use the same candidate pivots in other ways:
 
 Their ``get_pivots`` returns all the pivots used by the split in ``used``.
 
+The pivot stumps work on vectors. Images and texts are first mapped to vectors, as in the PivotTree
+paper, with the transformers of :mod:`RuleTree.utils.embeddings` (``embeddings`` extra):
+:class:`~RuleTree.utils.embeddings.ImageEmbedder` returns the output of the penultimate layer of a
+network of torchvision (e.g. ``ImageEmbedder("resnet18")``), and
+:class:`~RuleTree.utils.embeddings.TextEmbedder` the embedding of a sentence transformer (by default
+``all-mpnet-base-v2``, the one of the paper). They follow the scikit-learn interface, so they can
+precede the tree in a pipeline, e.g. ``make_pipeline(ImageEmbedder(), RuleTreeClassifier(...))``;
+the pivots are then instances of the training set, whose original images or texts explain the
+rules. See the example notebook on pivot trees and data types.
+
 
 Oblique stumps
 --------------

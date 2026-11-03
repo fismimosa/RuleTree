@@ -21,7 +21,8 @@ pip install RuleTree                # or, from the root of the repository: pip i
 pip install "RuleTree[shapelets]"   # optional: shapelet, proximity and partial pivot stumps (numba)
 pip install "RuleTree[plot]"        # optional: drawing the trees with matplotlib (plot_tree)
 pip install "RuleTree[graphviz]"    # optional: Graphviz drawings (also requires the Graphviz binaries)
-pip install "RuleTree[all]"         # all the optional features
+pip install "RuleTree[all]"         # all the optional features above
+pip install "RuleTree[embeddings]"  # optional: images and texts as vectors for the pivot stumps (PyTorch)
 ```
 
 ## Example

@@ -41,6 +41,23 @@ are ``DEFAULT_COLORS``.
 
    plot_tree
 
+Embeddings
+----------
+
+Images and texts as vectors, for the pivot stumps (they need the ``embeddings`` extra).
+
+.. automodule:: RuleTree.utils.embeddings
+   :no-members:
+
+.. currentmodule:: RuleTree.utils.embeddings
+
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
+
+   ImageEmbedder
+   TextEmbedder
+
 Constants
 ---------
 

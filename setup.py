@@ -64,6 +64,7 @@ setup(
         "graphviz": ["graphviz", "matplotlib"],  # export_graphviz (matplotlib: images of the shapelets)
         "kmedoids": ["scikit-learn-extra"],  # Shapelets(selection='cluster')
         "profiling": ["line-profiler-pycharm"],  # RuleTree.utils.profiling
+        "embeddings": ["torch", "torchvision", "sentence-transformers"],  # RuleTree.utils.embeddings
         "test": ["pytest", "numba", "graphviz", "matplotlib"],
         "all": ["numba", "graphviz", "matplotlib", "scikit-learn-extra"],
     },

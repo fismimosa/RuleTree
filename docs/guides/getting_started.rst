@@ -30,6 +30,7 @@ default: they are installed by the *extras* of RuleTree.
          pip install "RuleTree[graphviz]"    # Graphviz drawings (also requires the Graphviz binaries)
          pip install "RuleTree[kmedoids]"    # shapelets selected with k-medoids (scikit-learn-extra)
          pip install "RuleTree[all]"         # all of the above
+         pip install "RuleTree[embeddings]"  # images and texts as vectors (PyTorch, torchvision, sentence-transformers)
 
    .. tab-item:: From the repository
 

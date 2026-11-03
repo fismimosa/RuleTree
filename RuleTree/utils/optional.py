@@ -10,6 +10,9 @@ OPTIONAL_DEPENDENCIES = {
     "graphviz": ("graphviz", "graphviz"),
     "matplotlib": ("matplotlib", "plot"),
     "sklearn_extra": ("scikit-learn-extra", "kmedoids"),
+    "torch": ("torch", "embeddings"),
+    "torchvision": ("torchvision", "embeddings"),
+    "sentence_transformers": ("sentence-transformers", "embeddings"),
 }
 
 
