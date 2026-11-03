@@ -34,6 +34,12 @@ the repository, run again at every build of this documentation.
 
       A classifier whose splits are distances from instances of the training set.
 
+   .. grid-item-card:: Pivot trees on different data types
+      :link: pivottree_data_types
+      :link-type: doc
+
+      Pivot trees of depth 2 on tabular data, images, time series and texts, with their pivots.
+
    .. grid-item-card:: Classification of a DataFrame
       :link: tabular_classification
       :link-type: doc
