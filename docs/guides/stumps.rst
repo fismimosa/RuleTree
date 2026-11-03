@@ -202,7 +202,7 @@ stumps are fitted and the one with the highest gain is kept:
 .. code-block:: text
    :caption: Output
 
-   [('DecisionTreeStumpClassifier', 6), ('PivotTreeStumpClassifier', 1)]
+   [('DecisionTreeStumpClassifier', 2), ('PivotTreeStumpClassifier', 4)]
 
 A random choice gives more diverse trees, e.g. for ensembles; ``random_state`` makes the choice
 reproducible:

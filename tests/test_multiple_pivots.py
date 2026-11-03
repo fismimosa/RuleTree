@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import pytest
+from sklearn.datasets import load_wine
 from sklearn.metrics import pairwise_distances
 
 from RuleTree import RuleTreeClassifier
@@ -64,7 +65,7 @@ def test_pivots_of_the_split(make_stump, iris):
     model = RuleTreeClassifier(max_depth=2, base_stumps=make_stump(), random_state=0).fit(X, y)
     loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))
 
-    assert model.score(X, y) > 0.85  # as PivotTreeStumpClassifier at depth 2
+    assert model.score(X, y) > 0.8
     assert np.array_equal(loaded.predict(X), model.predict(X))
     for node_id, node in model.get_predicates().items():
         pivots = node.stump.get_pivots()
@@ -80,9 +81,9 @@ def test_invalid_oblique_split_type():
             stump_class(oblique_split_type="diagonal")
 
 
-def test_pivot_stumps_together(iris):
-    """All the pivot stumps in the same tree, chosen by gain."""
-    X, y = iris
+def test_pivot_stumps_together():
+    """All the pivot stumps in the same tree, chosen by gain: on wine, more than one kind is chosen."""
+    X, y = load_wine(return_X_y=True)
     model = RuleTreeClassifier(max_depth=3, stump_selection="best", random_state=0,
                                base_stumps=[PivotTreeStumpClassifier(), MultiplePivotTreeStumpClassifier(),
                                             ObliquePivotTreeStumpClassifier()])

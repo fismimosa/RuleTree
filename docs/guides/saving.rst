@@ -314,7 +314,7 @@ Each stump saves only the fitted state needed to apply its split:
 .. code-block:: text
    :caption: Output
 
-   pivot: 112 [1.16, -0.13, 0.99, 1.19]
+   pivot: 76 [1.16, -0.59, 0.59, 0.26]
 
 The pivot is saved standardized, but the scaler (``state["scaler"]``) is saved too, so its
 original values can be recovered.

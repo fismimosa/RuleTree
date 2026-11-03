@@ -296,19 +296,14 @@ def scaler_from_state(state: dict) -> StandardScaler:
 
 def _pivot_cache(X, numerical, distance_measure, data_type, cache):
     """
-    Scaler and distance matrix of the whole data set X, stored in the cache of the transformer so that
-    they are computed once per data type and distance.
+    Scaler and distance matrix of the whole data set X, standardized, stored in the cache of the
+    transformer so that they are computed once per data type and distance.
     """
     cache = {} if cache is None else cache
     key = ("pivot", data_type, distance_measure)
     if key not in cache:
         scaler = StandardScaler().fit(X[:, numerical])
-        # TODO: la matrice delle distanze è calcolata sui dati NON standardizzati, mentre transform
-        #  (e quindi lo split) calcola le distanze dai pivot sui dati standardizzati con lo scaler.
-        #  I pivot candidati vengono quindi scelti con una scala e la soglia dello split con un'altra:
-        #  con feature su scale molto diverse le due distanze possono non essere coerenti.
-        #  Una possibile correzione è calcolare anche questa matrice su scaler.transform(X[:, numerical]),
-        #  ma cambierebbe i pivot scelti e quindi i risultati degli alberi con gli stump Pivot.
-        cache[key] = (scaler, pairwise_distances(X[:, numerical], metric=distance_measure))
+        # the same scale as the distances from the pivots in transform
+        cache[key] = (scaler, pairwise_distances(scaler.transform(X[:, numerical]), metric=distance_measure))
 
     return cache[key]

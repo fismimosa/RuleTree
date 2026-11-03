@@ -292,3 +292,17 @@ def test_oblique_pivot_transformer(oblique_split_type, iris):
 
     loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
     assert np.allclose(loaded.transform(X), transformer.transform(X))
+
+
+def test_pivots_do_not_depend_on_the_scale_of_the_features():
+    """The pivots are chosen on the standardized features, as the distances of the split."""
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(100, 4))
+    y = (X[:, 0] + X[:, 2] > 0).astype(int)
+    X_rescaled = X * np.array([1000.0, 1.0, 0.001, 1.0])
+
+    transformer = PivotTransformer(tree_params={"random_state": 0})
+    pivots = sklearn.clone(transformer).fit(X, y, context=None, node_id=None, cache=None).pivots_
+    pivots_rescaled = sklearn.clone(transformer).fit(X_rescaled, y, context=None, node_id=None, cache=None).pivots_
+
+    assert pivots == pivots_rescaled
