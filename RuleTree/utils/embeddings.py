@@ -283,7 +283,9 @@ class TextEmbedder(TransformerMixin, BaseEstimator):
         sentence_transformers = import_optional("sentence_transformers", "TextEmbedder")
 
         self.encoder_ = sentence_transformers.SentenceTransformer(self.model, device=_device(self.device))
-        self.n_features_out_ = int(self.encoder_.get_sentence_embedding_dimension())
+        # get_sentence_embedding_dimension: the name in the older versions of sentence-transformers
+        dimension = getattr(self.encoder_, "get_embedding_dimension", self.encoder_.get_sentence_embedding_dimension)
+        self.n_features_out_ = int(dimension())
         return self
 
     def transform(self, X):
