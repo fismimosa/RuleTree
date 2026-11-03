@@ -15,8 +15,9 @@ class PivotTransformer(RuleTreeBaseTransformer):
     Transformer into the distances from candidate pivots, instances of the node that describe a
     class (medoids) or separate the classes.
 
-    The candidates are selected among the instances of the node, on the standardized numerical
-    features; the scaler and the distance matrix of the whole data set are computed once and cached
+    The candidates are selected among the instances of the node. The distances are computed on the
+    numerical features and on the one-hot encoding of the categorical ones, all standardized (z-score);
+    the encoding, the scaler and the distance matrix of the whole data set are computed once and cached
     in the tree. After the splitter has chosen a column, only the chosen pivot is kept (``select``).
 
     Parameters
@@ -24,8 +25,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
     ml_task : {MODEL_TYPE_CLF, MODEL_TYPE_REG}, default=MODEL_TYPE_CLF
         Task of the stump, which determines how the pivots are selected.
     distance_measure : str or callable, default='euclidean'
-        Distance between the instances, computed on the standardized numerical features: any metric
-        of ``sklearn.metrics.pairwise_distances``.
+        Distance between the instances, computed on the standardized features (numerical and one-hot
+        encoded categorical): any metric of ``sklearn.metrics.pairwise_distances``.
     k : int, default=None
         Regression only: number of nearest and farthest instances used to measure how well a
         candidate pivot contrasts close and distant instances. None for the square root of the
@@ -45,8 +46,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
         Numerical columns of the feature matrix.
     categorical_ : list of int
         Categorical columns of the feature matrix.
-    candidates_ : numpy.ndarray of shape (n_candidates, n_numerical_features)
-        The candidate pivots (only the chosen one after ``select``), standardized.
+    candidates_ : numpy.ndarray of shape (n_candidates, n_encoded_features)
+        The candidate pivots (only the chosen one after ``select``), encoded and standardized.
     candidate_names_ : numpy.ndarray of shape (n_candidates,)
         Indices of the candidate pivots in the training set.
     candidate_labels_ : numpy.ndarray of shape (n_candidates,)
@@ -54,8 +55,11 @@ class PivotTransformer(RuleTreeBaseTransformer):
     pivots_ : dict
         Indices in the training set of the ``descriptives``, ``discriminatives`` and ``candidates``
         pivots of the node (all of them, also after ``select``).
+    categories_ : list of list
+        Values of each categorical feature in the whole data set, the columns of its one-hot encoding;
+        a value not seen in training is encoded as all zeros.
     scaler_ : StandardScaler
-        Scaler of the numerical features, fitted on the whole data set.
+        Scaler of the encoded features, fitted on the whole data set.
 
     See Also
     --------
@@ -88,8 +92,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
 
     def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
-        Select the candidate pivots of the node (see PivotSelection), on the standardized numerical features. The
-        scaler and the distance matrix of the whole data set are taken from the cache.
+        Select the candidate pivots of the node (see PivotSelection), on the standardized features. The
+        encoding, the scaler and the distance matrix of the whole data set are taken from the cache.
 
         Parameters
         ----------
@@ -118,18 +122,19 @@ class PivotTransformer(RuleTreeBaseTransformer):
         Raises
         ------
         NoSplitFoundWarning
-            If the data have no numerical feature.
+            If the data have no feature.
         """
         if idx is None:
             idx = np.arange(len(X))
         self.num_pre_transformed_, self.cat_pre_transformed_ = get_feature_types(X, self._get_cache(cache), data_type)
 
-        if len(self.num_pre_transformed_) == 0:
-            raise NoSplitFoundWarning(f"{self.__class__.__name__} needs numerical features")
+        if len(self.num_pre_transformed_) + len(self.cat_pre_transformed_) == 0:
+            raise NoSplitFoundWarning(f"{self.__class__.__name__} needs at least one feature")
 
-        self.scaler_, distance_matrix = _pivot_cache(X, self.num_pre_transformed_, self.distance_measure, data_type,
-                                                     self._get_cache(cache))
-        X_scaled = self.scaler_.transform(X[idx][:, self.num_pre_transformed_])
+        self.categories_, self.scaler_, distance_matrix = _pivot_cache(
+            X, self.num_pre_transformed_, self.cat_pre_transformed_, self.distance_measure, data_type,
+            self._get_cache(cache))
+        X_scaled = self._encode(X[idx])
 
         selection = self._selection()
         selection.fit(X_scaled, y[idx], distance_matrix[np.ix_(idx, idx)], idx,
@@ -164,8 +169,23 @@ class PivotTransformer(RuleTreeBaseTransformer):
         -------
         X_transformed : numpy.ndarray of shape (n_samples, n_candidates)
         """
-        return pairwise_distances(self.scaler_.transform(X[:, self.num_pre_transformed_]), self.candidates_,
-                                  metric=self.distance_measure)
+        return pairwise_distances(self._encode(X), self.candidates_, metric=self.distance_measure)
+
+    def _encode(self, X):
+        """
+        Standardized features of X: the numerical ones and the one-hot encoding of the categorical ones.
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Tabular data.
+
+        Returns
+        -------
+        X_encoded : numpy.ndarray of shape (n_samples, n_encoded_features)
+        """
+        return self.scaler_.transform(_one_hot(X, self.num_pre_transformed_, self.cat_pre_transformed_,
+                                               self.categories_))
 
     def select(self, feature):
         """
@@ -203,7 +223,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
 
     def get_state(self):
         """
-        Fitted state: the pivot, its index, the candidate pivots, the numerical features and the scaler.
+        Fitted state: the pivot, its index, the candidate pivots, the features, the categories and the scaler.
 
         Returns
         -------
@@ -216,6 +236,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
             'X_split_instance': self.candidates_[0],
             'pivot_name': self.feature_id(0),
             'pivots': self.pivots_,
+            'categories': categories_state(self.categories_),
             'scaler': scaler_state(self.scaler_),
         }
 
@@ -237,6 +258,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.candidates_ = np.array([state['X_split_instance']])
         self.candidate_names_ = np.array([int(state['pivot_name'])])
         self.pivots_ = state['pivots']
+        self.categories_ = state.get('categories', [])  # saved before the categorical features: not used
         self.scaler_ = scaler_from_state(state['scaler'])
         return self
 
@@ -294,16 +316,62 @@ def scaler_from_state(state: dict) -> StandardScaler:
     return scaler
 
 
-def _pivot_cache(X, numerical, distance_measure, data_type, cache):
+def categories_state(categories: list) -> list:
     """
-    Scaler and distance matrix of the whole data set X, standardized, stored in the cache of the
-    transformer so that they are computed once per data type and distance.
+    JSON-friendly values of the categorical features (Python types instead of NumPy ones).
+
+    Parameters
+    ----------
+    categories : list of array-like
+        Values of each categorical feature.
+
+    Returns
+    -------
+    state : list of list
+    """
+    return [np.asarray(values, dtype=object).tolist() for values in categories]
+
+
+def _one_hot(X, numerical, categorical, categories) -> np.ndarray:
+    """
+    Numerical features of X followed by the one-hot encoding of the categorical ones.
+
+    Parameters
+    ----------
+    X : numpy.ndarray of shape (n_samples, n_features)
+        Tabular data.
+    numerical : list of int
+        Numerical columns of X.
+    categorical : list of int
+        Categorical columns of X.
+    categories : list of list
+        Values of each categorical column; a value not in the list is encoded as all zeros. Fewer lists
+        than categorical columns (a tree saved before the categorical features were used): the
+        columns without values are not encoded.
+
+    Returns
+    -------
+    X_encoded : numpy.ndarray of shape (n_samples, n_numerical + total number of categories)
+    """
+    columns = [np.asarray(X[:, numerical], dtype=float)]
+    columns += [(X[:, feature, None] == np.asarray(values, dtype=object)).astype(float)
+                for feature, values in zip(categorical, categories)]
+    return np.hstack(columns)
+
+
+def _pivot_cache(X, numerical, categorical, distance_measure, data_type, cache):
+    """
+    Values of the categorical features, scaler of the encoded features and distance matrix of the whole
+    data set X, encoded and standardized, stored in the cache of the transformer so that they are
+    computed once per data type and distance.
     """
     cache = {} if cache is None else cache
     key = ("pivot", data_type, distance_measure)
     if key not in cache:
-        scaler = StandardScaler().fit(X[:, numerical])
+        categories = categories_state([np.unique(X[:, feature]) for feature in categorical])
+        X_encoded = _one_hot(X, numerical, categorical, categories)
+        scaler = StandardScaler().fit(X_encoded)
         # the same scale as the distances from the pivots in transform
-        cache[key] = (scaler, pairwise_distances(scaler.transform(X[:, numerical]), metric=distance_measure))
+        cache[key] = (categories, scaler, pairwise_distances(scaler.transform(X_encoded), metric=distance_measure))
 
     return cache[key]

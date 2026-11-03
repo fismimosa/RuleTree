@@ -6,6 +6,8 @@ import sklearn
 
 from RuleTree import RuleTreeClassifier
 from RuleTree.exceptions import NoSplitFoundWarning
+from RuleTree.stumps.Stump import Stump
+from RuleTree.stumps.splitters import ClassificationSplitter
 from RuleTree.stumps.transformers import (BivariateTransformer, HouseholderTransformer, MatrixTransformer,
                                           MultiplePivotTransformer, ObliquePivotTransformer, PartialPivotTransformer,
                                           PartialProximityTransformer, PivotTransformer, ProximityTransformer,
@@ -70,11 +72,54 @@ def test_pivot_transformer(iris):
     assert loaded.feature_id(0) == name
 
 
-def test_pivot_transformer_needs_numerical_features(iris_mixed):
+@pytest.mark.parametrize("transformer_class", [PivotTransformer, MultiplePivotTransformer, ObliquePivotTransformer])
+def test_pivot_transformers_use_the_categorical_features(transformer_class):
+    """The categorical features are one-hot encoded: a pivot separates the classes of a color."""
+    rng = np.random.default_rng(0)
+    X = np.empty((200, 2), dtype=object)
+    X[:, 0], X[:, 1] = rng.choice(["red", "green", "blue"], 200), rng.normal(size=200)
+    y = (X[:, 0] == "red").astype(int)
+
+    transformer = transformer_class().fit(X, y, context=None, node_id=None, cache=None)
+    model = RuleTreeClassifier(max_depth=1, random_state=0,
+                               base_stumps=Stump(transformer_class(), ClassificationSplitter())).fit(X, y)
+
+    assert transformer.categories_ == [["blue", "green", "red"]]
+    assert model.score(X, y) >= 0.95  # about 0.7 (the majority class) without the color
+
+    loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
+    assert np.allclose(loaded.transform(X)[:, 0], transformer.transform(X)[:, 0])
+
+
+def test_pivot_transformer_only_categorical_features(iris_mixed):
     X, y = iris_mixed
 
-    with pytest.raises(NoSplitFoundWarning):
-        PivotTransformer().fit(X[:, [0]], y, context=None, node_id=None, cache=None)
+    transformer = PivotTransformer().fit(X[:, [0]], y, context=None, node_id=None, cache=None)
+
+    assert transformer.transform(X[:, [0]]).shape == (len(y), len(transformer.candidate_names_))
+
+
+def test_pivot_transformer_unseen_category(iris_mixed):
+    """A value not seen in training is encoded as all zeros: it has a distance, not an error."""
+    X, y = iris_mixed
+    transformer = PivotTransformer().fit(X, y, context=None, node_id=None, cache=None)
+
+    X_new = X[:3].copy()
+    X_new[:, 0] = "purple"
+
+    assert np.isfinite(transformer.transform(X_new)).all()
+
+
+def test_pivot_transformer_state_without_categories(iris):
+    """A state saved before the categorical features were encoded is still loaded."""
+    X, y = iris
+    transformer = PivotTransformer().fit(X, y, context=None, node_id=None, cache=None)
+    state = json_round_trip(transformer.get_state())
+    del state["categories"]
+
+    loaded = sklearn.clone(transformer).set_state(state)
+
+    assert np.allclose(loaded.transform(X)[:, 0], transformer.transform(X)[:, 0])
 
 
 def test_shapelet_transformer(time_series):

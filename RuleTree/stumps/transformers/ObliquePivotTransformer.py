@@ -4,7 +4,8 @@ import numpy as np
 
 from RuleTree.stumps.transformers.BivariateTransformer import BivariateTransformer
 from RuleTree.stumps.transformers.HouseholderTransformer import HouseholderTransformer
-from RuleTree.stumps.transformers.PivotTransformer import PivotTransformer, scaler_from_state, scaler_state
+from RuleTree.stumps.transformers.PivotTransformer import (PivotTransformer, categories_state, scaler_from_state,
+                                                           scaler_state)
 from RuleTree.stumps.transformers._pivot_selection import PivotSelection
 from RuleTree.utils.define import MODEL_TYPE_CLF
 
@@ -29,7 +30,8 @@ class ObliquePivotTransformer(PivotTransformer):
     ml_task : {MODEL_TYPE_CLF, MODEL_TYPE_REG}, default=MODEL_TYPE_CLF
         Task of the stump, which determines how the pivots and the directions are selected.
     distance_measure : str or callable, default='euclidean'
-        Distance between the instances, computed on the standardized numerical features.
+        Distance between the instances, computed on the standardized features (categorical ones one-hot
+        encoded).
     k, reg_contrast_lambda, reg_max_thresholds
         Regression only: see PivotTransformer.
     tree_params : dict, default=None
@@ -59,7 +61,7 @@ class ObliquePivotTransformer(PivotTransformer):
         Indices in the training set of the ``descriptives``, ``discriminatives`` and ``candidates``
         pivots of the node.
     scaler_ : StandardScaler
-        Scaler of the numerical features, fitted on the whole data set.
+        Scaler of the encoded features, fitted on the whole data set.
 
     See Also
     --------
@@ -230,7 +232,7 @@ class ObliquePivotTransformer(PivotTransformer):
 
     def get_state(self):
         """
-        Fitted state: the candidate pivots and their indices, the numerical features, the scaler and the
+        Fitted state: the candidate pivots and their indices, the features, the categories, the scaler and the
         state of the oblique transformer.
 
         Returns
@@ -244,6 +246,7 @@ class ObliquePivotTransformer(PivotTransformer):
             'candidates': np.asarray(self.candidates_).tolist(),
             'candidate_names': [int(name) for name in self.candidate_names_],
             'pivots': self.pivots_,
+            'categories': categories_state(self.categories_),
             'scaler': scaler_state(self.scaler_),
             'oblique': self.oblique_.get_state(),
         }
@@ -266,6 +269,7 @@ class ObliquePivotTransformer(PivotTransformer):
         self.candidates_ = np.array(state['candidates'])
         self.candidate_names_ = np.array(state['candidate_names'])
         self.pivots_ = state['pivots']
+        self.categories_ = state.get('categories', [])  # saved before the categorical features: not used
         self.scaler_ = scaler_from_state(state['scaler'])
         self.oblique_ = self._oblique().set_state(state['oblique'])
         self.numerical_, self.categorical_ = self.oblique_.numerical_, []

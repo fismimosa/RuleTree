@@ -281,8 +281,9 @@ Each stump saves only the fitted state needed to apply its split:
      - the feature, the threshold (or the value of a categorical split), the gain and the impurity
        (the XGBoost splitter also its similarity scores)
    * - pivot stumps
-     - the pivot (an instance of the training set, on the standardized numerical features), its
-       index, the pivots of the node and the scaler of the numerical features
+     - the pivot (an instance of the training set, standardized, with the categorical features
+       one-hot encoded), its index, the pivots of the node, the values of the categorical features
+       and the scaler
    * - multiple pivot stumps
      - the two pivots of the split and their indices, the pivots of the node, the scaler
    * - oblique pivot stumps

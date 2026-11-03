@@ -5,7 +5,8 @@ import itertools
 import numpy as np
 
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.stumps.transformers.PivotTransformer import PivotTransformer, scaler_from_state, scaler_state
+from RuleTree.stumps.transformers.PivotTransformer import (PivotTransformer, categories_state, scaler_from_state,
+                                                           scaler_state)
 from RuleTree.stumps.transformers.ProximityTransformer import closer_to_second
 from RuleTree.stumps.transformers._pivot_selection import PivotSelection
 from RuleTree.utils.define import MODEL_TYPE_CLF
@@ -28,7 +29,8 @@ class MultiplePivotTransformer(PivotTransformer):
     ml_task : {MODEL_TYPE_CLF, MODEL_TYPE_REG}, default=MODEL_TYPE_CLF
         Task of the stump, which determines how the pivots are selected and compared.
     distance_measure : str or callable, default='euclidean'
-        Distance between the instances, computed on the standardized numerical features.
+        Distance between the instances, computed on the standardized features (categorical ones one-hot
+        encoded).
     k, reg_contrast_lambda, reg_max_thresholds
         Regression only: see PivotTransformer.
     tree_params : dict, default=None
@@ -58,7 +60,7 @@ class MultiplePivotTransformer(PivotTransformer):
         Indices in the training set of the ``descriptives``, ``discriminatives`` and ``candidates``
         pivots of the node.
     scaler_ : StandardScaler
-        Scaler of the numerical features, fitted on the whole data set.
+        Scaler of the encoded features, fitted on the whole data set.
 
     See Also
     --------
@@ -201,7 +203,7 @@ class MultiplePivotTransformer(PivotTransformer):
 
     def get_state(self):
         """
-        Fitted state: the two pivots and their indices, the candidates, the numerical features and the
+        Fitted state: the two pivots and their indices, the candidates, the features, the categories and the
         scaler.
 
         Returns
@@ -216,6 +218,7 @@ class MultiplePivotTransformer(PivotTransformer):
             'candidate_names': [int(name) for name in self.candidate_names_],
             'pairs': [[int(a), int(b)] for a, b in self.pairs_],
             'pivots': self.pivots_,
+            'categories': categories_state(self.categories_),
             'scaler': scaler_state(self.scaler_),
         }
 
@@ -238,6 +241,7 @@ class MultiplePivotTransformer(PivotTransformer):
         self.candidate_names_ = np.array(state['candidate_names'])
         self.pairs_ = [tuple(pair) for pair in state['pairs']]
         self.pivots_ = state['pivots']
+        self.categories_ = state.get('categories', [])  # saved before the categorical features: not used
         self.scaler_ = scaler_from_state(state['scaler'])
         self.numerical_, self.categorical_ = list(range(len(self.pairs_))), []
         return self

@@ -20,8 +20,8 @@ class MultipleObliquePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTr
     Parameters
     ----------
     distance_measure : str or callable, default='euclidean'
-        Distance between the instances, computed on the standardized numerical features: any metric
-        of ``sklearn.metrics.pairwise_distances``.
+        Distance between the instances, computed on the standardized features (categorical ones one-hot
+        encoded): any metric of ``sklearn.metrics.pairwise_distances``.
     oblique_split_type : {'householder', 'bivariate'}, default='householder'
         How the oblique directions that find the discriminative pivots are chosen (see
         ObliqueDecisionTreeStumpClassifier).

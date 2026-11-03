@@ -13,8 +13,9 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
     whose distance best separates high and low values of the target (descriptive pivot) and the one
     found by a regression tree on the distances (discriminative pivot). The split is the best
     threshold on the distance from one of the candidates. Distances are computed on the
-    standardized numerical features; the distance matrix of the training set is computed once and
-    cached in the tree. In the rules, ``P_<i>`` is the distance from the training instance ``i``.
+    standardized features (categorical ones one-hot encoded); the distance matrix of the training set is
+    computed once and cached in the tree. In the rules, ``P_<i>`` is the distance from the training
+    instance ``i``.
 
     It is a :class:`~RuleTree.stumps.Stump.Stump` made of a PivotTransformer and a
     RegressionSplitter; it supports only tabular data.
@@ -22,8 +23,8 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
     Parameters
     ----------
     distance_measure : str or callable, default='euclidean'
-        Distance between the instances, computed on the standardized numerical features: any metric
-        of ``sklearn.metrics.pairwise_distances``.
+        Distance between the instances, computed on the standardized features (categorical ones one-hot
+        encoded): any metric of ``sklearn.metrics.pairwise_distances``.
     k : int, default=None
         Regression only: number of nearest and farthest instances used to measure how well a
         candidate pivot contrasts close and distant instances. None for the square root of the
@@ -63,7 +64,7 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
     threshold_original : float
         Threshold of the split.
     X_split_instance : numpy.ndarray
-        The pivot, as standardized numerical features.
+        The pivot, as standardized features (categorical ones one-hot encoded).
 
     See Also
     --------

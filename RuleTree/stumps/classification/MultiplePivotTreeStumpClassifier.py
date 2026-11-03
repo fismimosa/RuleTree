@@ -14,8 +14,8 @@ class MultiplePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTreeStump
     :class:`~RuleTree.stumps.classification.PivotTreeStumpClassifier.PivotTreeStumpClassifier` (for each
     class, its medoid and its most discriminative instance), and the split is the pair of pivots of
     different classes whose comparison best splits the node. Distances are computed on the
-    standardized numerical features; the distance matrix of the training set is computed once and
-    cached in the tree.
+    standardized features (categorical ones one-hot encoded); the distance matrix of the training set is
+    computed once and cached in the tree.
 
     It is a :class:`~RuleTree.stumps.Stump.Stump` made of a MultiplePivotTransformer and a
     ClassificationSplitter.
@@ -23,8 +23,8 @@ class MultiplePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTreeStump
     Parameters
     ----------
     distance_measure : str or callable, default='euclidean'
-        Distance between the instances, computed on the standardized numerical features: any metric
-        of ``sklearn.metrics.pairwise_distances``.
+        Distance between the instances, computed on the standardized features (categorical ones one-hot
+        encoded): any metric of ``sklearn.metrics.pairwise_distances``.
     criterion : {'gini', 'entropy'}, default='gini'
         Impurity measure.
     min_samples_leaf : int or float, default=1

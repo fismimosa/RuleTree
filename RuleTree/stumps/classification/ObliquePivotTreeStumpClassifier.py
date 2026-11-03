@@ -16,7 +16,7 @@ class ObliquePivotTreeStumpClassifier(ObliquePivotTreeStump, DecisionTreeStumpCl
     of the node from the candidates are combined by oblique directions of the same type, and the split
     is the best threshold on one of them (see
     :class:`~RuleTree.stumps.transformers.ObliquePivotTransformer.ObliquePivotTransformer`). Distances
-    are computed on the standardized numerical features.
+    are computed on the standardized features (categorical ones one-hot encoded).
 
     It is a :class:`~RuleTree.stumps.Stump.Stump` made of an ObliquePivotTransformer and a
     ClassificationSplitter.
@@ -24,8 +24,8 @@ class ObliquePivotTreeStumpClassifier(ObliquePivotTreeStump, DecisionTreeStumpCl
     Parameters
     ----------
     distance_measure : str or callable, default='euclidean'
-        Distance between the instances, computed on the standardized numerical features: any metric
-        of ``sklearn.metrics.pairwise_distances``.
+        Distance between the instances, computed on the standardized features (categorical ones one-hot
+        encoded): any metric of ``sklearn.metrics.pairwise_distances``.
     oblique_split_type : {'householder', 'bivariate'}, default='householder'
         How the oblique directions are chosen (see ObliqueDecisionTreeStumpClassifier).
     max_oblique_features : int, default=2

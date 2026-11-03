@@ -12,9 +12,9 @@ class PivotTreeStumpClassifier(PivotTreeStump, DecisionTreeStumpClassifier):
     At each node, the candidate pivots are selected among the instances of the node: for each class,
     its medoid (descriptive pivot) and the instance whose distance best separates the classes
     (discriminative pivot). The split is the best threshold on the distance from one of the
-    candidates. Distances are computed on the standardized numerical features; the distance matrix
-    of the training set is computed once and cached in the tree. In the rules, ``P_<i>`` is the
-    distance from the training instance ``i``.
+    candidates. Distances are computed on the standardized features (categorical ones one-hot encoded);
+    the distance matrix of the training set is computed once and cached in the tree. In the rules,
+    ``P_<i>`` is the distance from the training instance ``i``.
 
     It is a :class:`~RuleTree.stumps.Stump.Stump` made of a PivotTransformer and a
     ClassificationSplitter; it supports only tabular data.
@@ -22,8 +22,8 @@ class PivotTreeStumpClassifier(PivotTreeStump, DecisionTreeStumpClassifier):
     Parameters
     ----------
     distance_measure : str or callable, default='euclidean'
-        Distance between the instances, computed on the standardized numerical features: any metric
-        of ``sklearn.metrics.pairwise_distances``.
+        Distance between the instances, computed on the standardized features (categorical ones one-hot
+        encoded): any metric of ``sklearn.metrics.pairwise_distances``.
     k : int, default=None
         Regression only: number of nearest and farthest instances used to measure how well a
         candidate pivot contrasts close and distant instances. None for the square root of the
@@ -65,7 +65,7 @@ class PivotTreeStumpClassifier(PivotTreeStump, DecisionTreeStumpClassifier):
     threshold_original : float
         Threshold of the split.
     X_split_instance : numpy.ndarray
-        The pivot, as standardized numerical features.
+        The pivot, as standardized features (categorical ones one-hot encoded).
 
     See Also
     --------

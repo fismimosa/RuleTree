@@ -35,7 +35,7 @@ class PivotTreeStump:
 
     @property
     def X_split_instance(self):
-        """The pivot of the split (standardized numerical features), None if not fitted."""
+        """The pivot of the split, standardized (categorical features one-hot encoded); None if not fitted."""
         return self.transformer_.candidates_[0] if self._is_fitted() else None
 
     def get_pivots(self):

@@ -231,8 +231,9 @@ Pivot stumps
 A pivot stump splits on the distance from an instance of the training set, the *pivot*: the
 instances closer than a threshold go left. The candidate pivots of a node are, for each class,
 its medoid (descriptive pivot) and the instance whose distance best separates the classes
-(discriminative pivot). Distances are computed on the standardized numerical features, with any
-metric of ``sklearn.metrics.pairwise_distances``:
+(discriminative pivot). Distances are computed on the numerical features and on the one-hot
+encoding of the categorical ones, all standardized, with any metric of
+``sklearn.metrics.pairwise_distances``:
 
 .. code-block:: python
 
