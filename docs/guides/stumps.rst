@@ -219,7 +219,7 @@ reproducible:
 .. code-block:: text
    :caption: Output
 
-   [('DecisionTreeStumpClassifier', 4), ('PivotTreeStumpClassifier', 3)]
+   [('DecisionTreeStumpClassifier', 4), ('PivotTreeStumpClassifier', 2)]
 
 The ``random_state`` of the tree is also given to the stumps whose ``random_state`` is None, so
 that they do not break ties between equally good features at random.
@@ -246,17 +246,17 @@ metric of ``sklearn.metrics.pairwise_distances``:
 .. code-block:: text
    :caption: Output
 
-   |--- P_461 <= 1.052
-   |   |--- P_368 <= 1.011
-   |   |    output: 0
-   |   |--- P_368 > 1.011
-   |   |    output: 0
-   |--- P_461 > 1.052
-   |   |--- P_199 <= 0.546
-   |   |    output: 0
-   |   |--- P_199 > 0.546
+   |--- P_280 <= 0.877
+   |   |--- P_81 <= 0.04
    |   |    output: 1
-   pivot of the root: 461
+   |   |--- P_81 > 0.04
+   |   |    output: 0
+   |--- P_280 > 0.877
+   |   |--- P_478 <= 1.239
+   |   |    output: 1
+   |   |--- P_478 > 1.239
+   |   |    output: 0
+   pivot of the root: 280
 
 In the rules, ``P_<i>`` is the distance from the training instance ``i``. The distance matrix of
 the training set is computed once and cached in the tree (see :doc:`lifecycle`).
@@ -272,9 +272,9 @@ candidates and the one used by the split. For the whole tree:
 .. code-block:: text
    :caption: Output
 
-   R {'descriptives': [167, 249], 'discriminatives': [461, 140], 'candidates': [167, 249, 461, 140], 'used': 461}
-   Rl {'descriptives': [167, 421], 'discriminatives': [368, 191], 'candidates': [167, 421, 368, 191], 'used': 368}
-   Rr {'descriptives': [40, 415], 'discriminatives': [199, 71], 'candidates': [40, 415, 199, 71], 'used': 199}
+   R {'descriptives': [393, 546], 'discriminatives': [280, 21], 'candidates': [393, 546, 280, 21], 'used': 280}
+   Rl {'descriptives': [393, 81], 'discriminatives': [219, 541], 'candidates': [393, 81, 219, 541], 'used': 81}
+   Rr {'descriptives': [40, 546], 'discriminatives': [119, 478], 'candidates': [40, 546, 119, 478], 'used': 478}
 
 Three variants use the same candidate pivots in other ways:
 
@@ -300,9 +300,9 @@ Three variants use the same candidate pivots in other ways:
 .. code-block:: text
    :caption: Output
 
-   MultiplePivotTreeStumpClassifier: P_441 <= P_480, accuracy 0.930
-   ObliquePivotTreeStumpClassifier: 0.633 * P_480 - 0.443 * P_461 <= -5.801, accuracy 0.954
-   MultipleObliquePivotTreeStumpClassifier: P_441 <= P_480, accuracy 0.933
+   MultiplePivotTreeStumpClassifier: P_408 <= P_79, accuracy 0.938
+   ObliquePivotTreeStumpClassifier: 0.715 * P_152 + 0.576 * P_428 <= 18.307, accuracy 0.907
+   MultipleObliquePivotTreeStumpClassifier: P_282 <= P_428, accuracy 0.933
 
 Their ``get_pivots`` returns all the pivots used by the split in ``used``.
 
