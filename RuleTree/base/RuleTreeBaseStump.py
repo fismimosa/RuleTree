@@ -175,7 +175,8 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         -------
         rule : dict
             ``label``, the text of the node, and optionally ``shapes``, a list of 1D arrays plotted
-            below it, with their ``colors``.
+            below it, with their ``colors``, or ``pivots``, indices of instances of the training set drawn
+            with ``show_pivots`` (below the rule, or on the arrows of the children if ``pivots_on_edges``).
         """
         return {"label": self.get_rule(columns_names=columns_names, scaler=scaler,
                                        float_precision=float_precision)["textual_rule"]}

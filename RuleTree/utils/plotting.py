@@ -3,9 +3,11 @@ Drawing of a tree with matplotlib (``RuleTree.plot_tree`` and ``RuleTreeNode.plo
 style of ``sklearn.tree.plot_tree``.
 
 Each internal node shows what its stump returns from ``get_plot_rule``: the rule as text and,
-for some stumps (shapelets, proximity), the shapes to plot below it. Each leaf shows its
-prediction. The leaves are placed from left to right in the order of the tree, and each internal
-node above the middle of its children, so the boxes never overlap.
+for some stumps (shapelets, proximity), the shapes to plot below it; with ``show_pivots``, the pivots
+of the pivot stumps, as images, time series or texts, below the rule or, for the proximity pivot
+stumps, on the arrows of the children. Each leaf shows its prediction. The leaves are placed from
+left to right in the order of the tree, and each internal node above the middle of its children, so
+the boxes never overlap.
 """
 import re
 import textwrap
@@ -30,12 +32,15 @@ DEFAULT_COLORS = {
 
 PLACEHOLDER = "(...)"  # the children of the nodes at max_depth
 SHAPE_LINES = 4  # empty lines reserved below the rule for the plot of the shapes
+PIVOT_LINES = 7  # empty lines reserved below the rule for the pivots (show_pivots)
+SHOW_PIVOTS = (None, "image", "series", "text")
 
 
 def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_names: Optional[list] = None,
               scaler=None, float_precision: Optional[int] = 3, max_depth: Optional[int] = None,
               node_ids: bool = True, samples: bool = True, filled: bool = True,
-              fontsize: Optional[float] = None, colors: Optional[dict] = None, wrap: Optional[int] = None):
+              fontsize: Optional[float] = None, colors: Optional[dict] = None, wrap: Optional[int] = None,
+              show_pivots: Optional[str] = None, pivot_data=None):
     """
     Draw the subtree of a node with matplotlib. See ``RuleTree.plot_tree`` for the parameters.
 
@@ -46,6 +51,10 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
         (``"(...)"`` for the subtrees cut by ``max_depth``).
     """
     plt = import_optional("matplotlib.pyplot", "plot_tree")
+    if show_pivots not in SHOW_PIVOTS:
+        raise ValueError(f"show_pivots must be one of {SHOW_PIVOTS}, not {show_pivots!r}")
+    if show_pivots is not None and pivot_data is None:
+        raise ValueError("show_pivots needs pivot_data: the training instances, in the order given to fit")
     colors = DEFAULT_COLORS | (colors or {})
     text_color = colors["text"] or plt.rcParams["text.color"]
 
@@ -53,15 +62,17 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
     leaf_colors = _leaf_colors(boxes, colors) if filled else {}
     for box in boxes:
         _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
-                  wrap)
+                  wrap, show_pivots)
+    on_edges = any(box["pivots"] and box["pivots_on_edges"] for box in boxes)
 
     n_leaves = 1 + max(box["x"] for box in boxes)
     depth = max(box["depth"] for box in boxes)
     if ax is None:  # wide enough for the longest line at about 10 points
         characters = max(len(line) for box in boxes for line in box["label"].split("\n"))
         lines = max(box["label"].count("\n") + 1 for box in boxes)
-        figure = plt.figure(figsize=(min(max(4.0, n_leaves * max(1.3, 0.09 * characters)), 30.0),
-                                     max(2.5, (depth + 1) * max(1.3, 0.2 * lines + 0.5))))
+        level_height = max(1.3, 0.2 * lines + 0.5) + (1.4 if on_edges else 0)  # room for the pivots on the arrows
+        leaf_width = max(1.3, 0.09 * characters, (2.2 if show_pivots == "text" else 1.6) if on_edges else 0)
+        figure = plt.figure(figsize=(min(max(4.0, n_leaves * leaf_width), 30.0), max(2.5, (depth + 1) * level_height)))
         ax = figure.add_axes((0, 0, 1, 1))  # no margins: the axes are hidden
     ax.set_xlim(-0.5, n_leaves - 0.5)
     ax.set_ylim(-depth - 0.5, 0.5)
@@ -93,22 +104,36 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
         ax.annotate("", xy=end, xytext=start, zorder=2,
                     arrowprops=dict(arrowstyle="-|>", color=colors["edge"], linewidth=1, shrinkA=0, shrinkB=1))
         left = box["side"] == "true"
-        ax.annotate(box["side"], ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2),
+        parent = boxes[box["parent"]]
+        pivot_on_edge = parent["pivots"] and parent["pivots_on_edges"]
+        where = 0.12 if pivot_on_edge else 0.5  # the label above the pivot drawn on the arrow
+        ax.annotate(box["side"], (start[0] + where * (end[0] - start[0]), start[1] + where * (end[1] - start[1])),
                     xytext=(-3 if left else 3, 2), textcoords="offset points", ha="right" if left else "left",
                     va="bottom", color=colors["edge"], fontsize=size * 0.9, zorder=4)
+        if pivot_on_edge:
+            pivot = parent["pivots"][0 if left else 1]
+            width, height = 0.55 if show_pivots == "text" else 0.42, 0.42 * (start[1] - end[1])
+            center = (start[0] + 0.58 * (end[0] - start[0]), start[1] + 0.58 * (end[1] - start[1]))
+            inset = ax.inset_axes([center[0] - width / 2, center[1] - height / 2, width, height],
+                                  transform=ax.transData, zorder=5)
+            _draw_pivot(inset, pivot, pivot_data[pivot], show_pivots, text_color, colors, size, renderer)
+            inset.set_gid(f"pivot-{parent['node'].node_id}-{box['side']}")
 
     for box in boxes:
         if box["shapes"]:
             _plot_shapes(ax, texts[box["key"]], box["shapes"], renderer, text_color)
+        if box["pivots"] and not box["pivots_on_edges"]:
+            _plot_pivots(ax, texts[box["key"]], box["pivots"], pivot_data, show_pivots, renderer, text_color,
+                         colors, size)
 
     return ax
 
 
 def _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
-              wrap):
-    """The text, the colors and the shapes of a box."""
+              wrap, show_pivots=None):
+    """The text, the colors, the shapes and the pivots of a box."""
     current = box["node"]
-    box["shapes"] = None
+    box["shapes"], box["pivots"], box["pivots_on_edges"] = None, None, False
     if current is None:
         box["label"], box["face"], box["edge"] = PLACEHOLDER, colors["leaf"], colors["leaf_edge"]
         return
@@ -122,11 +147,15 @@ def _describe(box, columns_names, class_names, scaler, float_precision, node_ids
         label, box["face"], box["edge"] = rule["label"], colors["split"], colors["split_edge"]
         if rule.get("shapes"):
             box["shapes"] = rule
+        if show_pivots is not None and rule.get("pivots"):
+            box["pivots"], box["pivots_on_edges"] = rule["pivots"], bool(rule.get("pivots_on_edges"))
 
     lines = ([current.node_id] if node_ids else []) + _wrap(label, wrap, rule=not current.is_leaf())
     if samples and getattr(current, "samples", None) is not None:
         lines.append(f"samples = {current.samples}")
-    box["label"] = "\n".join(lines) + "\n" * (SHAPE_LINES if box["shapes"] else 0)
+    reserved = SHAPE_LINES if box["shapes"] else 0
+    reserved += PIVOT_LINES if box["pivots"] and not box["pivots_on_edges"] else 0
+    box["label"] = "\n".join(lines) + "\n" * reserved
 
 
 def _wrap(text, width, rule=True):
@@ -268,3 +297,52 @@ def _plot_shapes(ax, text, rule, renderer, text_color):
         spine.set_color(text_color)
         spine.set_alpha(0.4)
     inset.set_gid(f"shapes-{text.get_gid()}")
+
+
+def _plot_pivots(ax, text, pivots, pivot_data, show_pivots, renderer, text_color, colors, size):
+    """The pivots of a node, side by side in the lines reserved at the bottom of its box."""
+    text.update_bbox_position_size(renderer)
+    extent = text.get_bbox_patch().get_window_extent(renderer)
+    (x0, y0), (x1, y1) = ax.transAxes.inverted().transform([(extent.x0, extent.y0), (extent.x1, extent.y1)])
+    n_lines = text.get_text().count("\n") + 1
+    height = (y1 - y0) * PIVOT_LINES / n_lines
+    width = 0.9 * (x1 - x0) / len(pivots)
+    for i, pivot in enumerate(pivots):
+        inset = ax.inset_axes([x0 + 0.05 * (x1 - x0) + i * width + 0.04 * width, y0 + 0.06 * height,
+                               0.92 * width, 0.8 * height], zorder=5)
+        _draw_pivot(inset, pivot, pivot_data[pivot], show_pivots, text_color, colors, size, renderer)
+        inset.set_gid(f"pivot-{text.get_gid()}-{i}")
+
+
+def _draw_pivot(inset, pivot, instance, show_pivots, text_color, colors, size, renderer):
+    """
+    A pivot in its axes, with its name ``P_<i>`` as title: an image (height x width, with channels
+    last or first), a time series (one or more signals) or a text (shrunk to fit the axes).
+    """
+    instance = np.asarray(instance) if show_pivots != "text" else str(instance)
+    inset.set_title(f"P_{pivot}", fontsize=size * 0.8, color=text_color, pad=2)
+    inset.set_xticks([])
+    inset.set_yticks([])
+    if show_pivots == "image":
+        if instance.ndim == 3 and instance.shape[0] in (1, 3) and instance.shape[-1] not in (1, 3):
+            instance = np.moveaxis(instance, 0, -1)  # channels first
+        if instance.ndim == 3 and instance.shape[-1] == 1:
+            instance = instance[..., 0]
+        inset.imshow(instance, cmap="gray_r" if instance.ndim == 2 else None)  # the aspect of the image
+        inset.set_anchor("C")
+        return
+    if show_pivots == "series":
+        for signal in np.atleast_2d(instance):
+            inset.plot(signal, color=colors["classes"][0], linewidth=1)
+    else:
+        lines = textwrap.wrap(instance, 16)
+        lines = lines[:6] + (["..."] if len(lines) > 6 else [])
+        label = inset.text(0.5, 0.5, "\n".join(lines), ha="center", va="center", fontsize=size * 0.7,
+                           color=text_color, transform=inset.transAxes)
+        box, extent = inset.get_window_extent(renderer), label.get_window_extent(renderer)
+        label.set_fontsize(label.get_fontsize() * min(1.0, 0.92 * box.width / extent.width,
+                                                       0.92 * box.height / extent.height))
+    inset.set_facecolor(colors["leaf"])  # opaque, over the arrow
+    for spine in inset.spines.values():
+        spine.set_color(text_color)
+        spine.set_alpha(0.4)

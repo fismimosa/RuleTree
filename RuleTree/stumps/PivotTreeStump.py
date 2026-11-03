@@ -89,6 +89,28 @@ class PivotTreeStump:
         return numerical_rule(self.feature_original, f"P_{self.feature_original}", self.threshold_original,
                               float_precision)
 
+    def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
+        """
+        What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the pivot, drawn below it
+        with ``show_pivots``.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Not used.
+        scaler : TransformerMixin, default=None
+            Not used.
+        float_precision : int, default=3
+            Number of decimals of the threshold.
+
+        Returns
+        -------
+        rule : dict
+            ``label`` and ``pivots`` (the index of the pivot in the training set).
+        """
+        return {"label": self.get_rule(float_precision=float_precision)["textual_rule"],
+                "pivots": [int(self.feature_original)]}
+
 
 class ProximityPivotTreeStump:
     """
@@ -149,6 +171,30 @@ class ProximityPivotTreeStump:
             return {}
         first, second = self.feature_original
         return proximity_rule(self.feature_original, f"P_{first}", f"P_{second}", self.threshold_original)
+
+    def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
+        """
+        What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the two pivots, drawn
+        with ``show_pivots`` on the arrows of the children: the first one on the left arrow ("true", the
+        instances closer to it), the second one on the right arrow.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Not used.
+        scaler : TransformerMixin, default=None
+            Not used.
+        float_precision : int, default=3
+            Not used.
+
+        Returns
+        -------
+        rule : dict
+            ``label``, ``pivots`` (the indices of the two pivots in the training set) and
+            ``pivots_on_edges`` (True).
+        """
+        return {"label": self.get_rule()["textual_rule"], "pivots": [int(p) for p in self.feature_original],
+                "pivots_on_edges": True}
 
 
 class ObliquePivotTreeStump:
@@ -214,6 +260,28 @@ class ObliquePivotTreeStump:
         pivots, coefficients = self.transformer_.combination(self.splitter_.feature_)
         return combination_rule(tuple(pivots), [f"P_{p}" for p in pivots], coefficients, self.threshold_original,
                                 float_precision)
+
+    def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
+        """
+        What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the pivots of the
+        combination, drawn below it with ``show_pivots``.
+
+        Parameters
+        ----------
+        columns_names : list of str, default=None
+            Not used.
+        scaler : TransformerMixin, default=None
+            Not used.
+        float_precision : int, default=3
+            Number of decimals of the coefficients and of the threshold.
+
+        Returns
+        -------
+        rule : dict
+            ``label`` and ``pivots`` (the indices of the pivots in the training set).
+        """
+        return {"label": self.get_rule(float_precision=float_precision)["textual_rule"],
+                "pivots": [int(p) for p in self.feature_original]}
 
 
 __getattr__ = deprecated_aliases(__name__, {"MultiplePivotTreeStump": ProximityPivotTreeStump})

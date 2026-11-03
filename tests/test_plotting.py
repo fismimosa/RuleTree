@@ -11,7 +11,9 @@ from matplotlib.colors import to_hex  # noqa: E402
 
 from RuleTree import (RuleTreeClassifier, RuleTreeCluster, RuleTreeClusterClassifier,  # noqa: E402
                       RuleTreeClusterRegressor, RuleTreeRegressor)
-from RuleTree.stumps.classification import ProximityTreeStumpClassifier, ShapeletTreeStumpClassifier  # noqa: E402
+from RuleTree.stumps.classification import (ObliquePivotTreeStumpClassifier, PivotTreeStumpClassifier,  # noqa: E402
+                                            ProximityPivotTreeStumpClassifier, ProximityTreeStumpClassifier,
+                                            ShapeletTreeStumpClassifier)
 from RuleTree.tree.RuleTree import RuleTree  # noqa: E402
 from RuleTree.utils.data_utils import json_numpy_encoder  # noqa: E402
 from RuleTree.utils.plotting import DEFAULT_COLORS, PLACEHOLDER  # noqa: E402
@@ -268,3 +270,107 @@ def test_new_figure_has_no_margins(classifier):
     ax = classifier.plot_tree()
 
     assert tuple(ax.get_position().bounds) == (0, 0, 1, 1)
+
+
+@pytest.fixture(scope="module")
+def digits():
+    """Four digits: images of 8 x 8 pixels, and the same images flattened for the tree."""
+    from sklearn.datasets import load_digits
+
+    data = load_digits()
+    four = np.isin(data.target, [0, 1, 4, 7])
+    images = data.images[four]
+    return images, images.reshape(len(images), -1), data.target[four]
+
+
+def pivot_insets(ax):
+    """The axes of the pivots, by gid."""
+    return {inset.get_gid(): inset for inset in ax.child_axes if str(inset.get_gid()).startswith("pivot-")}
+
+
+def test_pivots_not_drawn_by_default(digits):
+    images, X, y = digits
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=PivotTreeStumpClassifier()).fit(X, y)
+
+    assert pivot_insets(model.plot_tree()) == {}
+
+
+def test_pivot_images_in_their_nodes(digits):
+    images, X, y = digits
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=PivotTreeStumpClassifier()).fit(X, y)
+
+    insets = pivot_insets(model.plot_tree(show_pivots="image", pivot_data=images))
+
+    assert set(insets) == {f"pivot-{node_id}-0" for node_id in model.get_predicates()}
+    for node_id, node in model.get_predicates().items():
+        inset = insets[f"pivot-{node_id}-0"]
+        pivot = node.stump.get_pivots()["used"]
+        assert inset.get_title() == f"P_{pivot}"
+        assert np.array_equal(inset.images[0].get_array(), images[pivot])
+
+
+def test_proximity_pivots_on_the_arrows(digits):
+    """The first pivot of the rule on the arrow of the left child (true), the second on the right one."""
+    images, X, y = digits
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier()).fit(X, y)
+
+    insets = pivot_insets(model.plot_tree(show_pivots="image", pivot_data=images))
+
+    for node_id, node in model.get_predicates().items():
+        first, second = node.stump.get_pivots()["used"]
+        assert insets[f"pivot-{node_id}-true"].get_title() == f"P_{first}"
+        assert insets[f"pivot-{node_id}-false"].get_title() == f"P_{second}"
+    assert len(insets) == 2 * len(model.get_predicates())
+
+
+def test_oblique_pivots_side_by_side(digits):
+    images, X, y = digits
+    model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=ObliquePivotTreeStumpClassifier()).fit(X, y)
+
+    insets = pivot_insets(model.plot_tree(show_pivots="image", pivot_data=images))
+
+    assert [insets[f"pivot-R-{i}"].get_title() for i in range(len(insets))] == \
+        [f"P_{p}" for p in model.root.stump.get_pivots()["used"]]
+
+
+def test_pivot_series_and_texts(time_series):
+    X, y = time_series
+    series = X[:, 0]
+    texts = np.array([f"series {i} of class {label}" for i, label in enumerate(y)])
+    model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier())
+    model.fit(series, y)
+    first, second = model.root.stump.get_pivots()["used"]
+
+    lines_of_series = pivot_insets(model.plot_tree(show_pivots="series", pivot_data=series))["pivot-R-true"].lines
+    texts_of_pivots = pivot_insets(model.plot_tree(show_pivots="text", pivot_data=texts))["pivot-R-false"].texts
+
+    assert np.allclose(lines_of_series[0].get_ydata(), series[first])
+    assert texts_of_pivots[0].get_text() == f"series {second} of\nclass {y[second]}"
+
+
+def test_show_pivots_ignored_by_other_stumps(classifier, iris):
+    X, _ = iris
+
+    assert pivot_insets(classifier.plot_tree(show_pivots="series", pivot_data=X)) == {}
+
+
+def test_show_pivots_errors(digits):
+    images, X, y = digits
+    model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=PivotTreeStumpClassifier()).fit(X, y)
+
+    with pytest.raises(ValueError, match="pivot_data"):
+        model.plot_tree(show_pivots="image")
+    with pytest.raises(ValueError, match="show_pivots"):
+        model.plot_tree(show_pivots="video", pivot_data=images)
+
+
+def test_saved_tree_draws_the_pivots(digits):
+    images, X, y = digits
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier()).fit(X, y)
+    loaded = RuleTree.from_dict(json.loads(json.dumps(model.to_dict(), cls=json_numpy_encoder)))
+
+    titles = {gid: inset.get_title() for gid, inset in pivot_insets(model.plot_tree(show_pivots="image",
+                                                                                    pivot_data=images)).items()}
+    loaded_titles = {gid: inset.get_title() for gid, inset in pivot_insets(loaded.plot_tree(show_pivots="image",
+                                                                                           pivot_data=images)).items()}
+    assert loaded_titles == titles

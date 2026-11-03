@@ -316,7 +316,10 @@ network of torchvision (e.g. ``ImageEmbedder("resnet18")``), and
 ``all-mpnet-base-v2``, the one of the paper). They follow the scikit-learn interface, so they can
 precede the tree in a pipeline, e.g. ``make_pipeline(ImageEmbedder(), RuleTreeClassifier(...))``;
 the pivots are then instances of the training set, whose original images or texts explain the
-rules. See the example notebook on pivot trees and data types.
+rules. ``plot_tree`` can draw them: with ``show_pivots="image"``, ``"series"`` or ``"text"`` and the
+original training instances as ``pivot_data``, each pivot appears below the rule of its node, and the
+two pivots of a proximity pivot stump on the arrows of the two children. See the example notebook on
+pivot trees and data types.
 
 
 Oblique stumps
