@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from sklearn.pipeline import make_pipeline
 
 from RuleTree import RuleTreeClassifier
 from RuleTree.stumps.classification import PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier
@@ -59,11 +58,10 @@ def test_pivot_tree_on_embedded_images(stump):
     images = rng.random((40, 8, 8)) * 0.2
     images[y == 1, 2:6, 2:6] += 0.8  # a bright square in the class 1
 
-    model = make_pipeline(ImageEmbedder(**EMBEDDER), RuleTreeClassifier(max_depth=2, random_state=0,
-                                                                        base_stumps=stump()))
-    model.fit(images, y)
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=stump(embedder=ImageEmbedder(**EMBEDDER)))
+    model.fit(X_img=images, y=y)
 
-    assert model.score(images, y) >= 0.9
+    assert np.mean(model.predict(X_img=images) == y) >= 0.9
 
 
 @pytest.mark.slow  # downloads a small sentence transformer
@@ -77,7 +75,7 @@ def test_text_embedder():
 
     assert X_embedded.shape == (4, embedder.n_features_out_)
     assert np.allclose(np.linalg.norm(X_embedded, axis=1), 1)
-    model = make_pipeline(TextEmbedder("all-MiniLM-L6-v2", device="cpu"),
-                          RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=PivotTreeStumpClassifier()))
-    assert model.fit(texts, ["sport", "sport", "cooking", "cooking"]).score(texts, ["sport", "sport", "cooking",
-                                                                                     "cooking"]) == 1.0
+    labels = np.array(["sport", "sport", "cooking", "cooking"])
+    stump = PivotTreeStumpClassifier(embedder=TextEmbedder("all-MiniLM-L6-v2", device="cpu"))
+    model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=stump).fit(X_txt=np.array(texts), y=labels)
+    assert np.array_equal(model.predict(X_txt=np.array(texts)), labels)

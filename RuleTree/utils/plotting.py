@@ -159,16 +159,15 @@ def _describe(box, columns_names, class_names, scaler, float_precision, node_ids
 def _rule_media(rule, show_media):
     """
     The media of a node, as dictionaries with ``name``, ``kind``, ``value`` and ``color``: the
-    ``media_values`` of the rule (``shapes`` are drawn as series), unless they are ``media_optional`` and
-    show_media is False.
+    ``media_values`` of the rule, unless they are ``media_optional`` and show_media is False.
     """
-    values = rule["media_values"] if rule.get("media_values") is not None else rule.get("shapes")
+    values = rule.get("media_values")
     if values is None or (rule.get("media_optional") and not show_media):
         return None
 
     kind = rule.get("media_kind", "series")
     names = rule.get("media_names") or [""] * len(values)
-    colors = rule.get("media_colors") or rule.get("colors") or [None] * len(values)
+    colors = rule.get("media_colors") or [None] * len(values)
     return [{"name": name, "kind": kind, "value": value, "color": color}
             for name, value, color in zip(names, values, colors)]
 

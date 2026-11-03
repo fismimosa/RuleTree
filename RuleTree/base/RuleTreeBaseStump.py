@@ -160,7 +160,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
         What the node of the split shows in ``RuleTree.plot_tree``. The default implementation is the
         rule, ``get_rule(...)["textual_rule"]``; stumps that draw something in the node, such as the
-        shapelet stumps, add the shapes to plot below it.
+        shapelet and pivot stumps, add their media (see below).
 
         Parameters
         ----------
@@ -178,8 +178,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
             the stump (e.g. the shapelets, or the pivots as given to fit), drawn as ``media_kind``
             ('series', 'image' or 'text') with their ``media_names`` and ``media_colors``; only with
             ``show_media`` if ``media_optional``; below the rule or, if ``media_on_edges`` and they are
-            two, on the arrows of the two children. ``shapes`` (1D arrays, with ``colors``) is drawn as
-            ``media_values``.
+            two, on the arrows of the two children.
         """
         return {"label": self.get_rule(columns_names=columns_names, scaler=scaler,
                                        float_precision=float_precision)["textual_rule"]}

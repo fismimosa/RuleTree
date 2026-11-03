@@ -47,8 +47,9 @@ class PivotTransformer(RuleTreeBaseTransformer):
     tree_params : dict, default=None
         Parameters of the decision trees that select the discriminative pivots.
     embedder : transformer, default=None
-        Transformer of the data into vectors (e.g. ``RuleTree.utils.embeddings.ImageEmbedder``), applied
-        before the distances; with it, also texts are supported. It must be pretrained or stateless: it is
+        Transformer of the data into vectors (e.g. ``RuleTree.utils.embeddings.ImageEmbedder``): the
+        distances (``distance_measure``) are computed on the standardized embeddings; with it, also texts
+        are supported. It must be pretrained or stateless: it is
         fitted without data (``fit(None)``), also when a saved tree is loaded. The embeddings of the whole
         data set are computed once and cached in the tree, and the ones of new data once per instance.
         If None, time series and images are flattened.

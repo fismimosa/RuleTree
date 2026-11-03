@@ -26,10 +26,10 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
         Distance between the instances, computed on the standardized features (categorical ones one-hot
         encoded): any metric of ``sklearn.metrics.pairwise_distances``.
     embedder : transformer, default=None
-        Transformer of the data into vectors, applied before the distances, e.g.
-        ``RuleTree.utils.embeddings.ImageEmbedder`` or ``TextEmbedder`` (with it, also texts are
-        supported); pretrained or stateless (see PivotTransformer). If None, time series and images are
-        flattened.
+        Transformer of the data into vectors, e.g. ``RuleTree.utils.embeddings.ImageEmbedder`` or
+        ``TextEmbedder`` (with it, also texts are supported): the distances (``distance_measure``) are
+        computed on the standardized embeddings. Pretrained or stateless (see PivotTransformer). If None,
+        time series and images are flattened.
     k : int, default=None
         Regression only: number of nearest and farthest instances used to measure how well a
         candidate pivot contrasts close and distant instances. None for the square root of the

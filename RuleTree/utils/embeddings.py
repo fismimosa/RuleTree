@@ -1,13 +1,12 @@
 """
-Embeddings of images and texts with pretrained neural networks, to train the pivot stumps (and any other
-stump of tabular data) on them.
+Embeddings of images and texts with pretrained neural networks, the ``embedder`` of the pivot stumps.
 
-The pivot stumps compare instances by their distance, so images and texts are first mapped to vectors,
-as in the PivotTree paper: the representation of an image is the output of the penultimate layer of a
-convolutional network (e.g. ResNet or VGG), the one of a text the embedding of a sentence transformer.
-Both transformers follow the scikit-learn interface, so they can precede a tree in a ``Pipeline``. They
-need the ``embeddings`` extra (PyTorch, torchvision and sentence-transformers); the weights of the
-networks are downloaded the first time.
+The pivot stumps compare instances by their distance, computed on vectors: with an embedder, on the
+embeddings of the instances, as in the PivotTree paper: the representation of an image is the output of
+the penultimate layer of a convolutional network (e.g. ResNet or VGG), the one of a text the embedding
+of a sentence transformer. Both transformers follow the scikit-learn interface. They need the
+``embeddings`` extra (PyTorch, torchvision and sentence-transformers); the weights of the networks are
+downloaded the first time.
 """
 
 import numpy as np
@@ -93,14 +92,13 @@ class ImageEmbedder(TransformerMixin, BaseEstimator):
     Examples
     --------
     >>> from sklearn.datasets import load_digits
-    >>> from sklearn.pipeline import make_pipeline
     >>> from RuleTree import RuleTreeClassifier
     >>> from RuleTree.stumps.classification import PivotTreeStumpClassifier
     >>> from RuleTree.utils.embeddings import ImageEmbedder
     >>> digits = load_digits()
-    >>> model = make_pipeline(ImageEmbedder("resnet18"),  # doctest: +SKIP
-    ...                       RuleTreeClassifier(max_depth=2, base_stumps=PivotTreeStumpClassifier()))
-    >>> model = model.fit(digits.images / 16, digits.target)  # doctest: +SKIP
+    >>> stump = PivotTreeStumpClassifier(embedder=ImageEmbedder("resnet18"))
+    >>> model = RuleTreeClassifier(max_depth=2, base_stumps=stump)
+    >>> model = model.fit(X_img=digits.images / 16, y=digits.target)  # doctest: +SKIP
     """
 
     def __init__(self, model="resnet18", weights="DEFAULT", image_size=224, batch_size=64, device=None):
@@ -248,14 +246,15 @@ class TextEmbedder(TransformerMixin, BaseEstimator):
 
     Examples
     --------
-    >>> from sklearn.pipeline import make_pipeline
+    >>> import numpy as np
     >>> from RuleTree import RuleTreeClassifier
     >>> from RuleTree.stumps.classification import PivotTreeStumpClassifier
     >>> from RuleTree.utils.embeddings import TextEmbedder
-    >>> texts = ["The striker scored a goal.", "The chef baked bread.", "The team won.", "Add garlic and oil."]
-    >>> model = make_pipeline(TextEmbedder("all-MiniLM-L6-v2"),  # doctest: +SKIP
-    ...                       RuleTreeClassifier(max_depth=1, base_stumps=PivotTreeStumpClassifier()))
-    >>> model = model.fit(texts, ["sport", "cooking", "sport", "cooking"])  # doctest: +SKIP
+    >>> texts = np.array(["The striker scored a goal.", "The chef baked bread.", "The team won.",
+    ...                   "Add garlic and oil."])
+    >>> stump = PivotTreeStumpClassifier(embedder=TextEmbedder("all-MiniLM-L6-v2"))
+    >>> model = RuleTreeClassifier(max_depth=1, base_stumps=stump)
+    >>> model = model.fit(X_txt=texts, y=["sport", "cooking", "sport", "cooking"])  # doctest: +SKIP
     """
 
     def __init__(self, model="all-mpnet-base-v2", normalize=True, batch_size=32, device=None):
