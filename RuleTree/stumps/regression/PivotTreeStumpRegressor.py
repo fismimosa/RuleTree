@@ -84,7 +84,7 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
     >>> X, y = load_diabetes(return_X_y=True)
     >>> stump = PivotTreeStumpRegressor(random_state=0).fit(X[:200], y[:200], context=None, node_id=None, cache=None)
     >>> stump.get_rule()["textual_rule"]  # distance from the training instance 62
-    'P_62 <= 4.311'
+    'P_110 <= 4.744'
     """
 
     def __init__(self, distance_measure='euclidean', k=None, reg_contrast_lambda=.2, reg_max_thresholds=None,

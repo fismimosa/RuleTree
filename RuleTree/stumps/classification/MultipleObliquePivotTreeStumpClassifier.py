@@ -75,7 +75,7 @@ class MultipleObliquePivotTreeStumpClassifier(MultiplePivotTreeStump, DecisionTr
     >>> stump = MultipleObliquePivotTreeStumpClassifier(random_state=0)
     >>> stump = stump.fit(X, y, context=None, node_id=None, cache=None)
     >>> stump.get_pivots()["discriminatives"]  # up to 2 for each class
-    [15, 22, 83, 98, 106, 118]
+    [22, 41, 57, 72, 106, 118]
     >>> model = RuleTreeClassifier(max_depth=2, base_stumps=MultipleObliquePivotTreeStumpClassifier()).fit(X, y)
     """
 

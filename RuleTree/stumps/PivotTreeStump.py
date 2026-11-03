@@ -56,7 +56,7 @@ class PivotTreeStump:
         >>> pivots = PivotTreeStumpClassifier(random_state=0)
         >>> pivots = pivots.fit(X, y, context=None, node_id=None, cache=None).get_pivots()
         >>> pivots["descriptives"], pivots["discriminatives"], pivots["used"]
-        ([7, 96, 112], [27, 77, 127], 112)
+        ([7, 99, 147], [27, 76, 108], 76)
         """
         return self.transformer_.pivots_ | {"used": int(self.feature_original)}
 

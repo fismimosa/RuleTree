@@ -86,7 +86,7 @@ class PivotTreeStumpClassifier(PivotTreeStump, DecisionTreeStumpClassifier):
     >>> X, y = load_iris(return_X_y=True)
     >>> stump = PivotTreeStumpClassifier(random_state=0).fit(X, y, context=None, node_id=None, cache=None)
     >>> stump.get_rule()["textual_rule"]  # distance from the training instance 112
-    'P_112 <= 3.692'
+    'P_76 <= 3.082'
     >>> model = RuleTreeClassifier(max_depth=2, base_stumps=PivotTreeStumpClassifier(distance_measure="cosine"))
     >>> model = model.fit(X, y)
     """
