@@ -110,3 +110,14 @@ def test_classes_only_for_classification(model_class, kwargs, dataset, supervise
         assert np.array_equal(model.classes_, np.unique(y))
     elif model_class is not RuleTreeCluster:
         assert all(node["prediction_classes_"] is None for node in dictionary["nodes"])
+
+
+def test_parameters_with_tuples_and_classes():
+    """JSON has neither tuples nor classes: they are saved so that the parameters come back the same."""
+    from RuleTree.stumps.Stump import _params_from_dict, _params_to_dict
+
+    params = {"ngram_range": (1, 2), "dtype": np.float64, "nested": ((1, 2), [3, 4]), "plain": [1, 2]}
+
+    loaded = _params_from_dict(json.loads(json.dumps(_params_to_dict(params), cls=json_numpy_encoder)))
+
+    assert loaded == params and isinstance(loaded["ngram_range"], tuple)

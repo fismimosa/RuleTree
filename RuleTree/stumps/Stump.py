@@ -355,7 +355,8 @@ class Stump(RuleTreeBaseStump):
 def _params_to_dict(params: dict) -> dict:
     """
     Constructor parameters as a JSON-friendly dictionary: estimators (e.g. components) by type and parameters,
-    functions by name.
+    functions and classes (e.g. the ``dtype`` of a vectorizer) by name, tuples as ``{"__tuple__": [...]}`` (JSON
+    has only lists).
 
     Parameters
     ----------
@@ -375,7 +376,9 @@ def _params_to_dict(params: dict) -> dict:
     def to_dict(value):
         if isinstance(value, BaseEstimator):
             return _estimator_to_dict(value)
-        return _function_to_dict(value) if inspect.isfunction(value) else value
+        if isinstance(value, tuple):
+            return {"__tuple__": [to_dict(item) for item in value]}
+        return _function_to_dict(value) if inspect.isfunction(value) or isinstance(value, type) else value
 
     return {name: to_dict(value) for name, value in params.items()}
 
@@ -397,6 +400,8 @@ def _params_from_dict(params: dict) -> dict:
     def from_dict(value):
         if isinstance(value, dict) and "__estimator__" in value:
             return _estimator_from_dict(value)
+        if isinstance(value, dict) and "__tuple__" in value:
+            return tuple(from_dict(item) for item in value["__tuple__"])
         return _function_from_dict(value) if isinstance(value, dict) and "__function__" in value else value
 
     return {name: from_dict(value) for name, value in params.items()}
@@ -404,7 +409,7 @@ def _params_from_dict(params: dict) -> dict:
 
 def _function_to_dict(function) -> dict:
     """
-    JSON-friendly representation of a function: its module and its name.
+    JSON-friendly representation of a function or of a class: its module and its name.
 
     Parameters
     ----------
