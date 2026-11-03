@@ -25,6 +25,11 @@ class ProximityPivotTreeStumpClassifier(ProximityPivotTreeStump, DecisionTreeStu
     distance_measure : str or callable, default='euclidean'
         Distance between the instances, computed on the standardized features (categorical ones one-hot
         encoded): any metric of ``sklearn.metrics.pairwise_distances``.
+    embedder : transformer, default=None
+        Transformer of the data into vectors, applied before the distances, e.g.
+        ``RuleTree.utils.embeddings.ImageEmbedder`` or ``TextEmbedder`` (with it, also texts are
+        supported); pretrained or stateless (see PivotTransformer). If None, time series and images are
+        flattened.
     criterion : {'gini', 'entropy'}, default='gini'
         Impurity measure.
     min_samples_leaf : int or float, default=1
@@ -73,8 +78,9 @@ class ProximityPivotTreeStumpClassifier(ProximityPivotTreeStump, DecisionTreeStu
 
     def __init__(self, distance_measure='euclidean',
                  criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
-                 random_state=None, min_impurity_decrease=0.0, class_weight=None):
+                 random_state=None, min_impurity_decrease=0.0, class_weight=None, embedder=None):
         """Initialize the ProximityPivotTreeStumpClassifier; see the class documentation for the parameters."""
+        self.embedder = embedder
         self.distance_measure = distance_measure
         self.criterion = criterion
         self.min_samples_leaf = min_samples_leaf

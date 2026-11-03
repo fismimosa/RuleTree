@@ -427,13 +427,13 @@ transformer. A stump with a rule of its own (e.g. ``P_<i> <= t`` for the pivots)
 ``get_rule``. What a node shows in the drawings comes from the stump too: ``get_plot_rule`` for
 ``plot_tree`` (by default, the text of the rule) and ``get_graphviz_rule`` for
 ``export_graphviz``. A stump that draws something in its node overrides them, returning its *media*
-from ``get_plot_rule``: the shapelet stumps their shapelets as ``media_values`` (with ``media_kind``
-``"series"``), always drawn; the pivot stumps in ``media`` the indices of the training instances of
-their split, drawn by ``plot_tree`` with ``show_media=True`` from the training data of the data type
-of the stump. Both come with their ``media_names`` (``P_<i>``, ``shp``) and optionally
-``media_colors``; with ``media_on_edges``, the two media of a split are drawn on the arrows of the
-two children instead of below the rule. Any split defined by series, images or texts (e.g. by
-patches of images) can be drawn in the same way.
+from ``get_plot_rule``: values saved in the stump, ``media_values``, drawn as ``media_kind``
+(``"series"``, ``"image"`` or ``"text"``) with their ``media_names`` and optionally ``media_colors``.
+The shapelet stumps return their shapelets, always drawn; the pivot stumps their pivots as given to
+``fit``, with ``media_optional``, so that they are drawn only with ``plot_tree(show_media=True)``.
+With ``media_on_edges``, the two media of a split are drawn on the arrows of the two children
+instead of below the rule. Any split defined by series, images or texts (e.g. by patches of images)
+can be drawn in the same way.
 
 A component that needs a package that is not a dependency of RuleTree should import it with
 :func:`~RuleTree.utils.optional.import_optional` when it is used (e.g. in ``fit``), not at the top

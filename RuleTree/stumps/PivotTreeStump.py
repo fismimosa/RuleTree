@@ -9,7 +9,37 @@ from RuleTree.stumps.ProximityTreeStump import proximity_rule
 from RuleTree.stumps.transformers.ObliquePivotTransformer import ObliquePivotTransformer
 from RuleTree.stumps.transformers.PivotTransformer import PivotTransformer
 from RuleTree.stumps.transformers.ProximityPivotTransformer import ProximityPivotTransformer
+from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TEXT, DATA_TYPE_TS
 from RuleTree.utils.deprecation import deprecated_aliases
+
+# how the pivots of each data type are drawn by plot_tree (tabular pivots are not drawn)
+MEDIA_KINDS = {DATA_TYPE_TS: "series", DATA_TYPE_IMAGE: "image", DATA_TYPE_TEXT: "text"}
+
+
+def pivot_media(stump, pivots, **rule) -> dict:
+    """
+    What the node of a pivot stump shows in ``plot_tree``: ``rule`` and, for time series, images and texts,
+    the pivots as given to fit (``media_values``), drawn only with ``show_media`` (``media_optional``).
+
+    Parameters
+    ----------
+    stump : PivotTreeStump, ProximityPivotTreeStump or ObliquePivotTreeStump
+        The fitted stump.
+    pivots : list of int
+        Indices of the pivots of the split in the training set.
+    **rule
+        ``label`` and the other keys of the result, e.g. ``media_on_edges``.
+
+    Returns
+    -------
+    rule : dict
+    """
+    media = getattr(stump.transformer_, "media_", {})
+    kind = MEDIA_KINDS.get(getattr(stump, "data_type_", None))
+    if kind is None or any(pivot not in media for pivot in pivots):  # e.g. a tree saved before the media
+        return rule
+    return rule | {"media_values": [media[pivot] for pivot in pivots], "media_kind": kind,
+                   "media_names": [f"P_{pivot}" for pivot in pivots], "media_optional": True}
 
 
 class PivotTreeStump:
@@ -32,7 +62,8 @@ class PivotTreeStump:
         """
         return PivotTransformer(ml_task=self.task, distance_measure=self.distance_measure, k=self.k,
                                 reg_contrast_lambda=self.reg_contrast_lambda,
-                                reg_max_thresholds=self.reg_max_thresholds, tree_params=self._splitter_params())
+                                reg_max_thresholds=self.reg_max_thresholds, tree_params=self._splitter_params(),
+                                embedder=self.embedder)
 
     @property
     def X_split_instance(self):
@@ -91,8 +122,8 @@ class PivotTreeStump:
 
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
-        What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the pivot, drawn below it
-        with ``show_media`` (the training instance with its index, from the data of the data type of the stump).
+        What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the pivot as given to fit
+        (time series, images and texts), drawn below it with ``show_media``.
 
         Parameters
         ----------
@@ -106,11 +137,10 @@ class PivotTreeStump:
         Returns
         -------
         rule : dict
-            ``label``, ``media`` (the index of the pivot in the training set) and ``media_names``.
+            ``label``, and ``media_values`` with the pivot (see :func:`pivot_media`).
         """
-        pivot = int(self.feature_original)
-        return {"label": self.get_rule(float_precision=float_precision)["textual_rule"], "media": [pivot],
-                "media_names": [f"P_{pivot}"]}
+        return pivot_media(self, [int(self.feature_original)],
+                           label=self.get_rule(float_precision=float_precision)["textual_rule"])
 
 
 class ProximityPivotTreeStump:
@@ -135,7 +165,8 @@ class ProximityPivotTreeStump:
         transformer : ProximityPivotTransformer
         """
         return ProximityPivotTransformer(ml_task=self.task, distance_measure=self.distance_measure,
-                                        tree_params=self._splitter_params(), **self._selection_params())
+                                         tree_params=self._splitter_params(), embedder=self.embedder,
+                                         **self._selection_params())
 
     def get_pivots(self):
         """
@@ -175,8 +206,8 @@ class ProximityPivotTreeStump:
 
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
-        What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the two pivots, drawn
-        with ``show_media`` on the arrows of the children: the first one on the left arrow ("true", the
+        What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the two pivots as given to
+        fit, drawn with ``show_media`` on the arrows of the children: the first one on the left arrow ("true", the
         instances closer to it), the second one on the right arrow.
 
         Parameters
@@ -191,12 +222,11 @@ class ProximityPivotTreeStump:
         Returns
         -------
         rule : dict
-            ``label``, ``media`` (the indices of the two pivots in the training set), ``media_names`` and
-            ``media_on_edges`` (True).
+            ``label``, ``media_on_edges`` (True), and ``media_values`` with the two pivots (see
+            :func:`pivot_media`).
         """
-        pivots = [int(p) for p in self.feature_original]
-        return {"label": self.get_rule()["textual_rule"], "media": pivots, "media_names": [f"P_{p}" for p in pivots],
-                "media_on_edges": True}
+        return pivot_media(self, [int(p) for p in self.feature_original], label=self.get_rule()["textual_rule"],
+                           media_on_edges=True)
 
 
 class ObliquePivotTreeStump:
@@ -219,7 +249,7 @@ class ObliquePivotTreeStump:
                                        tree_params=self._splitter_params(),
                                        oblique_split_type=self.oblique_split_type,
                                        max_oblique_features=self.max_oblique_features, tau=self.tau,
-                                       n_orientations=self.n_orientations)
+                                       n_orientations=self.n_orientations, embedder=self.embedder)
 
     @property
     def coefficients(self):
@@ -266,7 +296,7 @@ class ObliquePivotTreeStump:
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
         What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the pivots of the
-        combination, drawn below it with ``show_media``.
+        combination as given to fit, drawn below it with ``show_media``.
 
         Parameters
         ----------
@@ -280,11 +310,10 @@ class ObliquePivotTreeStump:
         Returns
         -------
         rule : dict
-            ``label``, ``media`` (the indices of the pivots in the training set) and ``media_names``.
+            ``label``, and ``media_values`` with the pivots (see :func:`pivot_media`).
         """
-        pivots = [int(p) for p in self.feature_original]
-        return {"label": self.get_rule(float_precision=float_precision)["textual_rule"], "media": pivots,
-                "media_names": [f"P_{p}" for p in pivots]}
+        return pivot_media(self, [int(p) for p in self.feature_original],
+                           label=self.get_rule(float_precision=float_precision)["textual_rule"])
 
 
 __getattr__ = deprecated_aliases(__name__, {"MultiplePivotTreeStump": ProximityPivotTreeStump})

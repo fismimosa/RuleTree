@@ -1,13 +1,18 @@
 """PivotTransformer: distances from candidate pivots, and the cache of the pivot stumps."""
 
+import hashlib
+
 import numpy as np
+import sklearn
+from scipy import sparse
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.preprocessing import StandardScaler
 
+from RuleTree.base.RuleTreeBaseStump import estimator_namespace
 from RuleTree.base.RuleTreeBaseTransformer import RuleTreeBaseTransformer, get_feature_types
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.transformers._pivot_selection import PivotSelection
-from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TS, MODEL_TYPE_CLF
+from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TEXT, DATA_TYPE_TS, MODEL_TYPE_CLF
 
 
 class PivotTransformer(RuleTreeBaseTransformer):
@@ -41,6 +46,12 @@ class PivotTransformer(RuleTreeBaseTransformer):
         pivot (quantiles). None for ``max(256, sqrt(n))``.
     tree_params : dict, default=None
         Parameters of the decision trees that select the discriminative pivots.
+    embedder : transformer, default=None
+        Transformer of the data into vectors (e.g. ``RuleTree.utils.embeddings.ImageEmbedder``), applied
+        before the distances; with it, also texts are supported. It must be pretrained or stateless: it is
+        fitted without data (``fit(None)``), also when a saved tree is loaded. The embeddings of the whole
+        data set are computed once and cached in the tree, and the ones of new data once per instance.
+        If None, time series and images are flattened.
 
     Attributes
     ----------
@@ -62,6 +73,9 @@ class PivotTransformer(RuleTreeBaseTransformer):
         a value not seen in training is encoded as all zeros.
     scaler_ : StandardScaler
         Scaler of the encoded features, fitted on the whole data set.
+    media_ : dict
+        Index in the training set -> the training instance as given to ``fit`` (e.g. an image), for the
+        pivots of the split, drawn by ``plot_tree(show_media=True)``. Set by ``select``.
 
     See Also
     --------
@@ -82,10 +96,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
     >>> model = model.fit(X, y)
     """
 
-    supported_data_types = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
-
     def __init__(self, ml_task=MODEL_TYPE_CLF, distance_measure='euclidean', k=None, reg_contrast_lambda=.2,
-                 reg_max_thresholds=None, tree_params=None):
+                 reg_max_thresholds=None, tree_params=None, embedder=None):
         """Initialize the PivotTransformer; see the class documentation for the parameters."""
         self.ml_task = ml_task
         self.distance_measure = distance_measure
@@ -93,6 +105,13 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.reg_contrast_lambda = reg_contrast_lambda
         self.reg_max_thresholds = reg_max_thresholds
         self.tree_params = tree_params
+        self.embedder = embedder
+
+    @property
+    def supported_data_types(self):
+        """Tabular data, time series and images (flattened, or through the embedder); texts with an embedder."""
+        flattened = (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)
+        return flattened + ((DATA_TYPE_TEXT,) if self.embedder is not None else ())
 
     def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
@@ -130,14 +149,17 @@ class PivotTransformer(RuleTreeBaseTransformer):
         """
         if idx is None:
             idx = np.arange(len(X))
-        X = _flatten(X)
-        self.num_pre_transformed_, self.cat_pre_transformed_ = get_feature_types(X, self._get_cache(cache), data_type)
+        original = X
+        # key of the cached values: also the embedder, by class and hyperparameters
+        key = data_type if self.embedder is None else f"{data_type}, {estimator_namespace(self.embedder)}"
+        X = self._vectors(X, key, cache)
+        self.num_pre_transformed_, self.cat_pre_transformed_ = get_feature_types(X, self._get_cache(cache), key)
 
         if len(self.num_pre_transformed_) + len(self.cat_pre_transformed_) == 0:
             raise NoSplitFoundWarning(f"{self.__class__.__name__} needs at least one feature")
 
         self.categories_, self.scaler_, distance_matrix = _pivot_cache(
-            X, self.num_pre_transformed_, self.cat_pre_transformed_, self.distance_measure, data_type,
+            X, self.num_pre_transformed_, self.cat_pre_transformed_, self.distance_measure, key,
             self._get_cache(cache))
         X_scaled = self._encode(X[idx])
 
@@ -151,6 +173,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.pivots_ = {"descriptives": selection.descriptive_names_.tolist(),
                         "discriminatives": selection.discriminative_names_.tolist(),
                         "candidates": selection.candidate_names_.tolist()}
+        self.candidate_media_ = {int(name): _instance(original, name) for name in self.candidate_names_}
         self.numerical_, self.categorical_ = list(range(len(self.candidates_))), []
 
         return self
@@ -174,23 +197,108 @@ class PivotTransformer(RuleTreeBaseTransformer):
         -------
         X_transformed : numpy.ndarray of shape (n_samples, n_candidates)
         """
-        return pairwise_distances(self._encode(X), self.candidates_, metric=self.distance_measure)
+        return pairwise_distances(self._encode(self._new_vectors(X, cache)), self.candidates_,
+                                  metric=self.distance_measure)
 
     def _encode(self, X):
         """
-        Standardized features of X: the numerical ones and the one-hot encoding of the categorical ones.
+        Standardized features of vectors: the numerical ones and the one-hot encoding of the categorical ones.
 
         Parameters
         ----------
-        X : numpy.ndarray
-            Data of the transformer's type (time series and images are flattened).
+        X : numpy.ndarray of shape (n_samples, n_features)
+            Vectors (see :meth:`_vectors`).
 
         Returns
         -------
         X_encoded : numpy.ndarray of shape (n_samples, n_encoded_features)
         """
-        return self.scaler_.transform(_one_hot(_flatten(X), self.num_pre_transformed_, self.cat_pre_transformed_,
+        return self.scaler_.transform(_one_hot(X, self.num_pre_transformed_, self.cat_pre_transformed_,
                                                self.categories_))
+
+    def _embedder(self):
+        """The embedder, fitted without data (it is pretrained or stateless)."""
+        if not hasattr(self, "embedder_"):
+            self.embedder_ = sklearn.clone(self.embedder).fit(None)
+        return self.embedder_
+
+    def _vectors(self, X, key, cache):
+        """
+        Vectors of the whole data set: the embeddings, computed once and cached in the tree, or the data
+        (time series and images flattened).
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Data of the transformer's type, all the instances.
+        key : str
+            Data type and embedder, the key of the cached embeddings.
+        cache : dict or None
+            Cache of the tree.
+
+        Returns
+        -------
+        X_vectors : numpy.ndarray of shape (n_samples, n_features)
+        """
+        if self.embedder is None:
+            return _flatten(X)
+
+        cache = self._get_cache(cache)
+        if ("pivot embeddings", key) not in cache:
+            embeddings = _dense(self._embedder().transform(X))
+            cache[("pivot embeddings", key)] = embeddings
+            # the embedding of each training instance, for the instances of the nodes given to transform
+            self._embeddings(cache).update(zip((_instance_key(instance) for instance in X), embeddings))
+        return cache[("pivot embeddings", key)]
+
+    def _embeddings(self, cache):
+        """Instance (its key) -> embedding: in the cache of the tree if there is one, else in the transformer."""
+        if cache:
+            return cache.setdefault("pivot embeddings by instance", {})
+        return self.__dict__.setdefault("_embeddings", {})  # not a parameter nor a fitted attribute
+
+    def _new_vectors(self, X, cache=None):
+        """
+        Vectors of new data: the data (time series and images flattened), or their embeddings, computed once
+        for each distinct instance (a tree applies its stumps to the instances of each node).
+
+        Parameters
+        ----------
+        X : numpy.ndarray
+            Data of the transformer's type.
+        cache : dict, default=None
+            Cache of the tree, where the embeddings of the training instances are.
+
+        Returns
+        -------
+        X_vectors : numpy.ndarray of shape (n_samples, n_features)
+        """
+        if self.embedder is None:
+            return _flatten(X)
+
+        embeddings = self._embeddings(self._get_cache(cache) if cache is not None else None)
+        keys = [_instance_key(instance) for instance in X]
+        first = {}  # the first position of each instance not embedded yet
+        for i, key in enumerate(keys):
+            if key not in embeddings:
+                first.setdefault(key, i)
+        missing = list(first.values())
+        if missing:
+            new = _dense(self._embedder().transform(np.asarray(X)[missing]))
+            embeddings.update({keys[i]: vector for i, vector in zip(missing, new)})
+        return np.array([embeddings[key] for key in keys])
+
+    def _keep_media(self, names):
+        """
+        Keep the original training instances of the pivots of the split (``media_``), for ``plot_tree``.
+
+        Parameters
+        ----------
+        names : list of int
+            Indices of the pivots of the split in the training set.
+        """
+        candidate_media = self.__dict__.pop("candidate_media_", {})
+        self.media_ = {int(name): candidate_media[int(name)] for name in names if int(name) in candidate_media}
 
     def select(self, feature):
         """
@@ -208,6 +316,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         """
         self.candidates_ = self.candidates_[[feature]]
         self.candidate_names_ = self.candidate_names_[[feature]]
+        self._keep_media(self.candidate_names_)
         self.numerical_, self.categorical_ = [0], []
         return 0
 
@@ -243,6 +352,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
             'pivots': self.pivots_,
             'categories': categories_state(self.categories_),
             'scaler': scaler_state(self.scaler_),
+            'media': media_state(self),
         }
 
     def set_state(self, state):
@@ -265,6 +375,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.pivots_ = state['pivots']
         self.categories_ = state.get('categories', [])  # saved before the categorical features: not used
         self.scaler_ = scaler_from_state(state['scaler'])
+        self.media_ = media_from_state(state)
         return self
 
     def _selection(self):
@@ -319,6 +430,43 @@ def scaler_from_state(state: dict) -> StandardScaler:
     scaler.var_ = np.array(state['var_'])
     scaler.n_samples_seen_ = state['n_samples_seen_']
     return scaler
+
+
+def media_state(transformer) -> dict:
+    """
+    JSON-friendly original training instances of the pivots of a split (``media_``), restored by
+    media_from_state.
+    """
+    return {str(name): value if isinstance(value, str) else np.asarray(value).tolist()
+            for name, value in getattr(transformer, "media_", {}).items()}
+
+
+def media_from_state(state: dict) -> dict:
+    """The original training instances of the pivots of a split, from a state with ``media``."""
+    return {int(name): value if isinstance(value, str) else np.asarray(value)
+            for name, value in state.get("media", {}).items()}  # none in the trees saved before
+
+
+def _instance(X, index):
+    """An instance of the data as given to fit: a string for a text, an array otherwise."""
+    instance = X[int(index)]
+    return str(instance) if isinstance(instance, str) else np.array(instance)
+
+
+def _instance_key(instance):
+    """A short key of an instance (a hash of its content), for the cache of its embedding."""
+    if isinstance(instance, str):
+        content = instance.encode()
+    else:
+        instance = np.ascontiguousarray(instance)
+        content = repr((instance.shape, instance.dtype.str)).encode() + instance.tobytes()
+    return hashlib.blake2b(content, digest_size=16).digest()
+
+
+def _dense(X) -> np.ndarray:
+    """The embeddings as a dense 2D array (e.g. from the sparse output of a vectorizer of texts)."""
+    X = X.toarray() if sparse.issparse(X) else np.asarray(X, dtype=float)
+    return X.reshape(len(X), -1)
 
 
 def _flatten(X) -> np.ndarray:

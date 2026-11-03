@@ -319,10 +319,10 @@ def figure_plot_tree_media(output_dir):
     four = np.isin(digits.target, [0, 1, 4, 7])
     images, y_digits = digits.images[four], digits.target[four]
     model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier())
-    model.fit(images.reshape(len(images), -1), y_digits)
+    model.fit(X_img=images, y=y_digits)
 
     figure, ax = plt.subplots(figsize=(7, 6.5))
-    model.plot_tree(ax, colors=tree_colors(), fontsize=TREE_FONTSIZE, show_media=True, media=("image", images))
+    model.plot_tree(ax, colors=tree_colors(), fontsize=TREE_FONTSIZE, show_media=True)
     save(figure, output_dir, "plot_tree_media")
 
 
@@ -345,8 +345,7 @@ def figure_multimodal_pivots(output_dir):
     model.fit(X_img=images, X_ts=series, y=y_four)
 
     figure, ax = plt.subplots(figsize=(4.5, 7))
-    model.plot_tree(ax, colors=tree_colors(), fontsize=TREE_FONTSIZE, show_media=True, media_img=images,
-                    media_ts=series)
+    model.plot_tree(ax, colors=tree_colors(), fontsize=TREE_FONTSIZE, show_media=True)
     save(figure, output_dir, "multimodal_pivots")
 
 

@@ -122,14 +122,11 @@ Drawing the instances of the splits
 Some splits are defined by series, images or texts: the shapelet stumps by subsequences of the
 training series, always drawn (see :doc:`multimodal`), and the pivot stumps by training instances,
 the pivots: the rule ``P_447 <= P_611`` of a proximity pivot stump compares the distances from the
-training instances 447 and 611. With ``show_media=True``, ``plot_tree`` draws the pivots too, taking
-them from the training data, in the order given to ``fit`` (``P_i`` is the instance ``i``), of the data
-type of each stump: ``media_ts``, ``media_img`` and ``media_txt`` for the time series, images and
-texts given as ``X_ts``, ``X_img`` and ``X_txt``, and ``media`` for tabular data, with how to draw
-them. The media of a split are drawn below its rule, or, when the split compares two of them (the
-proximity stumps), on the arrows of the two children, the first one on the arrow of the instances
-closer to it. By default (``show_media=False``) the pivots are not drawn. Here a tree is trained on
-images of digits flattened into vectors, and drawn with the images themselves:
+training instances 447 and 611. The pivot stumps on time series, images and texts keep their pivots
+as given to ``fit``, and ``plot_tree(show_media=True)`` draws them: below the rule of their node,
+or, when the split compares two of them (the proximity stumps), on the arrows of the two children,
+the first one on the arrow of the instances closer to it. By default (``show_media=False``) only the
+rules are drawn. Here a tree is trained on images of digits:
 
 .. code-block:: python
 
@@ -143,8 +140,8 @@ images of digits flattened into vectors, and drawn with the images themselves:
    images, y_digits = digits.images[four], digits.target[four]
 
    pivot_tree = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier())
-   pivot_tree.fit(images.reshape(len(images), -1), y_digits)
-   ax = pivot_tree.plot_tree(show_media=True, media=("image", images))
+   pivot_tree.fit(X_img=images, y=y_digits)
+   ax = pivot_tree.plot_tree(show_media=True)
 
    print(pivot_tree.root.stump.get_rule()["textual_rule"])
    print(sorted(inset.get_gid() for inset in ax.child_axes))  # the axes of each drawn instance
@@ -160,16 +157,11 @@ images of digits flattened into vectors, and drawn with the images themselves:
          of digits, drawn on the arrows of its two children.
    :width: 80%
 
-   ``pivot_tree.plot_tree(show_media=True, media=("image", images))``: each node sends an image to
-   the child whose pivot it is closer to.
+   ``pivot_tree.plot_tree(show_media=True)``: each node sends an image to the child whose pivot it
+   is closer to.
 
-``media`` is a pair (how to draw, data): ``"image"``, ``"series"`` or ``"text"``, and the
-instances, which can differ from the data of the tree, e.g. the original images or texts of a tree
-trained on their embeddings (see :mod:`RuleTree.utils.embeddings`). Trained on ``X_img=images``,
-the same tree is drawn with ``media_img=images``; a tree on several data types takes one argument
-for each of them (see :doc:`multimodal`). Images have shape (height, width) or (height, width,
-channels), time series (length,) or (signals, length), texts are strings; the stumps that do not
-split on training instances ignore ``show_media``.
+The pivots are saved with the tree, so a loaded tree draws them too. The pivots of tabular data are
+not drawn.
 
 Graphviz
 ~~~~~~~~

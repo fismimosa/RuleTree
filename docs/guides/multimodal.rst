@@ -206,9 +206,8 @@ The pivot stumps (see :doc:`stumps`) compare instances by their distance, comput
 take tabular data, time series and images, flattened into one feature per value. With
 ``base_stumps`` given as tuples with the data types of each stump, a tree can have pivot stumps on
 each data type: here a pivot stump on images of digits and a proximity pivot stump on time series of
-the same instances, where the series of the ones have a bump. The pivots are training instances, so
-``plot_tree`` draws them with ``show_media=True``, each node from the training data of its data type
-(``media_img`` and ``media_ts``, as ``X_img`` and ``X_ts`` of ``fit``):
+the same instances, where the series of the ones have a bump. The pivots are kept as given to
+``fit``, so ``plot_tree(show_media=True)`` draws each of them as an image or as a series:
 
 .. code-block:: python
 
@@ -229,7 +228,7 @@ the same instances, where the series of the ones have a bump. The pivots are tra
 
    for node_id, node in model.get_predicates().items():
        print(node_id, node.stump.data_type_, node.stump.get_rule()["textual_rule"])
-   ax = model.plot_tree(show_media=True, media_img=images, media_ts=series)
+   ax = model.plot_tree(show_media=True)
 
 .. code-block:: text
    :caption: Output
@@ -242,16 +241,16 @@ the same instances, where the series of the ones have a bump. The pivots are tra
          and its left child a distance from an image of a zero, drawn below its rule.
    :width: 50%
 
-   ``model.plot_tree(show_media=True, media_img=images, media_ts=series)``: the root compares the
-   distances from two series, drawn on the arrows of its children; the node ``Rl`` the distance
-   from an image.
+   ``model.plot_tree(show_media=True)``: the root compares the distances from two series, drawn on
+   the arrows of its children; the node ``Rl`` the distance from an image.
 
-Texts are given to the pivot stumps through an embedding, as tabular data:
-:class:`~RuleTree.utils.embeddings.TextEmbedder` (and :class:`~RuleTree.utils.embeddings.ImageEmbedder`
-for images) maps them to vectors with a pretrained network (``embeddings`` extra). The pivots of a
-tree trained on embeddings are drawn from the original instances with ``media``, e.g.
-``plot_tree(show_media=True, media=("text", texts))`` (see :doc:`inspecting`). The example notebook
-on pivot trees and data types shows all of them.
+With an ``embedder``, the pivot stumps compare the instances by their embeddings instead: e.g.
+``PivotTreeStumpClassifier(embedder=ImageEmbedder("resnet18"))`` for images, as in the PivotTree
+paper, and ``PivotTreeStumpClassifier(embedder=TextEmbedder())`` for texts (given as ``X_txt``), with
+the transformers of :mod:`RuleTree.utils.embeddings` (``embeddings`` extra), or any pretrained or
+stateless transformer, e.g. ``sklearn.feature_extraction.text.HashingVectorizer``. The embeddings of the
+training set are computed once, and the pivots are still kept, and drawn, as images or texts. The
+example notebook on pivot trees and data types shows all of them.
 
 
 Unsupported data
@@ -281,6 +280,5 @@ type is not used by any stump, it is ignored with a warning:
    error: None of the base stumps supports the provided data (tabular).
    warning: No base stump uses the text data: it will be ignored.
 
-No stump of the library takes texts directly (``X_txt``): they can be mapped to vectors with
-:class:`~RuleTree.utils.embeddings.TextEmbedder` and given as ``X`` (see above), or supported by a
-new stump with a transformer that turns texts into features (see :doc:`extending`).
+Texts (``X_txt``) are taken only by the pivot stumps with an ``embedder`` (see above); other stumps
+can support them with a transformer that turns texts into features (see :doc:`extending`).

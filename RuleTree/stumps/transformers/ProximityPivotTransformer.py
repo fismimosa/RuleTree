@@ -5,8 +5,8 @@ import itertools
 import numpy as np
 
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.stumps.transformers.PivotTransformer import (PivotTransformer, categories_state, scaler_from_state,
-                                                           scaler_state)
+from RuleTree.stumps.transformers.PivotTransformer import (PivotTransformer, categories_state, media_from_state,
+                                                           media_state, scaler_from_state, scaler_state)
 from RuleTree.stumps.transformers.ProximityTransformer import closer_to_second
 from RuleTree.stumps.transformers._pivot_selection import PivotSelection
 from RuleTree.utils.define import MODEL_TYPE_CLF
@@ -43,6 +43,8 @@ class ProximityPivotTransformer(PivotTransformer):
         Householder only: threshold of the reflection.
     n_orientations : int, default=10
         Bivariate only: number of angles.
+    embedder : transformer, default=None
+        Transformer of the data into vectors, applied before the distances (see PivotTransformer).
 
     Attributes
     ----------
@@ -79,11 +81,11 @@ class ProximityPivotTransformer(PivotTransformer):
 
     def __init__(self, ml_task=MODEL_TYPE_CLF, distance_measure='euclidean', k=None, reg_contrast_lambda=.2,
                  reg_max_thresholds=None, tree_params=None, discriminative='tree', max_oblique_features=2, tau=1e-4,
-                 n_orientations=10):
+                 n_orientations=10, embedder=None):
         """Initialize the ProximityPivotTransformer; see the class documentation for the parameters."""
         super().__init__(ml_task=ml_task, distance_measure=distance_measure, k=k,
                          reg_contrast_lambda=reg_contrast_lambda, reg_max_thresholds=reg_max_thresholds,
-                         tree_params=tree_params)
+                         tree_params=tree_params, embedder=embedder)
         self.discriminative = discriminative
         self.max_oblique_features = max_oblique_features
         self.tau = tau
@@ -180,6 +182,7 @@ class ProximityPivotTransformer(PivotTransformer):
         pair = list(self.pairs_[feature])
         self.candidates_ = self.candidates_[pair]
         self.candidate_names_ = self.candidate_names_[pair]
+        self._keep_media(self.candidate_names_)
         self.candidate_labels_ = self.candidate_labels_[pair]
         self.pairs_ = [(0, 1)]
         self.numerical_, self.categorical_ = [0], []
@@ -220,6 +223,7 @@ class ProximityPivotTransformer(PivotTransformer):
             'pivots': self.pivots_,
             'categories': categories_state(self.categories_),
             'scaler': scaler_state(self.scaler_),
+            'media': media_state(self),
         }
 
     def set_state(self, state):
@@ -243,5 +247,6 @@ class ProximityPivotTransformer(PivotTransformer):
         self.pivots_ = state['pivots']
         self.categories_ = state.get('categories', [])  # saved before the categorical features: not used
         self.scaler_ = scaler_from_state(state['scaler'])
+        self.media_ = media_from_state(state)
         self.numerical_, self.categorical_ = list(range(len(self.pairs_))), []
         return self

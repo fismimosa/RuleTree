@@ -24,6 +24,11 @@ class PivotTreeStumpClassifier(PivotTreeStump, DecisionTreeStumpClassifier):
     distance_measure : str or callable, default='euclidean'
         Distance between the instances, computed on the standardized features (categorical ones one-hot
         encoded): any metric of ``sklearn.metrics.pairwise_distances``.
+    embedder : transformer, default=None
+        Transformer of the data into vectors, applied before the distances, e.g.
+        ``RuleTree.utils.embeddings.ImageEmbedder`` or ``TextEmbedder`` (with it, also texts are
+        supported); pretrained or stateless (see PivotTransformer). If None, time series and images are
+        flattened.
     k : int, default=None
         Regression only: number of nearest and farthest instances used to measure how well a
         candidate pivot contrasts close and distant instances. None for the square root of the
@@ -93,8 +98,9 @@ class PivotTreeStumpClassifier(PivotTreeStump, DecisionTreeStumpClassifier):
 
     def __init__(self, distance_measure='euclidean', k=None, reg_contrast_lambda=.2, reg_max_thresholds=None,
                  criterion='gini', min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=None,
-                 random_state=None, min_impurity_decrease=0.0, class_weight=None):
+                 random_state=None, min_impurity_decrease=0.0, class_weight=None, embedder=None):
         """Initialize the PivotTreeStumpClassifier; see the class documentation for the parameters."""
+        self.embedder = embedder
         self.distance_measure = distance_measure
         self.k = k
         self.reg_contrast_lambda = reg_contrast_lambda

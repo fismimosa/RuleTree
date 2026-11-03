@@ -4,8 +4,8 @@ import numpy as np
 
 from RuleTree.stumps.transformers.BivariateTransformer import BivariateTransformer
 from RuleTree.stumps.transformers.HouseholderTransformer import HouseholderTransformer
-from RuleTree.stumps.transformers.PivotTransformer import (PivotTransformer, categories_state, scaler_from_state,
-                                                           scaler_state)
+from RuleTree.stumps.transformers.PivotTransformer import (PivotTransformer, categories_state, media_from_state,
+                                                           media_state, scaler_from_state, scaler_state)
 from RuleTree.stumps.transformers._pivot_selection import PivotSelection
 from RuleTree.utils.define import MODEL_TYPE_CLF
 
@@ -45,6 +45,8 @@ class ObliquePivotTransformer(PivotTransformer):
         Householder only: threshold of the reflection.
     n_orientations : int, default=10
         Bivariate only: number of angles.
+    embedder : transformer, default=None
+        Transformer of the data into vectors, applied before the distances (see PivotTransformer).
 
     Attributes
     ----------
@@ -81,11 +83,11 @@ class ObliquePivotTransformer(PivotTransformer):
 
     def __init__(self, ml_task=MODEL_TYPE_CLF, distance_measure='euclidean', k=None, reg_contrast_lambda=.2,
                  reg_max_thresholds=None, tree_params=None, oblique_split_type='householder', max_oblique_features=2,
-                 tau=1e-4, n_orientations=10):
+                 tau=1e-4, n_orientations=10, embedder=None):
         """Initialize the ObliquePivotTransformer; see the class documentation for the parameters."""
         super().__init__(ml_task=ml_task, distance_measure=distance_measure, k=k,
                          reg_contrast_lambda=reg_contrast_lambda, reg_max_thresholds=reg_max_thresholds,
-                         tree_params=tree_params)
+                         tree_params=tree_params, embedder=embedder)
         self.oblique_split_type = oblique_split_type
         self.max_oblique_features = max_oblique_features
         self.tau = tau
@@ -106,9 +108,9 @@ class ObliquePivotTransformer(PivotTransformer):
         return HouseholderTransformer(max_oblique_features=self.max_oblique_features, tau=self.tau,
                                       random_state=tree_params.get("random_state"))
 
-    def _distances(self, X):
+    def _distances(self, X, cache=None):
         """Distances of the instances from the candidate pivots."""
-        return PivotTransformer.transform(self, X)
+        return PivotTransformer.transform(self, X, cache=cache)
 
     def fit(self, X, y, idx=None, data_type=None, sample_weight=None, *, context, node_id, cache):
         """
@@ -150,7 +152,7 @@ class ObliquePivotTransformer(PivotTransformer):
                     node_id=node_id, cache=cache)
 
         # on the distances of the node from the candidates: no cache of the tree
-        self.oblique_ = self._oblique().fit(self._distances(X[idx]), np.asarray(y)[idx],
+        self.oblique_ = self._oblique().fit(self._distances(X[idx], cache), np.asarray(y)[idx],
                                             sample_weight=None if sample_weight is None else sample_weight[idx],
                                             context=None, node_id=node_id, cache=None)
         self.numerical_, self.categorical_ = self.oblique_.numerical_, []
@@ -177,7 +179,7 @@ class ObliquePivotTransformer(PivotTransformer):
         -------
         X_transformed : numpy.ndarray of shape (n_samples, n_directions)
         """
-        return self.oblique_.transform(self._distances(X))
+        return self.oblique_.transform(self._distances(X, cache))
 
     def select(self, feature):
         """
@@ -194,6 +196,7 @@ class ObliquePivotTransformer(PivotTransformer):
             Always 0: the projection on the only direction kept.
         """
         feature = self.oblique_.select(feature)
+        self._keep_media(self.combination(feature)[0])
         self.numerical_, self.categorical_ = [0], []
         return feature
 
@@ -249,6 +252,7 @@ class ObliquePivotTransformer(PivotTransformer):
             'pivots': self.pivots_,
             'categories': categories_state(self.categories_),
             'scaler': scaler_state(self.scaler_),
+            'media': media_state(self),
             'oblique': self.oblique_.get_state(),
         }
 
@@ -272,6 +276,7 @@ class ObliquePivotTransformer(PivotTransformer):
         self.pivots_ = state['pivots']
         self.categories_ = state.get('categories', [])  # saved before the categorical features: not used
         self.scaler_ = scaler_from_state(state['scaler'])
+        self.media_ = media_from_state(state)
         self.oblique_ = self._oblique().set_state(state['oblique'])
         self.numerical_, self.categorical_ = self.oblique_.numerical_, []
         return self

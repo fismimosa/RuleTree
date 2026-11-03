@@ -154,3 +154,67 @@ def test_pivot_stumps_on_images_and_time_series(stump):
 
         assert np.array_equal(model.predict(**{argument: data}), flat.predict(images.reshape(len(y), -1)))
         assert np.array_equal(loaded.predict(**{argument: data}), model.predict(**{argument: data}))
+
+
+class CountingEmbedder:
+    """A stateless embedder (the mean of each row and of its halves) that counts the instances it transforms."""
+
+    calls = []
+
+    def get_params(self, deep=True):
+        return {}
+
+    def set_params(self, **params):
+        return self
+
+    def fit(self, X=None, y=None):
+        return self
+
+    def transform(self, X):
+        X = np.asarray(X, dtype=float).reshape(len(X), -1)
+        CountingEmbedder.calls.append(len(X))
+        half = X.shape[1] // 2
+        return np.column_stack([X.mean(axis=1), X[:, :half].mean(axis=1), X[:, half:].mean(axis=1)])
+
+
+@pytest.mark.parametrize("stump", [PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier,
+                                   ObliquePivotTreeStumpClassifier])
+def test_embeddings_computed_once_per_instance(stump):
+    """In fit, the whole data set once (not once per node); in predict, only the instances not seen yet."""
+    from sklearn.datasets import load_digits
+
+    images, y = load_digits(return_X_y=True)[0][:300].reshape(300, 8, 8), load_digits(return_X_y=True)[1][:300] % 2
+    CountingEmbedder.calls.clear()
+    model = RuleTreeClassifier(max_depth=3, random_state=0, base_stumps=stump(embedder=CountingEmbedder()))
+
+    model.fit(X_img=images, y=y)
+    assert CountingEmbedder.calls == [len(images)] and len(model.get_predicates()) > 1
+
+    model.predict(X_img=images)  # the training instances: already embedded
+    model.predict(X_img=images[:10] + 1)  # ten new instances, embedded once also if they cross several nodes
+    assert CountingEmbedder.calls == [len(images), 10]
+
+
+def test_texts_need_an_embedder():
+    assert "text" not in PivotTreeStumpClassifier().supported_data_types
+    assert "text" in PivotTreeStumpClassifier(embedder=CountingEmbedder()).supported_data_types
+
+
+def test_image_embedder_inside_the_stump():
+    """A pretrained network as embedder, saved by its parameters and fitted again when the tree is loaded."""
+    pytest.importorskip("torch")
+    pytest.importorskip("torchvision")
+    from sklearn.datasets import load_digits
+
+    from RuleTree.utils.embeddings import ImageEmbedder
+
+    images, y = load_digits(return_X_y=True)[0][:60].reshape(60, 8, 8) / 16, load_digits(return_X_y=True)[1][:60] % 2
+    embedder = ImageEmbedder(weights=None, image_size=32, device="cpu")  # random weights: nothing downloaded
+    model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=PivotTreeStumpClassifier(embedder=embedder))
+    model.fit(X_img=images, y=y)
+
+    loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))
+
+    assert loaded.root.stump.embedder.get_params() == embedder.get_params()
+    assert np.array_equal(loaded.root.stump.transformer_.media_[loaded.root.stump.get_pivots()["used"]],
+                          images[model.root.stump.get_pivots()["used"]])

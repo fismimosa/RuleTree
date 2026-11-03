@@ -174,12 +174,12 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Returns
         -------
         rule : dict
-            ``label``, the text of the node, and optionally its media, drawn below the rule (or, if
-            ``media_on_edges`` and they are two, on the arrows of the two children): ``media_values``,
-            values of the stump always drawn (e.g. the shapelets), as ``media_kind`` ('series', 'image' or
-            'text'); or ``media``, indices of training instances drawn with ``show_media`` from the data
-            of the data type of the stump (e.g. the pivots). Also their ``media_names`` and
-            ``media_colors``. ``shapes`` (1D arrays, with ``colors``) is drawn as ``media_values``.
+            ``label``, the text of the node, and optionally its media: ``media_values``, values saved in
+            the stump (e.g. the shapelets, or the pivots as given to fit), drawn as ``media_kind``
+            ('series', 'image' or 'text') with their ``media_names`` and ``media_colors``; only with
+            ``show_media`` if ``media_optional``; below the rule or, if ``media_on_edges`` and they are
+            two, on the arrows of the two children. ``shapes`` (1D arrays, with ``colors``) is drawn as
+            ``media_values``.
         """
         return {"label": self.get_rule(columns_names=columns_names, scaler=scaler,
                                        float_precision=float_precision)["textual_rule"]}
@@ -549,7 +549,7 @@ def estimator_namespace(estimator: BaseEstimator) -> str:
         E.g. ``"PivotTransformer-1a2b3c4d"``.
     """
     params = {name: f"<{type(value).__module__}.{type(value).__qualname__}>"
-              if isinstance(value, BaseEstimator) else value
+              if hasattr(value, "get_params") else value  # a component, e.g. an estimator
               for name, value in estimator.get_params(deep=True).items()}
     digest = hashlib.md5(json.dumps(params, sort_keys=True, default=repr).encode()).hexdigest()
     return f"{estimator.__class__.__name__}-{digest[:8]}"

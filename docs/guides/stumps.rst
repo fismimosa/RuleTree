@@ -309,17 +309,15 @@ Three variants use the same candidate pivots in other ways:
 Their ``get_pivots`` returns all the pivots used by the split in ``used``.
 
 The pivot stumps work on vectors: they take tabular data, time series and images, flattened, so a
-tree can have pivot stumps on each of its data types (see :doc:`multimodal`). Texts, and images as
-in the PivotTree paper, are mapped to vectors with the transformers of :mod:`RuleTree.utils.embeddings`
-(``embeddings`` extra): :class:`~RuleTree.utils.embeddings.ImageEmbedder` returns the output of the
-penultimate layer of a network of torchvision (e.g. ``ImageEmbedder("resnet18")``), and
-:class:`~RuleTree.utils.embeddings.TextEmbedder` the embedding of a sentence transformer (by default
-``all-mpnet-base-v2``, the one of the paper). They follow the scikit-learn interface, so they can
-precede the tree in a pipeline, e.g. ``make_pipeline(ImageEmbedder(), RuleTreeClassifier(...))``.
-The pivots are training instances, so ``plot_tree(show_media=True, ...)`` can draw them as the
-original images, series or texts, below the rule of their node, and the two pivots of a proximity
-pivot stump on the arrows of the two children (see :doc:`inspecting`). See the example notebook on
-pivot trees and data types.
+tree can have pivot stumps on each of its data types (see :doc:`multimodal`). With an ``embedder``,
+the distances are computed on embeddings: e.g. ``embedder=ImageEmbedder("resnet18")`` (the output of
+the penultimate layer of a network of torchvision, as in the PivotTree paper) or
+``embedder=TextEmbedder()`` (a sentence transformer, by default ``all-mpnet-base-v2``, the one of the
+paper; with it, the stump takes texts), both in :mod:`RuleTree.utils.embeddings` (``embeddings``
+extra). The embeddings of the training set are computed once per tree. The pivots are kept as given
+to ``fit``, so ``plot_tree(show_media=True)`` draws them as images, series or texts, below the rule of
+their node, and the two pivots of a proximity pivot stump on the arrows of the two children (see
+:doc:`inspecting`). See the example notebook on pivot trees and data types.
 
 
 Oblique stumps

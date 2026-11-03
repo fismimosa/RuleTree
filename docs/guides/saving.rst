@@ -244,10 +244,11 @@ only to build it:
   (``candidate_splits_``), which are computed again at the next ``fit`` or ``partial_fit``;
 - the state of the random generator of the tree.
 
-The instances drawn by ``plot_tree`` with ``show_media`` (see :doc:`inspecting`) are not saved
-either: the pivots are saved as their indices in the training set, so a loaded tree draws them from
-the same training data given to the original one (``media``, ``media_ts``, ``media_img``,
-``media_txt``).
+The pivots of the pivot stumps on time series, images and texts are saved also as given to ``fit``,
+so a loaded tree draws them with ``plot_tree(show_media=True)`` (see :doc:`inspecting`). An
+``embedder`` of the pivot stumps is saved by its class and parameters, and fitted again, without
+data, when the tree is loaded: its packages (e.g. the ``embeddings`` extra) and its pretrained
+weights are needed to use the loaded tree.
 
 So a loaded tree predicts, describes its rules (``get_rules``, ``export_graphviz``,
 ``get_pivots``, ...) and recomputes its statistics (``update_statistics``) as the original one,

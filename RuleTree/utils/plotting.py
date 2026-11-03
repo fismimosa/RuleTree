@@ -3,11 +3,9 @@ Drawing of a tree with matplotlib (``RuleTree.plot_tree`` and ``RuleTreeNode.plo
 style of ``sklearn.tree.plot_tree``.
 
 Each internal node shows what its stump returns from ``get_plot_rule``: the rule as text and the
-*media* of its split, drawn as images, time series or texts. The media are either values of the stump
-(e.g. the shapelets, always drawn) or instances of the training set (e.g. the pivots), drawn with
-``show_media`` from the training data of the data type of the stump (``media_ts``, ``media_img``,
-``media_txt``, or ``media`` for tabular data). They are drawn below the rule or, for the splits that
-compare two of them (e.g. the proximity pivot stumps), on the arrows of the two children. Each leaf
+*media* of its split, saved in the stump and drawn as images, time series or texts: e.g. the shapelets,
+always drawn, and the pivots, drawn with ``show_media``. They are drawn below the rule or, for the
+splits that compare two of them (e.g. the proximity stumps), on the arrows of the two children. Each leaf
 shows its prediction. The leaves are placed from left to right in the order of the tree, and each
 internal node above the middle of its children, so the boxes never overlap.
 """
@@ -17,7 +15,6 @@ from typing import Optional
 
 import numpy as np
 
-from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TEXT, DATA_TYPE_TS
 from RuleTree.utils.optional import import_optional
 
 # colors of the drawing; the text uses the color of matplotlib (rcParams["text.color"]) when None
@@ -35,17 +32,13 @@ DEFAULT_COLORS = {
 
 PLACEHOLDER = "(...)"  # the children of the nodes at max_depth
 MEDIA_LINES = 7  # empty lines reserved below the rule for its media
-MEDIA_KINDS = ("image", "series", "text")
-# the argument of plot_tree with the training instances of each data type, and how they are drawn
-MEDIA_ARGUMENTS = {DATA_TYPE_TS: ("media_ts", "series"), DATA_TYPE_IMAGE: ("media_img", "image"),
-                   DATA_TYPE_TEXT: ("media_txt", "text"), DATA_TYPE_TABULAR: ("media", None)}
 
 
 def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_names: Optional[list] = None,
               scaler=None, float_precision: Optional[int] = 3, max_depth: Optional[int] = None,
               node_ids: bool = True, samples: bool = True, filled: bool = True,
               fontsize: Optional[float] = None, colors: Optional[dict] = None, wrap: Optional[int] = None,
-              show_media: bool = False, media=None, media_ts=None, media_img=None, media_txt=None):
+              show_media: bool = False):
     """
     Draw the subtree of a node with matplotlib. See ``RuleTree.plot_tree`` for the parameters.
 
@@ -57,7 +50,8 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
         ``ax.child_axes`` whose gid is ``media-<node id>-<position>`` (``true`` or ``false`` on the arrows).
     """
     plt = import_optional("matplotlib.pyplot", "plot_tree")
-    sources = _media_sources(show_media, media, media_ts, media_img, media_txt)
+    if not isinstance(show_media, (bool, np.bool_)):
+        raise ValueError(f"show_media must be True or False, not {show_media!r}")
     colors = DEFAULT_COLORS | (colors or {})
     text_color = colors["text"] or plt.rcParams["text.color"]
 
@@ -65,7 +59,7 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
     leaf_colors = _leaf_colors(boxes, colors) if filled else {}
     for box in boxes:
         _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
-                  wrap, sources)
+                  wrap, show_media)
     on_edges = [box for box in boxes if box["media"] and box["media_on_edges"]]
 
     n_leaves = 1 + max(box["x"] for box in boxes)
@@ -136,32 +130,8 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
     return ax
 
 
-def _media_sources(show_media, media, media_ts, media_img, media_txt):
-    """
-    The training instances of each data type to draw (data type -> (kind, data)), checked; empty
-    without show_media.
-    """
-    if not isinstance(show_media, (bool, np.bool_)):
-        raise ValueError(f"show_media must be True or False, not {show_media!r}")
-    if not show_media:
-        return {}
-
-    sources = {DATA_TYPE_TS: media_ts, DATA_TYPE_IMAGE: media_img, DATA_TYPE_TEXT: media_txt}
-    sources = {data_type: (MEDIA_ARGUMENTS[data_type][1], data) for data_type, data in sources.items()
-               if data is not None}
-    if media is not None:
-        if not (isinstance(media, tuple) and len(media) == 2 and media[0] in MEDIA_KINDS):
-            raise ValueError(f"media must be a tuple (kind, data), with kind in {MEDIA_KINDS}: how the tabular "
-                             "instances are drawn, e.g. ('image', images) for a tree trained on embeddings")
-        sources[DATA_TYPE_TABULAR] = media
-    if not sources:
-        raise ValueError("show_media needs the training instances, in the order given to fit: media_ts, media_img, "
-                         "media_txt (one for each data type of the tree) or media for tabular data")
-    return sources
-
-
 def _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
-              wrap, sources=None):
+              wrap, show_media=False):
     """The text, the colors and the media of a box."""
     current = box["node"]
     box["media"], box["media_on_edges"] = None, False
@@ -176,7 +146,7 @@ def _describe(box, columns_names, class_names, scaler, float_precision, node_ids
         rule = current.stump.get_plot_rule(columns_names=columns_names, scaler=scaler,
                                            float_precision=float_precision)
         label, box["face"], box["edge"] = rule["label"], colors["split"], colors["split_edge"]
-        box["media"] = _rule_media(rule, current, sources or {})
+        box["media"] = _rule_media(rule, show_media)
         box["media_on_edges"] = bool(box["media"]) and bool(rule.get("media_on_edges")) and len(box["media"]) == 2
 
     lines = ([current.node_id] if node_ids else []) + _wrap(label, wrap, rule=not current.is_leaf())
@@ -186,30 +156,19 @@ def _describe(box, columns_names, class_names, scaler, float_precision, node_ids
     box["label"] = "\n".join(lines) + "\n" * reserved
 
 
-def _rule_media(rule, node, sources):
+def _rule_media(rule, show_media):
     """
-    The media of a node, as dictionaries with ``name``, ``kind``, ``value`` and ``color``: the values of
-    the stump (``media_values``, or ``shapes`` drawn as series), or its training instances (``media``,
-    drawn only with show_media, from the data of the data type of the stump).
+    The media of a node, as dictionaries with ``name``, ``kind``, ``value`` and ``color``: the
+    ``media_values`` of the rule (``shapes`` are drawn as series), unless they are ``media_optional`` and
+    show_media is False.
     """
-    names, colors = rule.get("media_names"), rule.get("media_colors") or rule.get("colors")
-    if rule.get("media_values") is not None or rule.get("shapes") is not None:
-        values = rule["media_values"] if rule.get("media_values") is not None else rule["shapes"]
-        kind = rule.get("media_kind", "series")
-    elif rule.get("media") and sources:
-        data_type = getattr(node.stump, "data_type_", DATA_TYPE_TABULAR)
-        if data_type not in sources:
-            argument = MEDIA_ARGUMENTS.get(data_type, ("media", None))[0]
-            raise ValueError(f"the node {node.node_id} splits on {data_type} data: pass its training instances "
-                             f"as {argument}")
-        kind, data = sources[data_type]
-        values = [data[index] for index in rule["media"]]
-        names = names or [str(index) for index in rule["media"]]
-    else:
+    values = rule["media_values"] if rule.get("media_values") is not None else rule.get("shapes")
+    if values is None or (rule.get("media_optional") and not show_media):
         return None
 
-    names = names or [""] * len(values)
-    colors = colors or [None] * len(values)
+    kind = rule.get("media_kind", "series")
+    names = rule.get("media_names") or [""] * len(values)
+    colors = rule.get("media_colors") or rule.get("colors") or [None] * len(values)
     return [{"name": name, "kind": kind, "value": value, "color": color}
             for name, value, color in zip(names, values, colors)]
 
