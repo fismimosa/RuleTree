@@ -244,6 +244,11 @@ only to build it:
   (``candidate_splits_``), which are computed again at the next ``fit`` or ``partial_fit``;
 - the state of the random generator of the tree.
 
+The instances drawn by ``plot_tree`` with ``show_media`` (see :doc:`inspecting`) are not saved
+either: the pivots are saved as their indices in the training set, so a loaded tree draws them from
+the same training data given to the original one (``media``, ``media_ts``, ``media_img``,
+``media_txt``).
+
 So a loaded tree predicts, describes its rules (``get_rules``, ``export_graphviz``,
 ``get_pivots``, ...) and recomputes its statistics (``update_statistics``) as the original one,
 and it can be grown further with ``partial_fit``:

@@ -307,6 +307,49 @@ def figure_plot_tree(output_dir):
     save(figure, output_dir, "plot_tree")
 
 
+def figure_plot_tree_media(output_dir):
+    """The proximity pivot tree of the inspecting guide, drawn by plot_tree with its pivots as images."""
+    from sklearn.datasets import load_digits
+
+    from RuleTree import RuleTreeClassifier
+    from RuleTree.stumps.classification import ProximityPivotTreeStumpClassifier
+
+    # the data and the tree of docs/guides/inspecting.rst
+    digits = load_digits()
+    four = np.isin(digits.target, [0, 1, 4, 7])
+    images, y_digits = digits.images[four], digits.target[four]
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier())
+    model.fit(images.reshape(len(images), -1), y_digits)
+
+    figure, ax = plt.subplots(figsize=(7, 6.5))
+    model.plot_tree(ax, colors=tree_colors(), fontsize=TREE_FONTSIZE, show_media=True, media=("image", images))
+    save(figure, output_dir, "plot_tree_media")
+
+
+def figure_multimodal_pivots(output_dir):
+    """The tree of the multimodal guide with pivot stumps on images and time series, drawn with its pivots."""
+    from sklearn.datasets import load_digits
+
+    from RuleTree import RuleTreeClassifier
+    from RuleTree.stumps.classification import PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier
+
+    # the data and the tree of docs/guides/multimodal.rst
+    digits = load_digits()
+    four = np.isin(digits.target, [0, 1, 4, 7])
+    images, y_four = digits.images[four], digits.target[four]
+    rng = np.random.default_rng(0)
+    series = rng.normal(size=(len(y_four), 1, 30))
+    series[y_four == 1, 0, 10:20] += 3
+    stumps = [(0.5, PivotTreeStumpClassifier(), ["image"]), (0.5, ProximityPivotTreeStumpClassifier(), ["ts"])]
+    model = RuleTreeClassifier(max_depth=2, stump_selection="best", random_state=0, base_stumps=stumps)
+    model.fit(X_img=images, X_ts=series, y=y_four)
+
+    figure, ax = plt.subplots(figsize=(4.5, 7))
+    model.plot_tree(ax, colors=tree_colors(), fontsize=TREE_FONTSIZE, show_media=True, media_img=images,
+                    media_ts=series)
+    save(figure, output_dir, "multimodal_pivots")
+
+
 def figure_proximity_tree(output_dir):
     """The proximity tree of the multimodal guide, drawn by plot_tree with its two shapelets."""
     from RuleTree import RuleTreeClassifier
@@ -321,7 +364,7 @@ def figure_proximity_tree(output_dir):
     proximity = ProximityTreeStumpClassifier(n_shapelets=6, sliding_window=10, selection="random")
     model = RuleTreeClassifier(max_depth=1, base_stumps=proximity, random_state=0).fit(X_ts=X_shape, y=y_shape)
 
-    figure, ax = plt.subplots(figsize=(6.5, 3.6))
+    figure, ax = plt.subplots(figsize=(6.5, 4.6))
     model.plot_tree(ax, colors=tree_colors(), fontsize=TREE_FONTSIZE)
     save(figure, output_dir, "proximity_tree")
 
@@ -543,6 +586,8 @@ FIGURES = {
     "node_ids": figure_node_ids,
     "first_tree": figure_first_tree,
     "plot_tree": figure_plot_tree,
+    "plot_tree_media": figure_plot_tree_media,
+    "multimodal_pivots": figure_multimodal_pivots,
     "proximity_tree": figure_proximity_tree,
     "clustering": figure_clustering,
     "boosting": figure_boosting,

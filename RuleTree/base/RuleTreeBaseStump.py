@@ -174,9 +174,12 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         Returns
         -------
         rule : dict
-            ``label``, the text of the node, and optionally ``shapes``, a list of 1D arrays plotted
-            below it, with their ``colors``, or ``pivots``, indices of instances of the training set drawn
-            with ``show_pivots`` (below the rule, or on the arrows of the children if ``pivots_on_edges``).
+            ``label``, the text of the node, and optionally its media, drawn below the rule (or, if
+            ``media_on_edges`` and they are two, on the arrows of the two children): ``media_values``,
+            values of the stump always drawn (e.g. the shapelets), as ``media_kind`` ('series', 'image' or
+            'text'); or ``media``, indices of training instances drawn with ``show_media`` from the data
+            of the data type of the stump (e.g. the pivots). Also their ``media_names`` and
+            ``media_colors``. ``shapes`` (1D arrays, with ``colors``) is drawn as ``media_values``.
         """
         return {"label": self.get_rule(columns_names=columns_names, scaler=scaler,
                                        float_precision=float_precision)["textual_rule"]}

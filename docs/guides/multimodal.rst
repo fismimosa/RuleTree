@@ -91,7 +91,7 @@ where the bump is:
    accuracy: 1.0
    euclidean(TS, shp) <= 2.21
 
-``plot_tree`` draws a shapelet tree with the plot of the shapelet in each node (see
+``plot_tree`` draws a shapelet tree with the plot of the shapelet below the rule of each node (see
 :doc:`inspecting`).
 
 The proximity stumps compare two shapelets instead: the series closer to the first one than to the
@@ -121,15 +121,17 @@ than in how close a series is to one of them, e.g. a bump against a dip:
    euclidean(TS, green_shp) <= euclidean(TS, red_shp)
 
 The two shapelets of the split are ``model.root.stump.st.shapelets``, the first one green and the
-second one red in the drawing of the tree:
+second one red in the drawing of the tree, on the arrows of the two children: the series closer to
+the green shapelet go left.
 
 .. themed-figure:: /_static/figures/proximity_tree.svg
-   :alt: The proximity tree drawn by plot_tree: the root shows its rule and the two shapelets, a
-         bump in green and a dip in red; the two leaves predict class 0 and class 1.
+   :alt: The proximity tree drawn by plot_tree: the root shows its rule, the two shapelets, a bump in
+         green and a dip in red, are on the arrows of its children; the two leaves predict class 0
+         and class 1.
    :width: 70%
 
-   ``model.plot_tree()``: the rule of the root and its two shapelets, green and red as in the
-   rule.
+   ``model.plot_tree()``: the rule of the root, and its two shapelets, green and red as in the
+   rule, on the arrows of the children they send the series to.
 
 .. themed-figure:: /_static/figures/time_series.svg
    :alt: Some time series of the two classes, the shapelet of the root split of the shapelet tree,
@@ -197,6 +199,61 @@ The data type used by a fitted stump is stored in ``data_type_``.
    only tabular data.
 
 
+Pivot stumps on images, time series and texts
+---------------------------------------------
+
+The pivot stumps (see :doc:`stumps`) compare instances by their distance, computed on vectors: they
+take tabular data, time series and images, flattened into one feature per value. With
+``base_stumps`` given as tuples with the data types of each stump, a tree can have pivot stumps on
+each data type: here a pivot stump on images of digits and a proximity pivot stump on time series of
+the same instances, where the series of the ones have a bump. The pivots are training instances, so
+``plot_tree`` draws them with ``show_media=True``, each node from the training data of its data type
+(``media_img`` and ``media_ts``, as ``X_img`` and ``X_ts`` of ``fit``):
+
+.. code-block:: python
+
+   from sklearn.datasets import load_digits
+
+   from RuleTree.stumps.classification import PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier
+
+   digits = load_digits()
+   four = np.isin(digits.target, [0, 1, 4, 7])
+   images, y_four = digits.images[four], digits.target[four]
+   rng = np.random.default_rng(0)
+   series = rng.normal(size=(len(y_four), 1, 30))
+   series[y_four == 1, 0, 10:20] += 3  # a bump in the series of the ones
+
+   stumps = [(0.5, PivotTreeStumpClassifier(), ["image"]), (0.5, ProximityPivotTreeStumpClassifier(), ["ts"])]
+   model = RuleTreeClassifier(max_depth=2, stump_selection="best", random_state=0, base_stumps=stumps)
+   model.fit(X_img=images, X_ts=series, y=y_four)
+
+   for node_id, node in model.get_predicates().items():
+       print(node_id, node.stump.data_type_, node.stump.get_rule()["textual_rule"])
+   ax = model.plot_tree(show_media=True, media_img=images, media_ts=series)
+
+.. code-block:: text
+   :caption: Output
+
+   R ts P_93 <= P_1
+   Rl image P_438 <= 7.927
+
+.. themed-figure:: /_static/figures/multimodal_pivots.svg
+   :alt: A tree of depth 2: the root compares two time series, drawn on the arrows of its children,
+         and its left child a distance from an image of a zero, drawn below its rule.
+   :width: 50%
+
+   ``model.plot_tree(show_media=True, media_img=images, media_ts=series)``: the root compares the
+   distances from two series, drawn on the arrows of its children; the node ``Rl`` the distance
+   from an image.
+
+Texts are given to the pivot stumps through an embedding, as tabular data:
+:class:`~RuleTree.utils.embeddings.TextEmbedder` (and :class:`~RuleTree.utils.embeddings.ImageEmbedder`
+for images) maps them to vectors with a pretrained network (``embeddings`` extra). The pivots of a
+tree trained on embeddings are drawn from the original instances with ``media``, e.g.
+``plot_tree(show_media=True, media=("text", texts))`` (see :doc:`inspecting`). The example notebook
+on pivot trees and data types shows all of them.
+
+
 Unsupported data
 ----------------
 
@@ -224,5 +281,6 @@ type is not used by any stump, it is ignored with a warning:
    error: None of the base stumps supports the provided data (tabular).
    warning: No base stump uses the text data: it will be ignored.
 
-No stump of the library supports texts yet: they can be supported by a new stump with a
-transformer that turns texts into features (see :doc:`extending`).
+No stump of the library takes texts directly (``X_txt``): they can be mapped to vectors with
+:class:`~RuleTree.utils.embeddings.TextEmbedder` and given as ``X`` (see above), or supported by a
+new stump with a transformer that turns texts into features (see :doc:`extending`).

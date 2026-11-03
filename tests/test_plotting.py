@@ -207,8 +207,8 @@ def test_every_stump_has_a_plot_rule(make_stump, data_type, dataset, continuous,
     rule = stump.get_plot_rule()
 
     assert rule["label"] == stump.get_rule()["textual_rule"]
-    for shape in rule.get("shapes", []):
-        assert np.ndim(shape) == 1
+    for value in rule.get("media_values", []):
+        assert np.ndim(value) == 1 and rule["media_kind"] == "series"
 
 
 @pytest.fixture
@@ -221,28 +221,43 @@ def bumps_and_dips():
     return X, y
 
 
-@pytest.mark.parametrize("make_stump, n_shapes", [
-    (lambda: ShapeletTreeStumpClassifier(n_shapelets=5, sliding_window=10, selection="random", random_state=0), 1),
-    (lambda: ProximityTreeStumpClassifier(n_shapelets=4, sliding_window=10, selection="random", random_state=0), 2),
-])
-def test_shapelets_drawn_in_their_nodes(make_stump, n_shapes, bumps_and_dips):
+def test_shapelet_drawn_in_its_node(bumps_and_dips):
     pytest.importorskip("numba")
     X, y = bumps_and_dips
-    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=make_stump()).fit(X_ts=X, y=y)
+    stump = ShapeletTreeStumpClassifier(n_shapelets=5, sliding_window=10, selection="random", random_state=0)
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=stump).fit(X_ts=X, y=y)
 
-    ax = model.plot_tree()
+    ax = model.plot_tree()  # drawn also without show_media: the shapelets are saved in the stump
 
-    insets = {inset.get_gid(): inset for inset in ax.child_axes}
-    assert set(insets) == {f"shapes-{node_id}" for node_id in model.get_predicates()}
+    insets = media_insets(ax)
+    assert set(insets) == {f"media-{node_id}-0" for node_id in model.get_predicates()}
+    renderer = ax.figure.canvas.get_renderer()
     for node_id, node in model.get_predicates().items():
-        inset = insets[f"shapes-{node_id}"]
-        assert len(inset.lines) == n_shapes
-        np.testing.assert_allclose(inset.lines[0].get_ydata(), node.stump.get_plot_rule()["shapes"][0])
+        inset = insets[f"media-{node_id}-0"]
+        assert inset.get_title() == "shp"
+        np.testing.assert_allclose(inset.lines[0].get_ydata(), node.stump.get_plot_rule()["media_values"][0])
         # the plot is inside the box of the node
-        renderer = ax.figure.canvas.get_renderer()
         box = next(text for text in ax.texts if text.get_gid() == node_id).get_bbox_patch().get_window_extent(renderer)
         plot = inset.get_window_extent(renderer)
         assert box.x0 <= plot.x0 and plot.x1 <= box.x1 and box.y0 <= plot.y0 and plot.y1 <= box.y1
+
+
+def test_proximity_shapelets_on_the_arrows(bumps_and_dips):
+    """As the proximity pivots: the green shapelet on the left arrow, the red one on the right arrow."""
+    pytest.importorskip("numba")
+    X, y = bumps_and_dips
+    stump = ProximityTreeStumpClassifier(n_shapelets=4, sliding_window=10, selection="random", random_state=0)
+    model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=stump).fit(X_ts=X, y=y)
+
+    insets = media_insets(model.plot_tree())
+    shapelets = model.root.stump.get_plot_rule()["media_values"]
+
+    for side, shapelet, name, color in [("true", shapelets[0], "green_shp", "tab:green"),
+                                        ("false", shapelets[1], "red_shp", "tab:red")]:
+        inset = insets[f"media-R-{side}"]
+        assert inset.get_title() == name
+        np.testing.assert_allclose(inset.lines[0].get_ydata(), shapelet)
+        assert to_hex(inset.lines[0].get_color()) == to_hex(color)
 
 
 def test_wrap_splits_rules_before_the_operator_and_leaves_between_words():
@@ -283,27 +298,27 @@ def digits():
     return images, images.reshape(len(images), -1), data.target[four]
 
 
-def pivot_insets(ax):
+def media_insets(ax):
     """The axes of the pivots, by gid."""
-    return {inset.get_gid(): inset for inset in ax.child_axes if str(inset.get_gid()).startswith("pivot-")}
+    return {inset.get_gid(): inset for inset in ax.child_axes if str(inset.get_gid()).startswith("media-")}
 
 
 def test_pivots_not_drawn_by_default(digits):
     images, X, y = digits
     model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=PivotTreeStumpClassifier()).fit(X, y)
 
-    assert pivot_insets(model.plot_tree()) == {}
+    assert media_insets(model.plot_tree()) == {}
 
 
 def test_pivot_images_in_their_nodes(digits):
     images, X, y = digits
     model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=PivotTreeStumpClassifier()).fit(X, y)
 
-    insets = pivot_insets(model.plot_tree(show_pivots="image", pivot_data=images))
+    insets = media_insets(model.plot_tree(show_media=True, media=("image", images)))
 
-    assert set(insets) == {f"pivot-{node_id}-0" for node_id in model.get_predicates()}
+    assert set(insets) == {f"media-{node_id}-0" for node_id in model.get_predicates()}
     for node_id, node in model.get_predicates().items():
-        inset = insets[f"pivot-{node_id}-0"]
+        inset = insets[f"media-{node_id}-0"]
         pivot = node.stump.get_pivots()["used"]
         assert inset.get_title() == f"P_{pivot}"
         assert np.array_equal(inset.images[0].get_array(), images[pivot])
@@ -314,12 +329,12 @@ def test_proximity_pivots_on_the_arrows(digits):
     images, X, y = digits
     model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier()).fit(X, y)
 
-    insets = pivot_insets(model.plot_tree(show_pivots="image", pivot_data=images))
+    insets = media_insets(model.plot_tree(show_media=True, media=("image", images)))
 
     for node_id, node in model.get_predicates().items():
         first, second = node.stump.get_pivots()["used"]
-        assert insets[f"pivot-{node_id}-true"].get_title() == f"P_{first}"
-        assert insets[f"pivot-{node_id}-false"].get_title() == f"P_{second}"
+        assert insets[f"media-{node_id}-true"].get_title() == f"P_{first}"
+        assert insets[f"media-{node_id}-false"].get_title() == f"P_{second}"
     assert len(insets) == 2 * len(model.get_predicates())
 
 
@@ -327,9 +342,9 @@ def test_oblique_pivots_side_by_side(digits):
     images, X, y = digits
     model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=ObliquePivotTreeStumpClassifier()).fit(X, y)
 
-    insets = pivot_insets(model.plot_tree(show_pivots="image", pivot_data=images))
+    insets = media_insets(model.plot_tree(show_media=True, media=("image", images)))
 
-    assert [insets[f"pivot-R-{i}"].get_title() for i in range(len(insets))] == \
+    assert [insets[f"media-R-{i}"].get_title() for i in range(len(insets))] == \
         [f"P_{p}" for p in model.root.stump.get_pivots()["used"]]
 
 
@@ -341,27 +356,31 @@ def test_pivot_series_and_texts(time_series):
     model.fit(series, y)
     first, second = model.root.stump.get_pivots()["used"]
 
-    lines_of_series = pivot_insets(model.plot_tree(show_pivots="series", pivot_data=series))["pivot-R-true"].lines
-    texts_of_pivots = pivot_insets(model.plot_tree(show_pivots="text", pivot_data=texts))["pivot-R-false"].texts
+    lines_of_series = media_insets(model.plot_tree(show_media=True, media=("series", series)))["media-R-true"].lines
+    texts_of_pivots = media_insets(model.plot_tree(show_media=True, media=("text", texts)))["media-R-false"].texts
 
     assert np.allclose(lines_of_series[0].get_ydata(), series[first])
     assert texts_of_pivots[0].get_text() == f"series {second} of\nclass {y[second]}"
 
 
-def test_show_pivots_ignored_by_other_stumps(classifier, iris):
+def test_show_media_ignored_by_other_stumps(classifier, iris):
     X, _ = iris
 
-    assert pivot_insets(classifier.plot_tree(show_pivots="series", pivot_data=X)) == {}
+    assert media_insets(classifier.plot_tree(show_media=True, media=("series", X))) == {}
 
 
-def test_show_pivots_errors(digits):
+def test_show_media_errors(digits):
     images, X, y = digits
     model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=PivotTreeStumpClassifier()).fit(X, y)
 
-    with pytest.raises(ValueError, match="pivot_data"):
-        model.plot_tree(show_pivots="image")
-    with pytest.raises(ValueError, match="show_pivots"):
-        model.plot_tree(show_pivots="video", pivot_data=images)
+    with pytest.raises(ValueError, match="media_ts, media_img, media_txt"):
+        model.plot_tree(show_media=True)
+    with pytest.raises(ValueError, match="True or False"):
+        model.plot_tree(show_media="image", media=("image", images))
+    with pytest.raises(ValueError, match="kind"):
+        model.plot_tree(show_media=True, media=("video", images))
+    with pytest.raises(ValueError, match="tabular data: pass its training instances as media"):
+        model.plot_tree(show_media=True, media_img=images)  # the tree was trained on X
 
 
 def test_saved_tree_draws_the_pivots(digits):
@@ -369,8 +388,54 @@ def test_saved_tree_draws_the_pivots(digits):
     model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier()).fit(X, y)
     loaded = RuleTree.from_dict(json.loads(json.dumps(model.to_dict(), cls=json_numpy_encoder)))
 
-    titles = {gid: inset.get_title() for gid, inset in pivot_insets(model.plot_tree(show_pivots="image",
-                                                                                    pivot_data=images)).items()}
-    loaded_titles = {gid: inset.get_title() for gid, inset in pivot_insets(loaded.plot_tree(show_pivots="image",
-                                                                                           pivot_data=images)).items()}
-    assert loaded_titles == titles
+    def titles(tree):
+        return {gid: inset.get_title()
+                for gid, inset in media_insets(tree.plot_tree(show_media=True, media=("image", images))).items()}
+
+    assert titles(loaded) == titles(model)
+
+
+@pytest.mark.parametrize("stump", [PivotTreeStumpClassifier, ProximityPivotTreeStumpClassifier,
+                                   ObliquePivotTreeStumpClassifier])
+def test_media_after_saving_to_a_file_and_in_the_saved_figure(stump, digits, tmp_path):
+    """A tree loaded from its JSON file draws the same media; the figure keeps them in every format."""
+    images, X, y = digits
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=stump()).fit(X, y)
+    model.to_dict(tmp_path / "tree.json")
+    loaded = RuleTree.from_dict(tmp_path / "tree.json")
+
+    ax = loaded.plot_tree(show_media=True, media=("image", images))
+    titles = {gid: inset.get_title() for gid, inset in media_insets(ax).items()}
+
+    assert titles == {gid: inset.get_title() for gid, inset in
+                      media_insets(model.plot_tree(show_media=True, media=("image", images))).items()}
+    for extension in ("png", "svg", "pdf"):
+        ax.figure.savefig(tmp_path / f"tree.{extension}")
+        assert (tmp_path / f"tree.{extension}").stat().st_size > 0
+    assert (tmp_path / "tree.svg").read_text().count("<image") == len(titles)
+
+
+def test_media_of_each_data_type_in_a_multimodal_tree(digits):
+    """Pivot stumps on the images and on the time series: each node draws the instances of its data type."""
+    images, _, y = digits
+    rng = np.random.default_rng(0)
+    series = rng.normal(size=(len(y), 1, 30))
+    series[y == 1, 0, 10:20] += 3
+    stumps = [(0.5, PivotTreeStumpClassifier(), ["image"]), (0.5, ProximityPivotTreeStumpClassifier(), ["ts"])]
+    model = RuleTreeClassifier(max_depth=3, random_state=0, stump_selection="best", base_stumps=stumps)
+    model.fit(X_img=images, X_ts=series, y=y)
+    data_types = {node.stump.data_type_ for node in model.get_predicates().values()}
+
+    insets = media_insets(model.plot_tree(show_media=True, media_img=images, media_ts=series))
+
+    assert data_types == {"image", "ts"}
+    for node_id, node in model.get_predicates().items():
+        used = node.stump.get_pivots()["used"]
+        first = used[0] if isinstance(used, list) else used
+        inset = insets[f"media-{node_id}-true" if isinstance(used, list) else f"media-{node_id}-0"]
+        if node.stump.data_type_ == "image":
+            assert np.array_equal(inset.images[0].get_array(), images[first])
+        else:
+            np.testing.assert_allclose(inset.lines[0].get_ydata(), series[first, 0])
+    with pytest.raises(ValueError, match="media_ts"):
+        model.plot_tree(show_media=True, media_img=images)

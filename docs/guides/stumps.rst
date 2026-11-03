@@ -308,17 +308,17 @@ Three variants use the same candidate pivots in other ways:
 
 Their ``get_pivots`` returns all the pivots used by the split in ``used``.
 
-The pivot stumps work on vectors. Images and texts are first mapped to vectors, as in the PivotTree
-paper, with the transformers of :mod:`RuleTree.utils.embeddings` (``embeddings`` extra):
-:class:`~RuleTree.utils.embeddings.ImageEmbedder` returns the output of the penultimate layer of a
-network of torchvision (e.g. ``ImageEmbedder("resnet18")``), and
+The pivot stumps work on vectors: they take tabular data, time series and images, flattened, so a
+tree can have pivot stumps on each of its data types (see :doc:`multimodal`). Texts, and images as
+in the PivotTree paper, are mapped to vectors with the transformers of :mod:`RuleTree.utils.embeddings`
+(``embeddings`` extra): :class:`~RuleTree.utils.embeddings.ImageEmbedder` returns the output of the
+penultimate layer of a network of torchvision (e.g. ``ImageEmbedder("resnet18")``), and
 :class:`~RuleTree.utils.embeddings.TextEmbedder` the embedding of a sentence transformer (by default
 ``all-mpnet-base-v2``, the one of the paper). They follow the scikit-learn interface, so they can
-precede the tree in a pipeline, e.g. ``make_pipeline(ImageEmbedder(), RuleTreeClassifier(...))``;
-the pivots are then instances of the training set, whose original images or texts explain the
-rules. ``plot_tree`` can draw them: with ``show_pivots="image"``, ``"series"`` or ``"text"`` and the
-original training instances as ``pivot_data``, each pivot appears below the rule of its node, and the
-two pivots of a proximity pivot stump on the arrows of the two children. See the example notebook on
+precede the tree in a pipeline, e.g. ``make_pipeline(ImageEmbedder(), RuleTreeClassifier(...))``.
+The pivots are training instances, so ``plot_tree(show_media=True, ...)`` can draw them as the
+original images, series or texts, below the rule of their node, and the two pivots of a proximity
+pivot stump on the arrows of the two children (see :doc:`inspecting`). See the example notebook on
 pivot trees and data types.
 
 

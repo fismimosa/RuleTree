@@ -1317,16 +1317,17 @@ class RuleTree(RuleTreeBase, ABC):
 
     def plot_tree(self, ax=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
                   max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None,
-                  wrap=None, show_pivots=None, pivot_data=None):
+                  wrap=None, show_media=False, media=None, media_ts=None, media_img=None,
+                  media_txt=None):
         """
         Draw the tree with matplotlib, as ``sklearn.tree.plot_tree`` (requires matplotlib).
 
-        Each internal node shows its id, its rule (for the shapelet and proximity stumps, also a plot
-        of the shapelets; with ``show_pivots``, the pivots of the pivot stumps) and its number of training
-        instances; each leaf its prediction. The left
-        child of a node (arrow "true") gets the instances for which the rule is true. Unlike
-        ``export_graphviz``, it needs neither the Graphviz programs nor files: the drawing is a
-        matplotlib figure, shown in notebooks and saved with ``savefig``.
+        Each internal node shows its id, its rule (for the shapelet and proximity stumps, also the
+        shapelets; with ``show_media``, the training instances it uses, e.g. its pivots) and its
+        number of training instances; each leaf its prediction. The left child of a node (arrow "true")
+        gets the instances for which the rule is true. Unlike ``export_graphviz``, it needs neither the
+        Graphviz programs nor files: the drawing is a matplotlib figure, shown in notebooks and saved
+        with ``savefig``.
 
         Parameters
         ----------
@@ -1358,17 +1359,23 @@ class RuleTree(RuleTreeBase, ABC):
             Maximum number of characters per line: longer rules are split before their comparison
             operator, then between words, so that the boxes of trees with long feature names are
             narrower. If None, one line per rule.
-        show_pivots : {'image', 'series', 'text'}, default=None
-            How to draw the pivots of the pivot stumps, from ``pivot_data``: as images, time series or
-            texts, below the rule or, for the proximity pivot stumps, on the arrows of the children (the
-            first pivot on the left arrow, the one of the instances closer to it). If None, only the rules,
-            as text.
-        pivot_data : array-like, default=None
-            The training instances, in the order given to ``fit``, as they are shown with
-            ``show_pivots``: the pivot ``P_i`` is ``pivot_data[i]``. Images of shape (height, width) or
-            (height, width, channels), time series of shape (length,) or (signals, length), texts as
-            strings. They can differ from the data of the tree, e.g. the images whose embeddings the tree
-            was trained on.
+        show_media : bool, default=False
+            Whether to draw the training instances used by the splits, e.g. the pivots of the pivot
+            stumps, below the rule or, for the proximity pivot stumps, on the arrows of the children (the
+            first pivot on the left arrow, the one of the instances closer to it). They are taken from the
+            training data of the data type of each stump, in the order given to ``fit``: ``P_i`` is the
+            instance ``i``. The values of the stumps, such as the shapelets, are always drawn.
+        media : tuple (kind, array-like), default=None
+            The tabular training instances and how they are drawn, ``'image'``, ``'series'`` or
+            ``'text'``: e.g. ``("image", images)`` for a tree trained on the flattened images or on their
+            embeddings.
+        media_ts : array-like, default=None
+            The training time series, of shape (n_samples, length) or (n_samples, signals, length).
+        media_img : array-like, default=None
+            The training images, of shape (n_samples, height, width) or (n_samples, height, width,
+            channels).
+        media_txt : array-like of str, default=None
+            The training texts.
 
         Returns
         -------
@@ -1391,7 +1398,8 @@ class RuleTree(RuleTreeBase, ABC):
         return self.root.plot_tree(ax, columns_names=columns_names, class_names=class_names, scaler=scaler,
                                    float_precision=float_precision, max_depth=max_depth, node_ids=node_ids,
                                    samples=samples, filled=filled, fontsize=fontsize, colors=colors, wrap=wrap,
-                                   show_pivots=show_pivots, pivot_data=pivot_data)
+                                   show_media=show_media, media=media, media_ts=media_ts, media_img=media_img,
+                                   media_txt=media_txt)
 
     def get_predicates(self):
         """

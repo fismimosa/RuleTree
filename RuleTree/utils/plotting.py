@@ -2,12 +2,14 @@
 Drawing of a tree with matplotlib (``RuleTree.plot_tree`` and ``RuleTreeNode.plot_tree``), in the
 style of ``sklearn.tree.plot_tree``.
 
-Each internal node shows what its stump returns from ``get_plot_rule``: the rule as text and,
-for some stumps (shapelets, proximity), the shapes to plot below it; with ``show_pivots``, the pivots
-of the pivot stumps, as images, time series or texts, below the rule or, for the proximity pivot
-stumps, on the arrows of the children. Each leaf shows its prediction. The leaves are placed from
-left to right in the order of the tree, and each internal node above the middle of its children, so
-the boxes never overlap.
+Each internal node shows what its stump returns from ``get_plot_rule``: the rule as text and the
+*media* of its split, drawn as images, time series or texts. The media are either values of the stump
+(e.g. the shapelets, always drawn) or instances of the training set (e.g. the pivots), drawn with
+``show_media`` from the training data of the data type of the stump (``media_ts``, ``media_img``,
+``media_txt``, or ``media`` for tabular data). They are drawn below the rule or, for the splits that
+compare two of them (e.g. the proximity pivot stumps), on the arrows of the two children. Each leaf
+shows its prediction. The leaves are placed from left to right in the order of the tree, and each
+internal node above the middle of its children, so the boxes never overlap.
 """
 import re
 import textwrap
@@ -15,6 +17,7 @@ from typing import Optional
 
 import numpy as np
 
+from RuleTree.utils.define import DATA_TYPE_IMAGE, DATA_TYPE_TABULAR, DATA_TYPE_TEXT, DATA_TYPE_TS
 from RuleTree.utils.optional import import_optional
 
 # colors of the drawing; the text uses the color of matplotlib (rcParams["text.color"]) when None
@@ -31,16 +34,18 @@ DEFAULT_COLORS = {
 }
 
 PLACEHOLDER = "(...)"  # the children of the nodes at max_depth
-SHAPE_LINES = 4  # empty lines reserved below the rule for the plot of the shapes
-PIVOT_LINES = 7  # empty lines reserved below the rule for the pivots (show_pivots)
-SHOW_PIVOTS = (None, "image", "series", "text")
+MEDIA_LINES = 7  # empty lines reserved below the rule for its media
+MEDIA_KINDS = ("image", "series", "text")
+# the argument of plot_tree with the training instances of each data type, and how they are drawn
+MEDIA_ARGUMENTS = {DATA_TYPE_TS: ("media_ts", "series"), DATA_TYPE_IMAGE: ("media_img", "image"),
+                   DATA_TYPE_TEXT: ("media_txt", "text"), DATA_TYPE_TABULAR: ("media", None)}
 
 
 def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_names: Optional[list] = None,
               scaler=None, float_precision: Optional[int] = 3, max_depth: Optional[int] = None,
               node_ids: bool = True, samples: bool = True, filled: bool = True,
               fontsize: Optional[float] = None, colors: Optional[dict] = None, wrap: Optional[int] = None,
-              show_pivots: Optional[str] = None, pivot_data=None):
+              show_media: bool = False, media=None, media_ts=None, media_img=None, media_txt=None):
     """
     Draw the subtree of a node with matplotlib. See ``RuleTree.plot_tree`` for the parameters.
 
@@ -48,13 +53,11 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
     -------
     ax : matplotlib.axes.Axes
         The axes of the drawing. Each box is a text of ``ax.texts`` whose gid is the id of its node
-        (``"(...)"`` for the subtrees cut by ``max_depth``).
+        (``"(...)"`` for the subtrees cut by ``max_depth``); each medium is an axes of
+        ``ax.child_axes`` whose gid is ``media-<node id>-<position>`` (``true`` or ``false`` on the arrows).
     """
     plt = import_optional("matplotlib.pyplot", "plot_tree")
-    if show_pivots not in SHOW_PIVOTS:
-        raise ValueError(f"show_pivots must be one of {SHOW_PIVOTS}, not {show_pivots!r}")
-    if show_pivots is not None and pivot_data is None:
-        raise ValueError("show_pivots needs pivot_data: the training instances, in the order given to fit")
+    sources = _media_sources(show_media, media, media_ts, media_img, media_txt)
     colors = DEFAULT_COLORS | (colors or {})
     text_color = colors["text"] or plt.rcParams["text.color"]
 
@@ -62,16 +65,17 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
     leaf_colors = _leaf_colors(boxes, colors) if filled else {}
     for box in boxes:
         _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
-                  wrap, show_pivots)
-    on_edges = any(box["pivots"] and box["pivots_on_edges"] for box in boxes)
+                  wrap, sources)
+    on_edges = [box for box in boxes if box["media"] and box["media_on_edges"]]
 
     n_leaves = 1 + max(box["x"] for box in boxes)
     depth = max(box["depth"] for box in boxes)
     if ax is None:  # wide enough for the longest line at about 10 points
         characters = max(len(line) for box in boxes for line in box["label"].split("\n"))
         lines = max(box["label"].count("\n") + 1 for box in boxes)
-        level_height = max(1.3, 0.2 * lines + 0.5) + (1.4 if on_edges else 0)  # room for the pivots on the arrows
-        leaf_width = max(1.3, 0.09 * characters, (2.2 if show_pivots == "text" else 1.6) if on_edges else 0)
+        texts_on_edges = any(medium["kind"] == "text" for box in on_edges for medium in box["media"])
+        level_height = max(1.3, 0.2 * lines + 0.5) + (1.4 if on_edges else 0)  # room for the media on the arrows
+        leaf_width = max(1.3, 0.09 * characters, (2.2 if texts_on_edges else 1.6) if on_edges else 0)
         figure = plt.figure(figsize=(min(max(4.0, n_leaves * leaf_width), 30.0), max(2.5, (depth + 1) * level_height)))
         ax = figure.add_axes((0, 0, 1, 1))  # no margins: the axes are hidden
     ax.set_xlim(-0.5, n_leaves - 0.5)
@@ -101,39 +105,66 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
         (x0, _), (x1, y_bottom) = extents[box["parent"]]
         (u0, y_top), (u1, _) = extents[box["key"]]
         start, end = ((x0 + x1) / 2, y_bottom), ((u0 + u1) / 2, y_top)
-        ax.annotate("", xy=end, xytext=start, zorder=2,
-                    arrowprops=dict(arrowstyle="-|>", color=colors["edge"], linewidth=1, shrinkA=0, shrinkB=1))
         left = box["side"] == "true"
         parent = boxes[box["parent"]]
-        pivot_on_edge = parent["pivots"] and parent["pivots_on_edges"]
-        where = 0.12 if pivot_on_edge else 0.5  # the label above the pivot drawn on the arrow
+        medium_on_edge = parent["media"] and parent["media_on_edges"]
+        arrow = dict(arrowstyle="-|>", color=colors["edge"], linewidth=1, shrinkA=0, shrinkB=1)
+        if medium_on_edge:  # interrupted where the medium is drawn, also on a transparent background
+            above, below = (start[0] + 0.37 * (end[0] - start[0]), start[1] + 0.37 * (end[1] - start[1])), \
+                (start[0] + 0.79 * (end[0] - start[0]), start[1] + 0.79 * (end[1] - start[1]))
+            ax.annotate("", xy=above, xytext=start, zorder=2, arrowprops=arrow | dict(arrowstyle="-"))
+            ax.annotate("", xy=end, xytext=below, zorder=2, arrowprops=arrow)
+        else:
+            ax.annotate("", xy=end, xytext=start, zorder=2, arrowprops=arrow)
+        where = 0.12 if medium_on_edge else 0.5  # the label above the medium drawn on the arrow
         ax.annotate(box["side"], (start[0] + where * (end[0] - start[0]), start[1] + where * (end[1] - start[1])),
                     xytext=(-3 if left else 3, 2), textcoords="offset points", ha="right" if left else "left",
                     va="bottom", color=colors["edge"], fontsize=size * 0.9, zorder=4)
-        if pivot_on_edge:
-            pivot = parent["pivots"][0 if left else 1]
-            width, height = 0.55 if show_pivots == "text" else 0.42, 0.42 * (start[1] - end[1])
+        if medium_on_edge:
+            medium = parent["media"][0 if left else 1]
+            width, height = 0.55 if medium["kind"] == "text" else 0.42, 0.42 * (start[1] - end[1])
             center = (start[0] + 0.58 * (end[0] - start[0]), start[1] + 0.58 * (end[1] - start[1]))
             inset = ax.inset_axes([center[0] - width / 2, center[1] - height / 2, width, height],
                                   transform=ax.transData, zorder=5)
-            _draw_pivot(inset, pivot, pivot_data[pivot], show_pivots, text_color, colors, size, renderer)
-            inset.set_gid(f"pivot-{parent['node'].node_id}-{box['side']}")
+            _draw_medium(inset, medium, text_color, colors, size, renderer)
+            inset.set_gid(f"media-{parent['node'].node_id}-{box['side']}")
 
     for box in boxes:
-        if box["shapes"]:
-            _plot_shapes(ax, texts[box["key"]], box["shapes"], renderer, text_color)
-        if box["pivots"] and not box["pivots_on_edges"]:
-            _plot_pivots(ax, texts[box["key"]], box["pivots"], pivot_data, show_pivots, renderer, text_color,
-                         colors, size)
+        if box["media"] and not box["media_on_edges"]:
+            _plot_media(ax, texts[box["key"]], box["media"], renderer, text_color, colors, size)
 
     return ax
 
 
+def _media_sources(show_media, media, media_ts, media_img, media_txt):
+    """
+    The training instances of each data type to draw (data type -> (kind, data)), checked; empty
+    without show_media.
+    """
+    if not isinstance(show_media, (bool, np.bool_)):
+        raise ValueError(f"show_media must be True or False, not {show_media!r}")
+    if not show_media:
+        return {}
+
+    sources = {DATA_TYPE_TS: media_ts, DATA_TYPE_IMAGE: media_img, DATA_TYPE_TEXT: media_txt}
+    sources = {data_type: (MEDIA_ARGUMENTS[data_type][1], data) for data_type, data in sources.items()
+               if data is not None}
+    if media is not None:
+        if not (isinstance(media, tuple) and len(media) == 2 and media[0] in MEDIA_KINDS):
+            raise ValueError(f"media must be a tuple (kind, data), with kind in {MEDIA_KINDS}: how the tabular "
+                             "instances are drawn, e.g. ('image', images) for a tree trained on embeddings")
+        sources[DATA_TYPE_TABULAR] = media
+    if not sources:
+        raise ValueError("show_media needs the training instances, in the order given to fit: media_ts, media_img, "
+                         "media_txt (one for each data type of the tree) or media for tabular data")
+    return sources
+
+
 def _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
-              wrap, show_pivots=None):
-    """The text, the colors, the shapes and the pivots of a box."""
+              wrap, sources=None):
+    """The text, the colors and the media of a box."""
     current = box["node"]
-    box["shapes"], box["pivots"], box["pivots_on_edges"] = None, None, False
+    box["media"], box["media_on_edges"] = None, False
     if current is None:
         box["label"], box["face"], box["edge"] = PLACEHOLDER, colors["leaf"], colors["leaf_edge"]
         return
@@ -145,17 +176,42 @@ def _describe(box, columns_names, class_names, scaler, float_precision, node_ids
         rule = current.stump.get_plot_rule(columns_names=columns_names, scaler=scaler,
                                            float_precision=float_precision)
         label, box["face"], box["edge"] = rule["label"], colors["split"], colors["split_edge"]
-        if rule.get("shapes"):
-            box["shapes"] = rule
-        if show_pivots is not None and rule.get("pivots"):
-            box["pivots"], box["pivots_on_edges"] = rule["pivots"], bool(rule.get("pivots_on_edges"))
+        box["media"] = _rule_media(rule, current, sources or {})
+        box["media_on_edges"] = bool(box["media"]) and bool(rule.get("media_on_edges")) and len(box["media"]) == 2
 
     lines = ([current.node_id] if node_ids else []) + _wrap(label, wrap, rule=not current.is_leaf())
     if samples and getattr(current, "samples", None) is not None:
         lines.append(f"samples = {current.samples}")
-    reserved = SHAPE_LINES if box["shapes"] else 0
-    reserved += PIVOT_LINES if box["pivots"] and not box["pivots_on_edges"] else 0
+    reserved = MEDIA_LINES if box["media"] and not box["media_on_edges"] else 0
     box["label"] = "\n".join(lines) + "\n" * reserved
+
+
+def _rule_media(rule, node, sources):
+    """
+    The media of a node, as dictionaries with ``name``, ``kind``, ``value`` and ``color``: the values of
+    the stump (``media_values``, or ``shapes`` drawn as series), or its training instances (``media``,
+    drawn only with show_media, from the data of the data type of the stump).
+    """
+    names, colors = rule.get("media_names"), rule.get("media_colors") or rule.get("colors")
+    if rule.get("media_values") is not None or rule.get("shapes") is not None:
+        values = rule["media_values"] if rule.get("media_values") is not None else rule["shapes"]
+        kind = rule.get("media_kind", "series")
+    elif rule.get("media") and sources:
+        data_type = getattr(node.stump, "data_type_", DATA_TYPE_TABULAR)
+        if data_type not in sources:
+            argument = MEDIA_ARGUMENTS.get(data_type, ("media", None))[0]
+            raise ValueError(f"the node {node.node_id} splits on {data_type} data: pass its training instances "
+                             f"as {argument}")
+        kind, data = sources[data_type]
+        values = [data[index] for index in rule["media"]]
+        names = names or [str(index) for index in rule["media"]]
+    else:
+        return None
+
+    names = names or [""] * len(values)
+    colors = colors or [None] * len(values)
+    return [{"name": name, "kind": kind, "value": value, "color": color}
+            for name, value, color in zip(names, values, colors)]
 
 
 def _wrap(text, width, rule=True):
@@ -277,53 +333,33 @@ def _fit_scale(ax, texts, renderer):
     return min(0.92 * cell_width / width, 0.8 * cell_height / height, 1.4)
 
 
-def _plot_shapes(ax, text, rule, renderer, text_color):
-    """The shapes of a node (e.g. shapelets) in the lines reserved at the bottom of its box."""
+def _plot_media(ax, text, media, renderer, text_color, colors, size):
+    """The media of a node, side by side in the lines reserved at the bottom of its box."""
     text.update_bbox_position_size(renderer)
     extent = text.get_bbox_patch().get_window_extent(renderer)
     (x0, y0), (x1, y1) = ax.transAxes.inverted().transform([(extent.x0, extent.y0), (extent.x1, extent.y1)])
     n_lines = text.get_text().count("\n") + 1
-    height = (y1 - y0) * SHAPE_LINES / n_lines
-    inset = ax.inset_axes([x0 + 0.08 * (x1 - x0), y0 + 0.12 * height, 0.84 * (x1 - x0), 0.85 * height],
-                          zorder=5)
-    shape_colors = rule.get("colors") or [None] * len(rule["shapes"])
-    for shape, color in zip(rule["shapes"], shape_colors):
-        inset.plot(np.asarray(shape), color=color, linewidth=1.2)
-    inset.set_xticks([])
-    inset.set_yticks([])
-    inset.patch.set_alpha(0)
-    for side, spine in inset.spines.items():
-        spine.set_visible(side in ("left", "bottom"))
-        spine.set_color(text_color)
-        spine.set_alpha(0.4)
-    inset.set_gid(f"shapes-{text.get_gid()}")
-
-
-def _plot_pivots(ax, text, pivots, pivot_data, show_pivots, renderer, text_color, colors, size):
-    """The pivots of a node, side by side in the lines reserved at the bottom of its box."""
-    text.update_bbox_position_size(renderer)
-    extent = text.get_bbox_patch().get_window_extent(renderer)
-    (x0, y0), (x1, y1) = ax.transAxes.inverted().transform([(extent.x0, extent.y0), (extent.x1, extent.y1)])
-    n_lines = text.get_text().count("\n") + 1
-    height = (y1 - y0) * PIVOT_LINES / n_lines
-    width = 0.9 * (x1 - x0) / len(pivots)
-    for i, pivot in enumerate(pivots):
+    height = (y1 - y0) * MEDIA_LINES / n_lines
+    width = 0.9 * (x1 - x0) / len(media)
+    for i, medium in enumerate(media):
         inset = ax.inset_axes([x0 + 0.05 * (x1 - x0) + i * width + 0.04 * width, y0 + 0.06 * height,
                                0.92 * width, 0.8 * height], zorder=5)
-        _draw_pivot(inset, pivot, pivot_data[pivot], show_pivots, text_color, colors, size, renderer)
-        inset.set_gid(f"pivot-{text.get_gid()}-{i}")
+        _draw_medium(inset, medium, text_color, colors, size, renderer)
+        inset.set_gid(f"media-{text.get_gid()}-{i}")
 
 
-def _draw_pivot(inset, pivot, instance, show_pivots, text_color, colors, size, renderer):
+def _draw_medium(inset, medium, text_color, colors, size, renderer):
     """
-    A pivot in its axes, with its name ``P_<i>`` as title: an image (height x width, with channels
-    last or first), a time series (one or more signals) or a text (shrunk to fit the axes).
+    A medium in its axes, with its name (e.g. ``P_<i>``) as title: an image (height x width, with
+    channels last or first), a time series (one or more signals) or a text (shrunk to fit the axes).
     """
-    instance = np.asarray(instance) if show_pivots != "text" else str(instance)
-    inset.set_title(f"P_{pivot}", fontsize=size * 0.8, color=text_color, pad=2)
+    kind = medium["kind"]
+    instance = str(medium["value"]) if kind == "text" else np.asarray(medium["value"])
+    if medium["name"]:
+        inset.set_title(medium["name"], fontsize=size * 0.8, color=medium["color"] or text_color, pad=2)
     inset.set_xticks([])
     inset.set_yticks([])
-    if show_pivots == "image":
+    if kind == "image":
         if instance.ndim == 3 and instance.shape[0] in (1, 3) and instance.shape[-1] not in (1, 3):
             instance = np.moveaxis(instance, 0, -1)  # channels first
         if instance.ndim == 3 and instance.shape[-1] == 1:
@@ -331,9 +367,9 @@ def _draw_pivot(inset, pivot, instance, show_pivots, text_color, colors, size, r
         inset.imshow(instance, cmap="gray_r" if instance.ndim == 2 else None)  # the aspect of the image
         inset.set_anchor("C")
         return
-    if show_pivots == "series":
+    if kind == "series":
         for signal in np.atleast_2d(instance):
-            inset.plot(signal, color=colors["classes"][0], linewidth=1)
+            inset.plot(signal, color=medium["color"] or colors["classes"][0], linewidth=1.2)
     else:
         lines = textwrap.wrap(instance, 16)
         lines = lines[:6] + (["..."] if len(lines) > 6 else [])

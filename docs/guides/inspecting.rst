@@ -95,9 +95,9 @@ drawing, which a notebook shows and ``savefig`` saves as PNG, SVG or PDF:
 
 Each internal node shows its id, its rule and its number of training instances; each leaf its
 prediction: the class, the value (one per target) or the cluster. The drawing works with every
-stump, since each stump says what its node shows (``get_plot_rule``): the rule, and for the
-shapelet and proximity stumps also the plot of their shapelets (see :doc:`multimodal`). Its
-options:
+stump, since each stump says what its node shows (``get_plot_rule``): the rule, for the shapelet
+and proximity stumps also the plot of their shapelets (see :doc:`multimodal`), and for the pivot
+stumps their pivots (see `Drawing the instances of the splits`_). Its options:
 
 - ``ax``: the axes to draw on, e.g. a subplot of a larger figure. By default, a new figure sized on
   the number of leaves and on the depth;
@@ -115,6 +115,61 @@ options:
 - ``scaler`` and ``float_precision``: as for ``get_rule``.
 
 ``plot_tree`` is also a method of the nodes, to draw a subtree: ``model.get_node_by_id("Rr").plot_tree()``.
+
+Drawing the instances of the splits
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some splits are defined by series, images or texts: the shapelet stumps by subsequences of the
+training series, always drawn (see :doc:`multimodal`), and the pivot stumps by training instances,
+the pivots: the rule ``P_447 <= P_611`` of a proximity pivot stump compares the distances from the
+training instances 447 and 611. With ``show_media=True``, ``plot_tree`` draws the pivots too, taking
+them from the training data, in the order given to ``fit`` (``P_i`` is the instance ``i``), of the data
+type of each stump: ``media_ts``, ``media_img`` and ``media_txt`` for the time series, images and
+texts given as ``X_ts``, ``X_img`` and ``X_txt``, and ``media`` for tabular data, with how to draw
+them. The media of a split are drawn below its rule, or, when the split compares two of them (the
+proximity stumps), on the arrows of the two children, the first one on the arrow of the instances
+closer to it. By default (``show_media=False``) the pivots are not drawn. Here a tree is trained on
+images of digits flattened into vectors, and drawn with the images themselves:
+
+.. code-block:: python
+
+   import numpy as np
+   from sklearn.datasets import load_digits
+
+   from RuleTree.stumps.classification import ProximityPivotTreeStumpClassifier
+
+   digits = load_digits()
+   four = np.isin(digits.target, [0, 1, 4, 7])
+   images, y_digits = digits.images[four], digits.target[four]
+
+   pivot_tree = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=ProximityPivotTreeStumpClassifier())
+   pivot_tree.fit(images.reshape(len(images), -1), y_digits)
+   ax = pivot_tree.plot_tree(show_media=True, media=("image", images))
+
+   print(pivot_tree.root.stump.get_rule()["textual_rule"])
+   print(sorted(inset.get_gid() for inset in ax.child_axes))  # the axes of each drawn instance
+
+.. code-block:: text
+   :caption: Output
+
+   P_447 <= P_611
+   ['media-R-false', 'media-R-true', 'media-Rl-false', 'media-Rl-true', 'media-Rr-false', 'media-Rr-true']
+
+.. themed-figure:: /_static/figures/plot_tree_media.svg
+   :alt: A proximity pivot tree of depth 2 on four digits: each internal node compares two images
+         of digits, drawn on the arrows of its two children.
+   :width: 80%
+
+   ``pivot_tree.plot_tree(show_media=True, media=("image", images))``: each node sends an image to
+   the child whose pivot it is closer to.
+
+``media`` is a pair (how to draw, data): ``"image"``, ``"series"`` or ``"text"``, and the
+instances, which can differ from the data of the tree, e.g. the original images or texts of a tree
+trained on their embeddings (see :mod:`RuleTree.utils.embeddings`). Trained on ``X_img=images``,
+the same tree is drawn with ``media_img=images``; a tree on several data types takes one argument
+for each of them (see :doc:`multimodal`). Images have shape (height, width) or (height, width,
+channels), time series (length,) or (signals, length), texts are strings; the stumps that do not
+split on training instances ignore ``show_media``.
 
 Graphviz
 ~~~~~~~~

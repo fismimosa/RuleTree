@@ -92,7 +92,7 @@ class PivotTreeStump:
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
         What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the pivot, drawn below it
-        with ``show_pivots``.
+        with ``show_media`` (the training instance with its index, from the data of the data type of the stump).
 
         Parameters
         ----------
@@ -106,10 +106,11 @@ class PivotTreeStump:
         Returns
         -------
         rule : dict
-            ``label`` and ``pivots`` (the index of the pivot in the training set).
+            ``label``, ``media`` (the index of the pivot in the training set) and ``media_names``.
         """
-        return {"label": self.get_rule(float_precision=float_precision)["textual_rule"],
-                "pivots": [int(self.feature_original)]}
+        pivot = int(self.feature_original)
+        return {"label": self.get_rule(float_precision=float_precision)["textual_rule"], "media": [pivot],
+                "media_names": [f"P_{pivot}"]}
 
 
 class ProximityPivotTreeStump:
@@ -175,7 +176,7 @@ class ProximityPivotTreeStump:
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
         What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the two pivots, drawn
-        with ``show_pivots`` on the arrows of the children: the first one on the left arrow ("true", the
+        with ``show_media`` on the arrows of the children: the first one on the left arrow ("true", the
         instances closer to it), the second one on the right arrow.
 
         Parameters
@@ -190,11 +191,12 @@ class ProximityPivotTreeStump:
         Returns
         -------
         rule : dict
-            ``label``, ``pivots`` (the indices of the two pivots in the training set) and
-            ``pivots_on_edges`` (True).
+            ``label``, ``media`` (the indices of the two pivots in the training set), ``media_names`` and
+            ``media_on_edges`` (True).
         """
-        return {"label": self.get_rule()["textual_rule"], "pivots": [int(p) for p in self.feature_original],
-                "pivots_on_edges": True}
+        pivots = [int(p) for p in self.feature_original]
+        return {"label": self.get_rule()["textual_rule"], "media": pivots, "media_names": [f"P_{p}" for p in pivots],
+                "media_on_edges": True}
 
 
 class ObliquePivotTreeStump:
@@ -264,7 +266,7 @@ class ObliquePivotTreeStump:
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision=3):
         """
         What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the pivots of the
-        combination, drawn below it with ``show_pivots``.
+        combination, drawn below it with ``show_media``.
 
         Parameters
         ----------
@@ -278,10 +280,11 @@ class ObliquePivotTreeStump:
         Returns
         -------
         rule : dict
-            ``label`` and ``pivots`` (the indices of the pivots in the training set).
+            ``label``, ``media`` (the indices of the pivots in the training set) and ``media_names``.
         """
-        return {"label": self.get_rule(float_precision=float_precision)["textual_rule"],
-                "pivots": [int(p) for p in self.feature_original]}
+        pivots = [int(p) for p in self.feature_original]
+        return {"label": self.get_rule(float_precision=float_precision)["textual_rule"], "media": pivots,
+                "media_names": [f"P_{p}" for p in pivots]}
 
 
 __getattr__ = deprecated_aliases(__name__, {"MultiplePivotTreeStump": ProximityPivotTreeStump})

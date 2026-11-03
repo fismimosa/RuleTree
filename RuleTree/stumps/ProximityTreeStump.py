@@ -124,8 +124,9 @@ class ProximityTreeStump:
 
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """
-        What the node of the split shows in ``RuleTree.plot_tree``: the rule and, below it, the two
-        shapelets, green and red as in the rule.
+        What the node of the split shows in ``RuleTree.plot_tree``: the rule, and the two shapelets,
+        green and red as in the rule, on the arrows of the two children: the green one on the left arrow
+        (the series closer to it), the red one on the right arrow.
 
         Parameters
         ----------
@@ -139,11 +140,13 @@ class ProximityTreeStump:
         Returns
         -------
         rule : dict
-            ``label``, ``shapes`` (the two shapelets) and their ``colors``.
+            ``label``, ``media_values`` (the two shapelets), ``media_kind``, ``media_names``, their
+            ``media_colors`` and ``media_on_edges`` (True).
         """
         label = self.get_rule(columns_names, scaler, float_precision)["textual_rule"]
-        return {"label": label, "shapes": [self.st.shapelets[0, 0], self.st.shapelets[1, 0]],
-                "colors": list(PROXIMITY_COLORS)}
+        return {"label": label, "media_values": [self.st.shapelets[0, 0], self.st.shapelets[1, 0]],
+                "media_kind": "series", "media_names": ["green_shp", "red_shp"], "media_colors": list(PROXIMITY_COLORS),
+                "media_on_edges": True}
 
 
 class PartialProximityTreeStump:

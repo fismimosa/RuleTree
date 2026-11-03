@@ -126,7 +126,8 @@ class ShapeletTreeStump:
         Returns
         -------
         rule : dict
-            ``label`` and ``shapes`` (the shapelet).
+            ``label``, ``media_values`` (the shapelet), ``media_kind`` and ``media_names``.
         """
         label = self.get_rule(columns_names, scaler, float_precision)["textual_rule"]
-        return {"label": label, "shapes": [self.st.shapelets[self.feature_original, 0]]}
+        return {"label": label, "media_values": [self.st.shapelets[self.feature_original, 0]], "media_kind": "series",
+                "media_names": ["shp"]}
