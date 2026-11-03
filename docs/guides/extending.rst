@@ -79,8 +79,7 @@ The library provides these components:
      - the best split whose children are fair with respect to some sensitive features
    * - :class:`~RuleTree.stumps.splitters.FlatMatrixClassificationSplitter`,
        :class:`~RuleTree.stumps.splitters.FlatMatrixRegressionSplitter`
-     - the best split among all the candidates evaluated together with matrix operations, for the
-       splitters that penalize the impurity of the children
+     - the best split among all the candidates evaluated together, with a gain that can be replaced
 
 A new stump therefore needs only the component that is new: a transformer, to split on new
 features; a splitter, to choose the splits in a new way.
@@ -268,6 +267,45 @@ exhaustive, so this interface is meant for experiments on small data sets.
 
    X_2 <= 2.45
    accuracy: 0.96
+
+
+A penalized gain
+----------------
+
+:class:`~RuleTree.stumps.splitters.FlatMatrixClassificationSplitter` and
+:class:`~RuleTree.stumps.splitters.FlatMatrixRegressionSplitter` take a ``gain_function``, called once
+per node with all the candidate splits: the impurities and weights of their children, the data of the
+node and the conditions of the splits. It returns one gain per candidate; -inf or nan discards a
+candidate. The impurity criterion stays fixed: only the choice of the split changes.
+:func:`~RuleTree.stumps.splitters.candidate_mask` builds the mask of the candidates, for the functions
+that need it: it takes one byte per instance and candidate, so the functions that do not need it save
+that memory. This one prefers the splits with children of similar size:
+
+.. code-block:: python
+
+   from RuleTree.stumps.splitters import FlatMatrixClassificationSplitter, candidate_mask, information_gain
+
+
+   def balanced_gain(impurity, impurity_left, impurity_right, weight_left, weight_right, X, y, features,
+                     thresholds, is_categorical, sample_weight=None):
+       left_fraction = candidate_mask(X, features, thresholds, is_categorical).mean(axis=0)
+       gains = information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right)
+       return gains - abs(left_fraction - 0.5)
+
+
+   model = RuleTreeClassifier(max_depth=1, random_state=0,
+                              base_stumps=Stump(MatrixTransformer(), FlatMatrixClassificationSplitter(gain_function=balanced_gain)))
+   model.fit(iris.data, iris.target)
+
+   print(model.get_rules()["textual_rule"])
+
+.. code-block:: text
+   :caption: Output
+
+   X_2 <= 4.35
+
+To save the tree with :meth:`~RuleTree.tree.RuleTree.RuleTree.to_dict`, the function must be importable
+from its module: a lambda raises a ``ValueError``.
 
 
 A splitter from scratch

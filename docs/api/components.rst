@@ -43,3 +43,5 @@ Splitters
    FlatMatrixRegressionSplitter
    ~DecisionTreeSplitter.DecisionTreeSplitter
    ~FlatMatrixSplitter.FlatMatrixSplitter
+   candidate_mask
+   information_gain
