@@ -1,10 +1,9 @@
-"""Helpers on data and targets: mode, log-odds, impurities, information gain, JSON encoding of NumPy values."""
+"""Helpers on data and targets: mode, log-odds, check of the target, JSON encoding of NumPy values."""
 
 import json
 from typing import Union
 
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
 def calculate_mode(x: np.ndarray) -> Union[int, float, str]:
@@ -54,143 +53,6 @@ def log_odds(class_counts: np.ndarray, n_samples: int) -> np.ndarray:
     result[both] = np.log(class_counts[both] / other_counts[both])
 
     return result
-
-def get_info_gain(clf: Union[DecisionTreeClassifier, DecisionTreeRegressor]):
-    """
-    Calculate information gain from a decision tree split.
-    
-    Parameters
-    ----------
-    clf : DecisionTreeClassifier or DecisionTreeRegressor
-        Fitted decision tree classifier or regressor
-        
-    Returns
-    -------
-    float
-        Information gain achieved by the split
-    """
-    try:
-        if len(clf.tree_.impurity) == 1:#no_split
-            return 0
-    except Exception:
-        pass
-    imp_parent, imp_child_l, imp_child_r = clf.tree_.impurity
-    n_parent, n_child_l, n_child_r = clf.tree_.weighted_n_node_samples  ##n_node_samples 
-    return _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_child_r)
-
-def _get_info_gain(imp_parent, imp_child_l, imp_child_r, n_parent, n_child_l, n_child_r):
-    """
-    Helper function to calculate information gain from impurity values.
-    
-    Parameters
-    ----------
-    imp_parent : float
-        Impurity of the parent node
-    imp_child_l : float
-        Impurity of the left child node
-    imp_child_r : float
-        Impurity of the right child node
-    n_parent : int
-        Number of samples in the parent node
-    n_child_l : int
-        Number of samples in the left child node
-    n_child_r : int
-        Number of samples in the right child node
-        
-    Returns
-    -------
-    float
-        Information gain achieved by the split
-    """
-    gain_split = imp_parent - imp_child_l * (n_child_l / n_parent) - imp_child_r * (n_child_r / n_parent)
-    return gain_split
-
-def _my_counts(x, sample_weight:np.ndarray=None, class_weight:dict=None):
-    """
-    Calculate weighted counts for each unique value in an array.
-    
-    Parameters
-    ----------
-    x : numpy.ndarray
-        Input array
-    sample_weight : numpy.ndarray, optional
-        Sample weights to apply
-    class_weight : dict, optional
-        Class weights to apply
-        
-    Returns
-    -------
-    numpy.ndarray
-        Weighted counts for each unique value
-    """
-    if sample_weight is None and class_weight is None:
-        _, counts = np.unique(x, return_counts=True)
-
-    else:
-        sample_weight = np.ones(x.shape[0]) if sample_weight is None else sample_weight
-        class_weight = dict.fromkeys(np.unique(x), 1) if class_weight is None else class_weight
-
-        counts = np.zeros((len(class_weight), ))
-        for i, (c_k, c_w) in enumerate(class_weight.items()):
-            counts[i] = np.sum(sample_weight[x == c_k]) * c_w
-
-    return counts
-
-def gini(x, sample_weight:np.ndarray=None, class_weight:dict=None):
-    """
-    Calculate the Gini impurity of an array.
-    
-    Gini impurity measures the probability of incorrectly classifying a randomly chosen
-    element if it were randomly labeled according to the distribution of classes.
-    
-    Parameters
-    ----------
-    x : numpy.ndarray
-        Input array
-    sample_weight : numpy.ndarray, optional
-        Sample weights to apply
-    class_weight : dict, optional
-        Class weights to apply
-        
-    Returns
-    -------
-    float
-        Gini impurity value
-    """
-    counts = _my_counts(x, sample_weight=sample_weight, class_weight=class_weight)
-
-    total = sum(counts)
-
-    return 1 - np.sum((counts/total)**2)
-
-def entropy(x, sample_weight:np.ndarray=None, class_weight:dict=None):
-    """
-    Calculate the entropy of an array.
-    
-    Entropy measures the average level of "information" or "uncertainty" inherent in
-    the possible outcomes of a random variable.
-    
-    Parameters
-    ----------
-    x : numpy.ndarray
-        Input array
-    sample_weight : numpy.ndarray, optional
-        Sample weights to apply
-    class_weight : dict, optional
-        Class weights to apply
-        
-    Returns
-    -------
-    float
-        Entropy value
-    """
-    counts = _my_counts(x, sample_weight=sample_weight, class_weight=class_weight)
-
-    p_j = counts/sum(counts)
-    p_j = p_j[p_j > 0]  # 0 * log(0) = 0: classes without instances (e.g. with class_weight)
-    p_j_log = np.log2(p_j)
-
-    return - p_j @ p_j_log
 
 class json_numpy_encoder(json.JSONEncoder):
     """

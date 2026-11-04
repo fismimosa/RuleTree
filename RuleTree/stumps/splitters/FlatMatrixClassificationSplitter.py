@@ -4,6 +4,7 @@ import numpy as np
 
 from RuleTree.stumps.splitters.FlatMatrixSplitter import FlatMatrixSplitter
 from RuleTree.utils.define import MODEL_TYPE_CLF
+from RuleTree.utils.impurity import CLASSIFICATION_IMPURITIES
 
 
 class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
@@ -62,26 +63,17 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
 
     def _impurity_fun(self):
         """
-        Impurity function of the criterion.
-
-        Returns
-        -------
-        impurity_fun : callable
-            Function from the weights of the classes, of shape (n_classes, ...), to the impurities.
+        Impurity function of the criterion, from the weights of the classes (see RuleTree.utils.impurity).
 
         Raises
         ------
         ValueError
             If the criterion is unknown.
         """
-        if self.criterion == "gini":
-            return _gini
-        elif self.criterion in ("entropy", "log_loss"):
-            return _entropy
-        elif self.criterion == "misclassification":
-            return _misclassification
-        raise ValueError(f"Unknown criterion {self.criterion!r}: use 'gini', 'entropy', 'log_loss' or "
-                         "'misclassification'")
+        if self.criterion not in CLASSIFICATION_IMPURITIES:
+            raise ValueError(f"Unknown criterion {self.criterion!r}: use 'gini', 'entropy', 'log_loss' or "
+                             "'misclassification'")
+        return CLASSIFICATION_IMPURITIES[self.criterion]
 
     def _class_weights(self, classes, counts) -> np.ndarray:
         """
@@ -157,70 +149,3 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
         weight : numpy.ndarray of shape (...)
         """
         return np.maximum(statistics, 0).sum(axis=0)
-
-
-def _probabilities(weights: np.ndarray) -> np.ndarray:
-    """
-    Probabilities of the classes, all 0 without instances.
-
-    Parameters
-    ----------
-    weights : numpy.ndarray of shape (n_classes, ...)
-        Weight of each class.
-
-    Returns
-    -------
-    probabilities : numpy.ndarray of shape (n_classes, ...)
-    """
-    totals = weights.sum(axis=0)
-    return weights / np.where(totals > 0, totals, 1)
-
-
-def _gini(weights: np.ndarray) -> np.ndarray:
-    """
-    Gini impurity from the weights of the classes, 0 without instances.
-
-    Parameters
-    ----------
-    weights : numpy.ndarray of shape (n_classes, ...)
-        Weight of each class.
-
-    Returns
-    -------
-    impurity : numpy.ndarray of shape (...)
-    """
-    return np.where(weights.sum(axis=0) > 0, 1 - np.sum(_probabilities(weights) ** 2, axis=0), 0.0)
-
-
-def _entropy(weights: np.ndarray) -> np.ndarray:
-    """
-    Entropy from the weights of the classes, 0 without instances.
-
-    Parameters
-    ----------
-    weights : numpy.ndarray of shape (n_classes, ...)
-        Weight of each class.
-
-    Returns
-    -------
-    impurity : numpy.ndarray of shape (...)
-    """
-    probabilities = _probabilities(weights)
-    log_probabilities = np.log2(probabilities, out=np.zeros_like(probabilities), where=probabilities > 0)
-    return -np.sum(probabilities * log_probabilities, axis=0)
-
-
-def _misclassification(weights: np.ndarray) -> np.ndarray:
-    """
-    Fraction of the weight outside the majority class, 0 without instances.
-
-    Parameters
-    ----------
-    weights : numpy.ndarray of shape (n_classes, ...)
-        Weight of each class.
-
-    Returns
-    -------
-    impurity : numpy.ndarray of shape (...)
-    """
-    return np.where(weights.sum(axis=0) > 0, 1 - _probabilities(weights).max(axis=0), 0.0)

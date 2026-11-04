@@ -6,7 +6,7 @@ import numpy as np
 
 from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
 from RuleTree.exceptions import NoSplitFoundWarning
-from RuleTree.utils.data_utils import _get_info_gain, get_info_gain
+from RuleTree.utils.impurity import information_gain, tree_gain
 
 
 class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
@@ -153,7 +153,7 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
             if tree.tree_.node_count > 1:  # otherwise only the categorical features can split
                 self.feature_ = numerical[tree.tree_.feature[0]]
                 self.threshold_ = tree.tree_.threshold[0]
-                self.gain_ = get_info_gain(tree)
+                self.gain_ = tree_gain(tree)
                 self.impurity_ = self._impurities(y, X[:, self.feature_] <= self.threshold_, sample_weight)
 
         self._fit_categorical(X, y, categorical)
@@ -190,7 +190,7 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
                     continue
 
                 impurity = self._impurities(y, X_split)
-                info_gain = _get_info_gain(*impurity, len_x, len_left, len_x - len_left)
+                info_gain = information_gain(*impurity, len_left, len_x - len_left)
 
                 if info_gain > self.gain_:
                     self.gain_ = info_gain

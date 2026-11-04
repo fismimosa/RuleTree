@@ -127,7 +127,7 @@ def test_joint_component_split_needs_stumps_with_several_targets(blobs):
     X, _ = blobs
     data = np.column_stack([X, X[:, 0] > 0]).astype(float)
     model = RuleTreeCluster(max_depth=2, random_state=0, component_split="joint",
-                            base_stumps=FairTreeStumpRegressor(penalty="balance", sensible_attribute=2, n_jobs=1))
+                            base_stumps=FairTreeStumpRegressor(penalty="balance", sensible_attribute=2))
 
     with pytest.raises(ValueError, match="supports a single target"):
         model.fit(data)

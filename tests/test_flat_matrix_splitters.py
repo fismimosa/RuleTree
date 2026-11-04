@@ -11,7 +11,8 @@ from RuleTree.stumps.Stump import Stump, _params_from_dict, _params_to_dict
 from RuleTree.stumps.splitters import (FlatMatrixClassificationSplitter, FlatMatrixRegressionSplitter, candidate_mask,
                                        information_gain)
 from RuleTree.stumps.transformers import MatrixTransformer
-from RuleTree.utils.data_utils import get_info_gain, json_numpy_encoder
+from RuleTree.utils.data_utils import json_numpy_encoder
+from RuleTree.utils.impurity import tree_gain
 
 FIT = dict(context=None, node_id=None, cache=None)
 
@@ -135,7 +136,7 @@ def test_classification_as_scikit_learn(iris, criterion, params, weighted):
     reference = DecisionTreeClassifier(max_depth=1, criterion=criterion, random_state=0, **params)
     reference.fit(X_iris, y, sample_weight=sample_weight)
 
-    assert flat.gain_ == pytest.approx(get_info_gain(reference))
+    assert flat.gain_ == pytest.approx(tree_gain(reference))
     assert flat.impurity_[0] == pytest.approx(reference.tree_.impurity[0])
 
 
@@ -312,7 +313,7 @@ def test_regression_as_scikit_learn(diabetes, criterion, params, weighted):
     reference = DecisionTreeRegressor(max_depth=1, criterion=criterion, random_state=0, **params)
     reference.fit(X_diabetes, y, sample_weight=sample_weight)
 
-    assert flat.gain_ == pytest.approx(get_info_gain(reference))
+    assert flat.gain_ == pytest.approx(tree_gain(reference))
     assert flat.impurity_[0] == pytest.approx(reference.tree_.impurity[0])
 
 

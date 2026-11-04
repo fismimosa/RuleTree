@@ -1,11 +1,12 @@
 """RegressionSplitter: the best split for regression."""
 
 import numpy as np
-from sklearn.metrics import mean_absolute_error, mean_poisson_deviance
+from sklearn.metrics import mean_absolute_error
 from sklearn.tree import DecisionTreeRegressor
 
 from RuleTree.stumps.splitters.DecisionTreeSplitter import DecisionTreeSplitter
 from RuleTree.utils.define import MODEL_TYPE_REG
+from RuleTree.utils.impurity import regression_impurity, regression_statistics
 
 
 class RegressionSplitter(DecisionTreeSplitter):
@@ -81,108 +82,19 @@ class RegressionSplitter(DecisionTreeSplitter):
         super().__init__(criterion, min_samples_leaf, min_weight_fraction_leaf, max_features, random_state,
                          min_impurity_decrease)
 
-    @classmethod
-    def _get_impurity_fun(cls, imp):
-        """
-        Impurity function of a criterion.
-
-        Parameters
-        ----------
-        imp : str or callable
-            Name of the criterion, or the impurity function itself.
-
-        Returns
-        -------
-        impurity_fun : callable
-            Function (y_true, y_pred) -> impurity.
-
-        Raises
-        ------
-        NotImplementedError
-            For 'friedman_mse'.
-        """
-        if imp == "squared_error":
-            return _mean_squared_error
-        elif imp == "friedman_mse":
-            raise NotImplementedError("not implemented")  # TODO: implement in DecisionTreeRegressor?
-        elif imp == "absolute_error":
-            return mean_absolute_error
-        elif imp == "poisson":
-            return mean_poisson_deviance
-        else:
-            return imp
-
-    @classmethod
-    def _impurity_fun(cls, impurity_fun, **x):
-        """
-        Impurity of y_true predicted as y_pred, 0 if there are no instances.
-
-        Parameters
-        ----------
-        impurity_fun : str or callable
-            Criterion.
-        **x : dict
-            ``y_true`` and ``y_pred``.
-
-        Returns
-        -------
-        impurity : float
-        """
-        f = cls._get_impurity_fun(impurity_fun)
-        return f(**x) if len(x["y_true"]) > 0 else 0  # TODO: check
-
-    @classmethod
-    def _split_impurity(cls, criterion, y, left):
-        """
-        Impurity of the node and of the two children, each predicted with its mean. With several targets,
-        each target is predicted with its mean and the impurity is the average over the targets.
-
-        Parameters
-        ----------
-        criterion : str or callable
-            Criterion.
-        y : numpy.ndarray of shape (n_samples,) or (n_samples, n_targets)
-            Target of the instances in the node.
-        left : numpy.ndarray of bool
-            Instances that go to the left child.
-
-        Returns
-        -------
-        impurity : list of float
-            Impurity of the node, of the left child and of the right child (0 for an empty child).
-        """
-        def impurity(y_true):
-            y_pred = np.broadcast_to(np.mean(y_true, axis=0), y_true.shape) if len(y_true) > 0 else y_true
-            return cls._impurity_fun(criterion, y_true=y_true, y_pred=y_pred)
-
-        return [impurity(y), impurity(y[left]), impurity(y[~left])]
-
     def _impurities(self, y, left, sample_weight=None):
+        """Impurity of the node and of the two children (see :meth:`_impurity`)."""
+        return [self._impurity(y), self._impurity(y[left]), self._impurity(y[~left])]
+
+    def _impurity(self, y) -> float:
         """
-        Impurity of the node and of the two children, each predicted with its mean (see _split_impurity).
-
-        Parameters
-        ----------
-        y : numpy.ndarray of shape (n_samples,) or (n_samples, n_targets)
-            Target of the instances in the node.
-        left : numpy.ndarray of bool
-            Instances that go to the left child.
-        sample_weight : numpy.ndarray of shape (n_samples,), default=None
-            Not used.
-
-        Returns
-        -------
-        impurity : list of float
-            Impurity of the node, of the left child and of the right child.
+        Impurity of a node, 0 if empty: with several targets, the average over the targets. With
+        'absolute_error' or a callable, ``f(y_true, y_pred)`` with each target predicted with its mean.
         """
-        return self._split_impurity(self.criterion, y, left)
-
-
-def _mean_squared_error(y_true, y_pred) -> float:
-    """
-    sklearn.metrics.mean_squared_error (averaged over the targets), with the same operations and so
-    the same result, without its checks of the input, which are most of its time in the loops over
-    the candidate splits.
-    """
-    errors = (np.asarray(y_true) - np.asarray(y_pred)) ** 2
-    return float(np.mean(errors) if errors.ndim == 1 else np.mean(np.mean(errors, axis=0)))
+        if len(y) == 0:
+            return 0
+        if self.criterion == "absolute_error" or callable(self.criterion):
+            impurity = mean_absolute_error if self.criterion == "absolute_error" else self.criterion
+            return impurity(y_true=y, y_pred=np.broadcast_to(np.mean(y, axis=0), y.shape))
+        return float(np.mean([regression_impurity(regression_statistics(target, self.criterion).sum(axis=0),
+                                                  self.criterion) for target in y.reshape(len(y), -1).T]))

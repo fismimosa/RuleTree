@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 
 from RuleTree.stumps.splitters.DecisionTreeSplitter import DecisionTreeSplitter
-from RuleTree.utils.data_utils import entropy, gini
+from RuleTree.utils.impurity import CLASSIFICATION_IMPURITIES, class_weights
 from RuleTree.utils.define import MODEL_TYPE_CLF
 
 
@@ -96,62 +96,26 @@ class ClassificationSplitter(DecisionTreeSplitter):
         """
         return {"class_weight": self.class_weight}
 
-    def _impurity_fun(self):
-        """
-        Impurity function of the criterion.
-
-        Returns
-        -------
-        impurity_fun : callable
-            Function (y, sample_weight, class_weight) -> impurity.
-        """
-        if self.criterion == "gini":
-            return gini
-        elif self.criterion == "entropy":
-            return entropy
-        return self.criterion
-
     def _class_weight(self, y):
-        """
-        Weight of each class for class_weight='balanced'.
-
-        Parameters
-        ----------
-        y : numpy.ndarray
-            Target of the instances in the node.
-
-        Returns
-        -------
-        class_weight : dict or None
-            Class -> weight, or None if class_weight is not 'balanced'.
-        """
+        """Class -> weight with class_weight='balanced', computed on the node; None otherwise."""
         if self.class_weight != "balanced":
             return None
-
         classes = np.unique(y)
         return {class_label: len(y) / (len(classes) * np.sum(y == class_label)) for class_label in classes}
 
     def _impurities(self, y, left, sample_weight=None):
         """
-        Impurity of the node (with the sample weights) and of the two children, weighing the classes
-        as class_weight.
-
-        Parameters
-        ----------
-        y : numpy.ndarray of shape (n_samples,)
-            Target of the instances in the node.
-        left : numpy.ndarray of bool
-            Instances that go to the left child.
-        sample_weight : numpy.ndarray of shape (n_samples,), default=None
-            Sample weights of the instances in the node.
-
-        Returns
-        -------
-        impurity : list of float
-            Impurity of the node, of the left child and of the right child.
+        Impurity of the node (with the sample weights) and of the two children, with the class weights of
+        the node if class_weight is 'balanced'.
         """
-        impurity_fun = self._impurity_fun()
         class_weight = self._class_weight(y)
-        return [impurity_fun(y, sample_weight, class_weight),
-                impurity_fun(y[left], None, class_weight),
-                impurity_fun(y[~left], None, class_weight)]
+        if callable(self.criterion):
+            def impurity(y_part, weights):
+                return self.criterion(y_part, weights, class_weight)
+        else:
+            classes = np.unique(y)
+
+            def impurity(y_part, weights):
+                return float(CLASSIFICATION_IMPURITIES[self.criterion](class_weights(y_part, classes, weights,
+                                                                                     class_weight)))
+        return [impurity(y, sample_weight), impurity(y[left], None), impurity(y[~left], None)]

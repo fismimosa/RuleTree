@@ -7,8 +7,9 @@ import sklearn
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.splitters import ClassificationSplitter, FairSplitter, RegressionSplitter, XGBoostSplitter
-from RuleTree.utils.data_utils import entropy, json_numpy_encoder
+from RuleTree.utils.data_utils import json_numpy_encoder
 from RuleTree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
+from RuleTree.utils.impurity import class_weights, entropy
 
 # column 0: noise, column 1: separates the classes at 5, column 2: categorical, "a" for the class 1
 X = np.array([[0.3, 1, "b"], [0.9, 2, "b"], [0.1, 3, "b"], [0.7, 4, "b"],
@@ -85,7 +86,7 @@ def test_fair_split():
     X_fair = np.column_stack([rng.normal(size=60), rng.normal(size=60), rng.integers(0, 2, size=60)])
     y = X_fair[:, 0] * 3 + rng.normal(scale=0.1, size=60)
 
-    splitter = FairSplitter(penalty="balance", sensible_attribute=2, n_jobs=1)
+    splitter = FairSplitter(penalty="balance", sensible_attribute=2)
     splitter = splitter.fit(X_fair, y, [0, 1, 2], [], context=None, node_id=None, cache=None)
 
     assert splitter.feature_ == 0
@@ -99,7 +100,7 @@ def test_fair_split_never_uses_the_sensitive_attribute(sensible_attribute):
     X_fair = np.column_stack([rng.normal(size=60), rng.normal(size=60), rng.integers(0, 2, size=60)])
     y = X_fair[:, 2] * 10 + rng.normal(scale=0.1, size=60)
 
-    splitter = FairSplitter(penalty="balance", sensible_attribute=sensible_attribute, penalization_weight=0, n_jobs=1)
+    splitter = FairSplitter(penalty="balance", sensible_attribute=sensible_attribute, penalization_weight=0)
     splitter.fit(X_fair, y, [0, 1, 2], [], context=None, node_id=None, cache=None)
 
     assert splitter.feature_ != 2
@@ -139,28 +140,31 @@ def test_parameters():
 
 
 def test_entropy_with_classes_without_instances():
-    """With class_weight, the impurity also counts the classes absent from the node."""
+    """The impurity also counts the classes absent from the node, e.g. the ones of class_weight."""
     y = np.array([0, 0, 1])
 
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        impurity = entropy(y, None, {0: 1.0, 1: 1.0, 2: 1.0})
+        impurity = entropy(class_weights(y, [0, 1, 2]))
 
-    assert impurity == pytest.approx(entropy(y))
+    assert impurity == pytest.approx(entropy(class_weights(y, [0, 1])))
 
 
-def test_mean_squared_error_as_scikit_learn():
-    """The impurity of the regression splits gives the same numbers as sklearn.metrics.mean_squared_error."""
-    from sklearn.metrics import mean_squared_error
-
-    from RuleTree.stumps.splitters.RegressionSplitter import _mean_squared_error
+@pytest.mark.parametrize("criterion, n_targets", [("squared_error", 1), ("squared_error", 3), ("poisson", 1)])
+def test_regression_impurities_as_scikit_learn(criterion, n_targets):
+    """The impurities of RegressionSplitter are the ones of the scikit-learn tree, also with several targets."""
+    from sklearn.tree import DecisionTreeRegressor
 
     rng = np.random.default_rng(0)
-    for shape in [(1,), (500,), (300, 3)]:
-        for scale in (1e-3, 1, 1e4):
-            y = rng.normal(scale=scale, size=shape)
-            prediction = np.broadcast_to(y.mean(axis=0), y.shape)
-            assert _mean_squared_error(y, prediction) == mean_squared_error(y, prediction)
+    X_random = rng.normal(size=(200, 2))
+    y = rng.poisson(3, size=(200, n_targets)).astype(float) + X_random[:, :1]
+    y = np.abs(y[:, 0]) if n_targets == 1 else y
+
+    splitter = RegressionSplitter(criterion=criterion, random_state=0)
+    splitter.fit(X_random, y, [0, 1], [], context=None, node_id=None, cache=None)
+    tree = DecisionTreeRegressor(max_depth=1, criterion=criterion, random_state=0).fit(X_random, y)
+
+    assert splitter.impurity_ == pytest.approx(list(tree.tree_.impurity))
 
 
 def exhaustive_xgboost_split(splitter, X, y, numerical, categorical):

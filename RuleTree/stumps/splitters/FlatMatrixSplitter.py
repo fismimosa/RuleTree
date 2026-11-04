@@ -8,6 +8,7 @@ import numpy as np
 from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.utils.data_utils import check_one_target
+from RuleTree.utils.impurity import information_gain
 
 
 class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
@@ -332,15 +333,11 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         impurity_left, impurity_right = self._impurity(statistics_left), self._impurity(statistics_right)
         weight_left, weight_right = self._weight(statistics_left), self._weight(statistics_right)
 
-        if self.gain_function is None:
-            gains = information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right)
-        else:
-            gains = np.asarray(self.gain_function(impurity, impurity_left, impurity_right, weight_left, weight_right,
-                                                  X, y, features, thresholds, is_categorical, sample_weight),
-                               dtype=float)
-            if gains.shape != features.shape:
-                raise ValueError(f"gain_function returned the shape {gains.shape} instead of {features.shape}")
-            gains = np.where(np.isnan(gains), -np.inf, gains)
+        gains = np.asarray(self._gains(impurity, impurity_left, impurity_right, weight_left, weight_right, X, y,
+                                       features, thresholds, is_categorical, sample_weight), dtype=float)
+        if gains.shape != features.shape:
+            raise ValueError(f"gain_function returned the shape {gains.shape} instead of {features.shape}")
+        gains = np.where(np.isnan(gains), -np.inf, gains)
 
         best = int(np.argmax(gains))
         if gains[best] == -np.inf:
@@ -353,6 +350,14 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         self.impurity_ = [float(impurity), float(impurity_left[best]), float(impurity_right[best])]
 
         return self
+
+    def _gains(self, impurity, impurity_left, impurity_right, weight_left, weight_right, X, y, features, thresholds,
+               is_categorical, sample_weight=None):
+        """Gain of the candidates (see gain_function): gain_function, or the information gain if it is None."""
+        if self.gain_function is None:
+            return information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right)
+        return self.gain_function(impurity, impurity_left, impurity_right, weight_left, weight_right, X, y, features,
+                                  thresholds, is_categorical, sample_weight)
 
     def update_statistics(self, X, y, sample_weight=None, *, context, node_id, cache):
         """
@@ -379,26 +384,6 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         statistics_node, statistics_left = statistics.sum(axis=0), statistics[left].sum(axis=0)
         self.impurity_ = [float(self._impurity(statistics_node)), float(self._impurity(statistics_left)),
                           float(self._impurity(statistics_node - statistics_left))]
-
-
-def information_gain(impurity, impurity_left, impurity_right, weight_left, weight_right) -> np.ndarray:
-    """
-    Decrease of impurity of the candidate splits.
-
-    Parameters
-    ----------
-    impurity : float
-        Impurity of the node.
-    impurity_left, impurity_right : numpy.ndarray of shape (n_candidates,)
-        Impurity of the children of each candidate.
-    weight_left, weight_right : numpy.ndarray of shape (n_candidates,)
-        Total weight of the children of each candidate.
-
-    Returns
-    -------
-    gains : numpy.ndarray of shape (n_candidates,)
-    """
-    return impurity - (weight_left * impurity_left + weight_right * impurity_right) / (weight_left + weight_right)
 
 
 def candidate_mask(X, features, thresholds, is_categorical) -> np.ndarray:

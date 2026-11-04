@@ -168,7 +168,7 @@ CASES = {
     "reg_xgboost_stump": (lambda: RuleTreeRegressor(max_depth=3, base_stumps=XGBoostStumpRegressor(lam=1)),
                           "diabetes", "diabetes_y", True),
     "reg_fair": (lambda: RuleTreeRegressor(max_depth=2, base_stumps=FairTreeStumpRegressor(
-        penalty="balance", sensible_attribute=-1, n_jobs=1)), "fair", "diabetes_y", True),
+        penalty="balance", sensible_attribute=-1)), "fair", "diabetes_y", True),
     "reg_xgboost_tree": (lambda: RuleTreeXGBoostRegressor(max_depth=3, base_stumps=XGBoostStumpRegressor(lam=1)),
                          "diabetes", "diabetes_y", True),
     # clustering

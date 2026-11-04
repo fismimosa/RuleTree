@@ -403,7 +403,7 @@ sensitive attribute (column 2) is strongly related to the clusters:
    data = np.column_stack([points, sensitive]).astype(float)
 
    for name, stump in [("standard", None),
-                       ("fair", FairTreeStumpRegressor(penalty="balance", sensible_attribute=2, n_jobs=1))]:
+                       ("fair", FairTreeStumpRegressor(penalty="balance", sensible_attribute=2))]:
        clustering = RuleTreeCluster(max_depth=2, random_state=0, base_stumps=stump)
        labels = clustering.fit_predict(data)
        print(f"{name}: {len(set(labels.tolist()))} clusters, balance {balance_metric(labels, sensitive):.2f}")

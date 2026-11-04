@@ -50,7 +50,7 @@ STUMPS = [
     (lambda: PivotTreeStumpRegressor(), DATA_TYPE_TABULAR, "diabetes", True),
     (lambda: ShapeletTreeStumpRegressor(**shapelet_kwargs(), mi_n_neighbors=5), DATA_TYPE_TS, "time_series", True),
     (lambda: XGBoostStumpRegressor(lam=1), DATA_TYPE_TABULAR, "diabetes", True),
-    (lambda: FairTreeStumpRegressor(penalty="balance", sensible_attribute=1, n_jobs=1), DATA_TYPE_TABULAR,
+    (lambda: FairTreeStumpRegressor(penalty="balance", sensible_attribute=1), DATA_TYPE_TABULAR,
      "diabetes", True),
     (lambda: ObliqueDecisionTreeStumpClassifier(), DATA_TYPE_TABULAR, "iris", False),
     (lambda: ObliqueDecisionTreeStumpClassifier("bivariate"), DATA_TYPE_TABULAR, "iris", False),
@@ -177,7 +177,7 @@ def test_composed_stump(diabetes):
     X, y = diabetes
     X = np.column_stack([X, X[:, 1] > 0])
     stump = Stump(PivotTransformer(MODEL_TYPE_REG, tree_params={"random_state": 0}),
-                  FairSplitter(penalty="balance", sensible_attribute=0, n_jobs=1))
+                  FairSplitter(penalty="balance", sensible_attribute=0))
     assert stump.task == MODEL_TYPE_REG
     assert stump.supported_data_types == (DATA_TYPE_TABULAR, DATA_TYPE_TS, DATA_TYPE_IMAGE)  # the ones of the pivots
 
@@ -211,7 +211,7 @@ def test_stumps_have_explicit_parameters():
 @pytest.mark.parametrize("base_stumps, dataset", [
     (DecisionTreeStumpClassifier(), "categorical"),
     ([DecisionTreeStumpRegressor(random_state=0),
-      FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1, n_jobs=1)], "fair"),
+      FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1)], "fair"),
 ], ids=["only-categorical", "fair"])
 def test_best_selection_uses_the_gain_of_any_stump(base_stumps, dataset, iris, diabetes):
     if dataset == "categorical":

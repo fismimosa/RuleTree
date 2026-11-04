@@ -181,8 +181,7 @@ def test_stumps_with_several_targets(stump, targets):
 
 @pytest.mark.parametrize("make_model, data", [
     (lambda: RuleTreeRegressor(base_stumps=XGBoostStumpRegressor(lam=1)), "tabular"),
-    (lambda: RuleTreeRegressor(base_stumps=FairTreeStumpRegressor(penalty="balance", sensible_attribute=1,
-                                                                  n_jobs=1)), "tabular"),
+    (lambda: RuleTreeRegressor(base_stumps=FairTreeStumpRegressor(penalty="balance", sensible_attribute=1)), "tabular"),
     (lambda: RuleTreeRegressor(base_stumps=ShapeletTreeStumpRegressor(n_shapelets=3, sliding_window=5)), "ts"),
     (lambda: RuleTreeRegressor(base_stumps=ProximityTreeStumpRegressor(n_shapelets=3, sliding_window=5)), "ts"),
 ], ids=["XGBoost", "Fair", "Shapelet-mi_reg", "Proximity-mi_reg"])

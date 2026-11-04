@@ -7,7 +7,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.transformers.ObliqueTransformer import ObliqueTransformer
-from RuleTree.utils.data_utils import get_info_gain
+from RuleTree.utils.impurity import tree_gain
 from RuleTree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 
 
@@ -77,7 +77,7 @@ class BivariateTransformer(ObliqueTransformer):
         tree_params = (self.tree_params or {}) | {"max_depth": 1}
         tree = (DecisionTreeRegressor if self.ml_task == MODEL_TYPE_REG else DecisionTreeClassifier)(**tree_params)
         tree.fit(X_projected, y, sample_weight=sample_weight)
-        return get_info_gain(tree)
+        return tree_gain(tree)
 
     def _fit_directions(self, X, y, sample_weight=None):
         """

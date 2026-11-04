@@ -1,10 +1,10 @@
 """FlatMatrixRegressionSplitter: the best split for regression, with matrix operations."""
 
 import numpy as np
-from scipy.special import xlogy
 
 from RuleTree.stumps.splitters.FlatMatrixSplitter import FlatMatrixSplitter
 from RuleTree.utils.define import MODEL_TYPE_REG
+from RuleTree.utils.impurity import regression_impurity, regression_statistics
 
 
 class FlatMatrixRegressionSplitter(FlatMatrixSplitter):
@@ -57,62 +57,12 @@ class FlatMatrixRegressionSplitter(FlatMatrixSplitter):
         super().__init__(criterion, min_samples_leaf, gain_function)
 
     def _statistics(self, y, sample_weight=None) -> np.ndarray:
-        """
-        Weight of each instance, its product with the target, and its product with the square of the target
-        (with ``y * log(y)`` for 'poisson'). Except for 'poisson', the target is centered, for smaller
-        rounding errors.
-
-        Parameters
-        ----------
-        y : numpy.ndarray of shape (n_samples,)
-            Target of the instances in the node.
-        sample_weight : numpy.ndarray of shape (n_samples,), default=None
-            Sample weights of the instances in the node.
-
-        Returns
-        -------
-        statistics : numpy.ndarray of shape (n_samples, 3)
-
-        Raises
-        ------
-        ValueError
-            If the criterion is 'poisson' and the target has negative values.
-        """
-        weights = np.ones(len(y)) if sample_weight is None else np.asarray(sample_weight, dtype=float)
-        y = np.asarray(y, dtype=float)
-
-        if self.criterion == "poisson":
-            if np.any(y < 0):
-                raise ValueError("The criterion 'poisson' requires a target without negative values")
-            return np.column_stack([weights, weights * y, weights * xlogy(y, y)])
-
-        y = y - weights @ y / max(weights.sum(), np.finfo(float).tiny)
-
-        return np.column_stack([weights, weights * y, weights * y ** 2])
+        """Statistics of each instance (see RuleTree.utils.impurity.regression_statistics)."""
+        return regression_statistics(y, self.criterion, sample_weight)
 
     def _impurity(self, statistics) -> np.ndarray:
-        """
-        Impurity from the sums of the statistics.
-
-        Parameters
-        ----------
-        statistics : numpy.ndarray of shape (3, ...)
-            Summed statistics (see :meth:`_statistics`).
-
-        Returns
-        -------
-        impurity : numpy.ndarray of shape (...)
-
-        Raises
-        ------
-        ValueError
-            If the criterion is unknown.
-        """
-        if self.criterion == "squared_error":
-            return _squared_error(self._weight(statistics), statistics[1], statistics[2])
-        elif self.criterion == "poisson":
-            return _poisson(self._weight(statistics), statistics[1], statistics[2])
-        raise ValueError(f"Unknown criterion {self.criterion!r}: use 'squared_error' or 'poisson'")
+        """Impurity from the sums of the statistics (see RuleTree.utils.impurity.regression_impurity)."""
+        return regression_impurity(statistics, self.criterion)
 
     def _valid_children(self, statistics_left, statistics_right) -> np.ndarray:
         """
@@ -147,46 +97,3 @@ class FlatMatrixRegressionSplitter(FlatMatrixSplitter):
         weight : numpy.ndarray of shape (...)
         """
         return np.maximum(statistics[0], 0)  # no negative rounding errors
-
-
-def _squared_error(weight, y_sum, y_squared) -> np.ndarray:
-    """
-    Variance of the target from its sums, 0 without instances.
-
-    Parameters
-    ----------
-    weight : float or numpy.ndarray
-        Total weight of the instances.
-    y_sum : float or numpy.ndarray
-        Weighted sum of the target.
-    y_squared : float or numpy.ndarray
-        Weighted sum of the square of the target.
-
-    Returns
-    -------
-    impurity : float or numpy.ndarray
-    """
-    safe_weight = np.where(weight > 0, weight, 1)
-    return np.maximum(y_squared / safe_weight - (y_sum / safe_weight) ** 2, 0)
-
-
-def _poisson(weight, y_sum, y_log_y) -> np.ndarray:
-    """
-    Half the Poisson deviance of the target predicted with its mean, 0 without instances.
-
-    Parameters
-    ----------
-    weight : float or numpy.ndarray
-        Total weight of the instances.
-    y_sum : float or numpy.ndarray
-        Weighted sum of the target.
-    y_log_y : float or numpy.ndarray
-        Weighted sum of ``y * log(y)``.
-
-    Returns
-    -------
-    impurity : float or numpy.ndarray
-    """
-    safe_weight = np.where(weight > 0, weight, 1)
-    y_sum = np.maximum(y_sum, 0)
-    return np.maximum((y_log_y - xlogy(y_sum, y_sum / safe_weight)) / safe_weight, 0)

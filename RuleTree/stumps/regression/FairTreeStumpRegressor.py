@@ -1,8 +1,6 @@
 """FairTreeStumpRegressor: the split for regression under a fairness constraint."""
 
-import os
 from typing import Union
-
 
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.stumps.splitters.FairSplitter import FairSplitter
@@ -49,10 +47,8 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         penalizing them.
     use_t : bool, default=True
         Whether t-closeness is part of the privacy constraints.
-    n_jobs : int, default=number of CPUs
-        Number of processes used to evaluate the features.
-    criterion : {'squared_error', 'absolute_error', 'poisson'} or callable, default='squared_error'
-        Impurity measure (see RegressionSplitter).
+    criterion : {'squared_error', 'poisson'}, default='squared_error'
+        Impurity measure (see FlatMatrixRegressionSplitter).
 
     Attributes
     ----------
@@ -78,7 +74,7 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
     >>> from RuleTree.stumps.regression import FairTreeStumpRegressor
     >>> X, y = load_diabetes(return_X_y=True)
     >>> X = np.column_stack([X, X[:, 1] > 0])  # last column: the sensitive attribute
-    >>> stump = FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1, n_jobs=1)
+    >>> stump = FairTreeStumpRegressor(penalty="balance", sensible_attribute=-1)
     >>> stump = stump.fit(X, y, context=None, node_id=None, cache=None)
     >>> stump.get_rule()["textual_rule"]
     'X_4 <= -0.03'
@@ -97,7 +93,6 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
                  t_closeness: float = .2,
                  strict: bool = True,
                  use_t: bool = True,
-                 n_jobs: int = os.cpu_count(),
                  criterion='squared_error'):
         """Initialize the FairTreeStumpRegressor; see the class documentation for the parameters."""
         self.penalty = penalty
@@ -109,7 +104,6 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         self.t_closeness = t_closeness
         self.strict = strict
         self.use_t = use_t
-        self.n_jobs = n_jobs
         self.criterion = criterion
 
     def _make_splitter(self):
@@ -123,4 +117,4 @@ class FairTreeStumpRegressor(DecisionTreeStumpRegressor):
         return FairSplitter(penalty=self.penalty, sensible_attribute=self.sensible_attribute,
                             penalization_weight=self.penalization_weight, ideal_distribution=self.ideal_distribution,
                             k_anonymity=self.k_anonymity, l_diversity=self.l_diversity, t_closeness=self.t_closeness,
-                            strict=self.strict, use_t=self.use_t, n_jobs=self.n_jobs, criterion=self.criterion)
+                            strict=self.strict, use_t=self.use_t, criterion=self.criterion)
