@@ -93,7 +93,7 @@ def test_trees_of_the_stumps_rename_the_node(iris):
     X, y = iris
     model = RuleTreeClassifier(max_depth=3, random_state=0).fit(X, y)
 
-    for tree in model.stumps_to_trees(model.get_balanced_stumps(p=0.1)).values():
+    for tree in model.stumps_to_trees(model.get_balanced_stumps(X, p=0.1)).values():
         assert tree.root.stump.node_id_ == "R"
     assert all(node.stump.node_id_ == node_id for node_id, node in model.get_predicates().items())
 

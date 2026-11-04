@@ -195,35 +195,38 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         total = np.sum(node.prediction_probability)
         return node.prediction_probability / (total if not np.isclose(total, 0.0, rtol=1e-09, atol=1e-09) else 1.0)
 
-    def get_balanced_stumps(self, current_node=None, stumps=None, p=0.2):
+    def get_balanced_stumps(self, X=None, p=0.2, X_ts=None, X_img=None, X_txt=None):
         """
-        Internal nodes whose split is balanced: the smaller side has a fraction of the training set
-        (``balance_score``) above ``p``. The visit stops at the first unbalanced node of each path.
+        Internal nodes whose split is balanced on the given data (e.g. the training set): the smaller side
+        has a fraction of all the instances (the balance score) above ``p``. The visit stops at the first
+        unbalanced node of each path.
 
         Parameters
         ----------
-        current_node : RuleTreeNode, default=None
-            Root of the subtree. If None, the root of the tree.
-        stumps : dict, default=None
-            Dictionary being filled.
+        X, X_ts, X_img, X_txt : numpy.ndarray, default=None
+            Data, as given to fit.
         p : float, default=0.2
             Minimum balance score.
 
         Returns
         -------
         stumps : dict
-            Node id -> (node, balance score).
+            Node id -> (node, balance score), in depth-first order.
         """
-        if stumps is None:
-            stumps = {}
-        if current_node is None:
-            current_node = self.root
-            
-        if not current_node.is_leaf() and current_node.balance_score > p:
-                stumps[current_node.node_id] = (current_node, current_node.balance_score)
-                self.get_balanced_stumps(current_node=current_node.node_l, stumps=stumps, p=p)
-                self.get_balanced_stumps(current_node=current_node.node_r, stumps=stumps, p=p)
-                
+        data = self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+        stumps = {}
+
+        def visit(node):
+            if node.is_leaf():
+                return
+            labels = node.stump.apply(data, context=self, node_id=node.node_id, cache=getattr(self, "cache_", None))
+            score = min(np.mean(labels == 1), np.mean(labels == 2))
+            if score > p:
+                stumps[node.node_id] = (node, score)
+                visit(node.node_l)
+                visit(node.node_r)
+
+        visit(self.root)
         return stumps
     
     def stumps_to_trees(self, balanced_nodes):

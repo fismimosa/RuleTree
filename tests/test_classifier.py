@@ -192,9 +192,9 @@ def test_stumps_to_trees(iris):
     X, y = iris
     model = RuleTreeClassifier(max_depth=3, random_state=0).fit(X, y)
 
-    trees = model.stumps_to_trees(model.get_balanced_stumps(p=0.1))
+    trees = model.stumps_to_trees(model.get_balanced_stumps(X, p=0.1))
 
-    assert len(trees) == len(model.get_balanced_stumps(p=0.1)) > 1
+    assert len(trees) == len(model.get_balanced_stumps(X, p=0.1)) > 1
     for (feature, threshold), tree in trees.items():
         assert list(tree.get_leaf_nodes()) == ["Rl", "Rr"]
         assert tree.root.parent is None

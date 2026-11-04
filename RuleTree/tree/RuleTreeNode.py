@@ -10,7 +10,7 @@ from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.data_utils import log_odds
 
 # statistics set during fit (see RuleTree._grow), saved by node_to_dict when present
-SAVED_STATISTICS = ("samples", "balance_score", "balance_score_global")
+SAVED_STATISTICS = ("samples",)
 
 
 class RuleTreeNode:
@@ -41,11 +41,6 @@ class RuleTreeNode:
         Left and right children (None for a leaf).
     **kwargs : dict
         Other attributes, e.g. ``samples`` (number of instances).
-
-    Attributes
-    ----------
-    balance_score : float
-        For internal nodes, fraction of the training set in the smaller side of the split.
 
     Examples
     --------
@@ -256,9 +251,8 @@ class RuleTreeNode:
         Returns
         -------
         node_dict : dict
-            JSON-friendly dictionary with the statistics of the node (also ``samples`` and, for an
-            internal node, ``balance_score``), the ids of its children and, for an internal node, the
-            dictionary of its stump.
+            JSON-friendly dictionary with the statistics of the node (also ``samples``), the ids of its
+            children and, for an internal node, the dictionary of its stump.
         """
         node_as_dict ={
             "node_id": self.node_id,

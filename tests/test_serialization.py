@@ -54,7 +54,7 @@ def test_copy_and_pickle(model_class, kwargs, dataset, supervised, request):
 
 @pytest.mark.parametrize("model_class, kwargs, dataset, supervised", MODELS, ids=[m[0].__name__ for m in MODELS])
 def test_round_trip_keeps_the_statistics_of_the_nodes(model_class, kwargs, dataset, supervised, request):
-    """Number of instances and balance of the splits, also used by get_balanced_stumps."""
+    """Number of instances of the nodes, and the balanced splits (computed on the data)."""
     X, y = request.getfixturevalue(dataset)
     model = model_class(**kwargs).fit(X, y if supervised else None)
 
@@ -62,10 +62,8 @@ def test_round_trip_keeps_the_statistics_of_the_nodes(model_class, kwargs, datas
 
     for node_id, node in model.get_leaf_nodes().items() | model.get_predicates().items():
         assert loaded.get_node_by_id(node_id).samples == node.samples
-    for node_id, node in model.get_predicates().items():
-        assert loaded.get_node_by_id(node_id).balance_score == pytest.approx(node.balance_score)
     if isinstance(model, RuleTreeClassifier):
-        assert loaded.get_balanced_stumps().keys() == model.get_balanced_stumps().keys()
+        assert loaded.get_balanced_stumps(X).keys() == model.get_balanced_stumps(X).keys()
 
 
 def test_unfitted_tree_cannot_be_saved():

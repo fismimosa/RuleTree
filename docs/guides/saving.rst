@@ -160,9 +160,7 @@ Nodes
   predicts, the class probabilities (the standard deviation of the target, for regression) and
   their log-odds;
 - ``prediction_classes_``: the classes of ``prediction_probability``;
-- ``samples``: the number of training instances that reach it;
-- for the internal nodes, ``balance_score`` and ``balance_score_global``: the fraction of the
-  training set in the smaller side of the split (see ``get_balanced_stumps``).
+- ``samples``: the number of training instances that reach it.
 
 .. code-block:: python
 

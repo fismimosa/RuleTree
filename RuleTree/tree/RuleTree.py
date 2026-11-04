@@ -480,8 +480,6 @@ class RuleTree(RuleTreeBase, ABC):
                 nbr_curr_nodes += 1
                 continue
 
-            self._set_balance_score(current_node, clf, data)
-
             idx_l, idx_r = idx[labels == 1], idx[labels == 2]
 
             current_node.set_stump(clf)
@@ -530,25 +528,6 @@ class RuleTree(RuleTreeBase, ABC):
         y_split : numpy.ndarray or None
         """
         return y
-
-    def _set_balance_score(self, node: RuleTreeNode, stump: RuleTreeBaseStump, data: dict):
-        """
-        Set ``balance_score`` of a node: the fraction of the whole data set in the smaller side of its
-        split (see RuleTreeClassifier.get_balanced_stumps).
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node being split.
-        stump : RuleTreeBaseStump
-            The stump of the node.
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        """
-        labels = stump.apply(data, context=self, node_id=node.node_id, cache=self._stump_cache())
-        _, counts = np.unique(labels, return_counts=True)
-        node.balance_score_global = counts.min() / counts.sum()
-        node.balance_score = node.balance_score_global
 
     def make_split(self, data: dict, y: np.ndarray|None, idx: np.ndarray, sample_weight=None,
                    node_id: Optional[str] = None) -> RuleTreeBaseStump:
