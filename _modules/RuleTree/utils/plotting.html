@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RuleTree.utils.plotting &#8212; RuleTree</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=64200178" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
+
+    <script src="../../../_static/documentation_options.js?v=836671e5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=d1c4098b"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../../_static/togglebutton.js?v=b8b12719"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/RuleTree/utils/plotting';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2026.11.04 (00d28e2)" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+<aside class="bd-header-announcement" aria-label="Announcement">
+  <div class="bd-header-announcement__content">This project is in active development. API may change.</div>
+</aside>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo_navbar.png" class="logo__image only-light" alt="RuleTree"/>
+    <img src="../../../_static/logo_navbar_dark.png" class="logo__image only-dark pst-js-only" alt="RuleTree"/>
+  
+  
+</a></div>
+    
+      <div class="navbar-item">
+<span class="navbar-version" title="Version of this documentation">2026.11.04 (00d28e2)</span></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/getting_started.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../guides/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../glossary.html">
+    Glossary
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../citing.html">
+    Citing
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/fismimosa/RuleTree" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/RuleTree/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-python fa-lg" aria-hidden="true"></i><span class="visually-hidden">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">RuleTree.utils.plotting</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for RuleTree.utils.plotting</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">Drawing of a tree, or of a subtree from its root node, with matplotlib (``RuleTree.plot_tree``), in the</span>
+<span class="sd">style of ``sklearn.tree.plot_tree``, and as a Graphviz graph (``export_graphviz``) with the same boxes.</span>
+
+<span class="sd">Each internal node shows what its stump returns from ``get_plot_rule``: the rule as text and the</span>
+<span class="sd">*media* of its split, saved in the stump and drawn as images, time series or texts: e.g. the shapelets,</span>
+<span class="sd">always drawn, and the pivots, drawn with ``show_media``. They are drawn below the rule or, for the</span>
+<span class="sd">splits that compare two of them (e.g. the proximity stumps), on the arrows of the two children. Each leaf</span>
+<span class="sd">shows its prediction. The leaves are placed from left to right in the order of the tree, and each</span>
+<span class="sd">internal node above the middle of its children, so the boxes never overlap.</span>
+<span class="sd">"""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">html</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">RuleTree.utils.optional</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_optional</span>
+
+<span class="c1"># colors of the drawing; the text uses the color of matplotlib (rcParams["text.color"]) when None</span>
+<span class="n">DEFAULT_COLORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"text"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">"split"</span><span class="p">:</span> <span class="s2">"#f4f6f8"</span><span class="p">,</span>  <span class="c1"># background and border of the internal nodes</span>
+    <span class="s2">"split_edge"</span><span class="p">:</span> <span class="s2">"#9aa5b1"</span><span class="p">,</span>
+    <span class="s2">"leaf"</span><span class="p">:</span> <span class="s2">"#ffffff"</span><span class="p">,</span>  <span class="c1"># background and border of the leaves (filled=False)</span>
+    <span class="s2">"leaf_edge"</span><span class="p">:</span> <span class="s2">"#9aa5b1"</span><span class="p">,</span>
+    <span class="s2">"edge"</span><span class="p">:</span> <span class="s2">"#6b6b6b"</span><span class="p">,</span>  <span class="c1"># arrows and their labels</span>
+    <span class="s2">"classes"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"#2f6db3"</span><span class="p">,</span> <span class="s2">"#e07b22"</span><span class="p">,</span> <span class="s2">"#3a9a5b"</span><span class="p">,</span> <span class="s2">"#9b59b6"</span><span class="p">,</span> <span class="s2">"#c0392b"</span><span class="p">,</span> <span class="s2">"#17becf"</span><span class="p">,</span> <span class="s2">"#8c564b"</span><span class="p">,</span> <span class="s2">"#e377c2"</span><span class="p">,</span>
+                <span class="s2">"#7f7f7f"</span><span class="p">,</span> <span class="s2">"#bcbd22"</span><span class="p">],</span>  <span class="c1"># leaves of each class (or cluster), cycled</span>
+    <span class="s2">"values"</span><span class="p">:</span> <span class="s2">"viridis"</span><span class="p">,</span>  <span class="c1"># colormap of the leaves of a regression tree</span>
+<span class="p">}</span>
+
+<span class="n">PLACEHOLDER</span> <span class="o">=</span> <span class="s2">"(...)"</span>  <span class="c1"># the children of the nodes at max_depth</span>
+<span class="n">MEDIA_LINES</span> <span class="o">=</span> <span class="mi">7</span>  <span class="c1"># empty lines reserved below the rule for its media</span>
+
+
+<div class="viewcode-block" id="plot_tree">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.utils.plotting.plot_tree.html#RuleTree.utils.plotting.plot_tree">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_tree</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">class_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">scaler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">max_depth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">node_ids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">filled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+              <span class="n">fontsize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">colors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wrap</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">show_media</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Draw the subtree of a node with matplotlib. See ``RuleTree.plot_tree`` for the parameters.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ax : matplotlib.axes.Axes</span>
+<span class="sd">        The axes of the drawing. Each box is a text of ``ax.texts`` whose gid is the id of its node</span>
+<span class="sd">        (``"(...)"`` for the subtrees cut by ``max_depth``); each medium is an axes of</span>
+<span class="sd">        ``ax.child_axes`` whose gid is ``media-&lt;node id&gt;-&lt;position&gt;`` (``true`` or ``false`` on the arrows).</span>
+<span class="sd">    """</span>
+    <span class="n">plt</span> <span class="o">=</span> <span class="n">import_optional</span><span class="p">(</span><span class="s2">"matplotlib.pyplot"</span><span class="p">,</span> <span class="s2">"plot_tree"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_media</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"show_media must be True or False, not </span><span class="si">{</span><span class="n">show_media</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">DEFAULT_COLORS</span> <span class="o">|</span> <span class="p">(</span><span class="n">colors</span> <span class="ow">or</span> <span class="p">{})</span>
+    <span class="n">text_color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"text"</span><span class="p">]</span> <span class="ow">or</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">"text.color"</span><span class="p">]</span>
+
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">_layout</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">max_depth</span><span class="p">)</span>
+    <span class="n">leaf_colors</span> <span class="o">=</span> <span class="n">_leaf_colors</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">colors</span><span class="p">)</span> <span class="k">if</span> <span class="n">filled</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>
+        <span class="n">_describe</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">,</span> <span class="n">class_names</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">,</span> <span class="n">node_ids</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">leaf_colors</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span>
+                  <span class="n">wrap</span><span class="p">,</span> <span class="n">show_media</span><span class="p">)</span>
+    <span class="n">on_edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">box</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span> <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">]</span> <span class="ow">and</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media_on_edges"</span><span class="p">]]</span>
+
+    <span class="n">n_leaves</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"x"</span><span class="p">]</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">)</span>
+    <span class="n">depth</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"depth"</span><span class="p">]</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># wide enough for the longest line at about 10 points</span>
+        <span class="n">characters</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">box</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">))</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">)</span>
+        <span class="n">texts_on_edges</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">medium</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"text"</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">on_edges</span> <span class="k">for</span> <span class="n">medium</span> <span class="ow">in</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">])</span>
+        <span class="n">level_height</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.3</span><span class="p">,</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">lines</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.4</span> <span class="k">if</span> <span class="n">on_edges</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># room for the media on the arrows</span>
+        <span class="n">leaf_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.3</span><span class="p">,</span> <span class="mf">0.09</span> <span class="o">*</span> <span class="n">characters</span><span class="p">,</span> <span class="p">(</span><span class="mf">2.2</span> <span class="k">if</span> <span class="n">texts_on_edges</span> <span class="k">else</span> <span class="mf">1.6</span><span class="p">)</span> <span class="k">if</span> <span class="n">on_edges</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">figure</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">n_leaves</span> <span class="o">*</span> <span class="n">leaf_width</span><span class="p">),</span> <span class="mf">30.0</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="mf">2.5</span><span class="p">,</span> <span class="p">(</span><span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">level_height</span><span class="p">)))</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># no margins: the axes are hidden</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">n_leaves</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="n">depth</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+
+    <span class="n">texts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"x"</span><span class="p">],</span> <span class="o">-</span><span class="n">box</span><span class="p">[</span><span class="s2">"depth"</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="s2">"label"</span><span class="p">],</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">text_color</span><span class="p">,</span>
+                       <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span> <span class="k">if</span> <span class="n">fontsize</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                       <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s2">"round,pad=0.4"</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="n">box</span><span class="p">[</span><span class="s2">"face"</span><span class="p">],</span> <span class="n">edgecolor</span><span class="o">=</span><span class="n">box</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">],</span>
+                                 <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">text</span><span class="o">.</span><span class="n">set_gid</span><span class="p">(</span><span class="n">PLACEHOLDER</span> <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span><span class="o">.</span><span class="n">node_id</span><span class="p">)</span>
+        <span class="n">texts</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">text</span>
+
+    <span class="n">renderer</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">get_renderer</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">fontsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># the largest font with which the boxes do not overlap</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">_fit_scale</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">texts</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">renderer</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">text</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">texts</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span><span class="o">.</span><span class="n">get_fontsize</span><span class="p">()</span>
+
+    <span class="n">extents</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">_data_extent</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>  <span class="c1"># the arrows, from the bottom of the parent to the top of the child</span>
+        <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"parent"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y_bottom</span><span class="p">)</span> <span class="o">=</span> <span class="n">extents</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"parent"</span><span class="p">]]</span>
+        <span class="p">(</span><span class="n">u0</span><span class="p">,</span> <span class="n">y_top</span><span class="p">),</span> <span class="p">(</span><span class="n">u1</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">extents</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]]</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="p">((</span><span class="n">x0</span> <span class="o">+</span> <span class="n">x1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_bottom</span><span class="p">),</span> <span class="p">((</span><span class="n">u0</span> <span class="o">+</span> <span class="n">u1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y_top</span><span class="p">)</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="s2">"side"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"true"</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"parent"</span><span class="p">]]</span>
+        <span class="n">medium_on_edge</span> <span class="o">=</span> <span class="n">parent</span><span class="p">[</span><span class="s2">"media"</span><span class="p">]</span> <span class="ow">and</span> <span class="n">parent</span><span class="p">[</span><span class="s2">"media_on_edges"</span><span class="p">]</span>
+        <span class="n">arrow</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">"-|&gt;"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shrinkA</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shrinkB</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">medium_on_edge</span><span class="p">:</span>  <span class="c1"># interrupted where the medium is drawn, also on a transparent background</span>
+            <span class="n">above</span><span class="p">,</span> <span class="n">below</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.37</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.37</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> \
+                <span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.79</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.79</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="n">above</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">arrowprops</span><span class="o">=</span><span class="n">arrow</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">"-"</span><span class="p">))</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="n">below</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">arrowprops</span><span class="o">=</span><span class="n">arrow</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">xytext</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">arrowprops</span><span class="o">=</span><span class="n">arrow</span><span class="p">)</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="mf">0.12</span> <span class="k">if</span> <span class="n">medium_on_edge</span> <span class="k">else</span> <span class="mf">0.5</span>  <span class="c1"># the label above the medium drawn on the arrow</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"side"</span><span class="p">],</span> <span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">where</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">where</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+                    <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span> <span class="k">if</span> <span class="n">left</span> <span class="k">else</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">textcoords</span><span class="o">=</span><span class="s2">"offset points"</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"right"</span> <span class="k">if</span> <span class="n">left</span> <span class="k">else</span> <span class="s2">"left"</span><span class="p">,</span>
+                    <span class="n">va</span><span class="o">=</span><span class="s2">"bottom"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">size</span> <span class="o">*</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">medium_on_edge</span><span class="p">:</span>
+            <span class="n">medium</span> <span class="o">=</span> <span class="n">parent</span><span class="p">[</span><span class="s2">"media"</span><span class="p">][</span><span class="mi">0</span> <span class="k">if</span> <span class="n">left</span> <span class="k">else</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="mf">0.55</span> <span class="k">if</span> <span class="n">medium</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"text"</span> <span class="k">else</span> <span class="mf">0.42</span><span class="p">,</span> <span class="mf">0.42</span> <span class="o">*</span> <span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.58</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.58</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">inset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">inset_axes</span><span class="p">([</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">],</span>
+                                  <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transData</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+            <span class="n">_draw_medium</span><span class="p">(</span><span class="n">inset</span><span class="p">,</span> <span class="n">medium</span><span class="p">,</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
+            <span class="n">inset</span><span class="o">.</span><span class="n">set_gid</span><span class="p">(</span><span class="sa">f</span><span class="s2">"media-</span><span class="si">{</span><span class="n">parent</span><span class="p">[</span><span class="s1">'node'</span><span class="p">]</span><span class="o">.</span><span class="n">node_id</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">box</span><span class="p">[</span><span class="s1">'side'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media_on_edges"</span><span class="p">]:</span>
+            <span class="n">_plot_media</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">texts</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]],</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">],</span> <span class="n">renderer</span><span class="p">,</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+
+<div class="viewcode-block" id="export_graphviz">
+<a class="viewcode-back" href="../../../api/generated/RuleTree.utils.plotting.export_graphviz.html#RuleTree.utils.plotting.export_graphviz">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">export_graphviz</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">graph</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">class_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">scaler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">max_depth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">node_ids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">filled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">colors</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">wrap</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">show_media</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The subtree of a node as a Graphviz graph, with the boxes, colors and media of ``plot_tree`` (see</span>
+<span class="sd">    ``RuleTree.export_graphviz`` for the parameters). The media are drawn with matplotlib into PNG</span>
+<span class="sd">    files of a temporary directory, which the graph references.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    graph : graphviz.Digraph</span>
+<span class="sd">    """</span>
+    <span class="n">graphviz</span> <span class="o">=</span> <span class="n">import_optional</span><span class="p">(</span><span class="s2">"graphviz"</span><span class="p">,</span> <span class="s2">"export_graphviz"</span><span class="p">)</span>
+    <span class="n">to_hex</span> <span class="o">=</span> <span class="n">import_optional</span><span class="p">(</span><span class="s2">"matplotlib.colors"</span><span class="p">,</span> <span class="s2">"export_graphviz"</span><span class="p">)</span><span class="o">.</span><span class="n">to_hex</span>  <span class="c1"># colors of the leaves, media</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_media</span><span class="p">,</span> <span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"show_media must be True or False, not </span><span class="si">{</span><span class="n">show_media</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">DEFAULT_COLORS</span> <span class="o">|</span> <span class="p">(</span><span class="n">colors</span> <span class="ow">or</span> <span class="p">{})</span>
+    <span class="n">text_color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"text"</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"black"</span>
+
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">_layout</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">max_depth</span><span class="p">)</span>
+    <span class="n">leaf_colors</span> <span class="o">=</span> <span class="n">_leaf_colors</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">colors</span><span class="p">)</span> <span class="k">if</span> <span class="n">filled</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>
+        <span class="n">_describe</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">,</span> <span class="n">class_names</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">,</span> <span class="n">node_ids</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">leaf_colors</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span>
+                  <span class="n">wrap</span><span class="p">,</span> <span class="n">show_media</span><span class="p">)</span>
+
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"ruletree-graphviz-"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">]</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">graphviz</span><span class="o">.</span><span class="n">Digraph</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"RuleTree"</span><span class="p">)</span> <span class="k">if</span> <span class="n">graph</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">graph</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">attr</span><span class="p">(</span><span class="s2">"node"</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="s2">"box"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"rounded,filled"</span><span class="p">,</span> <span class="n">fontcolor</span><span class="o">=</span><span class="n">text_color</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">"10"</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">attr</span><span class="p">(</span><span class="s2">"edge"</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">],</span> <span class="n">fontcolor</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">"9"</span><span class="p">,</span> <span class="n">arrowsize</span><span class="o">=</span><span class="s2">"0.7"</span><span class="p">)</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]:</span> <span class="n">PLACEHOLDER</span> <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span><span class="o">.</span><span class="n">node_id</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>  <span class="c1"># placeholders get a unique name, as the parent id plus the side</span>
+        <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">names</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">names</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s1">'parent'</span><span class="p">]]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">box</span><span class="p">[</span><span class="s1">'side'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+
+    <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">box</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)]</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">_media_png</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">],</span> <span class="n">directory</span><span class="p">,</span> <span class="n">names</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]],</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">)</span> \
+            <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media_on_edges"</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">node</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]],</span> <span class="n">label</span><span class="o">=</span><span class="n">_html_label</span><span class="p">(</span><span class="s2">"&lt;BR/&gt;"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span> <span class="n">image</span><span class="p">),</span>
+                   <span class="n">fillcolor</span><span class="o">=</span><span class="n">to_hex</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"face"</span><span class="p">],</span> <span class="n">keep_alpha</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">to_hex</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">],</span> <span class="n">keep_alpha</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"parent"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"parent"</span><span class="p">]]</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">parent</span><span class="p">[</span><span class="s2">"media"</span><span class="p">]</span> <span class="ow">and</span> <span class="n">parent</span><span class="p">[</span><span class="s2">"media_on_edges"</span><span class="p">]:</span>  <span class="c1"># the medium of the child next to its arrow</span>
+                <span class="n">medium</span> <span class="o">=</span> <span class="n">parent</span><span class="p">[</span><span class="s2">"media"</span><span class="p">][</span><span class="mi">0</span> <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"side"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"true"</span> <span class="k">else</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">image</span> <span class="o">=</span> <span class="n">_media_png</span><span class="p">([</span><span class="n">medium</span><span class="p">],</span> <span class="n">directory</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">names</span><span class="p">[</span><span class="n">parent</span><span class="p">[</span><span class="s1">'key'</span><span class="p">]]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">box</span><span class="p">[</span><span class="s1">'side'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">)</span>
+            <span class="n">graph</span><span class="o">.</span><span class="n">edge</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="n">parent</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]],</span> <span class="n">names</span><span class="p">[</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]],</span> <span class="n">label</span><span class="o">=</span><span class="n">_html_label</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"side"</span><span class="p">],</span> <span class="n">image</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">graph</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_html_label</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A Graphviz HTML label: the text (already escaped) and, below it, the image of a PNG file."""</span>
+    <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&gt;"</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">'&lt;&lt;TABLE BORDER="0" CELLSPACING="0"&gt;&lt;TR&gt;&lt;TD&gt;</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s1">&lt;/TD&gt;&lt;/TR&gt;'</span> \
+           <span class="sa">f</span><span class="s1">'&lt;TR&gt;&lt;TD&gt;&lt;IMG SRC="</span><span class="si">{</span><span class="n">html</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s1">"/&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;/TABLE&gt;&gt;'</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_media_png</span><span class="p">(</span><span class="n">media</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The media of a node, drawn side by side as in ``plot_tree`` into the PNG file ``&lt;name&gt;.png``."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.backends.backend_agg</span><span class="w"> </span><span class="kn">import</span> <span class="n">FigureCanvasAgg</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+
+    <span class="n">width</span> <span class="o">=</span> <span class="mf">1.6</span> <span class="k">if</span> <span class="n">media</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"kind"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"text"</span> <span class="k">else</span> <span class="mf">1.2</span>
+    <span class="n">figure</span> <span class="o">=</span> <span class="n">Figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="n">width</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">media</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">))</span>
+    <span class="n">canvas</span> <span class="o">=</span> <span class="n">FigureCanvasAgg</span><span class="p">(</span><span class="n">figure</span><span class="p">)</span>
+    <span class="n">renderer</span> <span class="o">=</span> <span class="n">canvas</span><span class="o">.</span><span class="n">get_renderer</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">inset</span><span class="p">,</span> <span class="n">medium</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">figure</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">media</span><span class="p">),</span> <span class="n">squeeze</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">media</span><span class="p">):</span>
+        <span class="n">_draw_medium</span><span class="p">(</span><span class="n">inset</span><span class="p">,</span> <span class="n">medium</span><span class="p">,</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.png"</span><span class="p">)</span>
+    <span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">"tight"</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">transparent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_describe</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">columns_names</span><span class="p">,</span> <span class="n">class_names</span><span class="p">,</span> <span class="n">scaler</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">,</span> <span class="n">node_ids</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">leaf_colors</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span>
+              <span class="n">wrap</span><span class="p">,</span> <span class="n">show_media</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The text, the colors and the media of a box."""</span>
+    <span class="n">current</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span>
+    <span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media_on_edges"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">box</span><span class="p">[</span><span class="s2">"label"</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="s2">"face"</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">]</span> <span class="o">=</span> <span class="n">PLACEHOLDER</span><span class="p">,</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"leaf"</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"leaf_edge"</span><span class="p">]</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">current</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">_leaf_label</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">class_names</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">)</span>
+        <span class="n">box</span><span class="p">[</span><span class="s2">"face"</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">]</span> <span class="o">=</span> <span class="n">leaf_colors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">],</span> <span class="p">(</span><span class="n">colors</span><span class="p">[</span><span class="s2">"leaf"</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"leaf_edge"</span><span class="p">]))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">stump</span><span class="o">.</span><span class="n">get_plot_rule</span><span class="p">(</span><span class="n">columns_names</span><span class="o">=</span><span class="n">columns_names</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="n">scaler</span><span class="p">,</span>
+                                           <span class="n">float_precision</span><span class="o">=</span><span class="n">float_precision</span><span class="p">)</span>
+        <span class="n">label</span><span class="p">,</span> <span class="n">box</span><span class="p">[</span><span class="s2">"face"</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="s2">"edge"</span><span class="p">]</span> <span class="o">=</span> <span class="n">rule</span><span class="p">[</span><span class="s2">"label"</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"split"</span><span class="p">],</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"split_edge"</span><span class="p">]</span>
+        <span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_rule_media</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">show_media</span><span class="p">)</span>
+        <span class="n">box</span><span class="p">[</span><span class="s2">"media_on_edges"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">])</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"media_on_edges"</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
+
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">([</span><span class="n">current</span><span class="o">.</span><span class="n">node_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">node_ids</span> <span class="k">else</span> <span class="p">[])</span> <span class="o">+</span> <span class="n">_wrap</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">wrap</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="ow">not</span> <span class="n">current</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">samples</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="s2">"samples"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"samples = </span><span class="si">{</span><span class="n">current</span><span class="o">.</span><span class="n">samples</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">reserved</span> <span class="o">=</span> <span class="n">MEDIA_LINES</span> <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media"</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">box</span><span class="p">[</span><span class="s2">"media_on_edges"</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">box</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">*</span> <span class="n">reserved</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rule_media</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">show_media</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The media of a node, as dictionaries with ``name``, ``kind``, ``value`` and ``color``: the</span>
+<span class="sd">    ``media_values`` of the rule, unless they are ``media_optional`` and show_media is False.</span>
+<span class="sd">    """</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"media_values"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">values</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"media_optional"</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">show_media</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">kind</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"media_kind"</span><span class="p">,</span> <span class="s2">"series"</span><span class="p">)</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"media_names"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">""</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">rule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"media_colors"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[{</span><span class="s2">"name"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">"kind"</span><span class="p">:</span> <span class="n">kind</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span> <span class="s2">"color"</span><span class="p">:</span> <span class="n">color</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">colors</span><span class="p">)]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The lines of a text of at most width characters (if possible): a rule is split before its</span>
+<span class="sd">    comparison operator (``mean area`` / ``&lt;= 901.95``), then each part between words; the</span>
+<span class="sd">    prediction of a leaf only between words (``class =`` / ``malignant``).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">width</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">width</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">text</span><span class="p">]</span>
+    <span class="n">operator</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">" (&lt;=|&gt;=|==|!=|&lt;|&gt;|=) "</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span> <span class="k">if</span> <span class="n">rule</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">text</span><span class="p">[:</span><span class="n">operator</span><span class="o">.</span><span class="n">start</span><span class="p">()],</span> <span class="n">text</span><span class="p">[</span><span class="n">operator</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]]</span> <span class="k">if</span> <span class="n">operator</span> <span class="k">else</span> <span class="p">[</span><span class="n">text</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">part</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">break_long_words</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[</span><span class="n">part</span><span class="p">])]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_data_extent</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">renderer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The corners (bottom left, top right) of the box of a text, in data coordinates."""</span>
+    <span class="n">text</span><span class="o">.</span><span class="n">update_bbox_position_size</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">get_bbox_patch</span><span class="p">()</span><span class="o">.</span><span class="n">get_window_extent</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">),</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transData</span><span class="o">.</span><span class="n">inverted</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">([(</span><span class="n">extent</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">extent</span><span class="o">.</span><span class="n">y0</span><span class="p">),</span> <span class="p">(</span><span class="n">extent</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span> <span class="n">extent</span><span class="o">.</span><span class="n">y1</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y0</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_layout</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">max_depth</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The boxes to draw: x (order of the leaves), depth, node (None for the placeholder of a subtree</span>
+<span class="sd">    cut by max_depth), key and key of the parent, side ("true" for the left child).</span>
+<span class="sd">    """</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">n_leaves</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">visit</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">parent_key</span><span class="p">,</span> <span class="n">side</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">n_leaves</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"node"</span><span class="p">:</span> <span class="n">current</span><span class="p">,</span> <span class="s2">"depth"</span><span class="p">:</span> <span class="n">depth</span><span class="p">,</span> <span class="s2">"key"</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span> <span class="s2">"parent"</span><span class="p">:</span> <span class="n">parent_key</span><span class="p">,</span> <span class="s2">"side"</span><span class="p">:</span> <span class="n">side</span><span class="p">}</span>
+        <span class="n">boxes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_depth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="n">max_depth</span><span class="p">:</span>
+            <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">current</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">():</span>
+            <span class="n">box</span><span class="p">[</span><span class="s2">"x"</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_leaves</span>
+            <span class="n">n_leaves</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">visit</span><span class="p">(</span><span class="n">current</span><span class="o">.</span><span class="n">node_l</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="s2">"true"</span><span class="p">)</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="n">visit</span><span class="p">(</span><span class="n">current</span><span class="o">.</span><span class="n">node_r</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="s2">"false"</span><span class="p">)</span>
+            <span class="n">box</span><span class="p">[</span><span class="s2">"x"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">left</span> <span class="o">+</span> <span class="n">right</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="n">box</span><span class="p">[</span><span class="s2">"x"</span><span class="p">]</span>
+
+    <span class="n">visit</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">boxes</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_leaf_label</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">class_names</span><span class="p">,</span> <span class="n">float_precision</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The prediction of a leaf, as text."""</span>
+    <span class="n">prediction</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">prediction</span>
+    <span class="k">if</span> <span class="n">_is_clustering</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"cluster = </span><span class="si">{</span><span class="n">prediction</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="n">_is_classification</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">class_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prediction</span> <span class="o">=</span> <span class="n">class_names</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">prediction</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"class = </span><span class="si">{</span><span class="n">prediction</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">float_precision</span><span class="p">)</span> <span class="k">if</span> <span class="n">float_precision</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">prediction</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"value = </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_classification</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"classes"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_is_clustering</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prediction_probability</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> \
+        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">prediction_probability</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_clustering</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="n">classes</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">"classes"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">classes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">classes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="s2">"NA"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_leaf_colors</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">colors</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Background and border of each leaf: the color of its class or cluster, or of its value."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">colormaps</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_rgb</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">tint</span><span class="p">(</span><span class="n">color</span><span class="p">):</span>  <span class="c1"># a light background of the color of the border</span>
+        <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">to_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">),</span> <span class="mf">0.15</span><span class="p">)</span>
+
+    <span class="n">leaves</span> <span class="o">=</span> <span class="p">{</span><span class="n">box</span><span class="p">[</span><span class="s2">"key"</span><span class="p">]:</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">boxes</span> <span class="k">if</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">box</span><span class="p">[</span><span class="s2">"node"</span><span class="p">]</span><span class="o">.</span><span class="n">is_leaf</span><span class="p">()}</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">palette</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">leaves</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">_is_classification</span><span class="p">(</span><span class="n">leaf</span><span class="p">):</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">palette</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">prediction</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">palette</span><span class="p">)]</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">tint</span><span class="p">(</span><span class="n">color</span><span class="p">),</span> <span class="n">color</span><span class="p">)</span>
+
+    <span class="n">clusters</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">({</span><span class="n">leaf</span><span class="o">.</span><span class="n">prediction</span> <span class="k">for</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">leaves</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">_is_clustering</span><span class="p">(</span><span class="n">leaf</span><span class="p">)},</span> <span class="n">key</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">leaves</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">_is_clustering</span><span class="p">(</span><span class="n">leaf</span><span class="p">):</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">palette</span><span class="p">[</span><span class="n">clusters</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">prediction</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">palette</span><span class="p">)]</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">tint</span><span class="p">(</span><span class="n">color</span><span class="p">),</span> <span class="n">color</span><span class="p">)</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">prediction</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">leaf</span> <span class="ow">in</span> <span class="n">leaves</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+              <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">prediction</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">leaf</span><span class="o">.</span><span class="n">prediction</span><span class="p">))}</span>
+    <span class="k">if</span> <span class="n">values</span><span class="p">:</span>
+        <span class="n">low</span><span class="p">,</span> <span class="n">high</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">colormap</span> <span class="o">=</span> <span class="n">colormaps</span><span class="p">[</span><span class="n">colors</span><span class="p">[</span><span class="s2">"values"</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">colormap</span><span class="p">(</span><span class="mf">0.15</span> <span class="o">+</span> <span class="mf">0.7</span> <span class="o">*</span> <span class="p">((</span><span class="n">value</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">high</span> <span class="o">-</span> <span class="n">low</span><span class="p">)</span> <span class="k">if</span> <span class="n">high</span> <span class="o">&gt;</span> <span class="n">low</span> <span class="k">else</span> <span class="mf">0.5</span><span class="p">))</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">tint</span><span class="p">(</span><span class="n">color</span><span class="p">),</span> <span class="n">color</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fit_scale</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">texts</span><span class="p">,</span> <span class="n">renderer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""How much the font can grow (or must shrink) so that the largest box fits in a cell of the layout."""</span>
+    <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">:</span>
+        <span class="n">text</span><span class="o">.</span><span class="n">update_bbox_position_size</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+    <span class="n">extents</span> <span class="o">=</span> <span class="p">[</span><span class="n">text</span><span class="o">.</span><span class="n">get_bbox_patch</span><span class="p">()</span><span class="o">.</span><span class="n">get_window_extent</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span> <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">extent</span><span class="o">.</span><span class="n">width</span> <span class="k">for</span> <span class="n">extent</span> <span class="ow">in</span> <span class="n">extents</span><span class="p">)</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">extent</span><span class="o">.</span><span class="n">height</span> <span class="k">for</span> <span class="n">extent</span> <span class="ow">in</span> <span class="n">extents</span><span class="p">)</span>
+    <span class="n">origin</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transData</span><span class="o">.</span><span class="n">transform</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+    <span class="n">cell_width</span><span class="p">,</span> <span class="n">cell_height</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">unit</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">origin</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">unit</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">origin</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="mf">0.92</span> <span class="o">*</span> <span class="n">cell_width</span> <span class="o">/</span> <span class="n">width</span><span class="p">,</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="n">cell_height</span> <span class="o">/</span> <span class="n">height</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_media</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">media</span><span class="p">,</span> <span class="n">renderer</span><span class="p">,</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The media of a node, side by side in the lines reserved at the bottom of its box."""</span>
+    <span class="n">text</span><span class="o">.</span><span class="n">update_bbox_position_size</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+    <span class="n">extent</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">get_bbox_patch</span><span class="p">()</span><span class="o">.</span><span class="n">get_window_extent</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">),</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="o">.</span><span class="n">inverted</span><span class="p">()</span><span class="o">.</span><span class="n">transform</span><span class="p">([(</span><span class="n">extent</span><span class="o">.</span><span class="n">x0</span><span class="p">,</span> <span class="n">extent</span><span class="o">.</span><span class="n">y0</span><span class="p">),</span> <span class="p">(</span><span class="n">extent</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span> <span class="n">extent</span><span class="o">.</span><span class="n">y1</span><span class="p">)])</span>
+    <span class="n">n_lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">*</span> <span class="n">MEDIA_LINES</span> <span class="o">/</span> <span class="n">n_lines</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">media</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">medium</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">media</span><span class="p">):</span>
+        <span class="n">inset</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">inset_axes</span><span class="p">([</span><span class="n">x0</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="mf">0.04</span> <span class="o">*</span> <span class="n">width</span><span class="p">,</span> <span class="n">y0</span> <span class="o">+</span> <span class="mf">0.06</span> <span class="o">*</span> <span class="n">height</span><span class="p">,</span>
+                               <span class="mf">0.92</span> <span class="o">*</span> <span class="n">width</span><span class="p">,</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="n">height</span><span class="p">],</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">_draw_medium</span><span class="p">(</span><span class="n">inset</span><span class="p">,</span> <span class="n">medium</span><span class="p">,</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">renderer</span><span class="p">)</span>
+        <span class="n">inset</span><span class="o">.</span><span class="n">set_gid</span><span class="p">(</span><span class="sa">f</span><span class="s2">"media-</span><span class="si">{</span><span class="n">text</span><span class="o">.</span><span class="n">get_gid</span><span class="p">()</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_draw_medium</span><span class="p">(</span><span class="n">inset</span><span class="p">,</span> <span class="n">medium</span><span class="p">,</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">renderer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A medium in its axes, with its name (e.g. ``P_&lt;i&gt;``) as title: an image (height x width, with</span>
+<span class="sd">    channels last or first), a time series (one or more signals) or a text (shrunk to fit the axes).</span>
+<span class="sd">    """</span>
+    <span class="n">kind</span> <span class="o">=</span> <span class="n">medium</span><span class="p">[</span><span class="s2">"kind"</span><span class="p">]</span>
+    <span class="n">instance</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">medium</span><span class="p">[</span><span class="s2">"value"</span><span class="p">])</span> <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"text"</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">medium</span><span class="p">[</span><span class="s2">"value"</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">medium</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]:</span>
+        <span class="n">inset</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">medium</span><span class="p">[</span><span class="s2">"name"</span><span class="p">],</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">size</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">medium</span><span class="p">[</span><span class="s2">"color"</span><span class="p">]</span> <span class="ow">or</span> <span class="n">text_color</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">inset</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">inset</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"image"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">instance</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="n">instance</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># channels first</span>
+        <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">instance</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="n">instance</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">inset</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"gray_r"</span> <span class="k">if</span> <span class="n">instance</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># the aspect of the image</span>
+        <span class="n">inset</span><span class="o">.</span><span class="n">set_anchor</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">"series"</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">instance</span><span class="p">):</span>
+            <span class="n">inset</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">medium</span><span class="p">[</span><span class="s2">"color"</span><span class="p">]</span> <span class="ow">or</span> <span class="n">colors</span><span class="p">[</span><span class="s2">"classes"</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="p">([</span><span class="s2">"..."</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">6</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">inset</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span> <span class="n">ha</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">size</span> <span class="o">*</span> <span class="mf">0.7</span><span class="p">,</span>
+                           <span class="n">color</span><span class="o">=</span><span class="n">text_color</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">inset</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+        <span class="n">box</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="n">inset</span><span class="o">.</span><span class="n">get_window_extent</span><span class="p">(</span><span class="n">renderer</span><span class="p">),</span> <span class="n">label</span><span class="o">.</span><span class="n">get_window_extent</span><span class="p">(</span><span class="n">renderer</span><span class="p">)</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">get_fontsize</span><span class="p">()</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.92</span> <span class="o">*</span> <span class="n">box</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="n">extent</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                                                       <span class="mf">0.92</span> <span class="o">*</span> <span class="n">box</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="n">extent</span><span class="o">.</span><span class="n">height</span><span class="p">))</span>
+    <span class="n">inset</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="n">colors</span><span class="p">[</span><span class="s2">"leaf"</span><span class="p">])</span>  <span class="c1"># opaque, over the arrow</span>
+    <span class="k">for</span> <span class="n">spine</span> <span class="ow">in</span> <span class="n">inset</span><span class="o">.</span><span class="n">spines</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">spine</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">text_color</span><span class="p">)</span>
+        <span class="n">spine</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025-2026, Cristiano Landi, Alessio Cascione, Riccardo Guidotti.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.1.
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
