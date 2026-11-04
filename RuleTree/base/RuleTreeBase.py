@@ -36,34 +36,7 @@ class RuleTreeBase(BaseEstimator, ABC):
     """
 
     def _validate_inputs(self, X=None, y=None, X_ts=None, X_img=None, X_txt=None) -> dict:
-        """Validate multimodal RuleTree inputs.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features), default=None
-            Tabular input data.
-        X_ts : array-like of shape (n_samples, ...), default=None
-            Time-series input data.
-        X_img : array-like of shape (n_samples, ...), default=None
-            Image input data.
-        X_txt : array-like of shape (n_samples, ...), default=None
-            Text input data.
-        y : array-like of shape (n_samples,), default=None
-            Target values. If provided, its length is checked against the first
-            dimension of the provided input containers.
-
-        Returns
-        -------
-        data : dict
-            Dictionary ``{data_type: numpy.ndarray}`` containing only the provided
-            input containers.
-
-        Raises
-        ------
-        ValueError
-            If no input container is provided, or if the provided containers and
-            ``y`` do not have a consistent number of samples.
-        """
+        """Validate multimodal RuleTree inputs."""
         inputs = {"X": X, "X_ts": X_ts, "X_img": X_img, "X_txt": X_txt}
         data = {
             DATA_INPUT_TYPES[name]: np.asarray(value)

@@ -20,10 +20,6 @@ class ShapeletTreeStump:
         """
         Parameters of the splitter: as in the decision tree stump, but without random_state, which is
         the one of the shapelet selection.
-
-        Returns
-        -------
-        params : dict
         """
         return super()._splitter_params() | {"random_state": None}
 

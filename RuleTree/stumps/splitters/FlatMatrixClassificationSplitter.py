@@ -62,34 +62,14 @@ class FlatMatrixClassificationSplitter(FlatMatrixSplitter):
         self.class_weight = class_weight
 
     def _impurity_fun(self):
-        """
-        Impurity function of the criterion, from the weights of the classes (see RuleTree.utils.impurity).
-
-        Raises
-        ------
-        ValueError
-            If the criterion is unknown.
-        """
+        """Impurity function of the criterion, from the weights of the classes (see RuleTree.utils.impurity)."""
         if self.criterion not in CLASSIFICATION_IMPURITIES:
             raise ValueError(f"Unknown criterion {self.criterion!r}: use 'gini', 'entropy', 'log_loss' or "
                              "'misclassification'")
         return CLASSIFICATION_IMPURITIES[self.criterion]
 
     def _class_weights(self, classes, counts) -> np.ndarray:
-        """
-        Weight of each class.
-
-        Parameters
-        ----------
-        classes : numpy.ndarray of shape (n_classes,)
-            Classes in the node.
-        counts : numpy.ndarray of shape (n_classes,)
-            Number of instances of each class in the node.
-
-        Returns
-        -------
-        class_weights : numpy.ndarray of shape (n_classes,)
-        """
+        """Weight of each class."""
         if self.class_weight is None:
             return np.ones(len(classes))
         if self.class_weight == "balanced":

@@ -87,18 +87,7 @@ class PartialPivotTransformer(RuleTreeBaseTransformer):
         self.n_jobs = n_jobs
 
     def _shapelets(self):
-        """
-        A new, unfitted TabularShapelets transform with the parameters of the transformer.
-
-        Returns
-        -------
-        st : TabularShapelets
-
-        Raises
-        ------
-        MissingOptionalDependencyError
-            If numba is not installed.
-        """
+        """A new, unfitted TabularShapelets transform with the parameters of the transformer."""
         import_optional("numba", self.__class__.__name__)
         from RuleTree.utils.shapelet_transform.TabularShapelets import TabularShapelets
 

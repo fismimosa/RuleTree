@@ -145,25 +145,7 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
 
     @staticmethod
     def _numerical_candidates(x, statistics) -> tuple:
-        """
-        Candidate splits of a numerical feature. Missing values go to the right child.
-
-        Parameters
-        ----------
-        x : numpy.ndarray of shape (n_samples,)
-            Values of the feature.
-        statistics : numpy.ndarray of shape (n_samples, n_statistics)
-            Statistics of each instance.
-
-        Returns
-        -------
-        thresholds : numpy.ndarray of shape (n_candidates,)
-            Threshold of each candidate.
-        statistics_left : numpy.ndarray of shape (n_candidates, n_statistics)
-            Statistics of the left child of each candidate.
-        n_left : numpy.ndarray of shape (n_candidates,)
-            Number of instances in the left child of each candidate.
-        """
+        """Candidate splits of a numerical feature. Missing values go to the right child."""
         x = x.astype(float)
         order = np.argsort(x, kind="stable")  # missing values last
         order = order[:len(x) - np.count_nonzero(np.isnan(x))]
@@ -178,25 +160,7 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
 
     @staticmethod
     def _categorical_candidates(x, statistics) -> tuple:
-        """
-        Candidate splits of a categorical feature.
-
-        Parameters
-        ----------
-        x : numpy.ndarray of shape (n_samples,)
-            Values of the feature.
-        statistics : numpy.ndarray of shape (n_samples, n_statistics)
-            Statistics of each instance.
-
-        Returns
-        -------
-        values : numpy.ndarray of shape (n_candidates,)
-            Value of each candidate.
-        statistics_left : numpy.ndarray of shape (n_candidates, n_statistics)
-            Statistics of the left child of each candidate.
-        n_left : numpy.ndarray of shape (n_candidates,)
-            Number of instances in the left child of each candidate.
-        """
+        """Candidate splits of a categorical feature."""
         values, inverse, n_left = np.unique(x, return_inverse=True, return_counts=True)
         statistics_left = np.zeros((len(values), statistics.shape[1]))
         np.add.at(statistics_left, inverse, statistics)
@@ -204,33 +168,7 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         return values, statistics_left, n_left
 
     def _candidate_splits(self, X, statistics, numerical, categorical) -> tuple:
-        """
-        All the candidate splits of a feature matrix.
-
-        Parameters
-        ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
-            Feature matrix.
-        statistics : numpy.ndarray of shape (n_samples, n_statistics)
-            Statistics of each instance.
-        numerical : list of int
-            Indices of the numerical columns of X.
-        categorical : list of int
-            Indices of the categorical columns of X.
-
-        Returns
-        -------
-        features : numpy.ndarray of int of shape (n_candidates,)
-            Column of each candidate.
-        thresholds : numpy.ndarray of object of shape (n_candidates,)
-            Threshold or value of each candidate.
-        is_categorical : numpy.ndarray of bool of shape (n_candidates,)
-            Whether each candidate is categorical; the numerical ones come first.
-        statistics_left : numpy.ndarray of shape (n_candidates, n_statistics)
-            Statistics of the left child of each candidate.
-        n_left : numpy.ndarray of shape (n_candidates,)
-            Number of instances in the left child of each candidate.
-        """
+        """All the candidate splits of a feature matrix."""
         candidates = [self._numerical_candidates(X[:, feature], statistics) for feature in numerical]
         candidates += [self._categorical_candidates(X[:, feature], statistics) for feature in categorical]
 
@@ -244,19 +182,7 @@ class FlatMatrixSplitter(RuleTreeBaseSplitter, ABC):
         return features, thresholds, is_categorical, statistics_left, n_left
 
     def _min_samples_leaf(self, n_samples) -> int:
-        """
-        Minimum number of instances in each child of a node.
-
-        Parameters
-        ----------
-        n_samples : int
-            Number of instances in the node.
-
-        Returns
-        -------
-        min_samples_leaf : int
-            At least 1: a child cannot be empty.
-        """
+        """Minimum number of instances in each child of a node."""
         if isinstance(self.min_samples_leaf, float):
             return max(1, ceil(self.min_samples_leaf * n_samples))
         return max(1, self.min_samples_leaf)

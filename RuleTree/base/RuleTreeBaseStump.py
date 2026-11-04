@@ -340,28 +340,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         """
 
     def _resolve_fit_data(self, data, data_type=None) -> tuple[np.ndarray, str]:
-        """
-        Select the data to fit on and store its type in ``data_type_``.
-
-        Parameters
-        ----------
-        data : dict or numpy.ndarray
-            Data set, as ``{data_type: array}`` or a single array.
-        data_type : str, default=None
-            Data type to use. If None, the first supported data type available in ``data``.
-
-        Returns
-        -------
-        X : numpy.ndarray
-            Data of the selected type (all the instances).
-        data_type : str
-            The selected data type.
-
-        Raises
-        ------
-        ValueError
-            If the data type is not supported or not available in ``data``.
-        """
+        """Select the data to fit on and store its type in ``data_type_``."""
         if not isinstance(data, dict):
             data = {data_type if data_type is not None else self.supported_data_types[0]: data}
 
@@ -381,19 +360,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         return np.asarray(data[data_type]), data_type
 
     def _get_data(self, data) -> np.ndarray:
-        """
-        Data of the type the stump has been fitted on.
-
-        Parameters
-        ----------
-        data : dict or numpy.ndarray
-            Data set, as ``{data_type: array}`` or a single array of the stump's data type.
-
-        Returns
-        -------
-        X : numpy.ndarray
-            Data of the type ``data_type_``.
-        """
+        """Data of the type the stump has been fitted on."""
         return np.asarray(data[self.data_type_]) if isinstance(data, dict) else np.asarray(data)
 
     def cache_namespace(self) -> str:

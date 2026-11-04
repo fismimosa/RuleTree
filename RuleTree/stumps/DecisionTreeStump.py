@@ -20,10 +20,6 @@ class DecisionTreeStump(Stump):
         """
         Parameters of the splitter (also the parameters of the trees of the pivot and oblique
         transformers).
-
-        Returns
-        -------
-        params : dict
         """
         return dict(criterion=self.criterion, min_samples_leaf=self.min_samples_leaf,
                     min_weight_fraction_leaf=self.min_weight_fraction_leaf, max_features=self.max_features,

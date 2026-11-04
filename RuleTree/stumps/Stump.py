@@ -216,13 +216,7 @@ class Stump(RuleTreeBaseStump):
         self.splitter_.update_statistics(X, y, sample_weight, context=context, node_id=node_id, cache=cache)
 
     def _is_fitted(self):
-        """
-        Whether the stump is fitted.
-
-        Returns
-        -------
-        is_fitted : bool
-        """
+        """Whether the stump is fitted."""
         return hasattr(self, "splitter_")
 
     @property
@@ -355,21 +349,6 @@ def _params_to_dict(params: dict) -> dict:
     Constructor parameters as a JSON-friendly dictionary: estimators (e.g. components) by type and parameters,
     functions and classes (e.g. the ``dtype`` of a vectorizer) by name, tuples as ``{"__tuple__": [...]}`` (JSON
     has only lists).
-
-    Parameters
-    ----------
-    params : dict
-        Parameters.
-
-    Returns
-    -------
-    params : dict
-        Saved parameters.
-
-    Raises
-    ------
-    ValueError
-        If a parameter is a function that cannot be imported, such as a lambda.
     """
     def to_dict(value):
         if isinstance(value, BaseEstimator):
@@ -382,19 +361,7 @@ def _params_to_dict(params: dict) -> dict:
 
 
 def _params_from_dict(params: dict) -> dict:
-    """
-    Constructor parameters from a dictionary created by _params_to_dict.
-
-    Parameters
-    ----------
-    params : dict
-        Saved parameters.
-
-    Returns
-    -------
-    params : dict
-        Parameters, with the estimators and the functions rebuilt.
-    """
+    """Constructor parameters from a dictionary created by _params_to_dict."""
     def from_dict(value):
         if isinstance(value, dict) and "__estimator__" in value:
             return _estimator_from_dict(value)
@@ -406,24 +373,7 @@ def _params_from_dict(params: dict) -> dict:
 
 
 def _function_to_dict(function) -> dict:
-    """
-    JSON-friendly representation of a function or of a class: its module and its name.
-
-    Parameters
-    ----------
-    function : callable
-        The function.
-
-    Returns
-    -------
-    dictionary : dict
-        ``{"__function__": "module.name"}``.
-
-    Raises
-    ------
-    ValueError
-        If the function cannot be imported, such as a lambda or a function defined inside another one.
-    """
+    """JSON-friendly representation of a function or of a class: its module and its name."""
     if "<" in function.__qualname__:
         raise ValueError(f"{function.__qualname__} cannot be saved: use a function defined at the top of a module")
 
@@ -434,34 +384,13 @@ def _function_from_dict(dictionary: dict):
     """
     Function from a dictionary created by _function_to_dict. It must be importable from its module (e.g. not
     defined in a notebook or in ``__main__`` of another script).
-
-    Parameters
-    ----------
-    dictionary : dict
-        Representation of the function.
-
-    Returns
-    -------
-    function : callable
     """
     module, name = dictionary["__function__"].rsplit(".", 1)
     return getattr(importlib.import_module(module), name)
 
 
 def _estimator_to_dict(estimator: BaseEstimator) -> dict:
-    """
-    JSON-friendly representation of an estimator: its class and its parameters.
-
-    Parameters
-    ----------
-    estimator : BaseEstimator
-        The estimator, e.g. a transformer or a splitter.
-
-    Returns
-    -------
-    dictionary : dict
-        ``{"__estimator__": "module.Class", "params": {...}}``.
-    """
+    """JSON-friendly representation of an estimator: its class and its parameters."""
     return {"__estimator__": f"{estimator.__class__.__module__}.{estimator.__class__.__qualname__}",
             "params": _params_to_dict(estimator.get_params(deep=False))}
 
@@ -470,16 +399,6 @@ def _estimator_from_dict(dictionary: dict) -> BaseEstimator:
     """
     Estimator from a dictionary created by _estimator_to_dict. The class must be importable from its
     module (e.g. not defined in a notebook or in ``__main__`` of another script).
-
-    Parameters
-    ----------
-    dictionary : dict
-        Representation of the estimator.
-
-    Returns
-    -------
-    estimator : BaseEstimator
-        A new, unfitted estimator.
     """
     module, class_name = dictionary["__estimator__"].rsplit(".", 1)
     return getattr(importlib.import_module(module), class_name)(**_params_from_dict(dictionary["params"]))

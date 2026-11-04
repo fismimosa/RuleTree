@@ -77,16 +77,7 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         self.n_jobs = n_jobs
 
     def _get_cover_similarity_fun(self):
-        """
-        Cover and similarity functions of regression.
-
-        Returns
-        -------
-        cover_fn : callable
-            Residuals -> cover (number of instances).
-        similarity_fn : callable
-            (residuals, cover, lambda) -> similarity score.
-        """
+        """Cover and similarity functions of regression."""
         return xgboost_cover_regression, xgboost_similarity_score_regression
 
     def get_threshold_values(self, X, feature_idx, categorical):
@@ -201,29 +192,7 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         return self
 
     def _gain(self, X, y, feature_idx, threshold, numerical, root_similarity):
-        """
-        Gain of a candidate split, as the exhaustive search computes it.
-
-        Parameters
-        ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
-            Feature matrix of the instances in the node.
-        y : numpy.ndarray of shape (n_samples,)
-            Residuals of the instances in the node.
-        feature_idx : int
-            Column of the split.
-        threshold : float or object
-            Threshold (numerical feature, ``x <= threshold`` goes left) or value (``x == value``).
-        numerical : list of int
-            Indices of the numerical columns of X.
-        root_similarity : float
-            Similarity score of the node.
-
-        Returns
-        -------
-        gain : float
-            -inf if a child has a cover smaller than min_cover.
-        """
+        """Gain of a candidate split, as the exhaustive search computes it."""
         cover_fn, sim_fn = self._get_cover_similarity_fun()
         cond_l = X[:, feature_idx] <= threshold if feature_idx in numerical else X[:, feature_idx] == threshold
         cover_l, cover_r = cover_fn(y[cond_l]), cover_fn(y[~cond_l])
@@ -236,22 +205,6 @@ class XGBoostSplitter(RuleTreeBaseSplitter):
         Gains of all the thresholds of a numerical feature at once, from the cumulative sums of the
         residuals sorted by the feature (regression similarity: sum ** 2 / (cover + lam)). They can differ
         from the exact gains by the rounding of the sums.
-
-        Parameters
-        ----------
-        x : numpy.ndarray of shape (n_samples,)
-            Values of the feature.
-        y : numpy.ndarray of shape (n_samples,)
-            Residuals.
-        thresholds : numpy.ndarray
-            Thresholds (``x <= threshold`` goes left).
-        root_similarity : float
-            Similarity score of the node.
-
-        Returns
-        -------
-        gains : numpy.ndarray
-            -inf for the thresholds with a child smaller than min_cover.
         """
         x = np.asarray(x, dtype=float)
         order = np.argsort(x, kind="stable")

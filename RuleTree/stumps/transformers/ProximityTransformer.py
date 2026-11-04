@@ -50,35 +50,14 @@ class ProximityComparisons:
     """
 
     def _set_pairs(self, pairs: list, error: str):
-        """
-        Set the pairs of references compared by the columns of the feature matrix.
-
-        Parameters
-        ----------
-        pairs : list of tuple
-            Pairs of indices of the references.
-        error : str
-            Message of the NoSplitFoundWarning if there is no pair.
-
-        Raises
-        ------
-        NoSplitFoundWarning
-            If there is no pair.
-        """
+        """Set the pairs of references compared by the columns of the feature matrix."""
         if not pairs:
             raise NoSplitFoundWarning(error)
         self.pairs_ = pairs
         self.numerical_, self.categorical_ = list(range(len(pairs))), []
 
     def _keep_references(self, indices: list):
-        """
-        Keep only some references in ``st_``.
-
-        Parameters
-        ----------
-        indices : list of int
-            Indices of the references to keep, in order.
-        """
+        """Keep only some references in ``st_``."""
         raise NotImplementedError
 
     def transform(self, X, context=None, node_id=None, cache=None):
@@ -260,12 +239,5 @@ class ProximityTransformer(ProximityComparisons, ShapeletTransformer):
         return self
 
     def _keep_references(self, indices):
-        """
-        Keep only some shapelets.
-
-        Parameters
-        ----------
-        indices : list of int
-            Indices of the shapelets to keep, in order.
-        """
+        """Keep only some shapelets."""
         self.st_.shapelets = self.st_.shapelets[indices]

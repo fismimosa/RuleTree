@@ -117,37 +117,13 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
         return self
 
     def _update_node_statistics(self, node, data, y, idx):
-        """
-        As in RuleTreeRegressor, but the leaves predict the XGBoost output value, as in fit.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        y : numpy.ndarray
-            Target of the whole data set.
-        idx : numpy.ndarray
-            Indices of the instances reaching the node.
-        """
+        """As in RuleTreeRegressor, but the leaves predict the XGBoost output value, as in fit."""
         super()._update_node_statistics(node, data, y, idx)
         if node.is_leaf() and len(idx) > 0:
             node.prediction = np.sum(y[idx]) / (len(idx) + self.lam)
 
     def _gamma_pruning(self, node:RuleTreeNode):
-        """
-        Make a leaf of every node whose split has a gain lower than gamma.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            Root of the subtree.
-
-        Returns
-        -------
-        node : RuleTreeNode
-        """
+        """Make a leaf of every node whose split has a gain lower than gamma."""
         if node.is_leaf():
             return node
         if node.stump.gain < self.gamma:

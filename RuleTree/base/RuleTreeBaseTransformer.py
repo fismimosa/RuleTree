@@ -283,16 +283,6 @@ def _feature_types(X: np.ndarray) -> tuple[list, list]:
     """
     Numerical and categorical columns of X, inferred with pandas (numbers are numerical, anything
     else is categorical).
-
-    Parameters
-    ----------
-    X : numpy.ndarray of shape (n_samples, n_features)
-        Feature matrix.
-
-    Returns
-    -------
-    numerical : list of int
-    categorical : list of int
     """
     if np.issubdtype(np.asarray(X).dtype, np.number):  # fast path, e.g. for time series and images
         return list(range(X.shape[1])), []

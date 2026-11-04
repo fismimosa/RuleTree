@@ -87,13 +87,7 @@ class ClassificationSplitter(DecisionTreeSplitter):
         self.class_weight = class_weight
 
     def _tree_params(self):
-        """
-        Parameters of the DecisionTreeClassifier besides those of DecisionTreeSplitter: class_weight.
-
-        Returns
-        -------
-        params : dict
-        """
+        """Parameters of the DecisionTreeClassifier besides those of DecisionTreeSplitter: class_weight."""
         return {"class_weight": self.class_weight}
 
     def _class_weight(self, y):

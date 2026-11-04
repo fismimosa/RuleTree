@@ -115,14 +115,7 @@ class RuleTreeNode:
         return self
 
     def _simplify(self):
-        """
-        Make a leaf of every node whose leaves all have the same prediction.
-
-        Returns
-        -------
-        predictions : set
-            Predictions of the leaves of the subtree (as tuples for the multi-target predictions).
-        """
+        """Make a leaf of every node whose leaves all have the same prediction."""
         if self.is_leaf():
             return {_hashable(self.prediction)}
         else:
@@ -428,17 +421,6 @@ def _with_dtype_for(labels: np.ndarray, child_labels: np.ndarray) -> np.ndarray:
     ``labels``, converted if needed to a dtype that can hold ``child_labels``: e.g. to float for the nan
     predicted by a node without instances after update_statistics, which an int array would turn into a
     number.
-
-    Parameters
-    ----------
-    labels : numpy.ndarray
-        Predictions being filled.
-    child_labels : numpy.ndarray
-        Predictions of a child.
-
-    Returns
-    -------
-    labels : numpy.ndarray
     """
     if np.can_cast(child_labels.dtype, labels.dtype, casting="same_kind"):
         return labels

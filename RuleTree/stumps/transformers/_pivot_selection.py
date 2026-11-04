@@ -104,19 +104,7 @@ class PivotSelection:
         return medoid_index
 
     def _resolve_knn_density_k(self, n_samples):
-        """
-        Number of neighbours used to measure the contrast of a pivot (regression).
-
-        Parameters
-        ----------
-        n_samples : int
-            Number of instances in the node.
-
-        Returns
-        -------
-        k : int
-            ``k``, or the square root of n_samples if k is None, between 5 and n_samples - 1.
-        """
+        """Number of neighbours used to measure the contrast of a pivot (regression)."""
         if self.k is None:
             k = int(np.sqrt(n_samples))
         else:
@@ -129,19 +117,7 @@ class PivotSelection:
 
     @staticmethod
     def _root_split_gain(tree_):
-        """
-        Decrease of impurity of the root split of a fitted scikit-learn tree.
-
-        Parameters
-        ----------
-        tree_ : sklearn.tree._tree.Tree
-            Fitted tree.
-
-        Returns
-        -------
-        gain : float
-            0 if the tree has no split.
-        """
+        """Decrease of impurity of the root split of a fitted scikit-learn tree."""
         if tree_.feature[0] == -2:
             return 0.0
 

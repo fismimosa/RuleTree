@@ -210,15 +210,6 @@ class PivotTransformer(RuleTreeBaseTransformer):
         """
         Features of vectors, standardized if ``standardize``: the numerical ones and the one-hot encoding of the
         categorical ones.
-
-        Parameters
-        ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
-            Vectors (see :meth:`_vectors`).
-
-        Returns
-        -------
-        X_encoded : numpy.ndarray of shape (n_samples, n_encoded_features)
         """
         X_encoded = _one_hot(X, self.num_pre_transformed_, self.cat_pre_transformed_, self.categories_)
         return X_encoded if self.scaler_ is None else self.scaler_.transform(X_encoded)
@@ -233,19 +224,6 @@ class PivotTransformer(RuleTreeBaseTransformer):
         """
         Vectors of the whole data set: the embeddings, computed once and cached in the tree, or the data
         (time series and images flattened).
-
-        Parameters
-        ----------
-        X : numpy.ndarray
-            Data of the transformer's type, all the instances.
-        key : str
-            Data type and embedder, the key of the cached embeddings.
-        cache : dict or None
-            Cache of the tree.
-
-        Returns
-        -------
-        X_vectors : numpy.ndarray of shape (n_samples, n_features)
         """
         if self.embedder is None:
             return _flatten(X)
@@ -268,17 +246,6 @@ class PivotTransformer(RuleTreeBaseTransformer):
         """
         Vectors of new data: the data (time series and images flattened), or their embeddings, computed once
         for each distinct instance (a tree applies its stumps to the instances of each node).
-
-        Parameters
-        ----------
-        X : numpy.ndarray
-            Data of the transformer's type.
-        cache : dict, default=None
-            Cache of the tree, where the embeddings of the training instances are.
-
-        Returns
-        -------
-        X_vectors : numpy.ndarray of shape (n_samples, n_features)
         """
         if self.embedder is None:
             return _flatten(X)
@@ -296,14 +263,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         return np.array([embeddings[key] for key in keys])
 
     def _keep_media(self, names):
-        """
-        Keep the original training instances of the pivots of the split (``media_``), for ``plot_tree``.
-
-        Parameters
-        ----------
-        names : list of int
-            Indices of the pivots of the split in the training set.
-        """
+        """Keep the original training instances of the pivots of the split (``media_``), for ``plot_tree``."""
         candidate_media = self.__dict__.pop("candidate_media_", {})
         self.media_ = {int(name): candidate_media[int(name)] for name in names if int(name) in candidate_media}
 
@@ -386,13 +346,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         return self
 
     def _selection(self):
-        """
-        A new PivotSelection with the parameters of the transformer.
-
-        Returns
-        -------
-        selection : PivotSelection
-        """
+        """A new PivotSelection with the parameters of the transformer."""
         return PivotSelection(self.ml_task, k=self.k, reg_contrast_lambda=self.reg_contrast_lambda,
                               reg_max_thresholds=self.reg_max_thresholds, **(self.tree_params or {}))
 
@@ -503,26 +457,7 @@ def categories_state(categories: list) -> list:
 
 
 def _one_hot(X, numerical, categorical, categories) -> np.ndarray:
-    """
-    Numerical features of X followed by the one-hot encoding of the categorical ones.
-
-    Parameters
-    ----------
-    X : numpy.ndarray of shape (n_samples, n_features)
-        Tabular data.
-    numerical : list of int
-        Numerical columns of X.
-    categorical : list of int
-        Categorical columns of X.
-    categories : list of list
-        Values of each categorical column; a value not in the list is encoded as all zeros. Fewer lists
-        than categorical columns (a tree saved before the categorical features were used): the
-        columns without values are not encoded.
-
-    Returns
-    -------
-    X_encoded : numpy.ndarray of shape (n_samples, n_numerical + total number of categories)
-    """
+    """Numerical features of X followed by the one-hot encoding of the categorical ones."""
     columns = [np.asarray(X[:, numerical], dtype=float)]
     columns += [(X[:, feature, None] == np.asarray(values, dtype=object)).astype(float)
                 for feature, values in zip(categorical, categories)]

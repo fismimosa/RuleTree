@@ -6,26 +6,7 @@ from sklearn.preprocessing import KBinsDiscretizer
 
 
 def _earth_mover_distance(a:np.ndarray, b_idx:np.ndarray, is_categorical:bool):
-    """
-    Calculate the Earth Mover's Distance between two distributions.
-    
-    The Earth Mover's Distance (also known as Wasserstein distance) measures
-    the minimum "work" required to transform one distribution into another.
-    
-    Parameters
-    ----------
-    a : np.ndarray
-        Array containing all data points
-    b_idx : np.ndarray
-        Boolean mask indicating which points in 'a' belong to second distribution
-    is_categorical : bool
-        Whether the data is categorical or continuous
-        
-    Returns
-    -------
-    float
-        The Earth Mover's Distance between distributions
-    """
+    """Calculate the Earth Mover's Distance between two distributions."""
     b = a[b_idx]
     len_a = len(a)
     len_b = len(b)
@@ -99,26 +80,7 @@ def compute_l_diversity(X, X_bool, sensible_attribute):
     return l_left, l_right
 
 def _compute_t_closeness(X, sensible_attribute, categorical):
-    """
-    Compute t-closeness for a given dataset partition.
-    
-    T-closeness measures the distance between the distribution of a sensitive attribute 
-    in a group and the distribution of the attribute in the entire dataset.
-    
-    Parameters
-    ----------
-    X : np.ndarray
-        Feature matrix for a partition
-    sensible_attribute : int
-        Index of the sensitive attribute column
-    categorical : list or set
-        Indices of categorical features
-        
-    Returns
-    -------
-    float
-        The minimum t-closeness value across all features
-    """
+    """Compute t-closeness for a given dataset partition."""
     t = np.inf
     for prot_attr_value in np.unique(X[:, sensible_attribute]):
         for feat_idx in range(X.shape[1]):

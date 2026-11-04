@@ -75,19 +75,7 @@ class EBMRegressor(RegressorMixin, RuleTreeBase):
         self.random_state = random_state
 
     def _get_base_prediction(self, y):
-        """
-        Initial prediction of the boosting.
-
-        Parameters
-        ----------
-        y : numpy.ndarray
-            Target of the training set.
-
-        Returns
-        -------
-        base_prediction : int or numpy.ndarray of shape (n_targets,)
-            0 (for each target).
-        """
+        """Initial prediction of the boosting."""
         return 0 if np.ndim(y) == 1 else np.zeros(np.shape(y)[1])
 
     def fit(self, X, y):

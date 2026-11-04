@@ -168,23 +168,7 @@ class GBoostClassifier(ClassifierMixin, RuleTreeBase):
         return prediction
 
 def _train_one_class(args):
-    """
-    Fit the boosting of one class (one-vs-rest), run in a separate process.
-
-    Parameters
-    ----------
-    args : tuple
-        (index of the class, class, X, y, base estimator, initial probability, initial log-odds,
-        learning rate, number of estimators, validation size, patience, random state, seed of the trees
-        without random_state).
-
-    Returns
-    -------
-    i : int
-        Index of the class.
-    estimators : list of tuple
-        The fitted estimators with the value of each of their leaves.
-    """
+    """Fit the boosting of one class (one-vs-rest), run in a separate process."""
     (i, classe, X, y, base_estimator, base_pred, base_log_odds, lr, n_estimators, val_size, patience, random_state,
      trees_seed) = args
     rng = np.random.RandomState(trees_seed)

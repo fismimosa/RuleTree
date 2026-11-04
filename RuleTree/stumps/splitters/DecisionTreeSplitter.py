@@ -73,13 +73,7 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
         self.min_impurity_decrease = min_impurity_decrease
 
     def _tree_params(self) -> dict:
-        """
-        Parameters of the scikit-learn tree besides those of this class.
-
-        Returns
-        -------
-        params : dict
-        """
+        """Parameters of the scikit-learn tree besides those of this class."""
         return {}
 
     @abstractmethod
@@ -169,18 +163,7 @@ class DecisionTreeSplitter(RuleTreeBaseSplitter, ABC):
         return self
 
     def _fit_categorical(self, X, y, categorical):
-        """
-        Test each value of each categorical feature and keep the split if its gain is higher than gain_.
-
-        Parameters
-        ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
-            Feature matrix.
-        y : numpy.ndarray
-            Target.
-        categorical : list of int
-            Indices of the categorical columns.
-        """
+        """Test each value of each categorical feature and keep the split if its gain is higher than gain_."""
         len_x = len(X)
         for i in categorical:
             for value in np.unique(X[:, i]):

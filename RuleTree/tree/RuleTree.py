@@ -113,23 +113,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.exceptions = exceptions
 
     def _parse_base_stumps(self) -> list[tuple[float, RuleTreeBaseStump, Optional[tuple]]]:
-        """
-        Normalize ``base_stumps`` into a list of ``(probability, stump, data_types)``.
-
-        Returns
-        -------
-        base_stumps : list of tuple
-            ``data_types`` is a tuple of data types, or None when the stump can be used on every data
-            type it supports.
-
-        Raises
-        ------
-        TypeError
-            If an entry is not a stump for the task of the tree (see _get_stumps_task).
-        ValueError
-            If an entry is malformed, a stump does not support the requested data types, or the
-            probabilities do not sum to 1.
-        """
+        """Normalize ``base_stumps`` into a list of ``(probability, stump, data_types)``."""
         task = self._get_stumps_task()
         entries = self.base_stumps if isinstance(self.base_stumps, list) else [self.base_stumps]
         if len(entries) == 0:
@@ -167,21 +151,6 @@ class RuleTree(RuleTreeBase, ABC):
         """
         Compute the pairs (stump, data type) that can split ``data``, with their selection probability,
         and store them in ``candidate_splits_``. The stumps receive the seed of the tree (see _seeded).
-
-        Parameters
-        ----------
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-
-        Raises
-        ------
-        ValueError
-            If no stump supports the provided data.
-
-        Warns
-        -----
-        UserWarning
-            For each provided data type that no stump uses.
         """
         candidates = []
         seed = self._seed if hasattr(self, "_seed") else self._stumps_seed()
@@ -200,14 +169,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.candidate_splits_ = [(p / total, stump, t) for p, stump, t in candidates]
 
     def _stumps_seed(self):
-        """
-        Seed of the random choices of the tree and of the stumps without a random_state.
-
-        Returns
-        -------
-        seed : int or None
-            The tree's random_state if it is None or an int; an int drawn from it if it is a RandomState.
-        """
+        """Seed of the random choices of the tree and of the stumps without a random_state."""
         if self.random_state is None or isinstance(self.random_state, numbers.Integral):
             return self.random_state
         return int(check_random_state(self.random_state).randint(np.iinfo(np.int32).max))
@@ -217,17 +179,6 @@ class RuleTree(RuleTreeBase, ABC):
         """
         The stump, or a copy of it where every random_state left to None (also of its components) is
         set to ``seed``: with the tree's random_state, the stumps do not break ties at random.
-
-        Parameters
-        ----------
-        stump : RuleTreeBaseStump
-            A base stump.
-        seed : int or None
-            Seed of the tree. If None, the stump is returned as it is.
-
-        Returns
-        -------
-        stump : RuleTreeBaseStump
         """
         if seed is None:
             return stump
@@ -237,16 +188,7 @@ class RuleTree(RuleTreeBase, ABC):
         return sklearn.clone(stump).set_params(**unset) if unset else stump
 
     def _get_random_split(self) -> tuple[RuleTreeBaseStump, str]:
-        """
-        Draw a pair (stump, data type) from ``candidate_splits_`` according to their probabilities.
-
-        Returns
-        -------
-        stump : RuleTreeBaseStump
-            An unfitted copy of the stump.
-        data_type : str
-            The data type to use.
-        """
+        """Draw a pair (stump, data type) from ``candidate_splits_`` according to their probabilities."""
         _, stump, data_type = self._random.choices(self.candidate_splits_,
                                                     weights=[p for p, _, _ in self.candidate_splits_])[0]
         return sklearn.clone(stump), data_type
@@ -275,10 +217,6 @@ class RuleTree(RuleTreeBase, ABC):
         """
         Cache of the tree passed to the stumps and to their components (created if missing): a
         dictionary namespace -> dictionary of values (see :meth:`get_cache`).
-
-        Returns
-        -------
-        cache : dict
         """
         if not hasattr(self, "cache_"):
             self.cache_ = {}
@@ -290,14 +228,7 @@ class RuleTree(RuleTreeBase, ABC):
         self.cache_ = {}
 
     def _set_classes(self, y):
-        """
-        Set ``classes_`` and ``n_classes_``, the classes of the target: only for classification trees.
-
-        Parameters
-        ----------
-        y : numpy.ndarray
-            Target.
-        """
+        """Set ``classes_`` and ``n_classes_``, the classes of the target: only for classification trees."""
         if isinstance(self, ClassifierMixin):
             self.classes_ = np.unique(y)
             self.n_classes_ = len(self.classes_)
@@ -409,18 +340,7 @@ class RuleTree(RuleTreeBase, ABC):
         return self
 
     def _push_leaves(self, node: RuleTreeNode, data: dict, idx: np.ndarray):
-        """
-        Push the leaves of the subtree rooted at ``node`` into the queue, with the instances reaching them.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            Root of the subtree.
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        idx : numpy.ndarray
-            Indices of the instances reaching ``node``.
-        """
+        """Push the leaves of the subtree rooted at ``node`` into the queue, with the instances reaching them."""
         if node.is_leaf():
             self.queue_push(node, idx)
             return
@@ -433,15 +353,6 @@ class RuleTree(RuleTreeBase, ABC):
         """
         Split the nodes in the queue until a stopping criterion is met, then prune the useless leaves
         (if requested) and call _post_fit_fix.
-
-        Parameters
-        ----------
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        y : numpy.ndarray or None
-            Target of the whole data set.
-        sample_weight : numpy.ndarray, default=None
-            Sample weights of the whole data set.
         """
         nbr_curr_nodes = 0
         y_split = self._split_target(y)  # the target seen by the stumps; the nodes use y
@@ -501,14 +412,6 @@ class RuleTree(RuleTreeBase, ABC):
         The target as an array (None for clustering); called by fit, partial_fit and update_statistics.
         The regression trees also turn a target of shape (n_samples, 1) into (n_samples,), so that they
         predict a vector.
-
-        Parameters
-        ----------
-        y : array-like or None
-
-        Returns
-        -------
-        y : numpy.ndarray or None
         """
         return None if y is None else np.asarray(y)
 
@@ -516,15 +419,6 @@ class RuleTree(RuleTreeBase, ABC):
         """
         Target given to the stumps to fit the splits. The default implementation is y itself; the
         regression tree weighs its targets (see RuleTreeRegressor's target_weights).
-
-        Parameters
-        ----------
-        y : numpy.ndarray or None
-            Target of the whole data set.
-
-        Returns
-        -------
-        y_split : numpy.ndarray or None
         """
         return y
 
@@ -615,17 +509,6 @@ class RuleTree(RuleTreeBase, ABC):
         Statistics of a node and of its stump on the instances ``idx`` (see :meth:`update_statistics`).
         By default the ones of classification (majority class, class probabilities, log-odds): see
         RuleTreeNode.update_statistics.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        y : numpy.ndarray
-            Target of the whole data set.
-        idx : numpy.ndarray
-            Indices of the instances reaching the node.
         """
         node.update_statistics(data, y, idx, self, cache=self._stump_cache())
 
@@ -707,20 +590,7 @@ class RuleTree(RuleTreeBase, ABC):
         self._update_statistics(data, y, self.root, np.arange(self._n_samples(data)))
 
     def _update_statistics(self, data: dict, y: np.ndarray, node: RuleTreeNode, idx: np.ndarray):
-        """
-        Recompute the statistics of the subtree rooted at ``node`` (see :meth:`update_statistics`).
-
-        Parameters
-        ----------
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        y : numpy.ndarray
-            Target of the whole data set.
-        node : RuleTreeNode
-            Root of the subtree.
-        idx : numpy.ndarray
-            Indices of the instances reaching ``node``.
-        """
+        """Recompute the statistics of the subtree rooted at ``node`` (see :meth:`update_statistics`)."""
         if node is None:
             return
 
@@ -835,10 +705,6 @@ class RuleTree(RuleTreeBase, ABC):
         Increasing number of the nodes pushed into the queue: among the nodes with the same priority,
         the first one pushed is split first. It is a plain int, not an itertools.count, so that the
         tree can be copied and pickled (itertools.count cannot be since Python 3.14).
-
-        Returns
-        -------
-        tiebreaker : int
         """
         self.tiebreaker += 1
         return self.tiebreaker
@@ -937,19 +803,7 @@ class RuleTree(RuleTreeBase, ABC):
 
     @classmethod
     def _print_rules(cls, rules: dict, digits: int, prefix: str):
-        """
-        Print the rules of a subtree; the bars of ``prefix`` continue the branches still open above it.
-
-        Parameters
-        ----------
-        rules : dict
-            Rules of the subtree, as returned by :meth:`get_rules`.
-        digits : int
-            Number of decimals of the numerical outputs.
-        prefix : str
-            Text before each line of the subtree: a bar for each ancestor with a right branch still to
-            print, spaces otherwise.
-        """
+        """Print the rules of a subtree; the bars of ``prefix`` continue the branches still open above it."""
         if rules["is_leaf"]:
             pred = rules['prediction']
             print(f"{prefix} output: "

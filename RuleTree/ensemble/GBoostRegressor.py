@@ -73,29 +73,11 @@ class GBoostRegressor(RegressorMixin, RuleTreeBase):
         self.val_size = val_size
 
     def _get_base_prediction(self, y):
-        """
-        Initial prediction of the boosting.
-
-        Parameters
-        ----------
-        y : numpy.ndarray
-            Target of the training set.
-
-        Returns
-        -------
-        base_prediction : float or numpy.ndarray of shape (n_targets,)
-            Mean of the target (of each target).
-        """
+        """Initial prediction of the boosting."""
         return np.mean(y, axis=0)
 
     def _get_base_estimator(self):
-        """
-        Estimator copied at each iteration.
-
-        Returns
-        -------
-        base_estimator : RuleTreeRegressor
-        """
+        """Estimator copied at each iteration."""
         return self.base_estimator
 
     def fit(self, X: np.ndarray, y: np.ndarray):

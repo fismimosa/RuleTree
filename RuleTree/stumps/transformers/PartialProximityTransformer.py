@@ -129,12 +129,5 @@ class PartialProximityTransformer(ProximityComparisons, PartialPivotTransformer)
         return self
 
     def _keep_references(self, indices):
-        """
-        Keep only some partial pivots.
-
-        Parameters
-        ----------
-        indices : list of int
-            Indices of the partial pivots to keep, in order.
-        """
+        """Keep only some partial pivots."""
         self.st_._optimize_memory(np.array(indices))

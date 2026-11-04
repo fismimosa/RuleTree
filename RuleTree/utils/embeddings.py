@@ -20,18 +20,7 @@ IMAGENET_STD = (0.229, 0.224, 0.225)
 
 
 def _device(device):
-    """
-    The torch device to use: the given one, or the first available among CUDA, Apple MPS and the CPU.
-
-    Parameters
-    ----------
-    device : str or None
-        Device, e.g. ``"cpu"`` or ``"cuda"``; None to choose it.
-
-    Returns
-    -------
-    device : str
-    """
+    """The torch device to use: the given one, or the first available among CUDA, Apple MPS and the CPU."""
     if device is not None:
         return device
 
@@ -153,18 +142,7 @@ class ImageEmbedder(TransformerMixin, BaseEstimator):
         return np.vstack([self._embed(X[start:start + self.batch_size]) for start in range(0, len(X), self.batch_size)])
 
     def _embed(self, images):
-        """
-        Representation of a batch of images.
-
-        Parameters
-        ----------
-        images : numpy.ndarray
-            Batch of images (see the notes of the class).
-
-        Returns
-        -------
-        X_embedded : numpy.ndarray of shape (n_images, n_features_out)
-        """
+        """Representation of a batch of images."""
         torch = import_optional("torch", "ImageEmbedder")
 
         images = np.asarray(images)
@@ -188,21 +166,7 @@ class ImageEmbedder(TransformerMixin, BaseEstimator):
 
 
 def _remove_last_linear(network, nn):
-    """
-    Replace the last linear layer of a network (its classifier) with the identity.
-
-    Parameters
-    ----------
-    network : torch.nn.Module
-        The network, changed in place.
-    nn : module
-        ``torch.nn``.
-
-    Raises
-    ------
-    ValueError
-        If the network has no linear layer.
-    """
+    """Replace the last linear layer of a network (its classifier) with the identity."""
     linear = [name for name, module in network.named_modules() if isinstance(module, nn.Linear)]
     if not linear:
         raise ValueError(f"{type(network).__name__} has no linear layer to remove")

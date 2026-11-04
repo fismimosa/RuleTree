@@ -55,13 +55,7 @@ class XGBoostRegressor(GBoostRegressor):
                          loss=loss, patience=patience, val_size=val_size, random_state=random_state)
 
     def _get_base_estimator(self):
-        """
-        Tree copied at each iteration: base_estimator, or the default RuleTreeXGBoostRegressor.
-
-        Returns
-        -------
-        base_estimator : RuleTreeXGBoostRegressor
-        """
+        """Tree copied at each iteration: base_estimator, or the default RuleTreeXGBoostRegressor."""
         if self.base_estimator is not None:
             return self.base_estimator
 
@@ -69,17 +63,5 @@ class XGBoostRegressor(GBoostRegressor):
         return RuleTreeXGBoostRegressor(n_jobs=n_jobs, base_stumps=XGBoostStumpRegressor(lam=1, n_jobs=n_jobs))
 
     def _get_base_prediction(self, y):
-        """
-        Initial prediction of the boosting.
-
-        Parameters
-        ----------
-        y : numpy.ndarray
-            Target of the training set.
-
-        Returns
-        -------
-        base_prediction : float
-            0.5, as in XGBoost.
-        """
+        """Initial prediction of the boosting."""
         return .5

@@ -158,19 +158,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         return bic_parent < bic_children - self.bic_eps * np.abs(bic_parent)
 
     def _set_candidate_splits(self, data: dict):
-        """
-        Candidate splits, as in RuleTree; clustering supports only tabular data.
-
-        Parameters
-        ----------
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-
-        Raises
-        ------
-        ValueError
-            If data other than tabular are provided.
-        """
+        """Candidate splits, as in RuleTree; clustering supports only tabular data."""
         if set(data) != {DATA_TYPE_TABULAR}:
             raise ValueError(f"{self.__class__.__name__} supports only tabular data (X), got {', '.join(data)}.")
 
@@ -337,20 +325,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         )
 
     def _update_node_statistics(self, node, data, y, idx):
-        """
-        Only the number of instances: the predictions of the nodes are the cluster labels.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-        data : dict
-            Not used.
-        y : numpy.ndarray or None
-            Not used.
-        idx : numpy.ndarray
-            Indices of the instances reaching the node.
-        """
+        """Only the number of instances: the predictions of the nodes are the cluster labels."""
         node.samples = len(idx)
 
     def _post_fit_fix(self):
@@ -364,14 +339,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         self._labels_to_int(self.root)
 
     def _labels_to_int(self, node: RuleTreeNode):
-        """
-        Replace recursively the prediction of each node with its integer label.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            Root of the subtree.
-        """
+        """Replace recursively the prediction of each node with its integer label."""
         node.prediction = self.label_encoder[node.node_id]
 
         if node.is_leaf():
@@ -486,20 +454,7 @@ class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
         """Nothing to do: the nodes already predict class labels."""
 
     def _update_node_statistics(self, node, data, y, idx):
-        """
-        Statistics of classification, as in RuleTreeClassifier.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        y : numpy.ndarray
-            Target of the whole data set.
-        idx : numpy.ndarray
-            Indices of the instances reaching the node.
-        """
+        """Statistics of classification, as in RuleTreeClassifier."""
         RuleTree._update_node_statistics(self, node, data, y, idx)
 
     def predict_proba(self, X: np.ndarray = None, X_ts=None, X_img=None, X_txt=None):
@@ -607,18 +562,5 @@ class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
         """Nothing to do: the nodes already predict the mean of the target."""
 
     def _update_node_statistics(self, node, data, y, idx):
-        """
-        Statistics of regression, as in RuleTreeRegressor.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        y : numpy.ndarray
-            Target of the whole data set.
-        idx : numpy.ndarray
-            Indices of the instances reaching the node.
-        """
+        """Statistics of regression, as in RuleTreeRegressor."""
         RuleTreeRegressor._update_node_statistics(self, node, data, y, idx)

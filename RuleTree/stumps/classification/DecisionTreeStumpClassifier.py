@@ -84,11 +84,5 @@ class DecisionTreeStumpClassifier(DecisionTreeStump):
         self.class_weight = class_weight
 
     def _splitter_params(self) -> dict:
-        """
-        Parameters of the ClassificationSplitter: those of DecisionTreeStump and class_weight.
-
-        Returns
-        -------
-        params : dict
-        """
+        """Parameters of the ClassificationSplitter: those of DecisionTreeStump and class_weight."""
         return super()._splitter_params() | {"class_weight": self.class_weight}

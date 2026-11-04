@@ -92,18 +92,7 @@ class ShapeletTransformer(RuleTreeBaseTransformer):
         self.ml_task = ml_task
 
     def _shapelets(self):
-        """
-        A new, unfitted Shapelets transform with the parameters of the transformer.
-
-        Returns
-        -------
-        st : Shapelets
-
-        Raises
-        ------
-        MissingOptionalDependencyError
-            If numba is not installed.
-        """
+        """A new, unfitted Shapelets transform with the parameters of the transformer."""
         import_optional("numba", self.__class__.__name__)
         from RuleTree.utils.shapelet_transform.Shapelets import Shapelets
 

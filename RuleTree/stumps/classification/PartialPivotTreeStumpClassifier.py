@@ -124,10 +124,6 @@ class PartialPivotTreeStumpClassifier(DecisionTreeStumpClassifier):
         """
         Parameters of the splitter: as in the decision tree stump, but without random_state, which is
         the one of the selection of the partial pivots.
-
-        Returns
-        -------
-        params : dict
         """
         return super()._splitter_params() | {"random_state": None}
 

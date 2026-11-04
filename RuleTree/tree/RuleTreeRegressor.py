@@ -145,24 +145,7 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
         return check_target(y)
 
     def _target_scales(self, y: np.ndarray):
-        """
-        Multipliers of the targets seen by the stumps, from ``target_weights``.
-
-        Parameters
-        ----------
-        y : numpy.ndarray
-            Target of the training set.
-
-        Returns
-        -------
-        scales : numpy.ndarray of shape (n_targets,) or None
-            None with one target or without weights.
-
-        Raises
-        ------
-        ValueError
-            If target_weights is not None, 'balanced' or one non-negative weight per target.
-        """
+        """Multipliers of the targets seen by the stumps, from ``target_weights``."""
         if self.target_weights is None or y.ndim == 1:  # with one target, the weight changes no split
             return None
         if isinstance(self.target_weights, str):
@@ -232,17 +215,6 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
         """
         Prediction and standard deviation of the target of the instances ``idx``, as in fit, and
         statistics of the stump. A node without instances predicts nan (for each target).
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-        data : dict
-            Whole data set, as ``{data_type: array}``.
-        y : numpy.ndarray
-            Target of the whole data set.
-        idx : numpy.ndarray
-            Indices of the instances reaching the node.
         """
         if len(idx) == 0:
             missing = np.nan if y.ndim == 1 else np.full(y.shape[1], np.nan)
