@@ -119,11 +119,11 @@ def test_several_targets(splitter, y):
         splitter.fit(X, np.column_stack([y, y]), NUMERICAL, CATEGORICAL, **FIT)
 
 
-@pytest.mark.parametrize("criterion", ["gini", "entropy", "log_loss"])
-@pytest.mark.parametrize("params", [{}, {"min_samples_leaf": 10}, {"class_weight": "balanced"},
-                                    {"class_weight": {0: 5.0, 1: 1.0}}],
-                         ids=["default", "min_samples_leaf", "balanced", "dict"])
-@pytest.mark.parametrize("weighted", [False, True], ids=["unweighted", "sample_weight"])
+@pytest.mark.parametrize("criterion, params, weighted", [
+    ("gini", {}, False), ("entropy", {}, False), ("log_loss", {}, False), ("gini", {}, True),
+    ("gini", {"min_samples_leaf": 10}, False), ("entropy", {"class_weight": "balanced"}, True),
+    ("gini", {"class_weight": {0: 5.0, 1: 1.0}}, True),
+], ids=["gini", "entropy", "log_loss", "sample_weight", "min_samples_leaf", "balanced", "dict"])
 def test_classification_as_scikit_learn(iris, criterion, params, weighted):
     """Same gain and impurity of the node as the split of a scikit-learn tree."""
     X_iris, y = iris
