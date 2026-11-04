@@ -72,12 +72,16 @@ STUMPS = [
 @pytest.mark.parametrize("make_stump, data_type, dataset, continuous", STUMPS,
                          ids=[f"{s[0]().__class__.__name__}-{s[1]}" for s in STUMPS])
 def test_stump_contract(make_stump, data_type, dataset, continuous, request):
-    """Every stump: fit on a subset idx of the whole data, apply returns 1/2 for the requested instances."""
+    """
+    Every stump: fit on a subset idx of the whole data, apply returns 1/2 for the requested instances; its
+    rule is the label of its node in plot_tree; saved and loaded (also unfitted), it is the same stump.
+    """
     X, y = request.getfixturevalue(dataset)
     data = {data_type: X}
     idx = np.arange(0, len(y), 2)
 
     stump = make_stump()
+    unfitted = type(stump).dict_to_node(json_round_trip(stump.node_to_dict()))
     stump = stump.fit(data, y.astype(float) if continuous else y, idx=idx, data_type=data_type, context=None,
                       node_id=None, cache=None)
 
@@ -87,6 +91,17 @@ def test_stump_contract(make_stump, data_type, dataset, continuous, request):
     assert np.issubdtype(labels.dtype, np.integer)
     assert set(labels) <= {1, 2}
     assert np.array_equal(stump.apply(data)[idx], labels)
+
+    rule = stump.get_plot_rule()
+    assert rule["label"] == stump.get_rule()["textual_rule"]
+    for value in rule.get("media_values", []):
+        assert np.ndim(value) == 1 and rule["media_kind"] == "series"
+
+    loaded = type(stump).dict_to_node(json_round_trip(stump.node_to_dict()))
+    assert unfitted.get_params() == loaded.get_params() == stump.get_params()
+    assert loaded.data_type_ == data_type
+    assert np.array_equal(loaded.apply(data), stump.apply(data))
+    assert loaded.get_rule(float_precision=None)["textual_rule"] == stump.get_rule(float_precision=None)["textual_rule"]
 
 
 def test_stump_rejects_unsupported_data(time_series):
@@ -143,26 +158,6 @@ def test_shapelet_classifier(time_series):
 
 def json_round_trip(dictionary):
     return json.loads(json.dumps(dictionary, cls=json_numpy_encoder))
-
-
-@pytest.mark.parametrize("make_stump, data_type, dataset, continuous", STUMPS,
-                         ids=[f"{s[0]().__class__.__name__}-{s[1]}" for s in STUMPS])
-def test_stump_serialization(make_stump, data_type, dataset, continuous, request):
-    X, y = request.getfixturevalue(dataset)
-    data = {data_type: X}
-
-    unfitted = make_stump()
-    loaded = type(unfitted).dict_to_node(json_round_trip(unfitted.node_to_dict()))
-    assert loaded.get_params() == unfitted.get_params()
-
-    fitted = make_stump()
-    fitted = fitted.fit(data, y.astype(float) if continuous else y, data_type=data_type,
-                        context=None, node_id=None, cache=None)
-    loaded = type(fitted).dict_to_node(json_round_trip(fitted.node_to_dict()))
-    assert loaded.get_params() == fitted.get_params()
-    assert loaded.data_type_ == data_type
-    assert np.array_equal(loaded.apply(data), fitted.apply(data))
-    assert loaded.get_rule(float_precision=None)["textual_rule"] == fitted.get_rule(float_precision=None)["textual_rule"]
 
 
 @pytest.mark.parametrize("stump", [

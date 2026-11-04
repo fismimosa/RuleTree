@@ -128,7 +128,7 @@ def random_regression_tree(**kwargs):
 ], ids=["GBoostRegressor", "GBoostClassifier", "EBMRegressor"])
 def test_ensembles_seed_the_trees_without_random_state(make, dataset, request):
     X, y = request.getfixturevalue(dataset)
-
+    X, y = X[:150], y[:150]  # reproducibility does not depend on the size of the data
     assert_reproducible(make, lambda model: model.fit(X, y).predict(X))
 
 

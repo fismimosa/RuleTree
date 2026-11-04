@@ -18,7 +18,7 @@ from RuleTree.tree.RuleTree import RuleTree  # noqa: E402
 from RuleTree.utils.data_utils import json_numpy_encoder  # noqa: E402
 from RuleTree.utils.plotting import DEFAULT_COLORS, PLACEHOLDER  # noqa: E402
 
-from .test_stumps import STUMPS, time_series  # noqa: E402,F401 (fixture of the stumps)
+from .test_stumps import time_series  # noqa: E402,F401 (fixture of the stumps)
 
 
 @pytest.fixture(autouse=True)
@@ -195,20 +195,6 @@ def test_saves_to_file(classifier, tmp_path):
     classifier.plot_tree().figure.savefig(tmp_path / "tree.svg")
 
     assert (tmp_path / "tree.svg").read_text().startswith("<?xml")
-
-
-@pytest.mark.parametrize("make_stump, data_type, dataset, continuous", STUMPS,
-                         ids=[f"{s[0]().__class__.__name__}-{s[1]}" for s in STUMPS])
-def test_every_stump_has_a_plot_rule(make_stump, data_type, dataset, continuous, request):
-    X, y = request.getfixturevalue(dataset)
-    stump = make_stump().fit({data_type: X}, y.astype(float) if continuous else y, data_type=data_type,
-                             context=None, node_id=None, cache=None)
-
-    rule = stump.get_plot_rule()
-
-    assert rule["label"] == stump.get_rule()["textual_rule"]
-    for value in rule.get("media_values", []):
-        assert np.ndim(value) == 1 and rule["media_kind"] == "series"
 
 
 @pytest.fixture

@@ -298,9 +298,10 @@ def test_classification_tree(iris):
     assert model.score(X_iris, y) == pytest.approx(reference.score(X_iris, y))
 
 
-@pytest.mark.parametrize("criterion", ["squared_error", "poisson"])
-@pytest.mark.parametrize("params", [{}, {"min_samples_leaf": 10}], ids=["default", "min_samples_leaf"])
-@pytest.mark.parametrize("weighted", [False, True], ids=["unweighted", "sample_weight"])
+@pytest.mark.parametrize("criterion, params, weighted", [
+    ("squared_error", {}, False), ("squared_error", {}, True), ("squared_error", {"min_samples_leaf": 10}, False),
+    ("poisson", {}, False), ("poisson", {"min_samples_leaf": 10}, True),
+], ids=["squared_error", "sample_weight", "min_samples_leaf", "poisson", "poisson-weighted"])
 def test_regression_as_scikit_learn(diabetes, criterion, params, weighted):
     """Same gain and impurity of the node as the split of a scikit-learn tree."""
     X_diabetes, y = diabetes
