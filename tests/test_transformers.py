@@ -364,7 +364,8 @@ def test_pivot_transformers_without_standardization(transformer_class, iris):
     assert np.allclose(transformer.candidates_, X[transformer.candidate_names_])
     assert not np.allclose(standardized.candidates_, X[standardized.candidate_names_])
     loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
-    assert np.allclose(loaded.transform(X)[:, 0], transformer.transform(X)[:, 0])
+    # scikit-learn computes euclidean distances as dot products: 0 can become about 1e-8, depending on the BLAS
+    assert np.allclose(loaded.transform(X)[:, 0], transformer.transform(X)[:, 0], atol=1e-6)
 
 
 def test_pivot_distances_without_standardization(iris):
