@@ -280,5 +280,6 @@ type is not used by any stump, it is ignored with a warning:
    error: None of the base stumps supports the provided data (tabular).
    warning: No base stump uses the text data: it will be ignored.
 
-Texts (``X_txt``) are taken only by the pivot stumps with an ``embedder`` (see above); other stumps
-can support them with a transformer that turns texts into features (see :doc:`extending`).
+Texts (``X_txt``) are taken by the pivot stumps with an ``embedder`` (see above) and by the stumps
+made of :class:`~RuleTree.stumps.transformers.TfidfTransformer` and a splitter, which split on the
+TF-IDF weight of a word (see :doc:`extending`).

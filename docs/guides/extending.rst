@@ -66,6 +66,8 @@ The library provides these components:
      - for each pair of shapelets (partial pivots), whether the instance is closer to the second one
    * - :class:`~RuleTree.stumps.transformers.ProximityPivotTransformer`
      - for each pair of pivots, whether the instance is closer to the second one
+   * - :class:`~RuleTree.stumps.transformers.TfidfTransformer`
+     - the TF-IDF weights of the words of texts
    * - :class:`~RuleTree.stumps.transformers.ObliquePivotTransformer`
      - linear combinations of the distances from the pivots of the node
    * - **Splitter**
@@ -83,6 +85,41 @@ The library provides these components:
 
 A new stump therefore needs only the component that is new: a transformer, to split on new
 features; a splitter, to choose the splits in a new way.
+
+
+A stump on texts
+----------------
+
+A transformer and a splitter are enough to split on a new data type. With
+:class:`~RuleTree.stumps.transformers.TfidfTransformer`, which turns texts into the TF-IDF weights of
+their words (scikit-learn's ``TfidfVectorizer``), and the splitter of the decision trees, each split is
+a threshold on the weight of a word; the texts are given to the tree as ``X_txt``:
+
+.. code-block:: python
+
+   import numpy as np
+
+   from RuleTree.stumps.transformers import TfidfTransformer
+
+   texts = np.array(["the team scored a goal", "a late goal in the final", "the goal of the season",
+                     "the chef baked bread", "bread with garlic and oil", "warm bread for the soup"])
+   labels = np.array(["sport", "sport", "sport", "cooking", "cooking", "cooking"])
+
+   tfidf_stump = Stump(TfidfTransformer(stop_words="english"), ClassificationSplitter())
+   model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=tfidf_stump).fit(X_txt=texts, y=labels)
+
+   print(model.root.stump.get_rule()["textual_rule"])
+   print(model.predict(X_txt=np.array(["a goal in the last minute", "bread and butter"])))
+
+.. code-block:: text
+   :caption: Output
+
+   goal <= 0.22
+   ['sport' 'cooking']
+
+The vocabulary is learned once, on all the texts given to the tree, and saved with the tree. The
+parameters of ``TfidfTransformer`` (``max_features``, ``ngram_range``, ``stop_words``, ...) are the ones
+of ``TfidfVectorizer``.
 
 
 A transformer without fitted state
