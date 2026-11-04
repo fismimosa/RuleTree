@@ -118,7 +118,7 @@ transformer and the splitter of a :class:`~RuleTree.stumps.Stump.Stump`, are sav
       :caption: Output
 
       RuleTree.tree.RuleTreeClassifier RuleTreeClassifier
-      {'max_depth': 2, 'max_leaf_nodes': inf, 'min_samples_split': 2, 'prune_useless_leaves': False, 'random_state': 0, 'stump_selection': 'random'}
+      {'max_depth': 2, 'max_leaf_nodes': inf, 'min_samples_split': 2, 'prune_useless_leaves': True, 'random_state': 0, 'stump_selection': 'random'}
       [
        [
         1.0,
@@ -265,7 +265,7 @@ and it can be grown further with ``partial_fit``:
    :caption: Output
 
    False False
-   leaves after partial_fit: 5
+   leaves after partial_fit: 4
 
 Since the random generator is not saved, a loaded tree that chooses its stumps at random among
 several ones (``stump_selection="random"``) can choose differently, in ``partial_fit``, from the

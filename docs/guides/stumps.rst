@@ -163,7 +163,7 @@ make sense for a single split:
    :caption: Output
 
    {'class_weight': 'balanced', 'criterion': 'entropy', 'max_features': None, 'min_impurity_decrease': 0.0, 'min_samples_leaf': 20, 'min_weight_fraction_leaf': 0.0, 'random_state': None}
-   leaves: 7
+   leaves: 5
 
 .. note::
 
@@ -219,7 +219,7 @@ reproducible:
 .. code-block:: text
    :caption: Output
 
-   [('DecisionTreeStumpClassifier', 4), ('PivotTreeStumpClassifier', 2)]
+   [('DecisionTreeStumpClassifier', 3), ('PivotTreeStumpClassifier', 2)]
 
 The ``random_state`` of the tree is also given to the stumps whose ``random_state`` is None, so
 that they do not break ties between equally good features at random.
@@ -358,10 +358,7 @@ for. The directions are chosen at each node in one of two ways (``oblique_split_
    :caption: Output
 
    |--- 0.951 * worst perimeter + 0.309 * worst smoothness <= 0.127
-   |   |--- 0.951 * area error + 0.309 * worst concave points <= -0.132
-   |   |    output: 1
-   |   |--- 0.951 * area error + 0.309 * worst concave points > -0.132
-   |   |    output: 1
+   |    output: 1
    |--- 0.951 * worst perimeter + 0.309 * worst smoothness > 0.127
    |   |--- 0.809 * worst radius + 0.588 * worst concave points <= 0.129
    |   |    output: 1

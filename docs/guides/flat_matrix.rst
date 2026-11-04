@@ -197,7 +197,6 @@ as costly, e.g. because they are expensive to measure; it needs only the argumen
    Rlr X_2 <= 3.2
    Rr X_3 <= 1.75
    Rrl X_1 <= 3.45
-   Rrr X_2 <= 4.85
    accuracy: 0.96
 
 

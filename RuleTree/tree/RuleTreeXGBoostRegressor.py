@@ -62,7 +62,7 @@ class RuleTreeXGBoostRegressor(RuleTreeRegressor):
     'X_8 <= -0.004'
     """
     def __init__(self, gamma=0, lam=1, max_depth=6, min_cover=1, n_jobs=1, base_stumps=None,
-                 max_leaf_nodes=float('inf'), min_samples_split=2, prune_useless_leaves=False,
+                 max_leaf_nodes=float('inf'), min_samples_split=2, prune_useless_leaves=True,
                  stump_selection='random', random_state=None):
         """Initialize the RuleTreeXGBoostRegressor; see the class documentation for the parameters."""
         # explicit parameters (not **kwargs): get_params, clone and to_dict see only the ones in the signature

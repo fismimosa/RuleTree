@@ -532,16 +532,10 @@ each feature at most once:
    |    output: 0
    |--- petal width (cm) > 0.8
    |   |--- petal length (cm) <= 4.75
-   |   |   |--- sepal length (cm) <= 4.95
-   |   |   |    output: 1
-   |   |   |--- sepal length (cm) > 4.95
-   |   |   |    output: 1
+   |   |    output: 1
    |   |--- petal length (cm) > 4.75
-   |   |   |--- sepal length (cm) <= 7.0
-   |   |   |    output: 2
-   |   |   |--- sepal length (cm) > 7.0
-   |   |   |    output: 2
-   ['R', 'Rr', 'Rrl', 'Rrr']
+   |   |    output: 2
+   ['R', 'Rr']
 
 A decision tree with the same parameters splits ``Rr`` again on petal width.
 

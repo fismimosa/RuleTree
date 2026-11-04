@@ -32,7 +32,7 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
         Minimum number of instances to split a node.
     max_depth : int, default=inf
         Maximum depth of the tree (the root has depth 0).
-    prune_useless_leaves : bool, default=False
+    prune_useless_leaves : bool, default=True
         Whether to merge, after fit, the sibling leaves with the same prediction.
     base_stumps : RuleTreeBaseStump or list, default=None
         Stumps used to split the nodes (see :class:`RuleTree.tree.RuleTree.RuleTree`); they must be
@@ -86,7 +86,7 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
                  max_leaf_nodes=float('inf'),
                  min_samples_split=2,
                  max_depth=float('inf'),
-                 prune_useless_leaves=False,
+                 prune_useless_leaves=True,
                  base_stumps: Union[RegressorMixin, list] = None,
                  stump_selection:str='random',
                  random_state=None,

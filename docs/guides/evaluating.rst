@@ -75,7 +75,7 @@ predicted classes and, optionally, the class probabilities with the order of the
    :caption: Output
 
    ['accuracy', 'average_precision_macro', 'average_precision_micro', 'average_precision_weighted', 'balanced_accuracy', 'f1_macro', 'f1_micro', 'f1_score', 'f1_weighted', 'precision_macro', 'precision_micro', 'precision_score', 'precision_weighted', 'recall_macro', 'recall_micro', 'recall_score', 'recall_weighted', 'roc_macro', 'roc_micro', 'roc_weighted']
-   {'accuracy': 0.956, 'f1_macro': 0.955, 'roc_macro': 1.0}
+   {'accuracy': 0.956, 'f1_macro': 0.955, 'roc_macro': 0.978}
 
 The metrics are:
 
@@ -110,7 +110,7 @@ regression on the same split:
 .. code-block:: text
    :caption: Output
 
-   RuleTree: accuracy 0.956, balanced accuracy 0.956, ROC AUC 1.000
+   RuleTree: accuracy 0.956, balanced accuracy 0.956, ROC AUC 0.978
    logistic regression: accuracy 1.000, balanced accuracy 1.000, ROC AUC 1.000
 
 Regression
@@ -289,7 +289,7 @@ trees of scikit-learn (for comparisons), and returns an empty dictionary for oth
 .. code-block:: text
    :caption: Output
 
-   {'n_leaves': 5, 'n_internal_nodes': 4, 'max_depth': 3}
+   {'n_leaves': 3, 'n_internal_nodes': 2, 'max_depth': 2}
    {'n_leaves': 8, 'n_internal_nodes': 7, 'max_depth': 4}
    {}
 

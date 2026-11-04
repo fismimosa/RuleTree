@@ -37,10 +37,7 @@ Rules
    |   |   |--- petal length > 4.95
    |   |   |    output: 2
    |   |--- petal width > 1.75
-   |   |   |--- petal length <= 4.85
-   |   |   |    output: 2
-   |   |   |--- petal length > 4.85
-   |   |   |    output: 2
+   |   |    output: 2
 
 Each node of the dictionary has its statistics and, for an internal node, the condition of the
 left child and its negation; the children are in ``left_node`` and ``right_node``:
@@ -213,8 +210,8 @@ its left and right children, ``"Rrl"`` the left child of ``"Rr"``, and so on.
 .. code-block:: text
    :caption: Output
 
-   internal nodes: ['R', 'Rr', 'Rrl', 'Rrr']
-   leaves: ['Rl', 'Rrll', 'Rrlr', 'Rrrl', 'Rrrr']
+   internal nodes: ['R', 'Rr', 'Rrl']
+   leaves: ['Rl', 'Rrll', 'Rrlr', 'Rrr']
    1 100 1 False
    petal width <= 1.75
 
@@ -241,8 +238,7 @@ Leaves of the instances
    Rl 50
    Rrll 48
    Rrlr 6
-   Rrrl 3
-   Rrrr 43
+   Rrr 46
 
 
 Contributions of the features
@@ -266,11 +262,11 @@ instance.
 .. code-block:: text
    :caption: Output
 
-   prediction: [0. 0. 1.]
+   prediction: [0.   0.02 0.98]
    bias: [0.33 0.33 0.33]
    sepal length: [0. 0. 0.]
    sepal width: [0. 0. 0.]
-   petal length: [ 0.   -0.02  0.02]
+   petal length: [0. 0. 0.]
    petal width: [-0.33 -0.31  0.64]
 
 The prediction is the bias plus the sum of the contributions. ``local_interpretation`` works for

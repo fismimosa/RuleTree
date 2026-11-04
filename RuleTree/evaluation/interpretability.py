@@ -28,7 +28,7 @@ def evaluate_interpretability(model) -> dict:
     >>> from RuleTree.evaluation import evaluate_interpretability
     >>> X, y = load_iris(return_X_y=True)
     >>> evaluate_interpretability(RuleTreeClassifier(max_depth=3, random_state=0).fit(X, y))
-    {'n_leaves': 5, 'n_internal_nodes': 4, 'max_depth': 3}
+    {'n_leaves': 4, 'n_internal_nodes': 3, 'max_depth': 3}
     """
     if isinstance(model, RuleTree):
         leaves = model.get_leaf_nodes()

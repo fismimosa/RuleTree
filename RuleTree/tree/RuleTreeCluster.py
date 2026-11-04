@@ -52,7 +52,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         Minimum number of instances to split a node.
     max_depth : int, default=inf
         Maximum depth of the tree (the root has depth 0).
-    prune_useless_leaves : bool, default=False
+    prune_useless_leaves : bool, default=True
         Whether to merge, after fit, the sibling leaves with the same prediction.
     base_stumps : RuleTreeBaseStump or list, default=None
         Regression stumps used to split the nodes, fitted to predict a principal component. If None,
@@ -103,7 +103,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
                  max_leaf_nodes=float('inf'),
                  min_samples_split=2,
                  max_depth=float('inf'),
-                 prune_useless_leaves=False,
+                 prune_useless_leaves=True,
                  base_stumps: Union[RegressorMixin, list] = None,
                  random_state=None,
                  component_split: str = 'best'):
@@ -426,7 +426,7 @@ class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
         Minimum number of instances to split a node.
     max_depth : int, default=inf
         Maximum depth of the tree (the root has depth 0).
-    prune_useless_leaves : bool, default=False
+    prune_useless_leaves : bool, default=True
         Whether to merge, after fit, the sibling leaves with the same prediction.
     base_stumps : RuleTreeBaseStump or list, default=None
         Regression stumps used to split the nodes, fitted to predict a principal component. If None,
@@ -545,7 +545,7 @@ class RuleTreeClusterRegressor(RegressorMixin, RuleTreeCluster):
         Minimum number of instances to split a node.
     max_depth : int, default=inf
         Maximum depth of the tree (the root has depth 0).
-    prune_useless_leaves : bool, default=False
+    prune_useless_leaves : bool, default=True
         Whether to merge, after fit, the sibling leaves with the same prediction.
     base_stumps : RuleTreeBaseStump or list, default=None
         Regression stumps used to split the nodes, fitted to predict a principal component. If None,
