@@ -25,6 +25,7 @@ Transformers
    ShapeletTransformer
    ProximityTransformer
    PartialProximityTransformer
+   TfidfTransformer
 
 Splitters
 ---------

@@ -374,3 +374,32 @@ def test_pivot_distances_without_standardization(iris):
     distances = np.linalg.norm(X[:, None, :] - X[transformer.candidate_names_][None], axis=2)
 
     assert np.allclose(transformer.transform(X), distances, atol=1e-6)  # computed by scikit-learn as a dot product
+
+
+def test_tfidf_transformer():
+    """The TF-IDF weights of scikit-learn, one feature per word; a stump on texts, saved and loaded."""
+    from sklearn.feature_extraction.text import TfidfVectorizer
+
+    from RuleTree.stumps.Stump import Stump
+    from RuleTree.stumps.splitters import ClassificationSplitter
+    from RuleTree.stumps.transformers import TfidfTransformer
+    from RuleTree.tree.RuleTree import RuleTree
+
+    texts = np.array(["the team scored a goal", "a late goal in the final", "the team won the final",
+                      "the chef baked bread", "bread with garlic and oil", "the chef cooked the soup"] * 5)
+    y = np.array([0, 0, 0, 1, 1, 1] * 5)
+
+    transformer = TfidfTransformer(ngram_range=(1, 2)).fit(texts, y, data_type="text", context=None, node_id=None,
+                                                           cache=None)
+    expected = TfidfVectorizer(ngram_range=(1, 2)).fit(texts)
+    assert transformer.vocabulary_ == expected.get_feature_names_out().tolist()
+    assert np.allclose(transformer.transform(texts[:3]), expected.transform(texts[:3]).toarray())
+    assert transformer.supported_data_types == ("text",)
+
+    stump = Stump(TfidfTransformer(), ClassificationSplitter())
+    model = RuleTreeClassifier(max_depth=2, random_state=0, base_stumps=stump).fit(X_txt=texts, y=y)
+    loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))
+
+    assert np.mean(model.predict(X_txt=texts) == y) == 1.0
+    assert model.root.stump.feature_original in model.root.stump.transformer_.vocabulary_  # a word
+    assert np.array_equal(loaded.predict(X_txt=texts), model.predict(X_txt=texts))

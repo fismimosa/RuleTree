@@ -9,8 +9,9 @@ from .ProximityTransformer import ProximityTransformer
 from .PartialProximityTransformer import PartialProximityTransformer
 from .ProximityPivotTransformer import ProximityPivotTransformer
 from .ObliquePivotTransformer import ObliquePivotTransformer
+from .TfidfTransformer import TfidfTransformer
 
 __all__ = ["MatrixTransformer", "PivotTransformer", "ShapeletTransformer", "PartialPivotTransformer",
            "ObliqueTransformer", "HouseholderTransformer", "BivariateTransformer",
            "ProximityTransformer", "PartialProximityTransformer",
-           "ProximityPivotTransformer", "ObliquePivotTransformer"]
+           "ProximityPivotTransformer", "ObliquePivotTransformer", "TfidfTransformer"]
