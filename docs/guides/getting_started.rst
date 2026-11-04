@@ -95,16 +95,16 @@ The rules of the tree can be printed with the names of the features:
    |--- petal length (cm) <= 2.45
    |    output: 0
    |--- petal length (cm) > 2.45
-   |   |--- petal width (cm) <= 1.55
-   |   |   |--- petal length (cm) <= 4.95
-   |   |   |    output: 1
-   |   |   |--- petal length (cm) > 4.95
-   |   |   |    output: 2
-   |   |--- petal width (cm) > 1.55
-   |   |   |--- petal length (cm) <= 4.85
-   |   |   |    output: 1
-   |   |   |--- petal length (cm) > 4.85
-   |   |   |    output: 2
+       |--- petal width (cm) <= 1.55
+       |   |--- petal length (cm) <= 4.95
+       |   |    output: 1
+       |   |--- petal length (cm) > 4.95
+       |        output: 2
+       |--- petal width (cm) > 1.55
+           |--- petal length (cm) <= 4.85
+           |    output: 1
+           |--- petal length (cm) > 4.85
+                output: 2
 
 .. themed-figure:: /_static/figures/first_tree.svg
    :alt: The tree above drawn as boxes: the root splits on petal length at 2.45, then petal width

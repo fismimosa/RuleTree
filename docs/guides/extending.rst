@@ -175,7 +175,7 @@ the example belong to two classes with different levels:
    |--- max <= 2.099
    |    output: 0
    |--- max > 2.099
-   |    output: 1
+        output: 1
 
 
 A transformer with fitted state
@@ -403,12 +403,12 @@ keeps the one that reduces the variance most:
    |   |--- X_2 <= -0.026
    |   |    output: 94.49
    |   |--- X_2 > -0.026
-   |   |    output: 128.22
+   |        output: 128.22
    |--- X_8 > -0.002
-   |   |--- X_2 <= 0.012
-   |   |    output: 161.88
-   |   |--- X_2 > 0.012
-   |   |    output: 224.38
+       |--- X_2 <= 0.012
+       |    output: 161.88
+       |--- X_2 > 0.012
+            output: 224.38
 
 
 A stump with its own name and parameters
@@ -531,10 +531,10 @@ each feature at most once:
    |--- petal width (cm) <= 0.8
    |    output: 0
    |--- petal width (cm) > 0.8
-   |   |--- petal length (cm) <= 4.75
-   |   |    output: 1
-   |   |--- petal length (cm) > 4.75
-   |   |    output: 2
+       |--- petal length (cm) <= 4.75
+       |    output: 1
+       |--- petal length (cm) > 4.75
+            output: 2
    ['R', 'Rr']
 
 A decision tree with the same parameters splits ``Rr`` again on petal width.

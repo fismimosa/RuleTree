@@ -67,10 +67,10 @@ Quick example
          |--- petal width <= 0.8
          |    output: 0
          |--- petal width > 0.8
-         |   |--- petal width <= 1.75
-         |   |    output: 1
-         |   |--- petal width > 1.75
-         |   |    output: 2
+             |--- petal width <= 1.75
+             |    output: 1
+             |--- petal width > 1.75
+                  output: 2
 
    .. tab-item:: Regression
 
@@ -91,12 +91,12 @@ Quick example
          |   |--- bmi <= 0.006
          |   |    output: 96.31
          |   |--- bmi > 0.006
-         |   |    output: 159.74
+         |        output: 159.74
          |--- s5 > -0.004
-         |   |--- bmi <= 0.015
-         |   |    output: 162.68
-         |   |--- bmi > 0.015
-         |   |    output: 225.88
+             |--- bmi <= 0.015
+             |    output: 162.68
+             |--- bmi > 0.015
+                  output: 225.88
 
    .. tab-item:: Clustering
 
@@ -117,12 +117,12 @@ Quick example
          |   |--- x <= -0.131
          |   |    output: 3
          |   |--- x > -0.131
-         |   |    output: 4
+         |        output: 4
          |--- y > 1.772
-         |   |--- x <= -0.411
-         |   |    output: 5
-         |   |--- x > -0.411
-         |   |    output: 6
+             |--- x <= -0.411
+             |    output: 5
+             |--- x > -0.411
+                  output: 6
 
 Install it with ``pip install RuleTree`` (see :doc:`guides/getting_started` for the optional
 features).

@@ -1173,19 +1173,32 @@ class RuleTree(RuleTreeBase, ABC):
         indent : int, default=0
             Indentation level of the root.
         """
-      
-        indentation = "".join(["|   " for _ in range(indent)])
-        
+        cls._print_rules(rules, digits, "|   " * indent)
+
+    @classmethod
+    def _print_rules(cls, rules: dict, digits: int, prefix: str):
+        """
+        Print the rules of a subtree; the bars of ``prefix`` continue the branches still open above it.
+
+        Parameters
+        ----------
+        rules : dict
+            Rules of the subtree, as returned by :meth:`get_rules`.
+        digits : int
+            Number of decimals of the numerical outputs.
+        prefix : str
+            Text before each line of the subtree: a bar for each ancestor with a right branch still to
+            print, spaces otherwise.
+        """
         if rules["is_leaf"]:
             pred = rules['prediction']
-            print(f"{indentation} output: "
+            print(f"{prefix} output: "
                   f"{pred if type(pred) in [np.str_, np.bytes_, str] else np.round(pred, digits)}")
-            
         else:
-            print(f"{indentation}|--- {rules['textual_rule']}")
-            cls.print_rules(rules=rules['left_node'], digits=digits, indent=indent + 1)
-            print(f"{indentation}|--- {rules['not_textual_rule']}")
-            cls.print_rules(rules=rules['right_node'], digits=digits, indent=indent + 1)
+            print(f"{prefix}|--- {rules['textual_rule']}")
+            cls._print_rules(rules['left_node'], digits, prefix + "|   ")
+            print(f"{prefix}|--- {rules['not_textual_rule']}")
+            cls._print_rules(rules['right_node'], digits, prefix + "    ")
 
     def to_dict(self, filename=None):
         """

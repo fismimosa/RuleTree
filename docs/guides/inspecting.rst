@@ -31,13 +31,13 @@ Rules
    |--- petal width <= 0.8
    |    output: 0
    |--- petal width > 0.8
-   |   |--- petal width <= 1.75
-   |   |   |--- petal length <= 4.95
-   |   |   |    output: 1
-   |   |   |--- petal length > 4.95
-   |   |   |    output: 2
-   |   |--- petal width > 1.75
-   |   |    output: 2
+       |--- petal width <= 1.75
+       |   |--- petal length <= 4.95
+       |   |    output: 1
+       |   |--- petal length > 4.95
+       |        output: 2
+       |--- petal width > 1.75
+            output: 2
 
 Each node of the dictionary has its statistics and, for an internal node, the condition of the
 left child and its negation; the children are in ``left_node`` and ``right_node``:

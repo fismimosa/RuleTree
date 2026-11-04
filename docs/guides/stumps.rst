@@ -251,12 +251,12 @@ encoding of the categorical ones, all standardized, with any metric of
    |   |--- P_81 <= 0.04
    |   |    output: 1
    |   |--- P_81 > 0.04
-   |   |    output: 0
+   |        output: 0
    |--- P_280 > 0.877
-   |   |--- P_478 <= 1.239
-   |   |    output: 1
-   |   |--- P_478 > 1.239
-   |   |    output: 0
+       |--- P_478 <= 1.239
+       |    output: 1
+       |--- P_478 > 1.239
+            output: 0
    pivot of the root: 280
 
 In the rules, ``P_<i>`` is the distance from the training instance ``i``. The distance matrix of
@@ -360,10 +360,10 @@ for. The directions are chosen at each node in one of two ways (``oblique_split_
    |--- 0.951 * worst perimeter + 0.309 * worst smoothness <= 0.127
    |    output: 1
    |--- 0.951 * worst perimeter + 0.309 * worst smoothness > 0.127
-   |   |--- 0.809 * worst radius + 0.588 * worst concave points <= 0.129
-   |   |    output: 1
-   |   |--- 0.809 * worst radius + 0.588 * worst concave points > 0.129
-   |   |    output: 0
+       |--- 0.809 * worst radius + 0.588 * worst concave points <= 0.129
+       |    output: 1
+       |--- 0.809 * worst radius + 0.588 * worst concave points > 0.129
+            output: 0
    accuracy: 0.968
    axis-parallel: 0.942
 

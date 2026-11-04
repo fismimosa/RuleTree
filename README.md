@@ -42,10 +42,10 @@ model.print_rules(model.get_rules(columns_names=["sepal length", "sepal width",
 |--- petal width <= 0.8
 |    output: 0
 |--- petal width > 0.8
-|   |--- petal width <= 1.75
-|   |    output: 1
-|   |--- petal width > 1.75
-|   |    output: 2
+    |--- petal width <= 1.75
+    |    output: 1
+    |--- petal width > 1.75
+         output: 2
 ```
 
 Trees with other stumps and other types of data:
