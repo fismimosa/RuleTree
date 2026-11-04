@@ -1,10 +1,10 @@
 """FairSplitter: the best regression split under a fairness constraint, and the functions that evaluate it."""
 
+import os
 from concurrent.futures.process import ProcessPoolExecutor
 from typing import Union
 
 import numpy as np
-import psutil
 
 from RuleTree.base.RuleTreeBaseSplitter import RuleTreeBaseSplitter
 from RuleTree.exceptions import NoSplitFoundWarning
@@ -52,7 +52,7 @@ class FairSplitter(RuleTreeBaseSplitter):
         penalizing them.
     use_t : bool, default=True
         Whether t-closeness is part of the privacy constraints.
-    n_jobs : int, default=number of physical CPUs
+    n_jobs : int, default=number of CPUs
         Number of processes used to evaluate the features.
     criterion : {'squared_error', 'absolute_error', 'poisson'} or callable, default='squared_error'
         Impurity measure (see RegressionSplitter).
@@ -100,7 +100,7 @@ class FairSplitter(RuleTreeBaseSplitter):
                  t_closeness: float = .2,
                  strict: bool = True,
                  use_t: bool = True,
-                 n_jobs: int = psutil.cpu_count(logical=False),
+                 n_jobs: int = os.cpu_count(),
                  criterion='squared_error'):
         """Initialize the FairSplitter; see the class documentation for the parameters."""
         self.penalty = penalty

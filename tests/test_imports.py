@@ -29,7 +29,7 @@ def test_import_does_not_change_warning_filters():
     # third-party dependencies install their own filters on import: load them first
     run_python(
         "import warnings\n"
-        "import numpy, scipy, pandas, sklearn, numba, category_encoders, matplotlib.pyplot\n"
+        "import numpy, scipy, pandas, sklearn, numba, matplotlib.pyplot\n"
         "before = list(warnings.filters)\n"
         f"for module in {MODULES!r}: __import__(module)\n"
         "assert warnings.filters == before, 'importing RuleTree changed the warning filters'\n"
@@ -39,7 +39,7 @@ def test_import_does_not_change_warning_filters():
 def test_import_emits_no_warnings():
     run_python(
         "import warnings\n"
-        "import numpy, scipy, pandas, sklearn, numba, category_encoders, matplotlib.pyplot\n"
+        "import numpy, scipy, pandas, sklearn, numba, matplotlib.pyplot\n"
         "with warnings.catch_warnings(record=True) as caught:\n"
         "    warnings.simplefilter('always')\n"
         f"    for module in {MODULES!r}: __import__(module)\n"

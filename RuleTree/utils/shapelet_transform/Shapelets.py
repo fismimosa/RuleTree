@@ -1,12 +1,12 @@
 """Shapelets: the shapelet transform of time series used by the shapelet stumps."""
 
+import os
 import random
 
 import numba
 import numpy as np
 
 from numba import jit, prange, UnsupportedError
-import psutil
 from sklearn.base import TransformerMixin
 from sklearn.feature_selection import mutual_info_classif, mutual_info_regression
 
@@ -86,7 +86,7 @@ class Shapelets(TransformerMixin):
 
         self.shapelets = None
         if n_jobs == -1:
-            n_jobs = psutil.cpu_count()
+            n_jobs = os.cpu_count()
 
         if isinstance(distance, str) and distance not in self.__distances:
             raise UnsupportedError(f"Unsupported distance '{distance}'")

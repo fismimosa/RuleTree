@@ -5,11 +5,8 @@ RuleTreeCluster to decide whether a split improves the clustering.
 
 import numpy as np
 import pandas as pd
-from category_encoders import OrdinalEncoder
-
 from scipy import linalg
 from scipy.special import logsumexp
-from sklearn.compose import ColumnTransformer, make_column_selector
 
 
 def estimate_gaussian_covariances(X, nk, means, resp, reg_covar=1e-06):
@@ -261,9 +258,11 @@ def bic(X, labels):
 
     if X.dtype == np.dtype('O'):
         X = pd.DataFrame(X).infer_objects()
-        ct = ColumnTransformer([("cat", OrdinalEncoder(), make_column_selector(dtype_include="object"))],
-                               remainder='passthrough', verbose_feature_names_out=False, sparse_threshold=0, n_jobs=1)
-        X = ct.fit_transform(X)
+        for column in X.select_dtypes(include="object"):
+            # ordinal codes in order of appearance, the missing values last (as category_encoders.OrdinalEncoder)
+            codes = pd.factorize(X[column])[0]
+            X[column] = np.where(codes == -1, codes.max() + 1, codes)
+        X = X.to_numpy(dtype=float)
 
     n_records = X.shape[0]
     n_components = len(np.unique(labels))

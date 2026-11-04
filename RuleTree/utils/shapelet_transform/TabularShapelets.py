@@ -3,12 +3,12 @@ TabularShapelets: the transform of tabular data into distances from partial pivo
 partial-pivot stumps.
 """
 
+import os
 import random
 from itertools import combinations
 
 import numba
 import numpy as np
-import psutil
 from numba import UnsupportedError, jit
 from scipy.spatial.distance import cdist
 from sklearn.base import TransformerMixin
@@ -83,7 +83,7 @@ class TabularShapelets(TransformerMixin):
 
         self.shapelets = None
         if n_jobs == -1:
-            n_jobs = psutil.cpu_count()
+            n_jobs = os.cpu_count()
 
         if isinstance(distance, str) and distance not in self.__distances:
             raise UnsupportedError(f"Unsupported distance '{distance}'")

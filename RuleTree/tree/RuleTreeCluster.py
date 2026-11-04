@@ -7,12 +7,12 @@ import heapq
 from typing import Union, Optional
 
 import numpy as np
-import pandas as pd
 from sklearn.base import ClusterMixin, ClassifierMixin, RegressorMixin
 from sklearn.metrics import r2_score
 
 from RuleTree.utils.define import MODEL_TYPE_REG
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
+from RuleTree.base.RuleTreeBaseTransformer import get_feature_types
 from RuleTree.exceptions import NoSplitFoundWarning
 from RuleTree.stumps.regression.DecisionTreeStumpRegressor import DecisionTreeStumpRegressor
 from RuleTree.tree.RuleTree import RuleTree
@@ -246,9 +246,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         X = data[DATA_TYPE_TABULAR]
         n_components_split = min(self.n_components, len(idx))
 
-        dtypes = pd.DataFrame(X).infer_objects().dtypes
-        numerical = [i for i, dtype in enumerate(dtypes) if pd.api.types.is_numeric_dtype(dtype)]
-        categorical = [i for i, dtype in enumerate(dtypes) if not pd.api.types.is_numeric_dtype(dtype)]
+        numerical, categorical = get_feature_types(X)
 
         if len(categorical) == 0:  # all continuous
             principal_transform = light_famd.PCA(n_components=n_components_split, random_state=self.random_state)

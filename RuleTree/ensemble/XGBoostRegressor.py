@@ -1,6 +1,6 @@
 """XGBoostRegressor: gradient boosting with the trees of XGBoost."""
 
-from psutil import cpu_count
+from os import cpu_count
 
 from RuleTree.ensemble.GBoostRegressor import GBoostRegressor
 from RuleTree.stumps.regression.XGBoostStumpRegressor import XGBoostStumpRegressor
