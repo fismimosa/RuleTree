@@ -265,49 +265,18 @@ class RuleTreeRegressor(RegressorMixin, RuleTree):
         """
         return MODEL_TYPE_REG
         
-    def local_interpretation(self, X, joint_contribution = False):
+    def _node_value(self, node: RuleTreeNode):
         """
-        Contribution of each feature to the predictions, as in treeinterpreter: the prediction of an
-        instance is the one of the root (bias) plus the contributions of the features of the splits
-        along its path.
+        The value decomposed by local_interpretation: the prediction of the node.
 
-        Parameters
-        ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
-            Tabular data.
-        joint_contribution : bool, default=False
-            If True, the contributions are given to the sets of features along the path.
-
-        Returns
-        -------
-        prediction : numpy.ndarray of shape (n_samples,)
-            Prediction of the leaf of each instance.
-        bias : numpy.ndarray of shape (n_samples,)
-            Prediction of the root.
-        contributions : numpy.ndarray of shape (n_samples, n_features) or list of dict
-            Contribution of each feature (or set of features, with joint_contribution).
+        Raises
+        ------
+        ValueError
+            If the tree has several targets.
         """
         if getattr(self, "n_targets_", 1) > 1:
             raise ValueError("local_interpretation supports trees with a single target.")
-        leaves, paths, leaf_to_path, values = super().local_interpretation(X = X,
-                                                                           joint_contribution = joint_contribution)
-        
-        values = values.squeeze(axis=1)
-        biases = np.full(X.shape[0], values[paths[0][0]])
-        line_shape = X.shape[1]
-        
-        return super().eval_contributions(
-                                        leaves=leaves,
-                                        paths=paths,
-                                        leaf_to_path=leaf_to_path,
-                                        values=values,
-                                        biases=biases,
-                                        line_shape=line_shape,
-                                        joint_contribution=joint_contribution
-                                    )
-
-
-
+        return node.prediction
 
 def check_target(y) -> np.ndarray:
     """

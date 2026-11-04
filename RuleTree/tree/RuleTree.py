@@ -890,275 +890,57 @@ class RuleTree(RuleTreeBase, ABC):
             MODEL_TYPE_CLF or MODEL_TYPE_REG.
         """
 
-    def _get_tree_paths(self, current_node = None):
-        """
-        Paths from each leaf to the root.
-
-        Parameters
-        ----------
-        current_node : RuleTreeNode
-            Root of the subtree.
-
-        Returns
-        -------
-        paths : list of list of str
-            For each leaf, the node ids from the leaf to ``current_node``.
-        """
-        if current_node is None:
-            current_node = self.root
-
-        if current_node.is_leaf():
-            return [[current_node.node_id]]
-
-        paths = self._get_tree_paths(current_node.node_l) + self._get_tree_paths(current_node.node_r)
-        for path in paths:
-            path.append(current_node.node_id)
-
-        return paths
-    
-    def _node_dict(self, current_node=None, d=None, i=0):
-        """
-        Index of each node in depth-first order ('R': 0, 'Rl': 1, ...).
-
-        Parameters
-        ----------
-        current_node : RuleTreeNode, default=None
-            Root of the subtree. If None, the root of the tree.
-        d : dict, default=None
-            Dictionary being filled.
-        i : int, default=0
-            Next index.
-
-        Returns
-        -------
-        d : dict
-            Node id -> index.
-        i : int
-            Next free index.
-        """
-        if d is None:
-            d = {}
-            
-        if current_node is None:
-            current_node = self.root
-    
-        # Assign an index to the current node
-        if current_node.node_id not in d:
-            d[current_node.node_id] = i
-            i += 1
-    
-        if not current_node.is_leaf():
-            i = self._node_dict(current_node.node_l, d, i)[-1]
-            i = self._node_dict(current_node.node_r, d, i)[-1]
-    
-        return d, i
-
-    def _get_prediction_probas(self, current_node=None, probas=None):
-        """
-        Values of the nodes with a prediction in depth-first order (see _node_value), used by
-        local_interpretation.
-
-        Parameters
-        ----------
-        current_node : RuleTreeNode, default=None
-            Root of the subtree. If None, the root of the tree.
-        probas : list, default=None
-            List being filled.
-
-        Returns
-        -------
-        probas : list
-        """
-        if probas is None:
-            probas = []
-
-        if current_node is None:
-            current_node = self.root
-
-        if current_node.prediction is not None:
-            probas.append(self._node_value(current_node))
-
-        if current_node.node_l:
-            self._get_prediction_probas(current_node.node_l, probas)
-            self._get_prediction_probas(current_node.node_r, probas)
-
-        return probas
-
     def _node_value(self, node: RuleTreeNode):
-        """
-        Value of a node in _get_prediction_probas: by default its prediction.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-
-        Returns
-        -------
-        value : object
-        """
+        """The value of a node decomposed by local_interpretation: by default its prediction."""
         return node.prediction
 
-    def _tree_value(self):
+    def local_interpretation(self, X, joint_contribution=False):
         """
-        Values of the nodes in depth-first order (see _get_prediction_probas), as an array.
-
-        Returns
-        -------
-        values : numpy.ndarray of shape (n_nodes, 1, n_values)
-        """
-        probas = self._get_prediction_probas(self.root)
-        if isinstance(probas[0], (list, np.ndarray)):
-            return np.array(probas).reshape(-1, 1, len(probas[0]))
-        else:
-            return np.array(probas).reshape(-1, 1, 1)
-            
-    def _tree_feature(self, current_node = None, feats=None):
-        """
-        Feature of each node in depth-first order (-2 for the leaves), used by local_interpretation.
-
-        Parameters
-        ----------
-        current_node : RuleTreeNode, default=None
-            Root of the subtree. If None, the root of the tree.
-        feats : list, default=None
-            List being filled.
-
-        Returns
-        -------
-        feats : list
-        """
-        if feats is None:
-            feats = []
-            
-        if current_node is None:
-            current_node = self.root
-        
-        if current_node.is_leaf():
-            feats.append(-2)
-        else:
-            feats.append(current_node.stump.feature_original)
-            self._tree_feature(current_node.node_l, feats = feats)
-            self._tree_feature(current_node.node_r, feats = feats)
-        
-        return feats
-        
-        
-    def local_interpretation(self, X, joint_contribution = False):
-        """
-        Data needed to compute the contribution of each feature to the predictions (see the
-        implementations of RuleTreeClassifier and RuleTreeRegressor, which return the contributions).
+        Contribution of each feature to the predictions, as in treeinterpreter: the value of an instance
+        (its prediction, or its class probabilities for classification) is the value of the root (bias)
+        plus, for each split along its path, the change of value attributed to the feature of the split.
 
         Parameters
         ----------
         X : numpy.ndarray of shape (n_samples, n_features)
-            Tabular data.
+            Tabular data, split by stumps whose ``feature_original`` is a column.
         joint_contribution : bool, default=False
-            Not used here.
+            If True, the change of value of each split is given to the set of the features used so far
+            along the path.
 
         Returns
         -------
-        leaves : numpy.ndarray
-            Index of the leaf reached by each instance.
-        paths : list of list of int
-            Path from the root to each leaf.
-        leaf_to_path : dict
-            Leaf index -> its path.
-        values : numpy.ndarray
-            Values of the nodes (see _tree_value).
-        """
-        node_dict = self._node_dict()[0] #-> Turn 'R': 0, 'Rl' : 1, 'Rr' :2 and so on
-
-        leaves = np.array([node_dict[x] for x in self.apply(X)])
-        paths = [[node_dict[x] for x in path] for path in self._get_tree_paths(self.root)]
-        
-        for path in paths:
-            path.reverse()
-        
-        leaf_to_path = {}
-        
-        for path in paths:
-            leaf_to_path[path[-1]] = path
-            
-        values = self._tree_value().squeeze(axis = 1)
-        
-        return leaves, paths, leaf_to_path, values
-        
-    
-    def eval_contributions(self, 
-                           leaves, 
-                           paths, 
-                           leaf_to_path, 
-                           values, 
-                           biases,
-                           line_shape,
-                           joint_contribution = False):
-        """
-        Contributions of the features to the predictions, as in treeinterpreter: the prediction of an
-        instance is the value of the root (bias) plus the change of value along its path, attributed to
-        the feature of each split.
-
-        Parameters
-        ----------
-        leaves : numpy.ndarray
-            Index of the leaf reached by each instance.
-        paths : list of list of int
-            Path from the root to each leaf.
-        leaf_to_path : dict
-            Leaf index -> its path.
-        values : numpy.ndarray
-            Values of the nodes.
-        biases : numpy.ndarray
-            Value of the root, for each instance.
-        line_shape : int or tuple
-            Shape of the contributions of one instance.
-        joint_contribution : bool, default=False
-            If True, the contributions are given to the sets of features along the path.
-
-        Returns
-        -------
-        direct_prediction : numpy.ndarray
+        prediction : numpy.ndarray of shape (n_samples,) or (n_samples, n_classes)
             Value of the leaf of each instance.
-        biases : numpy.ndarray
+        bias : numpy.ndarray of shape (n_samples,) or (n_samples, n_classes)
             Value of the root.
-        contributions : numpy.ndarray or list of dict
-            Contribution of each feature (or set of features, with joint_contribution) to each prediction.
+        contributions : numpy.ndarray of shape (n_samples, n_features[, n_classes]) or list of dict
+            Contribution of each feature, or, with joint_contribution, a dictionary (tuple of features ->
+            contribution) for each instance.
         """
-        direct_prediction = values[leaves]
-        values_list = list(values)
-        feature_index = list(self._tree_feature())
-        
-        contributions = []
-        if joint_contribution:
-            for row, leaf in enumerate(leaves):
-                path = leaf_to_path[leaf]
-                
-                
-                path_features = set()
-                contributions.append({})
-                for i in range(len(path) - 1):
-                    path_features.add(feature_index[path[i]])
-                    contrib = values_list[path[i+1]] - \
-                             values_list[path[i]]
-                    contributions[row][tuple(sorted(path_features))] = \
-                        contributions[row].get(tuple(sorted(path_features)), 0) + contrib
-            return direct_prediction, biases, contributions
-        
-        else:
-            unique_contributions = {}
-            for leaf in np.unique(leaves):
-                path = leaf_to_path[leaf]
-                contribs = np.zeros(line_shape)
-                for i in range(len(path) - 1):
-                    contribs[feature_index[path[i]]] += values_list[path[i + 1]] - values_list[path[i]]
-                unique_contributions[leaf] = contribs
+        bias = np.asarray(self._node_value(self.root), dtype=float)
+        leaves = self.apply(X)
+        by_leaf = {}  # leaf -> its value and the contributions along its path
+        for leaf_id in np.unique(leaves):
+            path = [self.get_node_by_id(leaf_id[:end]) for end in range(1, len(leaf_id) + 1)]  # from the root
+            contributions = {} if joint_contribution else np.zeros((X.shape[1],) + bias.shape)
+            features = set()
+            for parent, child in zip(path, path[1:]):
+                change = np.asarray(self._node_value(child), dtype=float) - np.asarray(self._node_value(parent))
+                feature = parent.stump.feature_original
+                if joint_contribution:
+                    features.add(feature)
+                    key = tuple(sorted(features))
+                    contributions[key] = contributions.get(key, 0) + change
+                else:
+                    contributions[feature] += change
+            by_leaf[leaf_id] = (np.asarray(self._node_value(path[-1]), dtype=float), contributions)
 
-            return direct_prediction, biases, np.array([unique_contributions[leaf] for leaf in leaves])
+        prediction = np.array([by_leaf[leaf][0] for leaf in leaves])
+        contributions = [dict(by_leaf[leaf][1]) for leaf in leaves] if joint_contribution \
+            else np.array([by_leaf[leaf][1] for leaf in leaves])
+        return prediction, np.tile(bias, (len(leaves),) + (1,) * bias.ndim), contributions
 
-
-    
-    
-    
     @classmethod
     def print_rules(cls, rules: dict=None, digits=2, indent: int = 0, ):
         """

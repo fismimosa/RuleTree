@@ -191,63 +191,10 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
         return MODEL_TYPE_CLF
 
     def _node_value(self, node: RuleTreeNode):
-        """
-        Value of a node in _get_prediction_probas: its class probabilities.
+        """The value decomposed by local_interpretation: the class probabilities of the node."""
+        total = np.sum(node.prediction_probability)
+        return node.prediction_probability / (total if not np.isclose(total, 0.0, rtol=1e-09, atol=1e-09) else 1.0)
 
-        Parameters
-        ----------
-        node : RuleTreeNode
-            The node.
-
-        Returns
-        -------
-        probabilities : numpy.ndarray
-        """
-        return node.prediction_probability
-
-    def local_interpretation(self, X, joint_contribution = False):
-        """
-        Contribution of each feature to the predicted class probabilities, as in treeinterpreter: the
-        probabilities of an instance are the ones of the root (bias) plus the contributions of the
-        features of the splits along its path.
-
-        Parameters
-        ----------
-        X : numpy.ndarray of shape (n_samples, n_features)
-            Tabular data.
-        joint_contribution : bool, default=False
-            If True, the contributions are given to the sets of features along the path.
-
-        Returns
-        -------
-        prediction : numpy.ndarray of shape (n_samples, n_classes)
-            Class probabilities of the leaf of each instance.
-        bias : numpy.ndarray of shape (n_samples, n_classes)
-            Class probabilities of the root.
-        contributions : numpy.ndarray of shape (n_samples, n_features, n_classes) or list of dict
-            Contribution of each feature (or set of features, with joint_contribution).
-        """
-        leaves, paths, leaf_to_path, values = super().local_interpretation(X = X,
-                                                                           joint_contribution = joint_contribution)
-        normalizer = values.sum(axis=1)[:, np.newaxis]
-        normalizer[np.isclose(normalizer, 0.0, rtol=1e-09, atol=1e-09)] = 1.0
-        values /= normalizer
-
-        biases = np.tile(values[paths[0][0]], (X.shape[0], 1))
-        line_shape = (X.shape[1], self.n_classes_)
-        
-        return super().eval_contributions(
-                                        leaves=leaves,
-                                        paths=paths,
-                                        leaf_to_path=leaf_to_path,
-                                        values=values,
-                                        biases=biases,
-                                        line_shape=line_shape,
-                                        joint_contribution=joint_contribution
-                                    )
-   
-
-    
     def get_balanced_stumps(self, current_node=None, stumps=None, p=0.2):
         """
         Internal nodes whose split is balanced: the smaller side has a fraction of the training set

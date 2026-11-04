@@ -108,6 +108,14 @@ def test_print_rules_digits_in_all_the_leaves(diabetes, capsys):
     assert len(outputs) == 4 and all(output.endswith(".0") for output in outputs)
 
 
-def test_tree_paths_from_the_root_by_default(model):
-    assert model._get_tree_paths() == model._get_tree_paths(model.root)
-    assert {path[0] for path in model._get_tree_paths()} == set(model.get_leaf_nodes())
+@pytest.mark.parametrize("joint_contribution", [False, True])
+def test_local_interpretation_of_a_regressor(diabetes, joint_contribution):
+    from RuleTree import RuleTreeRegressor
+    X, y = diabetes
+    model = RuleTreeRegressor(max_depth=3, random_state=0).fit(X, y)
+
+    prediction, bias, contributions = model.local_interpretation(X, joint_contribution=joint_contribution)
+
+    assert np.allclose(prediction, model.predict(X))
+    totals = [sum(c.values()) for c in contributions] if joint_contribution else contributions.sum(axis=1)
+    assert np.allclose(prediction, bias + np.array(totals))

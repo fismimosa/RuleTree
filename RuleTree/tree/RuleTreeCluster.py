@@ -391,7 +391,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         """
         return MODEL_TYPE_REG
 
-    def _get_prediction_probas(self, current_node = None, probas=None):
+    def _node_value(self, node: RuleTreeNode):
         """
         Not implemented for clustering.
 
@@ -399,8 +399,7 @@ class RuleTreeCluster(ClusterMixin, RuleTree):
         ------
         NotImplementedError
         """
-        raise NotImplementedError()
-
+        raise NotImplementedError("local_interpretation is not available for the clustering trees")
 
 class RuleTreeClusterClassifier(ClassifierMixin, RuleTreeCluster):
     """
