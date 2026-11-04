@@ -228,18 +228,22 @@ def figure_stump_components(output_dir):
     arrow(ax, (7.65, y), (8.65, y), "fit", text_offset=(0, 0.18))
     arrow(ax, (10.15, y), (10.9, y), "apply", text_offset=(0, 0.18))
 
-    arrow(ax, (9.4, y - 0.45), (3.9, y - 0.45), "select(chosen feature): keep only what it needs",
-          linestyle="--", style="-|>", text_offset=(0, -0.17))
+    # select: from the bottom of the splitter, below the boxes, up to the bottom of the transformer
+    below = y - 0.8
+    ax.plot([9.4, 9.4, 3.5], [y - 0.47, below, below], color=MUTED, linewidth=1, linestyle="--")
+    arrow(ax, (3.5, below), (3.5, y - 0.45), linestyle="--")
+    ax.text(6.45, below - 0.17, "select(chosen feature): keep only what it needs", ha="center", va="center",
+            fontsize=8, color=MUTED)
 
     notes = [
-        (3.5, 1.05, "MatrixTransformer, PivotTransformer,\nShapeletTransformer, ObliqueTransformer, ...\n"
+        (3.5, 0.8, "MatrixTransformer, PivotTransformer,\nShapeletTransformer, ObliqueTransformer, ...\n"
                     "fit on the whole data + indices of the node;\ncache of the tree shared by the nodes"),
-        (9.4, 1.15, "ClassificationSplitter, RegressionSplitter,\nXGBoostSplitter, FairSplitter, ...\n"
+        (9.4, 0.9, "ClassificationSplitter, RegressionSplitter,\nXGBoostSplitter, FairSplitter, ...\n"
                     "feature_, threshold_, gain_"),
     ]
     for x, y_note, text in notes:
         ax.text(x, y_note, text, ha="center", va="center", fontsize=8, color=MUTED)
-    ax.text(6.5, 0.2, "to_dict saves the parameters of both and their fitted state (get_state); "
+    ax.text(6.5, 0.05, "to_dict saves the parameters of both and their fitted state (get_state); "
                       "from_dict restores it (set_state)", ha="center", fontsize=8, color=MUTED, style="italic")
     save(figure, output_dir, "stump_components")
 

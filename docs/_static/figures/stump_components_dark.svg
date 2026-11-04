@@ -135,14 +135,20 @@ z
 " clip-path="url(#pf4cbfb3435)" style="fill: #a3abb5; stroke: #a3abb5; stroke-linecap: round"/>
    </g>
    <g id="patch_11">
-    <path d="M 442.298051 88.358 
-Q 316.424908 88.358 191.6698 88.358 
+    <path d="M 169.95 104.684068 
+Q 169.95 97.519491 169.95 91.472948 
 " clip-path="url(#pf4cbfb3435)" style="fill: none; stroke-dasharray: 3.7,1.6; stroke-dashoffset: 0; stroke: #a3abb5; stroke-linecap: round"/>
-    <path d="M 195.6698 90.358 
-L 191.6698 88.358 
-L 195.6698 86.358 
+    <path d="M 167.95 95.472948 
+L 169.95 91.472948 
+L 171.95 95.472948 
 z
 " clip-path="url(#pf4cbfb3435)" style="fill: #a3abb5; stroke-dasharray: 3.7,1.6; stroke-dashoffset: 0; stroke: #a3abb5; stroke-linecap: round"/>
+   </g>
+   <g id="line2d_1">
+    <path d="M 444.3 89.4052 
+L 444.3 106.684 
+L 169.95 106.684 
+" clip-path="url(#pf4cbfb3435)" style="fill: none; stroke-dasharray: 3.7,1.6; stroke-dashoffset: 0; stroke: #a3abb5"/>
    </g>
    <g id="text_1">
     <!-- data of one type -->
@@ -1196,7 +1202,7 @@ z
    </g>
    <g id="text_9">
     <!-- select(chosen feature): keep only what it needs -->
-    <g style="fill: #a3abb5" transform="translate(221.058125 99.337637) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(211.758125 117.663637) scale(0.08 -0.08)">
      <defs>
       <path id="DejaVuSans-1d" d="M 750 794 
 L 1409 794 
@@ -1293,7 +1299,7 @@ z
    </g>
    <g id="text_10">
     <!-- MatrixTransformer, PivotTransformer, -->
-    <g style="fill: #a3abb5" transform="translate(95.721875 128.393156) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(95.721875 141.483156) scale(0.08 -0.08)">
      <defs>
       <path id="DejaVuSans-30" d="M 628 4666 
 L 1569 4666 
@@ -1392,7 +1398,7 @@ z
      <use xlink:href="#DejaVuSans-f" transform="translate(1823.921875 0)"/>
     </g>
     <!-- ShapeletTransformer, ObliqueTransformer, ... -->
-    <g style="fill: #a3abb5" transform="translate(79.935625 137.995344) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(79.935625 151.085344) scale(0.08 -0.08)">
      <defs>
       <path id="DejaVuSans-36" d="M 3425 4513 
 L 3425 3897 
@@ -1552,7 +1558,7 @@ z
      <use xlink:href="#DejaVuSans-11" transform="translate(2218.578125 0)"/>
     </g>
     <!-- fit on the whole data + indices of the node; -->
-    <g style="fill: #a3abb5" transform="translate(82.894375 147.597531) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(82.894375 160.687531) scale(0.08 -0.08)">
      <defs>
       <path id="DejaVuSans-e" d="M 2944 4013 
 L 2944 2272 
@@ -1630,7 +1636,7 @@ z
      <use xlink:href="#DejaVuSans-1e" transform="translate(2142.703125 0)"/>
     </g>
     <!-- cache of the tree shared by the nodes -->
-    <g style="fill: #a3abb5" transform="translate(93.573125 157.199719) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(93.573125 170.289719) scale(0.08 -0.08)">
      <use xlink:href="#DejaVuSans-46"/>
      <use xlink:href="#DejaVuSans-44" transform="translate(54.984375 0)"/>
      <use xlink:href="#DejaVuSans-46" transform="translate(116.265625 0)"/>
@@ -1672,7 +1678,7 @@ z
    </g>
    <g id="text_11">
     <!-- ClassificationSplitter, RegressionSplitter, -->
-    <g style="fill: #a3abb5" transform="translate(363.054375 127.95825) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(363.054375 141.04825) scale(0.08 -0.08)">
      <defs>
       <path id="DejaVuSans-26" d="M 4122 4306 
 L 4122 3641 
@@ -1768,7 +1774,7 @@ z
      <use xlink:href="#DejaVuSans-f" transform="translate(1999.359375 0)"/>
     </g>
     <!-- XGBoostSplitter, FairSplitter, ... -->
-    <g style="fill: #a3abb5" transform="translate(382.04375 137.560437) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(382.04375 150.650437) scale(0.08 -0.08)">
      <defs>
       <path id="DejaVuSans-2a" d="M 3809 666 
 L 3809 1919 
@@ -1877,7 +1883,7 @@ z
      <use xlink:href="#DejaVuSans-11" transform="translate(1524.625 0)"/>
     </g>
     <!-- feature_, threshold_, gain_ -->
-    <g style="fill: #a3abb5" transform="translate(391.299375 147.162625) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(391.299375 160.252625) scale(0.08 -0.08)">
      <use xlink:href="#DejaVuSans-49"/>
      <use xlink:href="#DejaVuSans-48" transform="translate(35.203125 0)"/>
      <use xlink:href="#DejaVuSans-44" transform="translate(96.734375 0)"/>
@@ -1909,7 +1915,7 @@ z
    </g>
    <g id="text_12">
     <!-- to_dict saves the parameters of both and their fitted state (get_state); from_dict restores it (set_state) -->
-    <g style="fill: #a3abb5" transform="translate(103.93625 185.224) scale(0.08 -0.08)">
+    <g style="fill: #a3abb5" transform="translate(103.93625 193.078) scale(0.08 -0.08)">
      <defs>
       <path id="DejaVuSans-Oblique-57" d="M 2706 3500 
 L 2619 3053 
