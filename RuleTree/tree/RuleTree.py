@@ -8,7 +8,6 @@ import importlib
 import json
 import numbers
 import random
-import tempfile
 import traceback
 import warnings
 from abc import ABC, abstractmethod
@@ -1097,13 +1096,12 @@ class RuleTree(RuleTreeBase, ABC):
             Whether to draw the training instances used by the splits, e.g. the pivots, as in
             ``plot_tree``. The shapelets are always drawn.
         filename : str, default=None
-            If given, the graph is rendered to this file; otherwise it is rendered to a temporary file
-            and opened (both require the Graphviz binaries).
+            If given, the graph is also rendered to this file (it requires the Graphviz programs).
 
         Returns
         -------
-        graph : graphviz.Digraph or None
-            The graph, if filename is None.
+        graph : graphviz.Digraph
+            The graph: ``graph.source`` is its DOT source, and ``graph.render`` draws it.
 
         Examples
         --------
@@ -1111,18 +1109,18 @@ class RuleTree(RuleTreeBase, ABC):
         >>> from RuleTree import RuleTreeClassifier
         >>> iris = load_iris()
         >>> model = RuleTreeClassifier(max_depth=2, random_state=0).fit(iris.data, iris.target)
-        >>> graph = model.root.export_graphviz(columns_names=iris.feature_names,
-        ...                                    class_names=list(iris.target_names))  # doctest: +SKIP
+        >>> graph = model.export_graphviz(columns_names=iris.feature_names,
+        ...                               class_names=list(iris.target_names))  # doctest: +SKIP
         >>> graph.render("iris_tree", format="png")  # doctest: +SKIP
         """
-        dot = self.root.export_graphviz(columns_names=columns_names, class_names=class_names, scaler=scaler,
-                                       float_precision=float_precision, max_depth=max_depth, node_ids=node_ids,
-                                       samples=samples, filled=filled, colors=colors, wrap=wrap, show_media=show_media)
-        if filename is None:
-            dot.render(directory=tempfile.mkdtemp(), view=True)
-            return dot
-        else:
-            dot.render(filename=filename)
+        from RuleTree.utils.plotting import export_graphviz
+
+        graph = export_graphviz(self.root, columns_names=columns_names, class_names=class_names, scaler=scaler,
+                                float_precision=float_precision, max_depth=max_depth, node_ids=node_ids,
+                                samples=samples, filled=filled, colors=colors, wrap=wrap, show_media=show_media)
+        if filename is not None:
+            graph.render(filename=filename)
+        return graph
 
     def plot_tree(self, ax=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
                   max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None,
@@ -1192,10 +1190,11 @@ class RuleTree(RuleTreeBase, ABC):
         >>> [text.get_text().split("\\n")[1] for text in ax.texts if text.get_gid() in ("R", "Rl")]
         ['petal width (cm) <= 0.8', 'class = setosa']
         """
-        return self.root.plot_tree(ax, columns_names=columns_names, class_names=class_names, scaler=scaler,
-                                   float_precision=float_precision, max_depth=max_depth, node_ids=node_ids,
-                                   samples=samples, filled=filled, fontsize=fontsize, colors=colors, wrap=wrap,
-                                   show_media=show_media)
+        from RuleTree.utils.plotting import plot_tree
+
+        return plot_tree(self.root, ax, columns_names=columns_names, class_names=class_names, scaler=scaler,
+                         float_precision=float_precision, max_depth=max_depth, node_ids=node_ids, samples=samples,
+                         filled=filled, fontsize=fontsize, colors=colors, wrap=wrap, show_media=show_media)
 
     def get_predicates(self):
         """

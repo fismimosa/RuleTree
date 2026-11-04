@@ -18,7 +18,7 @@ from RuleTree.stumps.classification import (ObliquePivotTreeStumpClassifier, Piv
                                             ShapeletTreeStumpClassifier)
 from RuleTree.tree.RuleTree import RuleTree  # noqa: E402
 from RuleTree.utils.data_utils import json_numpy_encoder  # noqa: E402
-from RuleTree.utils.plotting import DEFAULT_COLORS, PLACEHOLDER  # noqa: E402
+from RuleTree.utils.plotting import DEFAULT_COLORS, PLACEHOLDER, plot_tree  # noqa: E402
 
 from .test_stumps import time_series  # noqa: E402,F401 (fixture of the stumps)
 
@@ -180,7 +180,7 @@ def test_boxes_do_not_overlap(diabetes):
 def test_draws_on_given_axes_and_subtree(classifier):
     figure, ax = plt.subplots()
 
-    result = classifier.get_node_by_id("Rr").plot_tree(ax)
+    result = plot_tree(classifier.get_node_by_id("Rr"), ax)
 
     assert result is ax and len(figure.axes) == 1
     assert set(boxes(ax)) == {node_id for node_id in classifier.get_predicates() | classifier.get_leaf_nodes()
@@ -251,7 +251,7 @@ def test_proximity_shapelets_on_the_arrows(bumps_and_dips):
 def test_graphviz_has_the_boxes_and_arrows_of_plot_tree(classifier):
     pytest.importorskip("graphviz")
 
-    source = classifier.root.export_graphviz().source
+    source = classifier.export_graphviz().source
 
     for node_id, node in classifier.get_predicates().items():
         rule = node.stump.get_rule()["textual_rule"].replace("<", "&lt;")
@@ -276,9 +276,9 @@ def test_graphviz_draws_the_media_into_png_files(bumps_and_dips, tmp_path, monke
     proximity = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=ProximityTreeStumpClassifier(
         n_shapelets=4, sliding_window=10, selection="random", random_state=0)).fit(X_ts=X, y=y)
 
-    images = re.findall(r'IMG SRC="([^"]+)"', shapelet.root.export_graphviz().source)
+    images = re.findall(r'IMG SRC="([^"]+)"', shapelet.export_graphviz().source)
     assert [os.path.basename(image) for image in images] == ["R.png"]
-    images = re.findall(r'IMG SRC="([^"]+)"', proximity.root.export_graphviz().source)
+    images = re.findall(r'IMG SRC="([^"]+)"', proximity.export_graphviz().source)
     assert [os.path.basename(image) for image in images] == ["R-true.png", "R-false.png"]
     assert all(os.path.dirname(image).startswith(str(tmp_path)) and os.path.getsize(image) > 0 for image in images)
 

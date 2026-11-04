@@ -1,5 +1,5 @@
 """
-Drawing of a tree with matplotlib (``RuleTree.plot_tree`` and ``RuleTreeNode.plot_tree``), in the
+Drawing of a tree, or of a subtree from its root node, with matplotlib (``RuleTree.plot_tree``), in the
 style of ``sklearn.tree.plot_tree``, and as a Graphviz graph (``export_graphviz``) with the same boxes.
 
 Each internal node shows what its stump returns from ``get_plot_rule``: the rule as text and the

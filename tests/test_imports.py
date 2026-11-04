@@ -75,7 +75,7 @@ def test_optional_dependencies_are_needed_only_by_their_features():
         "outside = {'context': None, 'node_id': None, 'cache': None}\n"
         "for fit in [lambda: ShapeletTreeStumpClassifier().fit(X, y, data_type='ts', **outside),\n"
         "            lambda: PartialPivotTreeStumpClassifier().fit(X[:, 0], y, **outside),\n"
-        "            lambda: model.root.export_graphviz(),\n"
+        "            lambda: model.export_graphviz(),\n"
         "            lambda: model.plot_tree(),\n"
         "            lambda: ImageEmbedder().fit(),\n"
         "            lambda: TextEmbedder().fit()]:\n"

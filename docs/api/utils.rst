@@ -27,8 +27,8 @@ Optional dependencies
 Drawing
 -------
 
-``RuleTree.plot_tree`` and ``RuleTreeNode.plot_tree`` draw with this module; its default colors
-are ``DEFAULT_COLORS``.
+``RuleTree.plot_tree`` and ``RuleTree.export_graphviz`` draw with this module, whose functions also
+draw a subtree from its root node; its default colors are ``DEFAULT_COLORS``.
 
 .. automodule:: RuleTree.utils.plotting
    :no-members:
@@ -40,6 +40,7 @@ are ``DEFAULT_COLORS``.
    :nosignatures:
 
    plot_tree
+   export_graphviz
 
 Embeddings
 ----------

@@ -62,7 +62,7 @@ def test_print_rules(model, capsys):
 def test_export_graphviz(model):
     pytest.importorskip("graphviz")
 
-    graph = model.root.export_graphviz()
+    graph = model.export_graphviz()
 
     assert "R ->" in graph.source
 

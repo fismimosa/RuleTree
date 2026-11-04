@@ -111,7 +111,8 @@ stumps their pivots (see `Drawing the instances of the splits`_). Its options:
   background (the figures of this documentation are drawn so);
 - ``scaler`` and ``float_precision``: as for ``get_rule``.
 
-``plot_tree`` is also a method of the nodes, to draw a subtree: ``model.get_node_by_id("Rr").plot_tree()``.
+To draw a subtree, the function ``RuleTree.utils.plotting.plot_tree`` takes its root, e.g.
+``plot_tree(model.get_node_by_id("Rr"))``, and the same options.
 
 Drawing the instances of the splits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -172,7 +173,7 @@ source can be read or saved; rendering it to an image also requires the Graphviz
 
 .. code-block:: python
 
-   graph = model.root.export_graphviz(columns_names=names)
+   graph = model.export_graphviz(columns_names=names)
    print(next(line.strip() for line in graph.source.splitlines() if line.strip().startswith("R ")))
 
 .. code-block:: text
