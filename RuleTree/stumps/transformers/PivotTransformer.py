@@ -23,7 +23,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
     Time series and images are flattened into one feature per value, so a tree can have pivot stumps
     on each of its data types (e.g. with ``base_stumps`` as tuples with the data types of each stump).
     The candidates are selected among the instances of the node. The distances are computed on the
-    numerical features and on the one-hot encoding of the categorical ones, all standardized (z-score);
+    numerical features and on the one-hot encoding of the categorical ones, all standardized (z-score)
+    if ``standardize``;
     the encoding, the scaler and the distance matrix of the whole data set are computed once and cached
     in the tree. After the splitter has chosen a column, only the chosen pivot is kept (``select``).
 
@@ -46,6 +47,9 @@ class PivotTransformer(RuleTreeBaseTransformer):
         pivot (quantiles). None for ``max(256, sqrt(n))``.
     tree_params : dict, default=None
         Parameters of the decision trees that select the discriminative pivots.
+    standardize : bool, default=True
+        Whether the features (or the embeddings) are standardized (z-score) before the distances, so that
+        each of them weighs the same.
     embedder : transformer, default=None
         Transformer of the data into vectors (e.g. ``RuleTree.utils.embeddings.ImageEmbedder``): the
         distances (``distance_measure``) are computed on the standardized embeddings; with it, also texts
@@ -72,8 +76,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
     categories_ : list of list
         Values of each categorical feature in the whole data set, the columns of its one-hot encoding;
         a value not seen in training is encoded as all zeros.
-    scaler_ : StandardScaler
-        Scaler of the encoded features, fitted on the whole data set.
+    scaler_ : StandardScaler or None
+        Scaler of the encoded features, fitted on the whole data set; None if not ``standardize``.
     media_ : dict
         Index in the training set -> the training instance as given to ``fit`` (e.g. an image), for the
         pivots of the split, drawn by ``plot_tree(show_media=True)``. Set by ``select``.
@@ -98,7 +102,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
     """
 
     def __init__(self, ml_task=MODEL_TYPE_CLF, distance_measure='euclidean', k=None, reg_contrast_lambda=.2,
-                 reg_max_thresholds=None, tree_params=None, embedder=None):
+                 reg_max_thresholds=None, tree_params=None, standardize=True, embedder=None):
         """Initialize the PivotTransformer; see the class documentation for the parameters."""
         self.ml_task = ml_task
         self.distance_measure = distance_measure
@@ -106,6 +110,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
         self.reg_contrast_lambda = reg_contrast_lambda
         self.reg_max_thresholds = reg_max_thresholds
         self.tree_params = tree_params
+        self.standardize = standardize
         self.embedder = embedder
 
     @property
@@ -160,7 +165,7 @@ class PivotTransformer(RuleTreeBaseTransformer):
             raise NoSplitFoundWarning(f"{self.__class__.__name__} needs at least one feature")
 
         self.categories_, self.scaler_, distance_matrix = _pivot_cache(
-            X, self.num_pre_transformed_, self.cat_pre_transformed_, self.distance_measure, key,
+            X, self.num_pre_transformed_, self.cat_pre_transformed_, self.distance_measure, self.standardize, key,
             self._get_cache(cache))
         X_scaled = self._encode(X[idx])
 
@@ -203,7 +208,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
 
     def _encode(self, X):
         """
-        Standardized features of vectors: the numerical ones and the one-hot encoding of the categorical ones.
+        Features of vectors, standardized if ``standardize``: the numerical ones and the one-hot encoding of the
+        categorical ones.
 
         Parameters
         ----------
@@ -214,8 +220,8 @@ class PivotTransformer(RuleTreeBaseTransformer):
         -------
         X_encoded : numpy.ndarray of shape (n_samples, n_encoded_features)
         """
-        return self.scaler_.transform(_one_hot(X, self.num_pre_transformed_, self.cat_pre_transformed_,
-                                               self.categories_))
+        X_encoded = _one_hot(X, self.num_pre_transformed_, self.cat_pre_transformed_, self.categories_)
+        return X_encoded if self.scaler_ is None else self.scaler_.transform(X_encoded)
 
     def _embedder(self):
         """The embedder, fitted without data (it is pretrained or stateless)."""
@@ -397,13 +403,15 @@ def scaler_state(scaler: StandardScaler) -> dict:
 
     Parameters
     ----------
-    scaler : StandardScaler
-        Fitted scaler.
+    scaler : StandardScaler or None
+        Fitted scaler, None without standardization.
 
     Returns
     -------
-    state : dict
+    state : dict or None
     """
+    if scaler is None:
+        return None
     return {
         'mean_': scaler.mean_.tolist(),
         'scale_': scaler.scale_.tolist(),
@@ -418,13 +426,15 @@ def scaler_from_state(state: dict) -> StandardScaler:
 
     Parameters
     ----------
-    state : dict
+    state : dict or None
         State of the scaler.
 
     Returns
     -------
     scaler : StandardScaler
     """
+    if state is None:  # without standardization
+        return None
     scaler = StandardScaler()
     scaler.mean_ = np.array(state['mean_'])
     scaler.scale_ = np.array(state['scale_'])
@@ -519,19 +529,20 @@ def _one_hot(X, numerical, categorical, categories) -> np.ndarray:
     return np.hstack(columns)
 
 
-def _pivot_cache(X, numerical, categorical, distance_measure, data_type, cache):
+def _pivot_cache(X, numerical, categorical, distance_measure, standardize, data_type, cache):
     """
-    Values of the categorical features, scaler of the encoded features and distance matrix of the whole
-    data set X, encoded and standardized, stored in the cache of the transformer so that they are
-    computed once per data type and distance.
+    Values of the categorical features, scaler of the encoded features (None if not standardize) and
+    distance matrix of the whole data set X, encoded and standardized, stored in the cache of the
+    transformer so that they are computed once per data type, distance and standardization.
     """
     cache = {} if cache is None else cache
-    key = ("pivot", data_type, distance_measure)
+    key = ("pivot", data_type, distance_measure, standardize)
     if key not in cache:
         categories = categories_state([np.unique(X[:, feature]) for feature in categorical])
         X_encoded = _one_hot(X, numerical, categorical, categories)
-        scaler = StandardScaler().fit(X_encoded)
+        scaler = StandardScaler().fit(X_encoded) if standardize else None
         # the same scale as the distances from the pivots in transform
-        cache[key] = (categories, scaler, pairwise_distances(scaler.transform(X_encoded), metric=distance_measure))
+        X_scaled = X_encoded if scaler is None else scaler.transform(X_encoded)
+        cache[key] = (categories, scaler, pairwise_distances(X_scaled, metric=distance_measure))
 
     return cache[key]

@@ -62,7 +62,7 @@ class PivotTreeStump:
         return PivotTransformer(ml_task=self.task, distance_measure=self.distance_measure, k=self.k,
                                 reg_contrast_lambda=self.reg_contrast_lambda,
                                 reg_max_thresholds=self.reg_max_thresholds, tree_params=self._splitter_params(),
-                                embedder=self.embedder)
+                                standardize=self.standardize, embedder=self.embedder)
 
     @property
     def X_split_instance(self):
@@ -164,7 +164,8 @@ class ProximityPivotTreeStump:
         transformer : ProximityPivotTransformer
         """
         return ProximityPivotTransformer(ml_task=self.task, distance_measure=self.distance_measure,
-                                         tree_params=self._splitter_params(), embedder=self.embedder,
+                                         tree_params=self._splitter_params(), standardize=self.standardize,
+                                         embedder=self.embedder,
                                          **self._selection_params())
 
     def get_pivots(self):
@@ -248,7 +249,8 @@ class ObliquePivotTreeStump:
                                        tree_params=self._splitter_params(),
                                        oblique_split_type=self.oblique_split_type,
                                        max_oblique_features=self.max_oblique_features, tau=self.tau,
-                                       n_orientations=self.n_orientations, embedder=self.embedder)
+                                       n_orientations=self.n_orientations, standardize=self.standardize,
+                                       embedder=self.embedder)
 
     @property
     def coefficients(self):

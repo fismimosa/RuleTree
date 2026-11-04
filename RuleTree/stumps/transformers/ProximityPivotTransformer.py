@@ -43,6 +43,8 @@ class ProximityPivotTransformer(PivotTransformer):
         Householder only: threshold of the reflection.
     n_orientations : int, default=10
         Bivariate only: number of angles.
+    standardize : bool, default=True
+        Whether the features are standardized before the distances (see PivotTransformer).
     embedder : transformer, default=None
         Transformer of the data into vectors, applied before the distances (see PivotTransformer).
 
@@ -81,11 +83,11 @@ class ProximityPivotTransformer(PivotTransformer):
 
     def __init__(self, ml_task=MODEL_TYPE_CLF, distance_measure='euclidean', k=None, reg_contrast_lambda=.2,
                  reg_max_thresholds=None, tree_params=None, discriminative='tree', max_oblique_features=2, tau=1e-4,
-                 n_orientations=10, embedder=None):
+                 n_orientations=10, standardize=True, embedder=None):
         """Initialize the ProximityPivotTransformer; see the class documentation for the parameters."""
         super().__init__(ml_task=ml_task, distance_measure=distance_measure, k=k,
                          reg_contrast_lambda=reg_contrast_lambda, reg_max_thresholds=reg_max_thresholds,
-                         tree_params=tree_params, embedder=embedder)
+                         tree_params=tree_params, standardize=standardize, embedder=embedder)
         self.discriminative = discriminative
         self.max_oblique_features = max_oblique_features
         self.tau = tau

@@ -59,7 +59,7 @@ def test_pivot_transformer(iris):
     candidates = len(transformer.candidates_)
     assert transformer.transform(X[idx]).shape == (len(idx), candidates)
     assert set(transformer.candidate_names_) <= set(idx)  # pivots are instances of the node
-    assert ("pivot", DATA_TYPE_TABULAR, "euclidean") in tree.get_cache(transformer.cache_namespace())
+    assert ("pivot", DATA_TYPE_TABULAR, "euclidean", True) in tree.get_cache(transformer.cache_namespace())
 
     name = transformer.feature_id(1)
     distances = transformer.transform(X)[:, 1]
@@ -351,3 +351,26 @@ def test_pivots_do_not_depend_on_the_scale_of_the_features():
     pivots_rescaled = sklearn.clone(transformer).fit(X_rescaled, y, context=None, node_id=None, cache=None).pivots_
 
     assert pivots == pivots_rescaled
+
+
+@pytest.mark.parametrize("transformer_class", [PivotTransformer, ProximityPivotTransformer, ObliquePivotTransformer])
+def test_pivot_transformers_without_standardization(transformer_class, iris):
+    """With standardize=False the distances are on the features as they are; the state is saved without scaler."""
+    X, y = iris
+    transformer = transformer_class(standardize=False).fit(X, y, context=None, node_id=None, cache=None)
+    standardized = transformer_class().fit(X, y, context=None, node_id=None, cache=None)
+
+    assert transformer.scaler_ is None
+    assert np.allclose(transformer.candidates_, X[transformer.candidate_names_])
+    assert not np.allclose(standardized.candidates_, X[standardized.candidate_names_])
+    loaded = sklearn.clone(transformer).set_state(json_round_trip(transformer.get_state()))
+    assert np.allclose(loaded.transform(X)[:, 0], transformer.transform(X)[:, 0])
+
+
+def test_pivot_distances_without_standardization(iris):
+    X, y = iris
+    transformer = PivotTransformer(standardize=False).fit(X, y, context=None, node_id=None, cache=None)
+
+    distances = np.linalg.norm(X[:, None, :] - X[transformer.candidate_names_][None], axis=2)
+
+    assert np.allclose(transformer.transform(X), distances, atol=1e-6)  # computed by scikit-learn as a dot product

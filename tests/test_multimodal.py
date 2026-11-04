@@ -231,5 +231,5 @@ def test_cache_namespace_is_the_transformer_class_and_its_hyperparameters(iris):
 
     assert len(set(namespaces)) == 3 and set(model.cache_) == set(namespaces)
     assert [n.split("-")[0] for n in namespaces] == ["MatrixTransformer"] + ["PivotTransformer"] * 2
-    assert ("pivot", DATA_TYPE_TABULAR, "euclidean") in model.get_cache(namespaces[1])
-    assert ("pivot", DATA_TYPE_TABULAR, "cosine") in model.get_cache(namespaces[2])
+    assert ("pivot", DATA_TYPE_TABULAR, "euclidean", True) in model.get_cache(namespaces[1])
+    assert ("pivot", DATA_TYPE_TABULAR, "cosine", True) in model.get_cache(namespaces[2])

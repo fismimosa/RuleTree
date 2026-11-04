@@ -25,6 +25,9 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
     distance_measure : str or callable, default='euclidean'
         Distance between the instances, computed on the standardized features (categorical ones one-hot
         encoded): any metric of ``sklearn.metrics.pairwise_distances``.
+    standardize : bool, default=True
+        Whether the features (or the embeddings) are standardized (z-score) before the distances, so that
+        each of them weighs the same.
     embedder : transformer, default=None
         Transformer of the data into vectors, e.g. ``RuleTree.utils.embeddings.ImageEmbedder`` or
         ``TextEmbedder`` (with it, also texts are supported): the distances (``distance_measure``) are
@@ -94,8 +97,9 @@ class PivotTreeStumpRegressor(PivotTreeStump, DecisionTreeStumpRegressor):
 
     def __init__(self, distance_measure='euclidean', k=None, reg_contrast_lambda=.2, reg_max_thresholds=None,
                  criterion='squared_error', min_samples_leaf=1, min_weight_fraction_leaf=0.0,
-                 max_features=None, random_state=None, min_impurity_decrease=0.0, embedder=None):
+                 max_features=None, random_state=None, min_impurity_decrease=0.0, standardize=True, embedder=None):
         """Initialize the PivotTreeStumpRegressor; see the class documentation for the parameters."""
+        self.standardize = standardize
         self.embedder = embedder
         self.distance_measure = distance_measure
         self.k = k
