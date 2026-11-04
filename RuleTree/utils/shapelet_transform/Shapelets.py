@@ -4,15 +4,11 @@ import random
 
 import numba
 import numpy as np
-import pandas as pd
-import scipy.io.arff
 
 from numba import jit, prange, UnsupportedError
 import psutil
 from sklearn.base import TransformerMixin
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import mutual_info_classif, mutual_info_regression
-from sklearn.metrics import classification_report
 
 from RuleTree.utils.define import MODEL_TYPE_CLF, MODEL_TYPE_REG
 from RuleTree.utils.optional import import_optional
@@ -393,31 +389,3 @@ def _best_fit(timeseries: np.ndarray, shapelets: np.ndarray, distance):
             res[ts_idx, shapelet_idx] = np.min(distance_matrix)
 
     return res
-
-
-
-
-
-if __name__ == '__main__':
-    df_train = pd.DataFrame(scipy.io.arff.loadarff('test_dataset/CBF/CBF_TRAIN.arff')[0])
-    df_test = pd.DataFrame(scipy.io.arff.loadarff('test_dataset/CBF/CBF_TEST.arff')[0])
-    df_train.target = df_train.target.astype(int)
-    df_test.target = df_test.target.astype(int)
-
-    X_train = df_train.drop(columns=['target']).to_numpy().reshape((-1, 1, 128))
-    X_test = df_test.drop(columns=['target']).to_numpy().reshape((-1, 1, 128))
-    y_train = df_train['target'].values
-    y_test = df_test['target'].values
-
-    st = Shapelets(n_shapelets=10, selection='random', mi_n_neighbors=100, n_jobs=-1, distance='cityblock') #euclidean, sqeuclidean, cosine, cityblock
-
-    X_train_transform = st.fit_transform(X_train, y_train)
-    X_test_transform = st.transform(X_test)
-
-    rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
-    rf.fit(X_train_transform, y_train)
-
-    y_pred = rf.predict(X_test_transform)
-
-    print(classification_report(y_test, y_pred))
-

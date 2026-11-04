@@ -186,3 +186,18 @@ def test_target_as_a_list(model_class, iris):
     model = model_class(max_depth=2, random_state=0).fit(X, y.tolist())
 
     assert np.array_equal(model.predict(X), model_class(max_depth=2, random_state=0).fit(X, y).predict(X))
+
+
+def test_stumps_to_trees(iris):
+    X, y = iris
+    model = RuleTreeClassifier(max_depth=3, random_state=0).fit(X, y)
+
+    trees = model.stumps_to_trees(model.get_balanced_stumps(p=0.1))
+
+    assert len(trees) == len(model.get_balanced_stumps(p=0.1)) > 1
+    for (feature, threshold), tree in trees.items():
+        assert list(tree.get_leaf_nodes()) == ["Rl", "Rr"]
+        assert tree.root.parent is None
+        expected = np.where(X[:, feature] <= threshold, tree.root.node_l.prediction, tree.root.node_r.prediction)
+        assert np.array_equal(tree.predict(X), expected)
+    assert len(model.get_leaf_nodes()) > 2  # the original tree is unchanged

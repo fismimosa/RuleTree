@@ -307,38 +307,3 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
             trees[(node.stump.feature_original, node.stump.threshold_original)] = tree
 
         return trees
-
-    @classmethod
-    def complete_tree(cls, node, X, y, n_classes_):
-        """
-        Recompute recursively the predictions, class probabilities and number of instances of the
-        nodes of a tree on new data, with classes ``0, ..., n_classes_ - 1``.
-
-        Parameters
-        ----------
-        node : RuleTreeNode
-            Root of the subtree.
-        X : numpy.ndarray
-            Data reaching the node.
-        y : numpy.ndarray
-            Target of the data reaching the node.
-        n_classes_ : int
-            Number of classes.
-        """
-        classes_ = list(range(n_classes_))
-        node.prediction = calculate_mode(y)
-        node.prediction_probability = np.zeros((len(classes_), ))
-        node.samples = len(y)
-        
-        
-        for i, classe in enumerate(classes_):
-            node.prediction_probability[i] = np.sum(np.where(y == classe, 1, 0)) / len(y)
-
-        if not node.is_leaf():            
-            labels_clf = node.stump.apply(X, node_id=node.node_id)
-            X_l, X_r = X[labels_clf == 1], X[labels_clf == 2]
-            y_l, y_r = y[labels_clf == 1], y[labels_clf == 2]         
-            if X_l.shape[0] != 0:
-                cls.complete_tree(node.node_l, X_l, y_l, n_classes_)
-            if X_r.shape[0] != 0:
-                cls.complete_tree(node.node_r, X_r, y_r, n_classes_)

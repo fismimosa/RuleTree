@@ -8,16 +8,13 @@ from itertools import combinations
 
 import numba
 import numpy as np
-import pandas as pd
 import psutil
 from numba import UnsupportedError, jit
 from scipy.spatial.distance import cdist
 from sklearn.base import TransformerMixin
 from sklearn.cluster import KMeans
-from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
+from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.tree import DecisionTreeClassifier
 
 from RuleTree.utils.shapelet_transform.matrix_to_vector_distances import euclidean, sqeuclidean, cosine, cityblock
@@ -583,36 +580,3 @@ def _compute_distance(X: np.ndarray, shapelets: np.ndarray, distance):
         res[:, idx] = distance(X[:, cols], shapelet[cols])
 
     return res
-
-if __name__ == '__main__':
-    iris = load_iris()
-    df = pd.DataFrame(data=iris.data, columns=iris.feature_names)
-    df['target'] = iris.target
-    df['target'] = df['target'].map(dict(enumerate(iris.target_names)))
-
-    X = df[iris.feature_names].values
-    y = df['target'].values
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    st = TabularShapelets(n_shapelets=5,
-                          n_features_strategy='all', #tuple, float, int, 'elbow', 'drop', 'new', 'all'
-                          n_jobs=10,
-                          distance='euclidean',
-                          selection='cluster' #random, cluster, all
-                          )
-
-    X_train_transform = st.fit_transform(X_train, y_train)
-    X_test_transform = st.transform(X_test)
-
-    print(X_train_transform.shape)
-
-    rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42)
-    rf.fit(X_train_transform, y_train)
-
-    y_pred = rf.predict(X_test_transform)
-
-    print(classification_report(y_test, y_pred))
-
-    shapelets = pd.DataFrame(st.shapelets, columns=[df.drop(columns="target").columns])
-
-    print(shapelets)

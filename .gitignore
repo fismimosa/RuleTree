@@ -145,3 +145,5 @@ RuleTree/.roomodes
 # Documentation generated at build time (docs/conf.py)
 docs/api/generated/
 docs/examples/*.ipynb
+
+.DS_Store

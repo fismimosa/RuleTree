@@ -8,7 +8,6 @@ from sklearn.base import TransformerMixin
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.data_utils import log_odds
-from RuleTree.utils.optional import import_optional
 
 # statistics set during fit (see RuleTree._grow), saved by node_to_dict when present
 SAVED_STATISTICS = ("samples", "balance_score", "balance_score_global")
@@ -153,25 +152,6 @@ class RuleTreeNode:
         """
         self.stump = stump
         stump.node_id_ = self.node_id
-
-    def get_possible_outputs(self) -> tuple[set, set]:
-        """
-        Predictions of the nodes of the subtree.
-
-        Returns
-        -------
-        leaf_predictions : set
-            Predictions of the leaves.
-        internal_predictions : set
-            Predictions of the internal nodes.
-        """
-        if self.is_leaf():
-            return {_hashable(self.prediction)}, set()
-        else:
-            leaf_l, node_l = self.node_l.get_possible_outputs()
-            leaf_r, node_r = self.node_r.get_possible_outputs()
-
-            return leaf_l | leaf_r, node_l | node_r | {_hashable(self.prediction)}
 
     def get_depth(self):
         """
@@ -324,46 +304,6 @@ class RuleTreeNode:
             node.set_stump(stump_class(info_dict).dict_to_node(info_dict))
 
         return node
-
-    def encode_node(self, index, parent, vector, stump, node_index=0):
-        """
-        Encode the subtree in arrays indexed as a complete binary tree (children of i at 2i+1 and 2i+2),
-        for trees of univariate splits.
-
-        Parameters
-        ----------
-        index : dict
-            Node id -> position, filled.
-        parent : numpy.ndarray
-            Position of the parent of each position, filled.
-        vector : numpy.ndarray of shape (2, n_positions)
-            Feature + 1 (-1 for leaves) and threshold (prediction for leaves) of each position, filled.
-        stump : object
-            Not used.
-        node_index : int, default=0
-            Position of this node.
-        """
-        if self.is_leaf():
-            vector[0][node_index] = -1
-            vector[1][node_index] = self.prediction
-        else:
-            feat = self.stump.feature_original
-            thr = self.stump.threshold_original
-         
-            vector[0][node_index] = feat + 1
-            vector[1][node_index] = thr
-
-            node_l = self.node_l
-            node_r = self.node_r
-
-            index[node_l.node_id] = 2 * node_index + 1
-            index[node_r.node_id] = 2 * node_index + 2
-            
-            parent[2 * index[self.node_id] + 1] = index[self.node_id]
-            parent[2 * index[self.node_id] + 2] = index[self.node_id]
-
-            node_l.encode_node(index, parent, vector, stump, 2 * node_index + 1)
-            node_r.encode_node(index, parent, vector, stump, 2 * node_index + 2)
 
     def export_graphviz(self, graph=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
                         max_depth=None, node_ids=True, samples=True, filled=True, colors=None, wrap=None,
