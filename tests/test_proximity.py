@@ -1,6 +1,4 @@
 import json
-import os
-import tempfile
 
 import numpy as np
 import pytest
@@ -96,16 +94,3 @@ def test_partial_proximity_tree(iris):
     loaded = RuleTree.from_dict(json_round_trip(model.to_dict()))
     assert np.array_equal(loaded.predict(X), model.predict(X))
     assert loaded.root.stump.get_rule()["textual_rule"] == model.root.stump.get_rule()["textual_rule"]
-
-
-def test_proximity_drawing_with_both_shapelets(time_series, tmp_path, monkeypatch):
-    pytest.importorskip("matplotlib")
-    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
-    X, y = time_series
-    stump = ProximityTreeStumpClassifier(**shapelet_kwargs())
-    stump = stump.fit(X, y, data_type=DATA_TYPE_TS, context=None, node_id=None, cache=None)
-
-    assert "image" not in stump.get_rule()["graphviz_rule"] and os.listdir(tmp_path) == []
-    attributes = stump.get_graphviz_rule()
-    assert attributes["label"] == stump.get_rule()["textual_rule"]
-    assert os.path.dirname(attributes["image"]) == str(tmp_path) and os.path.getsize(attributes["image"]) > 0

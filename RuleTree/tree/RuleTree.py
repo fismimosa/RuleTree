@@ -1300,18 +1300,41 @@ class RuleTree(RuleTreeBase, ABC):
 
         return tree
 
-    def export_graphviz(self, columns_names=None, scaler=None, float_precision=3, filename:Optional[str]=None):
+    def export_graphviz(self, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
+                        max_depth=None, node_ids=True, samples=True, filled=True, colors=None, wrap=None,
+                        show_media=False, filename: Optional[str] = None):
         """
-        Graphviz representation of the tree (requires the graphviz package).
+        Graphviz graph of the tree (requires graphviz and matplotlib), with the same boxes as
+        ``plot_tree``: the id, rule and number of instances of each node, the leaves colored by
+        prediction, the arrows ``true`` (to the left child) and ``false``, and the media of the splits,
+        e.g. the shapelets, drawn into PNG files of a temporary directory.
 
         Parameters
         ----------
         columns_names : list of str, default=None
             Names of the tabular features.
+        class_names : list of str, default=None
+            Names of the classes, in the order of ``classes_`` (classification trees).
         scaler : TransformerMixin, default=None
             Scaler used to preprocess the data: the thresholds are shown in the original scale.
         float_precision : int, default=3
-            Number of decimals of the thresholds.
+            Number of decimals of the thresholds and of the predicted values.
+        max_depth : int, default=None
+            Maximum depth drawn: the subtrees below are shown as ``(...)``. If None, the whole tree.
+        node_ids : bool, default=True
+            Whether to show the id of each node.
+        samples : bool, default=True
+            Whether to show the number of training instances of each node.
+        filled : bool, default=True
+            Whether to color the leaves by class, cluster or predicted value.
+        colors : dict, default=None
+            Colors replacing the ones of ``RuleTree.utils.plotting.DEFAULT_COLORS``, as in ``plot_tree``.
+        wrap : int, default=None
+            Maximum number of characters per line of a rule, as in ``plot_tree``. If None, one line per
+            rule.
+        show_media : bool, default=False
+            Whether to draw the training instances used by the splits, e.g. the pivots, as in
+            ``plot_tree``. The shapelets are always drawn.
         filename : str, default=None
             If given, the graph is rendered to this file; otherwise it is rendered to a temporary file
             and opened (both require the Graphviz binaries).
@@ -1320,8 +1343,20 @@ class RuleTree(RuleTreeBase, ABC):
         -------
         graph : graphviz.Digraph or None
             The graph, if filename is None.
+
+        Examples
+        --------
+        >>> from sklearn.datasets import load_iris
+        >>> from RuleTree import RuleTreeClassifier
+        >>> iris = load_iris()
+        >>> model = RuleTreeClassifier(max_depth=2, random_state=0).fit(iris.data, iris.target)
+        >>> graph = model.root.export_graphviz(columns_names=iris.feature_names,
+        ...                                    class_names=list(iris.target_names))  # doctest: +SKIP
+        >>> graph.render("iris_tree", format="png")  # doctest: +SKIP
         """
-        dot = self.root.export_graphviz(columns_names=columns_names, scaler=scaler, float_precision=float_precision)
+        dot = self.root.export_graphviz(columns_names=columns_names, class_names=class_names, scaler=scaler,
+                                       float_precision=float_precision, max_depth=max_depth, node_ids=node_ids,
+                                       samples=samples, filled=filled, colors=colors, wrap=wrap, show_media=show_media)
         if filename is None:
             dot.render(directory=tempfile.mkdtemp(), view=True)
             return dot

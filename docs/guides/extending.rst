@@ -461,10 +461,9 @@ belong to different stumps.
 
 The rule of a split is written by ``get_rule``, with the feature named by ``feature_id`` of the
 transformer. A stump with a rule of its own (e.g. ``P_<i> <= t`` for the pivots) overrides
-``get_rule``. What a node shows in the drawings comes from the stump too: ``get_plot_rule`` for
-``plot_tree`` (by default, the text of the rule) and ``get_graphviz_rule`` for
-``export_graphviz``. A stump that draws something in its node overrides them, returning its *media*
-from ``get_plot_rule``: values saved in the stump, ``media_values``, drawn as ``media_kind``
+``get_rule``. What a node shows in the drawings, ``plot_tree`` and ``export_graphviz``, comes from
+``get_plot_rule`` of the stump (by default, the text of the rule). A stump that draws something in
+its node overrides it, returning its *media*: values saved in the stump, ``media_values``, drawn as ``media_kind``
 (``"series"``, ``"image"`` or ``"text"``) with their ``media_names`` and optionally ``media_colors``.
 The shapelet stumps return their shapelets, always drawn; the pivot stumps their pivots as given to
 ``fit``, with ``media_optional``, so that they are drawn only with ``plot_tree(show_media=True)``.

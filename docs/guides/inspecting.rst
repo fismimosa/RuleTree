@@ -164,25 +164,25 @@ Graphviz
 ~~~~~~~~
 
 ``export_graphviz`` returns the tree as a Graphviz graph instead (it requires the ``graphviz``
-extra). Its DOT source can be read or saved; rendering it to an image also requires the Graphviz
-programs:
+extra), with the same boxes as ``plot_tree``: the id, rule and number of instances of each node, the
+leaves colored by prediction, the arrows ``true`` and ``false``, and the media of the splits (the
+shapelets; the pivots with ``show_media=True``), drawn into PNG files of a temporary directory. It
+takes the same options, except the ones of the matplotlib layout (``ax``, ``fontsize``). Its DOT
+source can be read or saved; rendering it to an image also requires the Graphviz programs:
 
 .. code-block:: python
 
    graph = model.root.export_graphviz(columns_names=names)
-   print(graph.source.splitlines()[1].strip())
+   print(next(line.strip() for line in graph.source.splitlines() if line.strip().startswith("R ")))
 
 .. code-block:: text
    :caption: Output
 
-   	R [label="petal width <= 0.8" shape=box]
+   R [label=<R<BR/>petal width &lt;= 0.8<BR/>samples = 150> color="#9aa5b1ff" fillcolor="#f4f6f8ff"]
 
 .. code-block:: text
 
    model.export_graphviz(columns_names=names, filename="iris_tree")   # writes iris_tree.pdf
-
-In the Graphviz drawing, the left (green) edge of a node is followed when its condition is true.
-
 
 Nodes
 -----

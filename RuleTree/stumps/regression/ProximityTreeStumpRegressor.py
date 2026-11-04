@@ -13,7 +13,7 @@ class ProximityTreeStumpRegressor(ProximityTreeStump, ShapeletTreeStumpRegressor
     :class:`~RuleTree.stumps.regression.ShapeletTreeStumpRegressor.ShapeletTreeStumpRegressor`, and the split
     is the pair of shapelets whose comparison best splits the node. Unlike the shapelet stump, the
     rule has no threshold: it only says which shapelet the time series resembles more. In the
-    Graphviz drawing, the first shapelet is green and the second one red.
+    drawings, the first shapelet is green and the second one red.
 
     It is a :class:`~RuleTree.stumps.Stump.Stump` made of a ProximityTransformer and a
     RegressionSplitter. The time series have shape (n_samples, n_signals, length) and are passed to the

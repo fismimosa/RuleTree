@@ -5,9 +5,8 @@ from typing import Optional
 from RuleTree.base.RuleTreeBaseStump import rule_dict
 from RuleTree.stumps.transformers.PartialProximityTransformer import PartialProximityTransformer
 from RuleTree.stumps.transformers.ProximityTransformer import ProximityTransformer
-from RuleTree.utils.shapelet_transform.drawing import graphviz_shapelets
 
-# colors of the two shapelets of the split in the Graphviz drawing, as named in the rules
+# colors of the two shapelets of the split in the drawings, as named in the rules
 PROXIMITY_COLORS = ("tab:green", "tab:red")
 
 
@@ -93,34 +92,6 @@ class ProximityTreeStump:
 
         return proximity_rule(self.feature_original, f"{self.distance}(TS, green_shp)",
                               f"{self.distance}(TS, red_shp)", self.threshold_original)
-
-    def get_graphviz_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
-        """
-        Attributes of the Graphviz node of the split: the rule above a plot of the two shapelets, green
-        and red, drawn into a temporary PNG file (requires matplotlib).
-
-        Parameters
-        ----------
-        columns_names : list of str, default=None
-            Not used.
-        scaler : TransformerMixin, default=None
-            Not supported: must be None.
-        float_precision : int, default=3
-            Not used.
-
-        Returns
-        -------
-        attributes : dict
-            Attributes of the Graphviz node.
-
-        Raises
-        ------
-        MissingOptionalDependencyError
-            If matplotlib is not installed.
-        """
-        label = self.get_rule(columns_names, scaler, float_precision)["graphviz_rule"]["label"]
-        return graphviz_shapelets(label, [self.st.shapelets[0, 0], self.st.shapelets[1, 0]],
-                                  colors=list(PROXIMITY_COLORS))
 
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """

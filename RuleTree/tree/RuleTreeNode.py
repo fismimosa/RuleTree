@@ -8,7 +8,6 @@ from sklearn.base import TransformerMixin
 
 from RuleTree.base.RuleTreeBaseStump import RuleTreeBaseStump
 from RuleTree.utils.data_utils import log_odds
-from RuleTree.utils.define import GRAPHVIZ_DEFAULT_NODE_SPLIT, GRAPHVIZ_DEFAULT_NODE_LEAF
 from RuleTree.utils.optional import import_optional
 
 # statistics set during fit (see RuleTree._grow), saved by node_to_dict when present
@@ -366,9 +365,12 @@ class RuleTreeNode:
             node_l.encode_node(index, parent, vector, stump, 2 * node_index + 1)
             node_r.encode_node(index, parent, vector, stump, 2 * node_index + 2)
 
-    def export_graphviz(self, graph=None, columns_names=None, scaler=None, float_precision=3):
+    def export_graphviz(self, graph=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
+                        max_depth=None, node_ids=True, samples=True, filled=True, colors=None, wrap=None,
+                        show_media=False):
         """
-        Graphviz representation of the subtree (requires the graphviz package).
+        Graphviz graph of the subtree, with the boxes of ``plot_tree`` (requires graphviz and matplotlib).
+        See ``RuleTree.export_graphviz``.
 
         Parameters
         ----------
@@ -376,36 +378,38 @@ class RuleTreeNode:
             Graph to add the nodes to. If None, a new graph.
         columns_names : list of str, default=None
             Names of the tabular features.
+        class_names : list of str, default=None
+            Names of the classes, in the order of ``classes_`` (classification trees).
         scaler : TransformerMixin, default=None
             Scaler used to preprocess the data: the thresholds are shown in the original scale.
         float_precision : int, default=3
-            Number of decimals of the thresholds.
+            Number of decimals of the thresholds and of the predicted values.
+        max_depth : int, default=None
+            Maximum depth drawn: the subtrees below are shown as ``(...)``. If None, the whole tree.
+        node_ids : bool, default=True
+            Whether to show the id of each node.
+        samples : bool, default=True
+            Whether to show the number of training instances of each node.
+        filled : bool, default=True
+            Whether to color the leaves by class, cluster or predicted value.
+        colors : dict, default=None
+            Colors replacing the ones of ``RuleTree.utils.plotting.DEFAULT_COLORS``, as in ``plot_tree``.
+        wrap : int, default=None
+            Maximum number of characters per line of a rule, as in ``plot_tree``. If None, one line per
+            rule.
+        show_media : bool, default=False
+            Whether to draw the training instances used by the splits, e.g. the pivots, as in
+            ``plot_tree``. The shapelets are always drawn.
 
         Returns
         -------
         graph : graphviz.Digraph
         """
-        graphviz = import_optional("graphviz", "export_graphviz")
+        from RuleTree.utils.plotting import export_graphviz
 
-        if graph is None:
-            graph = graphviz.Digraph(name="RuleTree")
-
-        if self.is_leaf():
-            graph.node(self.node_id, label=f"{self.prediction}", **GRAPHVIZ_DEFAULT_NODE_LEAF)
-            return graph
-
-        attributes = self.stump.get_graphviz_rule(columns_names=columns_names, scaler=scaler,
-                                                  float_precision=float_precision)
-        graph.node(self.node_id, **(GRAPHVIZ_DEFAULT_NODE_SPLIT | attributes))
-
-        if self.node_l is not None:
-            graph = self.node_l.export_graphviz(graph, columns_names, scaler, float_precision)
-            graph.edge(self.node_id, self.node_l.node_id, color="#2ca02c")
-        if self.node_r is not None:
-            graph = self.node_r.export_graphviz(graph, columns_names, scaler, float_precision)
-            graph.edge(self.node_id, self.node_r.node_id, color="#d62728")
-
-        return graph
+        return export_graphviz(self, graph, columns_names=columns_names, class_names=class_names, scaler=scaler,
+                               float_precision=float_precision, max_depth=max_depth, node_ids=node_ids,
+                               samples=samples, filled=filled, colors=colors, wrap=wrap, show_media=show_media)
 
     def plot_tree(self, ax=None, *, columns_names=None, class_names=None, scaler=None, float_precision=3,
                   max_depth=None, node_ids=True, samples=True, filled=True, fontsize=None, colors=None,

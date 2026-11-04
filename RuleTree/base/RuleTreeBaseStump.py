@@ -126,34 +126,9 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
         -------
         rule : dict
             The rule, with at least the keys ``textual_rule`` and ``not_textual_rule`` (the condition
-            of the left child and its negation), ``blob_rule``, ``not_blob_rule``, ``graphviz_rule`` and
-            ``not_graphviz_rule`` (attributes of the Graphviz node).
+            of the left child and its negation), ``blob_rule`` and ``not_blob_rule``.
         """
         pass
-
-    def get_graphviz_rule(self, columns_names: list = None, scaler: TransformerMixin = None,
-                          float_precision: Optional[int] = 3) -> dict:
-        """
-        Attributes of the Graphviz node of the split (see RuleTree.export_graphviz). The default
-        implementation is ``get_rule(...)["graphviz_rule"]``; stumps that draw something in the node,
-        such as the shapelet stumps, override it.
-
-        Parameters
-        ----------
-        columns_names : list of str, default=None
-            Names of the tabular features.
-        scaler : TransformerMixin, default=None
-            Scaler used to preprocess the data: the thresholds are shown in the original scale.
-        float_precision : int, default=3
-            Number of decimals of the threshold.
-
-        Returns
-        -------
-        attributes : dict
-            Attributes of the Graphviz node, e.g. ``label``.
-        """
-        return self.get_rule(columns_names=columns_names, scaler=scaler,
-                             float_precision=float_precision)["graphviz_rule"]
 
     def get_plot_rule(self, columns_names: list = None, scaler: TransformerMixin = None,
                       float_precision: Optional[int] = 3) -> dict:
@@ -466,8 +441,7 @@ class RuleTreeBaseStump(BaseEstimator, ABC):
 def rule_dict(condition: str, negation: str, **attributes) -> dict:
     """
     Dictionary of a rule as returned by the ``get_rule`` of the stumps: the condition of the left child
-    and its negation, as text (``textual_rule``, ``blob_rule``) and as Graphviz label (``graphviz_rule``),
-    after the given attributes of the split.
+    and its negation, as text (``textual_rule``, ``blob_rule``), after the given attributes of the split.
 
     Parameters
     ----------
@@ -487,16 +461,14 @@ def rule_dict(condition: str, negation: str, **attributes) -> dict:
     --------
     >>> from RuleTree.base.RuleTreeBaseStump import rule_dict
     >>> rule = rule_dict("X_3 <= 0.8", "X_3 > 0.8", feature_idx=3, threshold=0.8)
-    >>> rule["textual_rule"], rule["not_graphviz_rule"]
-    ('X_3 <= 0.8', {'label': 'X_3 > 0.8'})
+    >>> rule["textual_rule"], rule["not_textual_rule"]
+    ('X_3 <= 0.8', 'X_3 > 0.8')
     """
     return attributes | {
         "textual_rule": condition,
         "blob_rule": condition,
-        "graphviz_rule": {"label": condition},
         "not_textual_rule": negation,
         "not_blob_rule": negation,
-        "not_graphviz_rule": {"label": negation},
     }
 
 

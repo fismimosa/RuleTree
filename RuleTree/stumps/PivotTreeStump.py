@@ -109,8 +109,8 @@ class PivotTreeStump:
         -------
         rule : dict
             ``feature_idx`` (the pivot), ``threshold``, ``is_categorical``, ``feature_name``, the
-            condition of the left child (``textual_rule``, ``blob_rule``, ``graphviz_rule``) and its
-            negation (``not_textual_rule``, ``not_blob_rule``, ``not_graphviz_rule``). Empty if the
+            condition of the left child (``textual_rule``, ``blob_rule``) and its negation
+            (``not_textual_rule``, ``not_blob_rule``). Empty if the
             stump is not fitted.
         """
         if not self._is_fitted():

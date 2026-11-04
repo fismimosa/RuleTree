@@ -1,6 +1,6 @@
 """
 Drawing of a tree with matplotlib (``RuleTree.plot_tree`` and ``RuleTreeNode.plot_tree``), in the
-style of ``sklearn.tree.plot_tree``.
+style of ``sklearn.tree.plot_tree``, and as a Graphviz graph (``export_graphviz``) with the same boxes.
 
 Each internal node shows what its stump returns from ``get_plot_rule``: the rule as text and the
 *media* of its split, saved in the stump and drawn as images, time series or texts: e.g. the shapelets,
@@ -9,7 +9,10 @@ splits that compare two of them (e.g. the proximity stumps), on the arrows of th
 shows its prediction. The leaves are placed from left to right in the order of the tree, and each
 internal node above the middle of its children, so the boxes never overlap.
 """
+import html
+import os
 import re
+import tempfile
 import textwrap
 from typing import Optional
 
@@ -128,6 +131,83 @@ def plot_tree(node, ax=None, *, columns_names: Optional[list] = None, class_name
             _plot_media(ax, texts[box["key"]], box["media"], renderer, text_color, colors, size)
 
     return ax
+
+
+def export_graphviz(node, graph=None, *, columns_names: Optional[list] = None, class_names: Optional[list] = None,
+                    scaler=None, float_precision: Optional[int] = 3, max_depth: Optional[int] = None,
+                    node_ids: bool = True, samples: bool = True, filled: bool = True, colors: Optional[dict] = None,
+                    wrap: Optional[int] = None, show_media: bool = False):
+    """
+    The subtree of a node as a Graphviz graph, with the boxes, colors and media of ``plot_tree`` (see
+    ``RuleTree.export_graphviz`` for the parameters). The media are drawn with matplotlib into PNG
+    files of a temporary directory, which the graph references.
+
+    Returns
+    -------
+    graph : graphviz.Digraph
+    """
+    graphviz = import_optional("graphviz", "export_graphviz")
+    to_hex = import_optional("matplotlib.colors", "export_graphviz").to_hex  # colors of the leaves, media
+    if not isinstance(show_media, (bool, np.bool_)):
+        raise ValueError(f"show_media must be True or False, not {show_media!r}")
+    colors = DEFAULT_COLORS | (colors or {})
+    text_color = colors["text"] or "black"
+
+    boxes = _layout(node, max_depth)
+    leaf_colors = _leaf_colors(boxes, colors) if filled else {}
+    for box in boxes:
+        _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,
+                  wrap, show_media)
+
+    directory = tempfile.mkdtemp(prefix="ruletree-graphviz-") if any(box["media"] for box in boxes) else None
+    graph = graphviz.Digraph(name="RuleTree") if graph is None else graph
+    graph.attr("node", shape="box", style="rounded,filled", fontcolor=text_color, fontsize="10")
+    graph.attr("edge", color=colors["edge"], fontcolor=colors["edge"], fontsize="9", arrowsize="0.7")
+    names = {box["key"]: PLACEHOLDER if box["node"] is None else box["node"].node_id for box in boxes}
+    for box in boxes:  # placeholders get a unique name, as the parent id plus the side
+        if box["node"] is None:
+            names[box["key"]] = f"{names[box['parent']]}-{box['side']}"
+
+    for box in boxes:
+        lines = [html.escape(line) for line in box["label"].rstrip("\n").split("\n")]
+        image = _media_png(box["media"], directory, names[box["key"]], text_color, colors) \
+            if box["media"] and not box["media_on_edges"] else None
+        graph.node(names[box["key"]], label=_html_label("<BR/>".join(lines), image),
+                   fillcolor=to_hex(box["face"], keep_alpha=True), color=to_hex(box["edge"], keep_alpha=True))
+
+        if box["parent"] is not None:
+            parent = boxes[box["parent"]]
+            image = None
+            if parent["media"] and parent["media_on_edges"]:  # the medium of the child next to its arrow
+                medium = parent["media"][0 if box["side"] == "true" else 1]
+                image = _media_png([medium], directory, f"{names[parent['key']]}-{box['side']}", text_color, colors)
+            graph.edge(names[parent["key"]], names[box["key"]], label=_html_label(box["side"], image))
+
+    return graph
+
+
+def _html_label(text, image=None):
+    """A Graphviz HTML label: the text (already escaped) and, below it, the image of a PNG file."""
+    if image is None:
+        return f"<{text}>"
+    return f'<<TABLE BORDER="0" CELLSPACING="0"><TR><TD>{text}</TD></TR>' \
+           f'<TR><TD><IMG SRC="{html.escape(image)}"/></TD></TR></TABLE>>'
+
+
+def _media_png(media, directory, name, text_color, colors):
+    """The media of a node, drawn side by side as in ``plot_tree`` into the PNG file ``<name>.png``."""
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.figure import Figure
+
+    width = 1.6 if media[0]["kind"] == "text" else 1.2
+    figure = Figure(figsize=(width * len(media), 1.0))
+    canvas = FigureCanvasAgg(figure)
+    renderer = canvas.get_renderer()
+    for inset, medium in zip(figure.subplots(1, len(media), squeeze=False)[0], media):
+        _draw_medium(inset, medium, text_color, colors, 9, renderer)
+    path = os.path.join(directory, f"{name}.png")
+    figure.savefig(path, dpi=100, bbox_inches="tight", pad_inches=0.02, transparent=True)
+    return path
 
 
 def _describe(box, columns_names, class_names, scaler, float_precision, node_ids, samples, leaf_colors, colors,

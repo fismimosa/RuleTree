@@ -273,9 +273,8 @@ class Stump(RuleTreeBaseStump):
         -------
         rule : dict
             ``feature_idx``, ``threshold``, ``is_categorical``, ``feature_name``, ``threshold_scaled``
-            (with a scaler), the condition of the left child (``textual_rule``, ``blob_rule``,
-            ``graphviz_rule``) and its negation (``not_textual_rule``, ``not_blob_rule``,
-            ``not_graphviz_rule``).
+            (with a scaler), the condition of the left child (``textual_rule``, ``blob_rule``) and its
+            negation (``not_textual_rule``, ``not_blob_rule``).
         """
         rule = {
             "feature_idx": self.feature_original,

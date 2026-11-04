@@ -1,5 +1,7 @@
-"""plot_tree: the drawing of a tree with matplotlib, for every kind of tree and stump."""
+"""plot_tree: the drawing of a tree with matplotlib, for every kind of tree and stump; export_graphviz."""
 import json
+import os
+import re
 
 import numpy as np
 import pytest
@@ -244,6 +246,41 @@ def test_proximity_shapelets_on_the_arrows(bumps_and_dips):
         assert inset.get_title() == name
         np.testing.assert_allclose(inset.lines[0].get_ydata(), shapelet)
         assert to_hex(inset.lines[0].get_color()) == to_hex(color)
+
+
+def test_graphviz_has_the_boxes_and_arrows_of_plot_tree(classifier):
+    pytest.importorskip("graphviz")
+
+    source = classifier.root.export_graphviz().source
+
+    for node_id, node in classifier.get_predicates().items():
+        rule = node.stump.get_rule()["textual_rule"].replace("<", "&lt;")
+        assert f"{node_id} [label=<{node_id}<BR/>{rule}<BR/>samples = {node.samples}>" in source
+        assert f"{node_id} -> {node.node_l.node_id} [label=<true>]" in source
+        assert f"{node_id} -> {node.node_r.node_id} [label=<false>]" in source
+    for node_id, node in classifier.get_leaf_nodes().items():
+        color = to_hex(DEFAULT_COLORS["classes"][list(node.classes).index(node.prediction)], keep_alpha=True)
+        assert f"{node_id} [label=<{node_id}<BR/>class = {node.prediction}<BR/>samples = {node.samples}>" \
+               f" color=\"{color}\"" in source
+
+
+def test_graphviz_draws_the_media_into_png_files(bumps_and_dips, tmp_path, monkeypatch):
+    """The shapelet in its node, the two proximity shapelets on the arrows, as in plot_tree."""
+    pytest.importorskip("graphviz")
+    pytest.importorskip("numba")
+    import tempfile
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    X, y = bumps_and_dips
+    shapelet = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=ShapeletTreeStumpClassifier(
+        n_shapelets=5, sliding_window=10, selection="random", random_state=0)).fit(X_ts=X, y=y)
+    proximity = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=ProximityTreeStumpClassifier(
+        n_shapelets=4, sliding_window=10, selection="random", random_state=0)).fit(X_ts=X, y=y)
+
+    images = re.findall(r'IMG SRC="([^"]+)"', shapelet.root.export_graphviz().source)
+    assert [os.path.basename(image) for image in images] == ["R.png"]
+    images = re.findall(r'IMG SRC="([^"]+)"', proximity.root.export_graphviz().source)
+    assert [os.path.basename(image) for image in images] == ["R-true.png", "R-false.png"]
+    assert all(os.path.dirname(image).startswith(str(tmp_path)) and os.path.getsize(image) > 0 for image in images)
 
 
 def test_wrap_splits_rules_before_the_operator_and_leaves_between_words():

@@ -139,7 +139,7 @@ class ObliqueTreeStump:
         rule : dict
             ``feature_idx`` (the columns of the combination), ``coefficients``, ``threshold``,
             ``is_categorical``, ``feature_name`` (the combination), the condition of the left child
-            (``textual_rule``, ``blob_rule``, ``graphviz_rule``) and its negation. Empty if the
+            (``textual_rule``, ``blob_rule``) and its negation. Empty if the
             stump is not fitted.
 
         Raises

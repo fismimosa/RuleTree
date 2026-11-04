@@ -4,7 +4,6 @@ from typing import Optional
 
 from RuleTree.base.RuleTreeBaseStump import numerical_rule
 from RuleTree.stumps.transformers.ShapeletTransformer import ShapeletTransformer
-from RuleTree.utils.shapelet_transform.drawing import graphviz_shapelets
 
 
 class ShapeletTreeStump:
@@ -81,33 +80,6 @@ class ShapeletTreeStump:
         rule = numerical_rule(self.feature_original, f"{self.distance}(TS, shp)", self.threshold_original,
                               float_precision)
         return rule | {"feature_name": f"Shapelet_{self.feature_original}"}
-
-    def get_graphviz_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
-        """
-        Attributes of the Graphviz node of the split: the rule above a plot of the shapelet, drawn
-        into a temporary PNG file (requires matplotlib).
-
-        Parameters
-        ----------
-        columns_names : list of str, default=None
-            Not used.
-        scaler : TransformerMixin, default=None
-            Not supported: must be None.
-        float_precision : int, default=3
-            Number of decimals of the threshold. If None, it is not rounded.
-
-        Returns
-        -------
-        attributes : dict
-            Attributes of the Graphviz node.
-
-        Raises
-        ------
-        MissingOptionalDependencyError
-            If matplotlib is not installed.
-        """
-        label = self.get_rule(columns_names, scaler, float_precision)["graphviz_rule"]["label"]
-        return graphviz_shapelets(label, [self.st.shapelets[self.feature_original, 0]])
 
     def get_plot_rule(self, columns_names=None, scaler=None, float_precision: Optional[int] = 3):
         """
