@@ -30,6 +30,12 @@ tabular data. The images have the channels last, as in matplotlib: grayscale ima
 floats in [0, 1] or integers in [0, 255]. Images with the channels first, (n_samples, 3, height,
 width), are rejected: ``np.moveaxis(X_img, 1, -1)`` puts the channels last.
 
+The time series, instead, have the signals before the time, (n_samples, n_signals, length), as in
+aeon and sktime: a univariate series is (n_samples, 1, length), e.g. ``X_ts[:, None, :]`` from a 2D
+array. The two conventions differ on purpose, each following the one of its field: series with the
+signals last, (n_samples, length, n_signals), are rejected, and ``np.moveaxis(X_ts, -1, 1)`` converts
+them.
+
 Each stump declares the data types it supports (``supported_data_types``), and the tree uses each
 stump on the types it supports among the ones given to ``fit``.
 

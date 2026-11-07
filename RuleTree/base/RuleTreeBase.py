@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_consistent_length
 
-from RuleTree.utils.define import DATA_INPUT_TYPES, DATA_TYPE_IMAGE
+from RuleTree.utils.define import DATA_INPUT_TYPES, DATA_TYPE_IMAGE, DATA_TYPE_TS
 
 
 class RuleTreeBase(BaseEstimator, ABC):
@@ -48,6 +48,8 @@ class RuleTreeBase(BaseEstimator, ABC):
             raise ValueError("At least one of X, X_ts, X_img or X_txt must be specified.")
         if DATA_TYPE_IMAGE in data:
             _check_images(data[DATA_TYPE_IMAGE])
+        if DATA_TYPE_TS in data:
+            _check_series(data[DATA_TYPE_TS])
 
         values_to_check = list(data.values())
         if y is not None:
@@ -131,3 +133,20 @@ def _check_images(images: np.ndarray):
     if images.ndim == 4 and images.shape[1] in (1, 3, 4) and images.shape[-1] not in (1, 3, 4):
         raise ValueError(f"X_img has shape {images.shape}, with the channels first: the images must have the "
                          "channels last, (n_samples, height, width, channels), e.g. np.moveaxis(X_img, 1, -1)")
+
+
+def _check_series(series: np.ndarray):
+    """
+    Check that the time series are (n_samples, n_signals, length), with the signals before the time.
+
+    Raises
+    ------
+    ValueError
+        If the series are not 3D, or have the signals last, e.g. (n_samples, length, 1).
+    """
+    if series.ndim != 3:
+        hint = ": for univariate series, X_ts[:, None, :]" if series.ndim == 2 else ""
+        raise ValueError(f"X_ts has shape {series.shape}: expected (n_samples, n_signals, length){hint}")
+    if series.shape[-1] == 1 and series.shape[1] > 1:
+        raise ValueError(f"X_ts has shape {series.shape}, with the signals last: the series must be "
+                         "(n_samples, n_signals, length), e.g. np.moveaxis(X_ts, -1, 1)")

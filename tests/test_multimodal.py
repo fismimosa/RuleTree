@@ -249,3 +249,17 @@ def test_images_with_the_channels_last():
         model.fit(X_img=np.moveaxis(images, -1, 1), y=y)
     with pytest.raises(ValueError, match="height, width"):
         model.fit(X_img=images.reshape(40, -1), y=y)
+
+
+def test_series_with_the_signals_before_the_time():
+    """Time series are (n_samples, n_signals, length): 2D arrays and series with the signals last are rejected."""
+    rng = np.random.default_rng(0)
+    y = np.arange(40) % 2
+    series = rng.normal(size=(40, 1, 30))
+    model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=PivotTreeStumpClassifier())
+
+    model.fit(X_ts=series, y=y)
+    with pytest.raises(ValueError, match=r"X_ts\[:, None, :\]"):
+        model.fit(X_ts=series[:, 0], y=y)
+    with pytest.raises(ValueError, match="signals last"):
+        model.fit(X_ts=np.moveaxis(series, 1, -1), y=y)
