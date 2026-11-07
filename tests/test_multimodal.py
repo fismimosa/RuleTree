@@ -233,3 +233,19 @@ def test_cache_namespace_is_the_transformer_class_and_its_hyperparameters(iris):
     assert [n.split("-")[0] for n in namespaces] == ["MatrixTransformer"] + ["PivotTransformer"] * 2
     assert ("pivot", DATA_TYPE_TABULAR, "euclidean", True) in model.get_cache(namespaces[1])
     assert ("pivot", DATA_TYPE_TABULAR, "cosine", True) in model.get_cache(namespaces[2])
+
+
+def test_images_with_the_channels_last():
+    """RGB images are (n_samples, height, width, 3); with the channels first they are rejected."""
+    rng = np.random.default_rng(0)
+    y = np.arange(40) % 2
+    images = rng.random((40, 6, 6, 3))
+    images[y == 1, ..., 0] += 1
+
+    model = RuleTreeClassifier(max_depth=1, random_state=0, base_stumps=PivotTreeStumpClassifier())
+    assert np.mean(model.fit(X_img=images, y=y).predict(X_img=images) == y) == 1
+
+    with pytest.raises(ValueError, match="channels first"):
+        model.fit(X_img=np.moveaxis(images, -1, 1), y=y)
+    with pytest.raises(ValueError, match="height, width"):
+        model.fit(X_img=images.reshape(40, -1), y=y)

@@ -19,14 +19,19 @@ instances. Each type has its own argument of ``fit``, ``predict``, ``predict_pro
      - (n_samples, n_signals, length)
    * - ``X_img``
      - ``"image"``
-     - (n_samples, ...)
+     - (n_samples, height, width) or (n_samples, height, width, channels)
    * - ``X_txt``
      - ``"text"``
      - (n_samples,)
 
 The type is given by the argument, not by the shape of the array: a 3D array passed as ``X`` is
-tabular data. Each stump declares the data types it supports (``supported_data_types``), and the
-tree uses each stump on the types it supports among the ones given to ``fit``.
+tabular data. The images have the channels last, as in matplotlib: grayscale images are
+(n_samples, height, width), color images (n_samples, height, width, 3) for RGB; their values are
+floats in [0, 1] or integers in [0, 255]. Images with the channels first, (n_samples, 3, height,
+width), are rejected: ``np.moveaxis(X_img, 1, -1)`` puts the channels last.
+
+Each stump declares the data types it supports (``supported_data_types``), and the tree uses each
+stump on the types it supports among the ones given to ``fit``.
 
 
 Time series

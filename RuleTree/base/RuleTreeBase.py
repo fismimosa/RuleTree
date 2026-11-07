@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_consistent_length
 
-from RuleTree.utils.define import DATA_INPUT_TYPES
+from RuleTree.utils.define import DATA_INPUT_TYPES, DATA_TYPE_IMAGE
 
 
 class RuleTreeBase(BaseEstimator, ABC):
@@ -46,6 +46,8 @@ class RuleTreeBase(BaseEstimator, ABC):
 
         if not data:
             raise ValueError("At least one of X, X_ts, X_img or X_txt must be specified.")
+        if DATA_TYPE_IMAGE in data:
+            _check_images(data[DATA_TYPE_IMAGE])
 
         values_to_check = list(data.values())
         if y is not None:
@@ -68,8 +70,8 @@ class RuleTreeBase(BaseEstimator, ABC):
             Tabular input data.
         X_ts : array-like of shape (n_samples, ...), default=None
             Time-series input data.
-        X_img : array-like of shape (n_samples, ...), default=None
-            Image input data.
+        X_img : array-like of shape (n_samples, height, width) or (n_samples, height, width, channels), default=None
+            Images, with the channels last (e.g. RGB).
         X_txt : array-like of shape (n_samples, ...), default=None
             Text input data.
         y : array-like of shape (n_samples,), default=None
@@ -98,8 +100,8 @@ class RuleTreeBase(BaseEstimator, ABC):
             Tabular input data.
         X_ts : array-like of shape (n_samples, ...), default=None
             Time-series input data.
-        X_img : array-like of shape (n_samples, ...), default=None
-            Image input data.
+        X_img : array-like of shape (n_samples, height, width) or (n_samples, height, width, channels), default=None
+            Images, with the channels last (e.g. RGB).
         X_txt : array-like of shape (n_samples, ...), default=None
             Text input data.
 
@@ -110,3 +112,22 @@ class RuleTreeBase(BaseEstimator, ABC):
             not have a consistent number of samples.
         """
         self._validate_inputs(X=X, X_ts=X_ts, X_img=X_img, X_txt=X_txt)
+
+
+def _check_images(images: np.ndarray):
+    """
+    Check that the images are (n_samples, height, width) or (n_samples, height, width, channels), with the
+    channels last.
+
+    Raises
+    ------
+    ValueError
+        If the images have another number of dimensions, or the channels first, e.g. (n_samples, 3, height,
+        width).
+    """
+    if images.ndim not in (3, 4):
+        raise ValueError(f"X_img has shape {images.shape}: expected (n_samples, height, width) or "
+                         "(n_samples, height, width, channels)")
+    if images.ndim == 4 and images.shape[1] in (1, 3, 4) and images.shape[-1] not in (1, 3, 4):
+        raise ValueError(f"X_img has shape {images.shape}, with the channels first: the images must have the "
+                         "channels last, (n_samples, height, width, channels), e.g. np.moveaxis(X_img, 1, -1)")

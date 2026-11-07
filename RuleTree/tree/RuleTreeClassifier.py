@@ -163,8 +163,8 @@ class RuleTreeClassifier(ClassifierMixin, RuleTree):
             Tabular data.
         X_ts : numpy.ndarray of shape (n_samples, n_signals, length), default=None
             Time series.
-        X_img : numpy.ndarray of shape (n_samples, ...), default=None
-            Images.
+        X_img : numpy.ndarray of shape (n_samples, height, width) or (n_samples, height, width, channels), default=None
+            Images, with the channels last (e.g. RGB).
         X_txt : array-like of shape (n_samples,), default=None
             Texts.
 

@@ -388,8 +388,8 @@ def _plot_media(ax, text, media, renderer, text_color, colors, size):
 
 def _draw_medium(inset, medium, text_color, colors, size, renderer):
     """
-    A medium in its axes, with its name (e.g. ``P_<i>``) as title: an image (height x width, with
-    channels last or first), a time series (one or more signals) or a text (shrunk to fit the axes).
+    A medium in its axes, with its name (e.g. ``P_<i>``) as title: an image (height x width, with the
+    channels last), a time series (one or more signals) or a text (shrunk to fit the axes).
     """
     kind = medium["kind"]
     instance = str(medium["value"]) if kind == "text" else np.asarray(medium["value"])
@@ -398,8 +398,6 @@ def _draw_medium(inset, medium, text_color, colors, size, renderer):
     inset.set_xticks([])
     inset.set_yticks([])
     if kind == "image":
-        if instance.ndim == 3 and instance.shape[0] in (1, 3) and instance.shape[-1] not in (1, 3):
-            instance = np.moveaxis(instance, 0, -1)  # channels first
         if instance.ndim == 3 and instance.shape[-1] == 1:
             instance = instance[..., 0]
         inset.imshow(instance, cmap="gray_r" if instance.ndim == 2 else None)  # the aspect of the image
