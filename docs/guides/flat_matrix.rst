@@ -9,7 +9,7 @@ a node together, so that a function can change their gain before the best one is
 some features, to require a minimum share of each class in the children, to make the children fair
 with respect to a sensitive attribute, and so on.
 
-They come from the matrix formulation of the split search by Lorenzo Libardi (*Flat Matrix*), in
+They come from the matrix formulation of the split search by `Lorenzo Libardi <https://lorenzolibardi.eu>`_ (*Flat Matrix*), in
 which each candidate is a pair (feature, threshold) and all the candidates are evaluated with array
 operations. When the gain is not changed, use
 :class:`~RuleTree.stumps.splitters.ClassificationSplitter` and
